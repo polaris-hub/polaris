@@ -1,0 +1,33 @@
+[project]
+name = "polaris"
+description = "Foster the development of impactful AI models in drug discovery."
+version = "0.0.1"  # project
+authors = [
+    { name = "Lu Zhu", email = "lu@valencediscovery.com" },
+    { name = "Hadrien Mary", email = "hadrien@valencediscovery.com" },
+    { name = "Julien St-Laurent", email = "julien.stl@valencediscovery.com" },
+    { name = "Cas Wognum", email = "cas@valencediscovery.com" },
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["polaris", "polaris.*"]
+exclude = []
+namespaces = false
+
+[tool.setuptools.package-data]
+"polaris.certs" = ["*.cert"]
+
+[tool.black]
+line-length = 110
+target-version = ['py39', 'py310']
+include = '\.pyi?$'
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-vv"
+testpaths = ["tests"]
+filterwarnings = []
