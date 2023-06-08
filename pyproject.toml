@@ -1,16 +1,51 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "polaris"
 description = "Foster the development of impactful AI models in drug discovery."
-version = "0.0.1"  # project
+dynamic = ["version"]
 authors = [
     { name = "Lu Zhu", email = "lu@valencediscovery.com" },
     { name = "Hadrien Mary", email = "hadrien@valencediscovery.com" },
     { name = "Julien St-Laurent", email = "julien.stl@valencediscovery.com" },
     { name = "Cas Wognum", email = "cas@valencediscovery.com" },
 ]
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = []
+
+[project.scripts]
+polaris = "polaris.cli:app"
+
+[project.urls]
+Website = "https://polaris.datamol.io/"
+"Source Code" = "https://github.com/datamol-io/polaris"
+"Bug Tracker" = "https://github.com/datamol-io/polaris/issues"
+Documentation = "https://polaris-docs.datamol.io/"
 
 [tool.setuptools]
 include-package-data = true
+
+[tool.setuptools_scm]
+fallback_version = "dev"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -18,16 +53,13 @@ include = ["polaris", "polaris.*"]
 exclude = []
 namespaces = false
 
-[tool.setuptools.package-data]
-"polaris.certs" = ["*.cert"]
-
 [tool.black]
 line-length = 110
-target-version = ['py39', 'py310']
+target-version = ['py310', 'py311']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-vv"
+addopts = "--verbose --durations=10"
 testpaths = ["tests"]
 filterwarnings = []
