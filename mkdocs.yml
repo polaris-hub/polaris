@@ -1,0 +1,77 @@
+site_name: "polaris"
+site_description: "Polaris: Foster the development of impactful AI models in drug discovery."
+site_url: "https://github.com/datamol-io/polaris"
+repo_url: "https://github.com/datamol-io/polaris"
+repo_name: "datamol-io/polaris"
+copyright: Copyright 2020 - 2023 datamol.io
+
+remote_branch: "gh-pages"
+use_directory_urls: false
+docs_dir: "docs"
+
+nav:
+  - Overview: index.md
+
+theme:
+  name: material
+  # NOTE(hadim): to customize the material primary and secondary
+  # color check `docs/assets/css/polaris-custom.css`.
+  features:
+    - navigation.tabs
+    - navigation.expand
+  # favicon: images/logo.png
+  # logo: images/logo.svg
+
+extra_css:
+  - _assets/css/custom.css
+  - _assets/css/custom-polaris.css
+
+extra_javascript:
+  - javascripts/config.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+markdown_extensions:
+  - admonition
+  - markdown_include.include
+  - pymdownx.emoji
+  - pymdownx.magiclink
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.tasklist
+  - pymdownx.details
+  - mkdocs-click
+  - pymdownx.arithmatex:
+      generic: true
+  - toc:
+      permalink: true
+
+watch:
+  - polaris/
+
+plugins:
+  - search
+
+  - mkdocstrings:
+      handlers:
+        python:
+          setup_commands:
+            - import sys
+            - sys.path.append("docs")
+            - sys.path.append("polaris")
+          options:
+            new_path_syntax: yes
+            show_root_heading: yes
+            heading_level: 3
+            show_source: false
+
+  - mkdocs-jupyter:
+      execute: False
+
+  - mike:
+      version_selector: true
+
+extra:
+  version:
+    # Multi versioning provider for mkdocs-material (used for the JS selector)
+    provider: mike
