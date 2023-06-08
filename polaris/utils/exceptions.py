@@ -2,5 +2,5 @@ class InvalidDatasetError(Exception):
     pass
 
 
-class InvalidTaskError(Exception):
+class InvalidBenchmarkError(Exception):
     pass

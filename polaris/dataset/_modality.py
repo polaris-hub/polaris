@@ -3,15 +3,16 @@ import enum
 
 class Modality(enum.Enum):
     """
-    TODO:
-      - Add support for 3D protein or molecular structures.
-      - Add support for images.
+    Used to Annotate columns in a dataset.
     """
 
     UNKNOWN = "unknown"
     TARGET = "target"
     MOLECULE = "molecule"
+    MOLECULE_3D = "molecule_3D"
     PROTEIN = "protein"
+    PROTEIN_3D = "protein_3D"
+    IMAGE = "image"
 
     def is_target(self):
         return self == Modality.TARGET

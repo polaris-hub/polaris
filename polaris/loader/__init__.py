@@ -4,9 +4,9 @@ import pandas as pd
 import datamol as dm
 from typing import Optional
 
-from polaris.dataset import Dataset, DatasetInfo, Task
+from polaris.dataset import Dataset, DatasetInfo, Benchmark
 from polaris.hub import PolarisClient
-from polaris.utils.exceptions import InvalidDatasetError, InvalidTaskError
+from polaris.utils.exceptions import InvalidDatasetError, InvalidBenchmarkError
 
 
 _SUPPORTED_DATA_EXTENSIONS = ["parquet"]
@@ -18,8 +18,8 @@ def load_dataset(path: str, info_path: Optional[str] = None):
     """
     Loads the dataset. Inspired by the HF API, this can either load from a remote or local path or from the Hub.
 
-    TODO:
-     - Caching mechanism (taken from Ada?). Do we also want to use this for non-Hub files?
+    NOTE (cwognum):
+     - Add caching mechanism (taken from Ada?). Do we also want to use this for non-Hub files?
      - How to handle the meta-data? Should it be a separate file? Metadata in the DataFrame?
      - How to load non-tabular data (e.g. images, conformers)?
      - Add support for the zarr format.
@@ -50,17 +50,17 @@ def load_dataset(path: str, info_path: Optional[str] = None):
         df = pd.read_parquet(path)
         with fsspec.open(info_path, "r") as f:
             data = yaml.safe_load(f)
-            info = DatasetInfo.from_yaml(data)
+            info = DatasetInfo.deserialize(data)
         return Dataset(df, info)
 
     raise NotImplementedError("This should not be reached.")
 
 
-def load_task(path: str):
+def load_benchmark(path: str):
     """
     Loads the task.
 
-    TODO:
+    NOTE (cwognum):
      - How to save a task to a file? Should it even be a file?
      - Caching mechanism (taken from Ada?). Do we also want to use this for non-Hub files?
     """
@@ -73,7 +73,7 @@ def load_task(path: str):
         client = PolarisClient()
         options = client.list_tasks()
         if path not in options:
-            raise InvalidTaskError(f"{path} is not a valid task.")
+            raise InvalidBenchmarkError(f"{path} is not a valid task. Make sure it exists!")
         return client.load_task(path)
 
     # Load from filesystem
@@ -88,4 +88,4 @@ def load_task(path: str):
     dataset_kwargs = data.pop(_DATASET_KWARGS_KEY)
     dataset = load_dataset(**dataset_kwargs)
 
-    return Task(dataset, **data)
+    return Benchmark(dataset, **data)

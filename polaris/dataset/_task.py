@@ -1,69 +1,76 @@
-from typing import Union, List
-
-from polaris.dataset import Dataset, Modality
-from polaris.evaluate import Metric
-from polaris.utils.exceptions import InvalidTaskError
+import numpy as np
+from typing import Union, List, Tuple
+from polaris.dataset import Dataset
 
 
 class Task:
-    """A task wraps a dataset with some additional information to form a machine learning task."""
+    """
+    A task is an ML-ready dataset.
+    This is the starting point for any framework-specific Dataset implementation.
+    """
 
     def __init__(
         self,
         dataset: Dataset,
-        target_cols: Union[List[str], str],
+        indices: List[Union[int, Tuple[int, int]]],
         input_cols: Union[List[str], str],
-        split: List[List[int]],
-        metrics: List[Union[Metric, str]],
+        target_cols: Union[List[str], str],
     ):
         self.dataset = dataset
-        self.target_cols = self._verify_cols(target_cols, Modality.TARGET, inclusive_filter=True)
-        self.input_cols = self._verify_cols(input_cols, Modality.TARGET, inclusive_filter=False)
-        self._metrics = self._verify_metrics(metrics)
-        self._split = self._verify_split(split)
+        self.indices = np.array(indices)
+        self.target_cols = target_cols
+        self.input_cols = input_cols
 
-    def _verify_cols(
-        self,
-        cols: List[str],
-        modality_filter: Union[Modality, List[Modality]],
-        inclusive_filter: bool = True,
-    ):
-        if not isinstance(cols, List):
-            cols = [cols]
-        if not isinstance(modality_filter, List):
-            modality_filter = [modality_filter]
-        if not all(c in self.dataset.table.columns for c in cols):
-            raise InvalidTaskError(f"Not all specified target columns were found in the dataset.")
-        if not inclusive_filter:
-            modality_filter = list(set(Modality) - set(modality_filter))
-        if not all(self.dataset.info.modalities[c] in modality_filter for c in cols):
-            raise InvalidTaskError(f"Not all input specified columns have the correct modality.")
-        return cols
+        # For the iterator implementation
+        self._pointer = 0
 
-    def _verify_metrics(self, metrics: List[Union[Metric, str]]):  # noqa
-        if not isinstance(metrics, List):
-            metrics = [metrics]
-        metrics = [m if isinstance(m, Metric) else Metric.get_by_name(m) for m in metrics]
-        return metrics
+    @property
+    def is_multi_task(self):
+        return len(self.target_cols) > 1
 
-    def _verify_split(self, split: List[List[int]]):  # noqa
+    @property
+    def is_multi_modal(self):
+        return len(self.input_cols) > 1
+
+    def __len__(self):
+        return len(self.indices)
+
+    def __getitem__(self, item):
         """
-        TODO:
-         - What about multi-task splits? E.g. one mol can be in both the train and test set, with different readouts.
+        This method always returns a (X, y) tuple
+
+        Some special cases:
+            1. It supports multi-modal datasets, in which case X is a sequence of values.
+               NOTE (cwognum): We currently do not allow splits across modalities.
+            2. It supports multi-task datasets, in which case y is a sequence of values.
         """
 
-        return split
+        idx = self.indices[item]
 
-    def prepare(self):
-        """
-        TODO:
-          - Should we filter out NaN values? E.g. we could have a sparse multi-task dataset.
-          - On the above; How to specify / verify indices in that case?
-        """
-        pass
+        row_idx = idx[0] if self.is_multi_task else idx
+        row = self.dataset.table.iloc[row_idx]
 
-    def split(self):
-        pass
+        target_idx = self.target_cols
+        if self.is_multi_task:
+            target_idx = target_idx[idx[1]]
 
-    def evaluate(self):
-        pass
+        ins = row[self.input_cols].values
+        outs = row[target_idx].values
+
+        if len(ins) == 1:
+            ins = ins[0]
+        if len(outs) == 1:
+            outs = outs[0]
+        return ins, outs
+
+    def __iter__(self):
+        self._pointer = 0
+        return self
+
+    def __next__(self):
+        if self._pointer >= len(self):
+            raise StopIteration
+
+        item = self[self._pointer]
+        self._pointer += 1
+        return item
