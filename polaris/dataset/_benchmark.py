@@ -2,7 +2,7 @@ from typing import Union, List, Dict, Tuple, Optional
 
 import numpy as np
 
-from polaris.dataset import Dataset, Modality, Task
+from polaris.dataset import Dataset, Task
 from polaris.evaluate import Metric
 from polaris.utils.errors import InvalidBenchmarkError
 
@@ -63,13 +63,9 @@ class Benchmark:
         """The number of test sets."""
         return len(self._split) if isinstance(self._split[1], dict) else 1
 
-    def prepare(self):
-        pass
-
     def get_train_test_split(self) -> Tuple[Task, Union[Task, Dict[str, Task]]]:
         """
         NOTE (cwognum):
-            - For some modalities (e.g. images, 3D structures), we should cache the additionally needed files
             - Should we filter out NaN values? E.g. needed when a task wraps a sparse multi-task dataset.
             - What about invalid inputs (e.g. invalid SMILES)? Maybe possible with sparse, multi-modal tasks?
         """

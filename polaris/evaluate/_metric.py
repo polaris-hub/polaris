@@ -30,6 +30,5 @@ class Metric:
 # TODO (cwognum):
 #  - Add support for more metrics
 #  - Any preprocessing needed? For example changing the shape / dtype? Converting from torch tensors or lists?
-#  - Can we come up with a more systematic, robust way of specifying default metrics?
 mean_absolute_error = Metric("mean_absolute_error", sklearn_mae)
 accuracy = Metric("accuracy", sklearn_acc)

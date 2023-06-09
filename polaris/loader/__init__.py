@@ -20,9 +20,7 @@ def load_dataset(path: str, info_path: Optional[str] = None):
 
     NOTE (cwognum):
      - Add caching mechanism (taken from Ada?). Do we also want to use this for non-Hub files?
-     - How to handle the meta-data? Should it be a separate file? Metadata in the DataFrame?
-     - How to load non-tabular data (e.g. images, conformers)?
-     - Add support for the zarr format.
+     - How to handle the meta-data? Now it is a separate file? Do we like that? Alternatives?
      - HF uses "DatasetBuilder" classes. As this logic becomes more complex, we might want to do the same.
     """
 
@@ -61,7 +59,7 @@ def load_benchmark(path: str):
     Loads the task.
 
     NOTE (cwognum):
-     - How to save a task to a file? Should it even be a file?
+     - How to save a benchmark to a file? Should it even be a file?
      - Caching mechanism (taken from Ada?). Do we also want to use this for non-Hub files?
     """
 
