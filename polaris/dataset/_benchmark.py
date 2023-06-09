@@ -4,7 +4,7 @@ import numpy as np
 
 from polaris.dataset import Dataset, Modality, Task
 from polaris.evaluate import Metric
-from polaris.utils.exceptions import InvalidBenchmarkError
+from polaris.utils.errors import InvalidBenchmarkError
 
 
 # A split is defined by a sequence of integers (single-task) or by a sequence of integer pairs (multi-task)
@@ -34,12 +34,14 @@ class Benchmark:
         input_cols: Union[List[str], str],
         split: _SPLIT_TYPE_HINT,
         metrics: Union[Union[Metric, str], List[Union[Metric, str]]],
+        version: Optional[str] = None,
     ):
         self.dataset = dataset
-        self.target_cols = self._verify_cols(target_cols, Modality.TARGET, inclusive_filter=True)
-        self.input_cols = self._verify_cols(input_cols, Modality.TARGET, inclusive_filter=False)
+        self.target_cols = self._verify_cols(target_cols)
+        self.input_cols = self._verify_cols(input_cols)
         self._split = self._verify_split(split)
         self._metrics = self._verify_metrics(metrics)
+        self._version = version
 
     def get_no_tasks(self):
         """The number of tasks."""
@@ -60,6 +62,9 @@ class Benchmark:
     def get_no_test_sets(self):
         """The number of test sets."""
         return len(self._split) if isinstance(self._split[1], dict) else 1
+
+    def prepare(self):
+        pass
 
     def get_train_test_split(self) -> Tuple[Task, Union[Task, Dict[str, Task]]]:
         """
@@ -85,23 +90,12 @@ class Benchmark:
         """Evaluate the performance given a set of predictions"""
         ...
 
-    def _verify_cols(
-        self,
-        cols: List[str],
-        modality_filter: Union[Modality, List[Modality]],
-        inclusive_filter: bool = True,
-    ):
-        """Verifies all columns are present in the dataset and have the appropriate modality."""
+    def _verify_cols(self, cols: List[str]):
+        """Verifies all columns are present in the dataset."""
         if not isinstance(cols, List):
             cols = [cols]
-        if not isinstance(modality_filter, List):
-            modality_filter = [modality_filter]
         if not all(c in self.dataset.table.columns for c in cols):
             raise InvalidBenchmarkError(f"Not all specified target columns were found in the dataset.")
-        if not inclusive_filter:
-            modality_filter = list(set(Modality) - set(modality_filter))
-        if not all(self.dataset.info.modalities[c] in modality_filter for c in cols):
-            raise InvalidBenchmarkError(f"Not all input specified columns have the correct modality.")
         return cols
 
     def _verify_metrics(self, metrics: List[Union[Metric, str]]):  # noqa

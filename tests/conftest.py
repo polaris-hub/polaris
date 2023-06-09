@@ -17,8 +17,6 @@ def test_dataset_info():
         description="Go wild in your test cases with this awesome dataset",
         source="Datamol",
         modalities={
-            "expt": Modality.TARGET,
-            "calc": Modality.TARGET,
             "smiles": Modality.MOLECULE,
         },
     )
@@ -30,7 +28,7 @@ def test_dataset(test_data, test_dataset_info):
 
 
 @pytest.fixture(scope="module")
-def test_single_task(test_dataset):
+def test_single_task_benchmark(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     return Benchmark(
@@ -43,7 +41,7 @@ def test_single_task(test_dataset):
 
 
 @pytest.fixture(scope="module")
-def test_multi_task(test_dataset):
+def test_multi_task_benchmark(test_dataset):
     # For the sake of simplicity, just use a small set of indices
     train_indices = [(0, [0, 1]), (1, [0])]
     test_indices = [(1, [1]), (2, [0, 1])]

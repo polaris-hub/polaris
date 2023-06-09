@@ -12,8 +12,8 @@ class PolarisClient:
     def list_datasets(self) -> List[str]:
         return []
 
-    def load_task(self, path: str) -> Benchmark:
+    def load_benchmarks(self, path: str) -> Benchmark:
         raise NotImplementedError
 
-    def list_tasks(self) -> List[str]:
+    def list_benchmarks(self) -> List[str]:
         return []

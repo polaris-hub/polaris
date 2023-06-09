@@ -6,7 +6,7 @@ from typing import Optional
 
 from polaris.dataset import Dataset, DatasetInfo, Benchmark
 from polaris.hub import PolarisClient
-from polaris.utils.exceptions import InvalidDatasetError, InvalidBenchmarkError
+from polaris.utils.errors import InvalidDatasetError, InvalidBenchmarkError
 
 
 _SUPPORTED_DATA_EXTENSIONS = ["parquet"]
@@ -71,10 +71,10 @@ def load_benchmark(path: str):
     if not is_file:
         # Load from the Hub
         client = PolarisClient()
-        options = client.list_tasks()
+        options = client.list_benchmarks()
         if path not in options:
             raise InvalidBenchmarkError(f"{path} is not a valid task. Make sure it exists!")
-        return client.load_task(path)
+        return client.load_benchmarks(path)
 
     # Load from filesystem
     if extension not in _SUPPORTED_METADATA_EXTENSIONS:
