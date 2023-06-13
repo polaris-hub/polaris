@@ -1,11 +1,11 @@
-from polaris.dataset import Task
+from polaris.dataset import Subset
 
 
 def test_single_task_indexing(test_dataset):
     target_col = "expt"
     input_col = "smiles"
 
-    task = Task(test_dataset, list(range(5)), input_col, target_col)
+    task = Subset(test_dataset, list(range(5)), input_col, target_col)
 
     assert len(task) == 5
     for i in range(5):
@@ -17,7 +17,7 @@ def test_multi_task_indexing(test_dataset):
     target_cols = ["expt", "calc"]
     input_col = "smiles"
 
-    task = Task(test_dataset, [(i, [0, 1]) for i in range(5)], input_col, target_cols)
+    task = Subset(test_dataset, [(i, [0, 1]) for i in range(5)], input_col, target_cols)
 
     assert len(task) == 5
     for i in range(5):
@@ -25,7 +25,7 @@ def test_multi_task_indexing(test_dataset):
         assert (test_dataset.table.loc[i, target_cols].values == task[i][1]).all()
 
     # With sparsity (indices have changed)
-    task = Task(test_dataset, [(i, [0]) for i in range(5)], input_col, target_cols)
+    task = Subset(test_dataset, [(i, [0]) for i in range(5)], input_col, target_cols)
     assert len(task) == 5
     for i in range(5):
         assert test_dataset.table.loc[i, input_col] == task[i][0]
@@ -34,7 +34,7 @@ def test_multi_task_indexing(test_dataset):
 
 def test_consistency_across_access_methods(test_dataset):
     indices = list(range(5))
-    task = Task(test_dataset, indices, "smiles", "expt")
+    task = Subset(test_dataset, indices, "smiles", "expt")
 
     # Ground truth
     expected_smiles = test_dataset.table.loc[indices, "smiles"]

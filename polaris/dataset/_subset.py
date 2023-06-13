@@ -3,11 +3,14 @@ from typing import Union, List, Sequence, Tuple, Any
 from polaris.dataset import Dataset
 
 
-class Task:
+class Subset:
     """
-    A task is an ML-ready dataset.
-    This is the starting point for any framework-specific Dataset implementation.
+    A subset is an ML-ready dataset, corresponding to a single partition of a split dataset.
+    This is the starting point for any framework-specific Dataset implementation and therefore
+    implements various ways to access the data.
     """
+
+    _SUPPORTED_FORMATS = ["dict", "tuple"]
 
     def __init__(
         self,
@@ -15,11 +18,25 @@ class Task:
         indices: List[Union[int, Sequence[int]]],
         input_cols: Union[List[str], str],
         target_cols: Union[List[str], str],
+        input_format: str = "dict",
+        target_format: str = "tuple",
     ):
         self.dataset = dataset
         self.indices = indices
         self.target_cols = target_cols if isinstance(target_cols, list) else [target_cols]
         self.input_cols = input_cols if isinstance(input_cols, list) else [input_cols]
+
+        # Validate the output format
+        if input_format not in self._SUPPORTED_FORMATS:
+            raise ValueError(
+                f"Unsupported output format {input_format}. Choose from {self._SUPPORTED_FORMATS}"
+            )
+        if target_format not in self._SUPPORTED_FORMATS:
+            raise ValueError(
+                f"Unsupported output format {target_format}. Choose from {self._SUPPORTED_FORMATS}"
+            )
+        self._input_format = input_format
+        self._target_format = target_format
 
         # For the iterator implementation
         self._pointer = 0
@@ -29,7 +46,7 @@ class Task:
         return len(self.target_cols) > 1
 
     @property
-    def is_multi_modal(self):
+    def is_multi_input(self):
         return len(self.input_cols) > 1
 
     @property
@@ -40,6 +57,15 @@ class Task:
     def targets(self):
         return np.array([y for x, y in self])
 
+    @staticmethod
+    def _convert(data: dict, order: List[str], fmt: str):
+        """Converts from the default dict format to the specified format"""
+        if len(data) == 1:
+            data = list(data.values())[0]
+        elif fmt == "tuple":
+            data = tuple(data[k] for k in order)
+        return data
+
     def __len__(self):
         return len(self.indices)
 
@@ -48,9 +74,8 @@ class Task:
         This method always returns a (X, y) tuple
 
         Some special cases:
-            1. It supports multi-modal datasets, in which case X is a tuple of values.
-               NOTE (cwognum): We currently do not support splits across modalities
-            2. It supports multi-task datasets, in which case y is a tuple of values.
+            1. It supports multi-input datasets, in which case X contains multiple values.
+            2. It supports multi-task datasets, in which case y contains multiple values.
             3. In case a dataset has a pointer column (i.e. a path to an external file with the actual data),
                this method also loads that data to memory.
         """
@@ -67,15 +92,15 @@ class Task:
             target_idx = [target_idx[i] for i in idx[1]]
 
         # If in a multi-task setting a target is missing due to indexing, we return the np NaN.
-        outs = tuple([row[c] if c in target_idx else np.nan for c in self.target_cols])
+        outs = {c: row[c] if c in target_idx else np.nan for c in self.target_cols}
 
         # Load the input modalities
-        ins = tuple([self.dataset.get_data(row.name, col) for col in self.input_cols])
+        # NOTE (cwognum): We currently do not support splits across inputs, so we do not need to do any indexing.
+        ins = {col: self.dataset.get_data(row.name, col) for col in self.input_cols}
 
-        if len(ins) == 1:
-            ins = ins[0]
-        if len(outs) == 1:
-            outs = outs[0]
+        # Convert to the right format
+        ins = self._convert(ins, self.input_cols, self._input_format)
+        outs = self._convert(outs, self.target_cols, self._target_format)
         return ins, outs
 
     def __iter__(self):

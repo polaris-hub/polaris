@@ -1,21 +1,11 @@
 import zarr
 import pytest
 import numpy as np
-import datamol as dm
 import pandas as pd
-from polaris.dataset import DatasetInfo, Dataset, Modality
+from pydantic import ValidationError
 
-
-def test_dataset_info_serialization(test_dataset_info):
-    serialized = test_dataset_info.serialize()
-    recovered = DatasetInfo.deserialize(serialized)
-    assert recovered == test_dataset_info
-
-
-def test_modality_coverage(test_data, test_dataset_info):
-    assert any(c not in test_dataset_info.modalities for c in test_data.columns)
-    Dataset(test_data, test_dataset_info)
-    assert all(c in test_dataset_info.modalities for c in test_data.columns)
+from polaris.dataset import Dataset, Modality
+from polaris.utils import fs
 
 
 @pytest.mark.parametrize("modality", [mod for mod in list(Modality) if mod.is_pointer()])
@@ -24,13 +14,18 @@ def test_load_data(modality, tmp_path):
     arr = np.random.random((100, 100))
 
     tmpdir = str(tmp_path)
-    path = dm.fs.join(tmpdir, "data.zarr")
+    path = fs.join(tmpdir, "data.zarr")
     zarr.save(path, arr)
 
     table = pd.DataFrame({"A": [path]}, index=[0])
-    info = DatasetInfo("name", "descr", "source", {"A": modality})
-
-    dataset = Dataset(table, info, cache_dir=tmpdir)
+    dataset = Dataset(
+        table=table,
+        name="name",
+        description="descr",
+        source="source",
+        modalities={"A": modality},
+        cache_dir=tmpdir,
+    )
 
     # Without caching
     data = dataset.get_data(row=0, col="A")
@@ -40,3 +35,47 @@ def test_load_data(modality, tmp_path):
     dataset.download()
     data = dataset.get_data(row=0, col="A")
     assert (data == arr).all()
+
+
+def test_dataset_checksum(test_dataset):
+    original = test_dataset.checksum
+    assert original is not None
+
+    # Without any changes, same hash
+    kwargs = test_dataset.dict()
+    Dataset(**kwargs)
+
+    # With unimportant changes, same hash
+    kwargs["name"] = "changed"
+    kwargs["description"] = "changed"
+    kwargs["source"] = "changed"
+    Dataset(**kwargs)
+
+    # Without any changes, but different hash
+    kwargs["checksum"] = "invalid"
+    with pytest.raises(ValidationError):
+        Dataset(**kwargs)
+
+    # With changes, but same hash
+    kwargs["checksum"] = original
+    kwargs["table"] = kwargs["table"].iloc[:-1]
+    with pytest.raises(ValidationError):
+        Dataset(**kwargs)
+
+    # With changes, but no hash
+    kwargs["checksum"] = None
+    dataset = Dataset(**kwargs)
+    assert dataset.checksum is not None
+
+
+def test_dataset_from_zarr(test_zarr_archive):
+    dataset = Dataset.from_zarr(test_zarr_archive)
+    assert dataset.get_data("data", "A").shape == (100, 2048)
+    assert dataset.get_data("data", "B").shape == (100, 2048)
+    assert dataset.get_data("data", "C") == 0.0
+
+
+def test_dataset_from_yaml(test_dataset, tmpdir):
+    test_dataset.save(str(tmpdir))
+    new_dataset = Dataset.from_yaml(fs.join(str(tmpdir), "dataset.yaml"))
+    assert test_dataset == new_dataset

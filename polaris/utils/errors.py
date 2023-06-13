@@ -1,6 +1,10 @@
-class InvalidDatasetError(Exception):
+class InvalidDatasetError(ValueError):
     pass
 
 
-class InvalidBenchmarkError(Exception):
+class InvalidBenchmarkError(ValueError):
+    pass
+
+
+class PolarisChecksumError(ValueError):
     pass

@@ -1,5 +1,5 @@
 from typing import List
-from polaris.dataset import Dataset, Benchmark
+from polaris.dataset import Dataset, BenchmarkSpecification
 
 
 class PolarisClient:
@@ -12,7 +12,7 @@ class PolarisClient:
     def list_datasets(self) -> List[str]:
         return []
 
-    def load_benchmarks(self, path: str) -> Benchmark:
+    def load_benchmarks(self, path: str) -> BenchmarkSpecification:
         raise NotImplementedError
 
     def list_benchmarks(self) -> List[str]:
