@@ -93,7 +93,6 @@ class Dataset(BaseModel):
 
     @root_validator
     def validate_checksum(cls, values):
-
         if not all(k in values for k in ["table", "modalities"]):
             # Skip validation as an earlier step has failed
             return values

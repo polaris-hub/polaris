@@ -94,7 +94,6 @@ class BenchmarkSpecification(BaseModel):
 
     @root_validator
     def validate_checksum(cls, values):
-
         if not all(k in values for k in ["dataset", "target_cols", "input_cols", "split", "metrics"]):
             # Skip validation as an earlier step has failed
             return values
@@ -106,7 +105,7 @@ class BenchmarkSpecification(BaseModel):
             target_cols=values["target_cols"],
             input_cols=values["input_cols"],
             split=values["split"],
-            metrics=values["metrics"]
+            metrics=values["metrics"],
         )
 
         if checksum is None:
