@@ -110,7 +110,7 @@ class MOODSplitter(BaseShuffleSplit):
                 f"n_splits is inconsistent across the different splitters. "
                 f"Setting the value for each splitter to the maximum of {n_splits} splits."
             )
-            for splitter in candidate_splitters:
+            for splitter in candidate_splitters.values():
                 splitter.n_splits = n_splits
             n_splits_per_splitter = [n_splits] * len(candidate_splitters)
 

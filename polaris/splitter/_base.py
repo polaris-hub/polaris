@@ -74,12 +74,16 @@ class DistanceSplitBase(GroupShuffleSplit, abc.ABC):
             default_test_size=self._default_test_size,
         )
 
+        base_seed = self.random_state
+        if base_seed is None:
+            base_seed = 0
+
         for i in range(self.n_splits):
             # Convert to ECFP if X is a list of smiles
             X, self._metric = convert_to_default_feats_if_smiles(X, self._metric, n_jobs=self._n_jobs)
 
             # Possibly group the data to improve computation efficiency
-            groups = self.reduce(X, i)
+            groups = self.reduce(X, base_seed + i)
 
             # Compute the distance matrix
             unique_groups, group_indices, group_counts = np.unique(

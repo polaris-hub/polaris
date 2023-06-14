@@ -15,6 +15,7 @@ def compute_murcko_scaffold(mol, make_generic: bool = False):
 
 class ScaffoldSplit(PredefinedGroupShuffleSplit):
     """The default scaffold split popular in molecular modeling literature"""
+
     def __init__(
         self,
         smiles,
