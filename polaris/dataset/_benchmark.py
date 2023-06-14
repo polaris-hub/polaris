@@ -46,7 +46,10 @@ class BenchmarkSpecification(BaseModel):
 
     @validator("dataset")
     def validate_dataset(cls, v):
-        """Allows either passing a Dataset object or the kwargs to create one"""
+        """
+        Allows either passing a Dataset object or the kwargs to create one
+        TODO (cwognum): Allow multiple datasets to be used as part of a benchmark
+        """
         if isinstance(v, dict):
             v = Dataset(**v)
         elif isinstance(v, str):
@@ -56,6 +59,9 @@ class BenchmarkSpecification(BaseModel):
     @validator("target_cols", "input_cols")
     def validate_cols(cls, v, values):
         """Verifies all columns are present in the dataset."""
+        # Exit early as a prior validation step failed
+        if "dataset" not in values:
+            return v
         if not isinstance(v, List):
             v = [v]
         if len(v) == 0:
@@ -70,7 +76,7 @@ class BenchmarkSpecification(BaseModel):
         Verifies all specified metrics are either a Metric object or a valid metric name.
         Also verifies there are no duplicate metrics.
 
-        If there are multiple test sets, it is assumed the same metrics are used across test sets
+        If there are multiple test sets, it is assumed the same metrics are used across test sets.
         """
         if not isinstance(v, List):
             v = [v]
@@ -94,8 +100,13 @@ class BenchmarkSpecification(BaseModel):
 
     @root_validator
     def validate_checksum(cls, values):
+        """
+        If a checksum is provided, verify it matches what the checksum should be.
+        If no checksum is provided, make sure it is set.
+        """
+
+        # Skip validation as an earlier step has failed
         if not all(k in values for k in ["dataset", "target_cols", "input_cols", "split", "metrics"]):
-            # Skip validation as an earlier step has failed
             return values
 
         checksum = values["checksum"]
@@ -126,16 +137,29 @@ class BenchmarkSpecification(BaseModel):
 
     @staticmethod
     def _compute_checksum(dataset, target_cols, input_cols, split, metrics):
+        """
+        Computes a hash of the benchmark.
+
+        This is meant to uniquely identify the benchmark and can be used to verify the version.
+
+        (1) Is not sensitive to the ordering of the columns or metrics
+        (2) IS sensitive to the ordering of the splits
+        """
+
         hash_fn = md5()
         hash_fn.update(dataset.checksum.encode("utf-8"))
-        for c in target_cols:
+        for c in sorted(target_cols):
             hash_fn.update(c.encode("utf-8"))
-        for c in input_cols:
+        for c in sorted(input_cols):
             hash_fn.update(c.encode("utf-8"))
-        # NOTE (cwognum): This feels hacky, but with the complex structure of the indices it might just be simpler.
-        hash_fn.update(str(split).encode("utf-8"))
-        for m in metrics:
+        for m in sorted(metrics, key=lambda k: k.name):
             hash_fn.update(m.name.encode("utf-8"))
+
+        # TODO (cwognum): Just encoding this as a string is a MAJOR limitation.
+        #  This means that the same split, but represented in a different format or order is considered different.
+        #  As the API is still unstable, I currently left it at is.
+        hash_fn.update(str(split).encode("utf-8"))
+
         checksum = hash_fn.hexdigest()
         return checksum
 

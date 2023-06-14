@@ -5,6 +5,7 @@ import pandas as pd
 from pydantic import ValidationError
 
 from polaris.dataset import Dataset, Modality
+from polaris.loader import load_dataset
 from polaris.utils import fs
 
 
@@ -51,6 +52,11 @@ def test_dataset_checksum(test_dataset):
     kwargs["source"] = "changed"
     Dataset(**kwargs)
 
+    # Check sensitivity to the row and column ordering
+    kwargs["table"] = kwargs["table"].iloc[::-1]
+    kwargs["table"] = kwargs["table"][kwargs["table"].columns[::-1]]
+    Dataset(**kwargs)
+
     # Without any changes, but different hash
     kwargs["checksum"] = "invalid"
     with pytest.raises(ValidationError):
@@ -77,5 +83,10 @@ def test_dataset_from_zarr(test_zarr_archive):
 
 def test_dataset_from_yaml(test_dataset, tmpdir):
     test_dataset.save(str(tmpdir))
-    new_dataset = Dataset.from_yaml(fs.join(str(tmpdir), "dataset.yaml"))
+
+    path = fs.join(str(tmpdir), "dataset.yaml")
+    new_dataset = Dataset.from_yaml(path)
+    assert test_dataset == new_dataset
+
+    new_dataset = load_dataset(path)
     assert test_dataset == new_dataset

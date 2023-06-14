@@ -1,14 +1,10 @@
 import fsspec
 import yaml
 
-from polaris.dataset import Dataset, BenchmarkSpecification
+from polaris.dataset import Dataset, SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification
 from polaris.hub import PolarisClient
 from polaris.utils.errors import InvalidDatasetError, InvalidBenchmarkError
 from polaris.utils import fs
-
-
-_SUPPORTED_DATA_EXTENSIONS = ["yaml", "zarr"]
-_DATASET_KWARGS_KEY = "_dataset_kwargs"
 
 
 def load_dataset(path: str):
@@ -16,8 +12,8 @@ def load_dataset(path: str):
     Loads the dataset. Inspired by the HF API, this can either load from a remote or local path or from the Hub.
     """
 
-    is_file = fs.is_file(path)
     extension = fs.get_extension(path)
+    is_file = fs.is_file(path) or extension == "zarr"
 
     if not is_file:
         # Load from the Hub
@@ -37,15 +33,10 @@ def load_dataset(path: str):
 
 def load_benchmark(path: str):
     """
-    Loads the task.
-
-    NOTE (cwognum):
-     - How to save a benchmark to a file? Should it even be a file?
-     - Caching mechanism (taken from Ada?). Do we also want to use this for non-Hub files?
+    Loads a benchmark.
     """
 
-    is_file = fs.is_file(path)
-    extension = fs.get_extension(path)
+    is_file = fs.is_file(path) or fs.get_extension(path) == "zarr"
 
     if not is_file:
         # Load from the Hub
@@ -58,7 +49,8 @@ def load_benchmark(path: str):
     with fsspec.open(path, "r") as f:
         data = yaml.safe_load(f)
 
-    dataset_kwargs = data.pop(_DATASET_KWARGS_KEY)
-    dataset = load_dataset(**dataset_kwargs)
-
-    return BenchmarkSpecification(dataset, **data)
+    # TODO (cwognum): As this gets more complex, how do we effectivly choose which class we should use?
+    #  e.g. we might end up with a single class per benchmark.
+    is_single_task = isinstance(data["target_cols"], str) or len(data["target_cols"]) == 1
+    cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
+    return cls(**data)

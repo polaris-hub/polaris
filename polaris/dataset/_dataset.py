@@ -8,7 +8,7 @@ import pandas as pd
 from hashlib import md5
 from collections import defaultdict
 from typing import Dict, Optional, Union, List
-from pydantic import BaseModel, Field, PrivateAttr, validator, root_validator
+from pydantic import BaseModel, PrivateAttr, validator
 from loguru import logger
 
 from polaris.utils import fs
@@ -50,7 +50,7 @@ class Dataset(BaseModel):
     checksum: Optional[str] = None
 
     # Where the dataset is cached to locally
-    cache_dir: Optional[str] = Field(None, alias="cache_dir")
+    cache_dir: Optional[str] = None
 
     _path_to_hash: Dict[str, Dict[str, str]] = PrivateAttr(defaultdict(dict))
     _has_been_warned: bool = PrivateAttr(False)
@@ -60,6 +60,7 @@ class Dataset(BaseModel):
 
     @validator("table")
     def validate_table(cls, v):
+        """If the table is not a dataframe yet, assume it's a path and try load it."""
         if not isinstance(v, pd.DataFrame):
             if not fs.is_file(v) or fs.get_extension(v) not in cls._SUPPORTED_TABLE_EXTENSIONS:
                 raise InvalidDatasetError(f" {v} is not a valid DataFrame or .parquet path.")
@@ -68,6 +69,10 @@ class Dataset(BaseModel):
 
     @validator("modalities")
     def validate_modalities(cls, v, values):
+        """
+        Set missing modalities to unknown and convert strings to modalities.
+        For all modalities that require pointers, verify all paths listed exist.
+        """
         # Fill missing modalities and convert strings to modalities
         for c in values["table"].columns:
             if c not in v:
@@ -85,35 +90,51 @@ class Dataset(BaseModel):
                     )
         return v
 
-    @validator("cache_dir")
-    def validate_cache_dir(cls, v, values):
-        if v is None:
-            v = fs.join(DEFAULT_CACHE_DIR, values["name"], values["checksum"])
-        return v
+    @validator("checksum", always=True)
+    def validate_checksum(cls, v, values):
+        """
+        If a checksum is provided, verify it matches what the checksum should be.
+        If no checksum is provided, make sure it is set.
 
-    @root_validator
-    def validate_checksum(cls, values):
+        NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
+        """
+
+        # Skip validation as an earlier step has failed
         if not all(k in values for k in ["table", "modalities"]):
-            # Skip validation as an earlier step has failed
-            return values
+            return v
 
-        checksum = values["checksum"]
-        table = values["table"]
-        modalities = values["modalities"]
+        expected = cls._compute_checksum(values["table"], values["modalities"])
 
-        expected = cls._compute_checksum(table, modalities)
-
-        if checksum is None:
-            values["checksum"] = expected
-        elif checksum != expected:
+        if v is None:
+            v = expected
+        elif v != expected:
             raise PolarisChecksumError(
                 "The dataset checksum does not match what was specified in the meta-data. "
-                f"{checksum} != {expected}"
+                f"{v} != {expected}"
             )
-        return values
+        return v
+
+    @validator("cache_dir", always=True)
+    def validate_cache_dir(cls, v, values):
+        """If no cache_dir is provided, set it to the default cache dir and make sure it exists"""
+
+        # Skip validation as an earlier step has failed
+        if any(k not in values for k in ["name", "checksum"]):
+            return v
+
+        # Set the default cache dir if none and make sure it exists
+        if v is None:
+            v = fs.join(DEFAULT_CACHE_DIR, values["name"], values["checksum"])
+        fs.mkdir(v, exist_ok=True)
+
+        return v
 
     @classmethod
     def from_yaml(cls, path: str) -> "Dataset":
+        """
+        Loads a dataset from a yaml file.
+        This is a very thin wrapper around pydantic's parse_obj.
+        """
         with fsspec.open(path, "r") as fd:
             data = yaml.safe_load(fd)
         return Dataset.parse_obj(data)
@@ -123,8 +144,9 @@ class Dataset(BaseModel):
         """
         Parse a zarr hierarchy into a Dataset.
 
-        The expected zarr hierarchy should have a group per pointer modality
-        and should save meta-data in the user attributes.
+        Each group in the zarr hierarchy is parsed into a pointer column.
+        Meta-data and additional columns can be specified in the user attributes.
+        To specify additional columns, we use a dict with the column -> index -> value format.
         """
 
         expected_user_attrs = ["name", "description", "source", "modalities"]
@@ -137,10 +159,13 @@ class Dataset(BaseModel):
             )
 
         # Construct the table
+        # Parse any group into a pointer column
         data = defaultdict(dict)
         for col, group in root.groups():
             for name, arr in group.arrays():
                 data[col][name] = fs.join(path, arr.path)
+
+        # Parse additional columns from the user attributes
         for col in root.attrs:
             if col not in expected_user_attrs:
                 if not isinstance(root.attrs[col], dict):
@@ -150,29 +175,51 @@ class Dataset(BaseModel):
                 # All non-expected user attrs are assumed to be additional columns
                 # These should be specified as dictionaries: index -> value
                 data[col] = root.attrs.pop(col)
+
+        # Construct the dataset
         table = pd.DataFrame(data)
 
         return cls(table=table, **root.attrs)
 
     @staticmethod
     def _compute_checksum(table, modalities):
-        # NOTE (cwognum): We do NOT hash the name, description and source.
-        #  This is intentional, as I do not consider this meta-data to be important to the version.
+        """
+        Computes a hash of the dataset.
+
+        This is meant to uniquely identify the dataset and can be used to verify the version.
+
+        (1) Is not sensitive to the ordering of the columns or rows in the table.
+        (2) Purposefully does not include the meta-data (source, description, name).
+        (3) For any pointer column, it uses a hash of the path instead of the file contents.
+            This is a limitation, but probably a reasonable assumption that helps practicality.
+            A big downside is that as the dataset is saved elsewhere, the hash changes.
+        """
+
         hash_fn = md5()
-        # Reset the index and take the transpose to include column names
-        hash_fn.update(pd.util.hash_pandas_object(table.reset_index().T, index=True).values)
-        for c in table.columns:
-            hash_fn.update(modalities[c].name.encode("utf-8"))
+
+        # Sort the columns s.t. the checksum is not sensitive to the column-ordering
+        df = table.copy(deep=True)
+        df = df[sorted(df.columns.tolist())]
+
+        # Use the sum of the row-wise hashes s.t. the hash is insensitive to the row-ordering
+        table_hash = pd.util.hash_pandas_object(df).sum()
+        hash_fn.update(table_hash)
+
+        for c in df.columns:
+            modality = modalities[c].name.encode("utf-8")
+            hash_fn.update(modality)
+
         checksum = hash_fn.hexdigest()
         return checksum
 
     def __len__(self):
+        """Return the number of datapoints"""
         return len(self.table)
 
     def __repr__(self):
+        """Pretty-prints the table by adding the modalities and checksum"""
         self.table.loc[""] = [f"[{self.modalities[c]}]" for c in self.table.columns]
-        s = "\n"
-        s += repr(self.table)
+        s = repr(self.table)
         s += f" [checksum {self.checksum}]"
         self.table.drop(self.table.tail(1).index, inplace=True)
         return s
@@ -181,6 +228,7 @@ class Dataset(BaseModel):
         return self.__repr__()
 
     def __eq__(self, other):
+        """Whether two datasets are equal is solely determined by the checksum"""
         if not isinstance(other, Dataset):
             return False
         return self.checksum == other.checksum
@@ -194,6 +242,7 @@ class Dataset(BaseModel):
         pointer_dir = fs.join(destination, "data")
 
         def _copy_and_update(src):
+            """Copy and update the path in the table to the new destination"""
             ext = fs.get_extension(src)
             dst = fs.join(pointer_dir, f"{md5(src.encode('utf-8')).hexdigest()}.{ext}")
             robust_file_copy(src, dst)
@@ -209,6 +258,7 @@ class Dataset(BaseModel):
         serialized = self.dict()
         serialized["table"] = table_path
         serialized["modalities"] = {k: m.name for k, m in self.modalities.items()}
+        # We need to recompute the checksum, as the pointer paths have changed
         serialized["checksum"] = self._compute_checksum(new_table, self.modalities)
 
         new_table.to_parquet(table_path)
@@ -239,7 +289,8 @@ class Dataset(BaseModel):
         """
 
         def _load(path: str) -> np.ndarray:
-            # NOTE (cwognum): We will probably want to support more formats than just .zarr in the future
+            # NOTE (cwognum): We will want to support more formats than just .zarr in the future
+            #  which is why I have it in a separate function.
             return zarr.convenience.load(path)
 
         value = self.table.loc[row, col]
@@ -268,6 +319,8 @@ class Dataset(BaseModel):
     def download(self, column_subset: Optional[Union[str, List[str]]] = None) -> str:
         """
         Download all additional data for pointer columns.
+        This does not change any data in the table itself, but populates a mapping from the table paths
+        to the cached paths. This thus keeps the original dataset intact.
         """
 
         if column_subset is None:

@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Union, List, Sequence, Tuple, Any
+from typing import Union, List, Sequence, Tuple, Any, Dict
 from polaris.dataset import Dataset
 
 
@@ -7,7 +7,8 @@ class Subset:
     """
     A subset is an ML-ready dataset, corresponding to a single partition of a split dataset.
     This is the starting point for any framework-specific Dataset implementation and therefore
-    implements various ways to access the data.
+    implements various ways to access the data. Since the logic can be complex, this class ensures
+    everyone using our benchmarks uses the exact same datasets.
     """
 
     _SUPPORTED_FORMATS = ["dict", "tuple"]
@@ -51,11 +52,45 @@ class Subset:
 
     @property
     def inputs(self):
-        return np.array([x for x, y in self])
+        """
+        Scikit-learn style access to the inputs.
+        If the dataset is multi-input, this will return a dict of arrays.
+        """
+        if not self.is_multi_input:
+            return np.array([x for x, y in self])
+
+        # Temporarily set it to dict
+        original = self._input_format
+        self._input_format = "dict"
+
+        out = {}
+        for k in self.input_cols:
+            out[k] = np.array([x[k] for x, y in self])
+
+        # Revert format
+        self._input_format = original
+        return self._convert(out, self.input_cols, self._input_format)
 
     @property
     def targets(self):
-        return np.array([y for x, y in self])
+        """
+        Scikit-learn style access to the targets.
+        If the dataset is multi-target, this will return a dict of arrays.
+        """
+        if not self.is_multi_task:
+            return np.array([y for x, y in self])
+
+        # Temporarily set it to dict
+        original = self._target_format
+        self._target_format = "dict"
+
+        out = {}
+        for k in self.input_cols:
+            out[k] = np.array([y[k] for x, y in self])
+
+        # Revert format
+        self._target_format = original
+        return self._convert(out, self.target_cols, self._target_format)
 
     @staticmethod
     def _convert(data: dict, order: List[str], fmt: str):
@@ -69,13 +104,15 @@ class Subset:
     def __len__(self):
         return len(self.indices)
 
-    def __getitem__(self, item) -> Tuple[Union[Any, Tuple[Any]], Union[Any, Tuple[Any]]]:
+    def __getitem__(
+        self, item
+    ) -> Tuple[Union[Any, Tuple, Dict[str, Any]], Union[Any, Tuple, Dict[str, Any]]]:
         """
-        This method always returns a (X, y) tuple
+        This method always returns an (X, y) tuple
 
         Some special cases:
-            1. It supports multi-input datasets, in which case X contains multiple values.
-            2. It supports multi-task datasets, in which case y contains multiple values.
+            1. It supports multi-input datasets, in which case X is a dict with multiple values.
+            2. It supports multi-task datasets, in which case y is a dict with multiple values.
             3. In case a dataset has a pointer column (i.e. a path to an external file with the actual data),
                this method also loads that data to memory.
         """
@@ -104,10 +141,15 @@ class Subset:
         return ins, outs
 
     def __iter__(self):
+        """Iterator implementation"""
         self._pointer = 0
         return self
 
     def __next__(self):
+        """
+        Allows for iterator-style access to the dataset, e.g. useful when datasets get large.
+        Remember that pointer columns are not loaded into memory yet.
+        """
         if self._pointer >= len(self):
             raise StopIteration
 
