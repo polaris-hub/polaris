@@ -9,6 +9,17 @@ _So many stars in the sky, yet one is enough to guide you home._
 
 Foster the development of impactful AI models in drug discovery.
 
+```python
+import polaris as po
+
+benchmark = po.load_benchmark("/path/to/benchmark")
+train, test = benchmark.get_train_test_split()
+
+# Work your magic
+
+benchmark.evaluate(...)
+```
+
 ## Development lifecycle
 
 ### Setup dev environment
