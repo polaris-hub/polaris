@@ -27,8 +27,8 @@ class Metric:
         return self.score(y_true, y_pred)
 
 
-# TODO:
+# TODO (cwognum):
 #  - Add support for more metrics
-#  - Can we come up with a more systematic, robust way of specifying default metrics?
-mean_absolute_error = Metric("mae", sklearn_mae)
+#  - Any preprocessing needed? For example changing the shape / dtype? Converting from torch tensors or lists?
+mean_absolute_error = Metric("mean_absolute_error", sklearn_mae)
 accuracy = Metric("accuracy", sklearn_acc)
