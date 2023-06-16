@@ -1,24 +1,27 @@
 import datamol as dm
-from typing import Optional, List
+from typing import Optional, Union, Sequence
 
 import numpy as np
 from loguru import logger
+from numpy.random import RandomState
 from sklearn.model_selection import BaseShuffleSplit
-from sklearn.model_selection._split import _validate_shuffle_split
-from sklearn.utils.validation import _num_samples
+from sklearn.model_selection._split import _validate_shuffle_split  # noqa W0212
+from sklearn.utils.validation import _num_samples  # noqa W0212
 
 
 class MolecularWeightSplit(BaseShuffleSplit):
-    """Group-based split that uses the k-Mean clustering in the input space for splitting."""
+    """
+    Splits the dataset by sorting the molecules by their molecular weight
+    and then finding an appropriate cutoff to split the molecules in two sets.
+    """
 
     def __init__(
         self,
         n_splits: int = 5,
-        smiles: Optional[List[str]] = None,
-        *,
-        test_size=None,
-        train_size=None,
-        random_state=None,
+        smiles: Optional[Sequence[str]] = None,
+        test_size: Optional[Union[float, int]] = None,
+        train_size: Optional[Union[float, int]] = None,
+        random_state: Optional[Union[int, RandomState]] = None,
     ):
         super().__init__(
             n_splits=n_splits,
@@ -28,10 +31,23 @@ class MolecularWeightSplit(BaseShuffleSplit):
         )
         self._smiles = smiles
 
-    def _iter_indices(self, X, y=None, groups=None):
+    def _iter_indices(
+        self,
+        X: Union[Sequence[str], np.ndarray],
+        y: Optional[np.ndarray] = None,
+        groups: Optional[Union[int, np.ndarray]] = None,
+    ):
         """Generate (train, test) indices"""
 
-        n_samples = _num_samples(X)
+        requires_smiles = X is None or not all(isinstance(x, str) for x in X)
+        if self._smiles is None and requires_smiles:
+            raise ValueError(
+                "If the input is not a list of SMILES, you need to provide the SMILES to the constructor."
+            )
+
+        smiles = self._smiles if requires_smiles else X
+
+        n_samples = _num_samples(smiles)
         n_train, n_test = _validate_shuffle_split(
             n_samples,
             self.test_size,
@@ -39,13 +55,6 @@ class MolecularWeightSplit(BaseShuffleSplit):
             default_test_size=self._default_test_size,
         )
 
-        is_smiles = all(isinstance(x, str) for x in X)
-        if self._smiles is None and not is_smiles:
-            raise ValueError(
-                "If the input is not a list of SMILES, you need to provide the SMILES to the constructor."
-            )
-
-        smiles = X if is_smiles else self._smiles
         mols = dm.utils.parallelized(dm.to_mol, smiles, n_jobs=1, progress=False)
         mws = dm.utils.parallelized(dm.descriptors.mw, mols, n_jobs=1, progress=False)
 
@@ -53,7 +62,7 @@ class MolecularWeightSplit(BaseShuffleSplit):
 
         if self.n_splits > 1:
             logger.warning(
-                f"n_splits={self.n_splits}, but {self.__class__.__name__} is deterministic "
+                f"n_splits={self.n_splits} > 1, but {self.__class__.__name__} is deterministic "
                 f"and will always return the same split!"
             )
 

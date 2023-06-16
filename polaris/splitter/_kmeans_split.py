@@ -1,9 +1,8 @@
-from typing import Callable, Union
-
-from loguru import logger
+import numpy as np
+from numpy.random import RandomState
+from typing import Callable, Union, Optional
 from sklearn.model_selection import GroupShuffleSplit
-
-from polaris.utils.misc import get_kmeans_clusters
+from .utils import get_kmeans_clusters
 
 
 class KMeansSplit(GroupShuffleSplit):
@@ -14,10 +13,9 @@ class KMeansSplit(GroupShuffleSplit):
         n_clusters: int = 10,
         n_splits: int = 5,
         metric: Union[str, Callable] = "euclidean",
-        *,
-        test_size=None,
-        train_size=None,
-        random_state=None,
+        test_size: Optional[Union[float, int]] = None,
+        train_size: Optional[Union[float, int]] = None,
+        random_state: Optional[Union[int, RandomState]] = None,
     ):
         super().__init__(
             n_splits=n_splits,
@@ -28,11 +26,19 @@ class KMeansSplit(GroupShuffleSplit):
         self._n_clusters = n_clusters
         self._cluster_metric = metric
 
-    def _iter_indices(self, X, y=None, groups=None):
+    def _iter_indices(
+        self,
+        X: Optional[np.ndarray] = None,
+        y: Optional[np.ndarray] = None,
+        groups: Optional[np.ndarray] = None,
+    ):
         """Generate (train, test) indices"""
-        if groups is not None:
-            logger.warning("Ignoring the groups parameter in favor of the predefined groups")
+        if X is None:
+            raise ValueError(f"{self.__class__.__name__} requires X to be provided.")
         groups = get_kmeans_clusters(
-            X=X, n_clusters=self._n_clusters, random_state=self.random_state, base_metric=self._cluster_metric
+            X=X,
+            n_clusters=self._n_clusters,
+            random_state=self.random_state,
+            base_metric=self._cluster_metric,
         )
         yield from super()._iter_indices(X, y, groups)

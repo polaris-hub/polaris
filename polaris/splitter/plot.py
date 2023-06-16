@@ -3,7 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import Optional, List
 
-from .misc import get_outlier_bounds
+from .utils import get_iqr_outlier_bounds
 
 
 def plot_distance_distributions(
@@ -14,6 +14,7 @@ def plot_distance_distributions(
     ax: Optional = None,
     outlier_factor: Optional[float] = 3.0,
 ):
+    """Visualizes the distribution of distances between the clusters in the style of the MOOD paper."""
     n = len(distances)
     show_legend = True
 
@@ -37,7 +38,7 @@ def plot_distance_distributions(
 
     if outlier_factor is not None:
         all_distances = np.concatenate(distances)
-        lower, upper = get_outlier_bounds(all_distances, factor=outlier_factor)
+        lower, upper = get_iqr_outlier_bounds(all_distances, factor=outlier_factor)
         distances = [X[(X >= lower) & (X <= upper)] for X in distances]
 
     # Visualize all splitting methods

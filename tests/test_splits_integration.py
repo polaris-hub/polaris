@@ -10,7 +10,7 @@ from polaris.splitter import (
     MaxDissimilaritySplit,
     MolecularWeightSplit,
     StratifiedDistributionSplit,
-    MinMaxSplit,
+    MolecularMinMaxSplit,
 )
 
 
@@ -30,7 +30,7 @@ def test_splits_integration():
         "scaffold": ScaffoldSplit(dataset_smiles, n_splits=1),
         "perimeter": PerimeterSplit(metric="jaccard", n_clusters=5, n_splits=1),
         "max_dissimilarity": MaxDissimilaritySplit(metric="jaccard", n_clusters=5, n_splits=1),
-        "min_max": MinMaxSplit(smiles=dataset_smiles, n_splits=1),
+        "min_max": MolecularMinMaxSplit(smiles=dataset_smiles, n_splits=1),
         "molecular_weight": MolecularWeightSplit(smiles=dataset_smiles, n_splits=1),
         "stratified_distribution": StratifiedDistributionSplit(n_clusters=5, n_splits=1),
     }

@@ -14,8 +14,8 @@ from scipy.stats import gaussian_kde
 from sklearn.model_selection import BaseShuffleSplit
 from sklearn.neighbors import NearestNeighbors
 
-from polaris.utils.plot import plot_distance_distributions
-from polaris.utils.misc import get_outlier_bounds
+from .plot import plot_distance_distributions
+from .utils import get_iqr_outlier_bounds
 from ._base import convert_to_default_feats_if_smiles
 
 
@@ -27,12 +27,19 @@ class _SplitCharacterization:
     This class groups some functionality in a single place.
     """
 
+    """
+    The distances from the test set to the train set
+    """
     distances: np.ndarray
+
+    """A single score measuring how representative the split is of the deployment set"""
     representativeness: float
+
+    """A label to identify the splitting method"""
     label: str
 
     @classmethod
-    def merge(cls, splits):
+    def merge(cls, splits: List["_SplitCharacterization"]):
         names = set([obj.label for obj in splits])
         if len(names) != 1:
             raise RuntimeError("Can only concatenate equally labeled split characterizations")
@@ -78,7 +85,7 @@ class _SplitCharacterization:
 class MOODSplitter(BaseShuffleSplit):
     """
     The MOOD splitter takes in multiple candidate splitters and a set of
-    deployment molecules you plan to use a model on and prescribes one splitting method
+    deployment datapoints you plan to use a model on and prescribes one splitting method
     that creates the test set that is most representative of the deployment set.
     """
 
@@ -126,15 +133,25 @@ class MOODSplitter(BaseShuffleSplit):
         self._prescribed_splitter_label = None
         self._split_axes = None
 
-    @staticmethod
     def visualize(
-        downstream_distances: np.ndarray, splits: List[_SplitCharacterization], ax: Optional = None
+        self,
+        downstream_distances: np.ndarray,
+        splits: Optional[List[_SplitCharacterization]] = None,
+        ax: Optional = None,
     ):
         """
         Visualizes the results of the splitting protocol by visualizing
         the test-to-train distance distributions resulting from each of the candidate splitters
         and coloring them based on their representativeness.
         """
+        if splits is None:
+            splits = self._split_chars
+        if splits is None:
+            raise ValueError(
+                "No splits characterization have been provided. "
+                "Pass the `splits` parameter or call call `fit()` first."
+            )
+
         splits = sorted(splits, key=lambda spl: spl.representativeness)
         cmap = sns.color_palette("rocket", len(splits) + 1)
 
@@ -144,7 +161,7 @@ class MOODSplitter(BaseShuffleSplit):
 
         ax = plot_distance_distributions(distances, labels, colors, ax=ax)
 
-        lower, upper = get_outlier_bounds(downstream_distances, factor=3.0)
+        lower, upper = get_iqr_outlier_bounds(downstream_distances, factor=3.0)
         mask = (downstream_distances >= lower) & (downstream_distances <= upper)
         downstream_distances = downstream_distances[mask]
 
@@ -173,7 +190,7 @@ class MOODSplitter(BaseShuffleSplit):
     def prescribed_splitter_label(self):
         """Textual identifier of the splitting method that was deemed most representative."""
         if not self._fitted:
-            raise RuntimeError("The splitter has not be fitted yet")
+            raise RuntimeError("The splitter has not been fitted yet")
         return self._prescribed_splitter_label
 
     @property
@@ -216,7 +233,6 @@ class MOODSplitter(BaseShuffleSplit):
         groups: Optional[np.ndarray] = None,
         X_deployment: Optional[np.ndarray] = None,
         deployment_distances: Optional[np.ndarray] = None,
-        plot: bool = False,
         progress: bool = False,
     ):
         """
@@ -235,7 +251,6 @@ class MOODSplitter(BaseShuffleSplit):
             groups: An array of (n_samples,) groups, passed to candidate splitter's split() method
             X_deployment: An array of (n_deployment_samples, n_features)
             deployment_distances:  An array of (n_deployment_samples, 1) precomputed distances.
-            plot: Whether to visualize the evaluation of the different candidate splitters
             progress: Whether to show a progress bar
         """
 
@@ -289,20 +304,17 @@ class MOODSplitter(BaseShuffleSplit):
         self._split_chars = split_chars
         self._prescribed_splitter_label = chosen.label
 
-        logger.info(
-            f"Ranked all different splitting methods:\n{_SplitCharacterization.as_dataframe(split_chars)}"
-        )
+        ranking = _SplitCharacterization.as_dataframe(split_chars)
+        logger.info(f"Ranked all different splitting methods:\n{ranking}")
         logger.info(f"Selected {chosen.label} as the most representative splitting method")
+        return ranking
 
-        if not plot:
-            return
-
-        # Visualize the results
-        ax = self.visualize(deployment_distances, split_chars)
-        self._split_axes = ax
-        return ax
-
-    def _iter_indices(self, X=None, y=None, groups=None):
+    def _iter_indices(
+        self,
+        X: Optional[np.ndarray] = None,
+        y: Optional[np.ndarray] = None,
+        groups: Optional[np.ndarray] = None,
+    ):
         """Generate (train, test) indices"""
         if not self._fitted:
             raise RuntimeError("The splitter has not be fitted yet")

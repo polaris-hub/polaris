@@ -3,37 +3,54 @@ import abc
 import numpy as np
 import datamol as dm
 
-from typing import Callable, Union, Optional
+from typing import Callable, Union, Optional, Sequence
 
-from loguru import logger
+from numpy.random import RandomState
 from sklearn.metrics import pairwise_distances
 from sklearn.model_selection import GroupShuffleSplit
-from sklearn.model_selection._split import _validate_shuffle_split
-from sklearn.utils.validation import _num_samples
+from sklearn.model_selection._split import _validate_shuffle_split  # noqa W0212
+from sklearn.utils.validation import _num_samples  # noqa W0212
 
-from polaris.utils.misc import get_kmeans_clusters
+from .utils import get_kmeans_clusters
 
 
-def convert_to_default_feats_if_smiles(X, metric, n_jobs: Optional[int] = None):
+# In case users provide a list of SMILES instead of features, we rely on ECFP4 and the tanimoto distance by default
+MOLECULE_DEFAULT_FEATURIZER = dict(name="ecfp", kwargs=dict(radius=2, nbits=2048))
+MOLECULE_DEFAULT_DISTANCE_METRIC = "jaccard"
+
+
+def convert_to_default_feats_if_smiles(
+    X: Union[Sequence[str], np.ndarray], metric: str, n_jobs: Optional[int] = None
+):
+    """
+    If the input is a sequence of strings, assumes this is a list of SMILES and converts it
+    to a default set of ECFP4 features with the default Tanimoto distance metric.
+    """
+
+    def _to_feats(smi: str):
+        mol = dm.to_mol(smi)
+        feats = dm.to_fp(
+            mol=mol, fp_type=MOLECULE_DEFAULT_FEATURIZER["name"], **MOLECULE_DEFAULT_FEATURIZER["kwargs"]
+        )
+        return feats
+
     if all(isinstance(x, str) for x in X):
-        logger.warning(f"Assuming the ECFP4 fingerprints for the input data and the tanimoto distance!")
-        X = dm.utils.parallelized(lambda smi: dm.to_fp(dm.to_mol(smi)), X, n_jobs=n_jobs)
-        metric = "jaccard"
+        X = dm.utils.parallelized(_to_feats, X, n_jobs=n_jobs)
+        metric = MOLECULE_DEFAULT_DISTANCE_METRIC
     return X, metric
 
 
 class DistanceSplitBase(GroupShuffleSplit, abc.ABC):
-    """Base class for any splitter that uses the distance matrix to split the data"""
+    """Base class for any splitter that splits the data based on the distance matrix."""
 
     def __init__(
         self,
         n_splits=10,
         metric: Union[str, Callable] = "euclidean",
         n_jobs: Optional[int] = None,
-        *,
-        test_size=None,
-        train_size=None,
-        random_state=None,
+        test_size: Optional[Union[float, int]] = None,
+        train_size: Optional[Union[float, int]] = None,
+        random_state: Optional[Union[int, RandomState]] = None,
     ):
         super().__init__(
             n_splits=n_splits,
@@ -54,16 +71,24 @@ class DistanceSplitBase(GroupShuffleSplit, abc.ABC):
     def reduce(self, X: np.ndarray, split_idx: int):
         """
         Gives an endpoint for reducing the number of groups to
-        make computing the distance matrix faster
+        make computing the distance matrix faster.
         """
         return X
 
-    def _iter_indices(self, X=None, y=None, groups=None):
+    def _iter_indices(
+        self,
+        X: Union[Sequence[str], np.ndarray],
+        y: Optional[np.ndarray] = None,
+        groups: Optional[Union[int, np.ndarray]] = None,
+    ):
         """
         Generate (train, test) indices
 
-        Specifically, it computes the distance matrix for (possibly reduced groups of) samples.
+        Specifically, it computes the distance matrix for the (possibly reduced groups of) samples.
         It then yields the train and test indices based on the distance matrix.
+
+        If X is a list of SMILES, rather than features, the SMILES are converted to ECFP4 features and
+        the Tanimoto distance metric is used by default.
         """
 
         n_samples = _num_samples(X)
@@ -79,7 +104,7 @@ class DistanceSplitBase(GroupShuffleSplit, abc.ABC):
             base_seed = 0
 
         for i in range(self.n_splits):
-            # Convert to ECFP if X is a list of smiles
+            # Convert to ECFP4 if X is a list of smiles
             X, self._metric = convert_to_default_feats_if_smiles(X, self._metric, n_jobs=self._n_jobs)
 
             # Possibly group the data to improve computation efficiency
@@ -109,10 +134,9 @@ class KMeansReducedDistanceSplitBase(DistanceSplitBase, abc.ABC):
         n_clusters: int = 25,
         n_jobs: Optional[int] = None,
         n_splits: int = 10,
-        *,
-        test_size=None,
-        train_size=None,
-        random_state=None,
+        test_size: Optional[Union[float, int]] = None,
+        train_size: Optional[Union[float, int]] = None,
+        random_state: Optional[Union[int, RandomState]] = None,
     ):
         super().__init__(
             n_splits=n_splits,
@@ -130,7 +154,7 @@ class KMeansReducedDistanceSplitBase(DistanceSplitBase, abc.ABC):
     def reduce(self, X: np.ndarray, split_idx: int):
         """
         Uses k-means to group the data and reduce the number of unique data points.
-        In case the specified metric is not Euclidean, will use the Empirical Kernel Map to transform the features
+        In case the specified metric is not euclidean, we will use the Empirical Kernel Map to transform the features
         to a space that is euclidean compatible.
         """
 
