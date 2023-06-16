@@ -2,6 +2,8 @@ import numpy as np
 import datamol as dm
 from functools import partial
 from typing import Optional, Union
+
+from numpy.random import RandomState
 from sklearn.model_selection import GroupShuffleSplit
 
 
@@ -28,7 +30,7 @@ class ScaffoldSplit(GroupShuffleSplit):
         progress: bool = False,
         test_size: Optional[Union[float, int]] = None,
         train_size: Optional[Union[float, int]] = None,
-        random_state: Optional[Union[int, np.RandomState]] = None,
+        random_state: Optional[Union[int, RandomState]] = None,
     ):
         super().__init__(
             n_splits=n_splits,

@@ -3,6 +3,7 @@ import numpy as np
 import scipy.stats as ss
 from typing import Union, Optional, Sequence, Callable
 from jenkspy import jenks_breaks
+from numpy.random import RandomState
 from scipy.signal import argrelextrema
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.utils import column_or_1d
@@ -124,7 +125,7 @@ class StratifiedDistributionSplit(GroupShuffleSplit):
         algorithm_kwargs: Optional[dict] = None,
         test_size: Optional[Union[float, int]] = None,
         train_size: Optional[Union[float, int]] = None,
-        random_state: Optional[Union[int, np.RandomState]] = None,
+        random_state: Optional[Union[int, RandomState]] = None,
     ):
         super().__init__(
             n_splits=n_splits,
