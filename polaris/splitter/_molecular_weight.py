@@ -17,6 +17,7 @@ class MolecularWeightSplit(BaseShuffleSplit):
 
     def __init__(
         self,
+        generalize_to_larger: bool = False,
         n_splits: int = 5,
         smiles: Optional[Sequence[str]] = None,
         test_size: Optional[Union[float, int]] = None,
@@ -30,6 +31,7 @@ class MolecularWeightSplit(BaseShuffleSplit):
             random_state=random_state,
         )
         self._smiles = smiles
+        self._generalize_to_larger = generalize_to_larger
 
     def _iter_indices(
         self,
@@ -67,4 +69,7 @@ class MolecularWeightSplit(BaseShuffleSplit):
             )
 
         for i in range(self.n_splits):
-            yield sorted_idx[:n_train], sorted_idx[n_train:]
+            if self._generalize_to_larger:
+                yield sorted_idx[:n_train], sorted_idx[n_train:]
+            else:
+                yield sorted_idx[n_test:], sorted_idx[:n_test]

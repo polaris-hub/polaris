@@ -39,12 +39,10 @@ def _goodness_of_variance_fit(
     classes = get_class_boundaries_fn(readouts, n_classes)
     class_indices = np.array([_classify(i, classes) for i in readouts])
 
-    grouped_indices = np.ndarray(
-        [
-            [idx for idx, val in enumerate(class_indices) if cls + 1 == val]
-            for cls in range(max(class_indices))
-        ]
-    )
+    grouped_indices = [
+        [idx for idx, val in enumerate(class_indices) if cls + 1 == val] for cls in range(max(class_indices))
+    ]
+
     grouped_readouts = [readouts[indices] for indices in grouped_indices]
 
     def _sum_of_squared_deviations_from_mean(array: np.ndarray) -> float:
@@ -93,7 +91,7 @@ def _kde_clustering(
     samples = np.linspace(readouts.min() - margin, readouts.max() + margin, num=num_samples)
 
     # Compute the density for 50 evenly spaced points
-    density = np.ndarray([kde(x) for x in samples])
+    density = np.array([kde(x) for x in samples])
 
     # Find the local minima in the density
     minima_indices = argrelextrema(density, np.less_equal)[0]

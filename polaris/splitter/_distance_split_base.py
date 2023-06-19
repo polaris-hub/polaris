@@ -15,7 +15,7 @@ from polaris.splitter.utils import get_kmeans_clusters
 
 
 # In case users provide a list of SMILES instead of features, we rely on ECFP4 and the tanimoto distance by default
-MOLECULE_DEFAULT_FEATURIZER = dict(name="ecfp", kwargs=dict(radius=2, nbits=2048))
+MOLECULE_DEFAULT_FEATURIZER = dict(name="ecfp", kwargs=dict(radius=2, nBits=2048))
 MOLECULE_DEFAULT_DISTANCE_METRIC = "jaccard"
 
 
@@ -75,6 +75,11 @@ class DistanceSplitBase(GroupShuffleSplit, abc.ABC):
         """
         return X
 
+    def compute_distance_matrix(self, groups: np.ndarray):
+        """Allows subclasses to override the way the distance matrix is computed"""
+        distance_matrix = pairwise_distances(groups, metric=self._metric, n_jobs=self._n_jobs)
+        return distance_matrix
+
     def _iter_indices(
         self,
         X: Union[Sequence[str], np.ndarray],
@@ -114,7 +119,7 @@ class DistanceSplitBase(GroupShuffleSplit, abc.ABC):
             unique_groups, group_indices, group_counts = np.unique(
                 groups, return_inverse=True, return_counts=True, axis=0
             )
-            distance_matrix = pairwise_distances(unique_groups, metric=self._metric, n_jobs=self._n_jobs)
+            distance_matrix = self.compute_distance_matrix(unique_groups)
 
             # Compute the split
             train, test = self.get_split_from_distance_matrix(
@@ -144,12 +149,9 @@ class KMeansReducedDistanceSplitBase(DistanceSplitBase, abc.ABC):
             train_size=train_size,
             random_state=random_state,
             n_jobs=n_jobs,
-            # Since we use k-means, we will transform to an Euclidean space
-            # if it isn't already and will always want to use euclidean
-            metric="euclidean",
+            metric=metric,
         )
         self._n_clusters = n_clusters
-        self._cluster_metric = metric
 
     def reduce(self, X: np.ndarray, split_idx: int):
         """
@@ -159,12 +161,21 @@ class KMeansReducedDistanceSplitBase(DistanceSplitBase, abc.ABC):
         """
 
         seed = None if self.random_state is None else self.random_state + split_idx
+
         _, groups = get_kmeans_clusters(
             X=X,
             n_clusters=self._n_clusters,
             random_state=seed,
             return_centers=True,
-            base_metric=self._cluster_metric,
+            base_metric=self._metric,
         )
 
         return groups
+
+    def compute_distance_matrix(self, groups: np.ndarray):
+        """Override the metric to always be euclidean due to the use of k-means"""
+        original = self._metric
+        self._metric = "euclidean"
+        mat = super().compute_distance_matrix(groups)
+        self._metric = original
+        return mat

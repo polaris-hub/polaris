@@ -14,7 +14,7 @@ from polaris.splitter import (
 )
 
 
-def test_splits_integration():
+def test_mood_split():
     dataset_mols = dm.data.freesolv(as_df=False)
     dataset_smiles = [dm.to_smiles(mol) for mol in dataset_mols if mol is not None]
     dataset_targets = dm.data.freesolv()["expt"].values

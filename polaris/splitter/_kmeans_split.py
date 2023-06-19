@@ -2,6 +2,8 @@ import numpy as np
 from numpy.random import RandomState
 from typing import Callable, Union, Optional
 from sklearn.model_selection import GroupShuffleSplit
+
+from polaris.splitter._distance_split_base import convert_to_default_feats_if_smiles
 from polaris.splitter.utils import get_kmeans_clusters
 
 
@@ -35,6 +37,8 @@ class KMeansSplit(GroupShuffleSplit):
         """Generate (train, test) indices"""
         if X is None:
             raise ValueError(f"{self.__class__.__name__} requires X to be provided.")
+
+        X, self._cluster_metric = convert_to_default_feats_if_smiles(X, self._cluster_metric)
         groups = get_kmeans_clusters(
             X=X,
             n_clusters=self._n_clusters,

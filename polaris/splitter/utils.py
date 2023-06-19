@@ -71,7 +71,7 @@ def get_kmeans_clusters(
             metric=base_metric,
             random_state=random_state,
         )
-        X = transformer(X)
+        X = transformer(np.array(X))
 
     # Perform the clustering
     model = MiniBatchKMeans(n_clusters, random_state=random_state, compute_labels=True, n_init=3)

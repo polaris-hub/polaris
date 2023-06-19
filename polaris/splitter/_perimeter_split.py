@@ -1,5 +1,5 @@
 import numpy as np
-from polaris.splitter._base import KMeansReducedDistanceSplitBase
+from polaris.splitter._distance_split_base import KMeansReducedDistanceSplitBase
 
 
 class PerimeterSplit(KMeansReducedDistanceSplitBase):
