@@ -3,7 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import Optional, List
 
-from .utils import get_iqr_outlier_bounds
+from polaris.splitter.utils import get_iqr_outlier_bounds
 
 
 def plot_distance_distributions(
@@ -11,7 +11,7 @@ def plot_distance_distributions(
     labels: Optional[List[str]] = None,
     colors: Optional[List[str]] = None,
     styles: Optional[List[str]] = None,
-    ax: Optional = None,
+    ax: Optional[plt.Axes] = None,
     outlier_factor: Optional[float] = 3.0,
 ):
     """Visualizes the distribution of distances between the clusters in the style of the MOOD paper."""

@@ -11,7 +11,7 @@ from sklearn.model_selection import GroupShuffleSplit
 from sklearn.model_selection._split import _validate_shuffle_split  # noqa W0212
 from sklearn.utils.validation import _num_samples  # noqa W0212
 
-from .utils import get_kmeans_clusters
+from polaris.splitter.utils import get_kmeans_clusters
 
 
 # In case users provide a list of SMILES instead of features, we rely on ECFP4 and the tanimoto distance by default

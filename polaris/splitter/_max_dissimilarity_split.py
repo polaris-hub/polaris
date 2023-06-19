@@ -1,5 +1,5 @@
 import numpy as np
-from ._base import KMeansReducedDistanceSplitBase
+from polaris.splitter._base import KMeansReducedDistanceSplitBase
 
 
 class MaxDissimilaritySplit(KMeansReducedDistanceSplitBase):

@@ -14,9 +14,9 @@ from scipy.stats import gaussian_kde
 from sklearn.model_selection import BaseShuffleSplit
 from sklearn.neighbors import NearestNeighbors
 
-from .plot import plot_distance_distributions
-from .utils import get_iqr_outlier_bounds
-from ._base import convert_to_default_feats_if_smiles
+from polaris.splitter.plot import plot_distance_distributions
+from polaris.splitter.utils import get_iqr_outlier_bounds
+from polaris.splitter._base import convert_to_default_feats_if_smiles
 
 
 @dataclass

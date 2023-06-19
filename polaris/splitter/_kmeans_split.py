@@ -2,7 +2,7 @@ import numpy as np
 from numpy.random import RandomState
 from typing import Callable, Union, Optional
 from sklearn.model_selection import GroupShuffleSplit
-from .utils import get_kmeans_clusters
+from polaris.splitter.utils import get_kmeans_clusters
 
 
 class KMeansSplit(GroupShuffleSplit):
