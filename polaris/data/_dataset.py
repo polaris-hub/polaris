@@ -8,11 +8,11 @@ import pandas as pd
 from hashlib import md5
 from collections import defaultdict
 from typing import Dict, Optional, Union, List
-from pydantic import BaseModel, PrivateAttr, validator
+from pydantic import BaseModel, PrivateAttr, validator, root_validator
 from loguru import logger
 
 from polaris.utils import fs
-from polaris.dataset import Modality
+from polaris.data import Modality
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.io import robust_file_copy
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
@@ -73,6 +73,9 @@ class Dataset(BaseModel):
         Set missing modalities to unknown and convert strings to modalities.
         For all modalities that require pointers, verify all paths listed exist.
         """
+        # Exit early if a previous validation step failed
+        if "table" not in values:
+            return v
         # Fill missing modalities and convert strings to modalities
         for c in values["table"].columns:
             if c not in v:
@@ -90,44 +93,33 @@ class Dataset(BaseModel):
                     )
         return v
 
-    @validator("checksum", always=True)
-    def validate_checksum(cls, v, values):
+    @root_validator(skip_on_failure=True)
+    def validate_checksum_and_cache_dir(cls, values):
         """
         If a checksum is provided, verify it matches what the checksum should be.
         If no checksum is provided, make sure it is set.
-
-        NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
+        If no cache_dir is provided, set it to the default cache dir and make sure it exists
         """
 
-        # Skip validation as an earlier step has failed
-        if not all(k in values for k in ["table", "modalities"]):
-            return v
-
+        # Verify the checksum
+        # NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
+        actual = values["checksum"]
         expected = cls._compute_checksum(values["table"], values["modalities"])
 
-        if v is None:
-            v = expected
-        elif v != expected:
+        if actual is None:
+            values["checksum"] = expected
+        elif actual != expected:
             raise PolarisChecksumError(
                 "The dataset checksum does not match what was specified in the meta-data. "
-                f"{v} != {expected}"
+                f"{actual} != {expected}"
             )
-        return v
-
-    @validator("cache_dir", always=True)
-    def validate_cache_dir(cls, v, values):
-        """If no cache_dir is provided, set it to the default cache dir and make sure it exists"""
-
-        # Skip validation as an earlier step has failed
-        if any(k not in values for k in ["name", "checksum"]):
-            return v
 
         # Set the default cache dir if none and make sure it exists
-        if v is None:
-            v = fs.join(DEFAULT_CACHE_DIR, values["name"], values["checksum"])
-        fs.mkdir(v, exist_ok=True)
+        if values["cache_dir"] is None:
+            values["cache_dir"] = fs.join(DEFAULT_CACHE_DIR, values["name"], values["checksum"])
+        fs.mkdir(values["cache_dir"], exist_ok=True)
 
-        return v
+        return values
 
     @classmethod
     def from_yaml(cls, path: str) -> "Dataset":

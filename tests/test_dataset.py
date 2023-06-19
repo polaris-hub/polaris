@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from pydantic import ValidationError
 
-from polaris.dataset import Dataset, Modality
+from polaris.data import Dataset, Modality
 from polaris.loader import load_dataset
 from polaris.utils import fs
 

@@ -1,5 +1,5 @@
 from typing import List
-from polaris.dataset import Dataset, BenchmarkSpecification
+from polaris.data import Dataset, BenchmarkSpecification
 
 
 class PolarisClient:

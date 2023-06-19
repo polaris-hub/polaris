@@ -1,7 +1,7 @@
-from ._modality import Modality
-from ._dataset import Dataset
-from ._subset import Subset
-from ._benchmark import (
+from polaris.data._modality import Modality
+from polaris.data._dataset import Dataset
+from polaris.data._subset import Subset
+from polaris.data.benchmark import (
     BenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
     MultiTaskBenchmarkSpecification,

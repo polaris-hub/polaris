@@ -6,12 +6,13 @@ import fsspec
 import numpy as np
 
 from pydantic import BaseModel, validator, root_validator
-from typing import Union, List, Dict, Tuple, Optional, Sequence, Any
+from typing import Union, List, Dict, Tuple, Optional, Any
 
-from polaris.dataset import Dataset, Subset
+from polaris.data import Dataset, Subset
 from polaris.evaluate import Metric
 from polaris.utils import fs
 from polaris.utils.errors import PolarisChecksumError
+
 
 # A split is defined by a sequence of integers (single-task) or by a sequence of integer pairs (multi-task)
 _SPLIT_PARTITION_TYPE = List[Union[int, Tuple[int, Union[List[int], int]]]]
@@ -86,7 +87,7 @@ class BenchmarkSpecification(BaseModel):
         return v
 
     @validator("split")
-    def verify_split(cls, v):
+    def validate_split(cls, v):
         """
         Verifies there is at least two, non-empty partitions
         """
@@ -200,7 +201,7 @@ class BenchmarkSpecification(BaseModel):
         return len(self.split[1]) if isinstance(self.split[1], dict) else 1
 
     def get_train_test_split(self) -> Tuple[Subset, Union[Subset, Dict[str, Subset]]]:
-        """Return the train and test sets."""
+        """Endpoint for returning the train and test sets."""
         train = Subset(self.dataset, self.split[0], self.input_cols, self.target_cols)
         if isinstance(self.split[1], dict):
             test = {
@@ -217,84 +218,3 @@ class BenchmarkSpecification(BaseModel):
         y_true: Optional[Union[np.ndarray, Dict[str, np.ndarray]]] = None,
     ):
         pass
-
-
-class SingleTaskBenchmarkSpecification(BenchmarkSpecification):
-    @validator("split")
-    def verify_split_single_task(cls, v, values):
-        """
-        A valid single task split assigns inputs exclusively to a single partition.
-        It is not required that the split covers the entirety of a dataset.
-        """
-
-        if values.get("dataset") is None:
-            # This feels hacky to me, but if validation for prior fields fail, this method is still called.
-            # As the failed fields are not set, this leads to confusing errors.
-            return v
-
-        train_indices = v[0]
-        test_indices = [i for part in v[1].values() for i in part] if isinstance(v[1], dict) else v[1]
-        if any(i < 0 or i >= len(values["dataset"]) for i in train_indices + test_indices):
-            raise ValueError("The predefined split contains invalid indices")
-        if any(i in train_indices for i in test_indices):
-            raise ValueError("The predefined split specifies overlapping train and test sets")
-        return v
-
-
-class MultiTaskBenchmarkSpecification(BenchmarkSpecification):
-    @validator("split")
-    def verify_split_multi_task(cls, v, values):
-        """
-        A valid multitask split assigns each input, target pair exclusively to a single partition.
-        It is not required that the split covers the entirety of a dataset.
-        """
-
-        if values.get("dataset") is None or values.get("target_cols") is None:
-            # This feels hacky to me, but if validation for prior fields fail, this method is still called.
-            # As the failed fields are not set, this leads to confusing errors.
-            return v
-
-        def _check(indices):
-            """Helper method to easily check indices for a single partition."""
-            checked_indices = []
-            for tup in indices:
-                if isinstance(tup, Sequence):
-                    invalid = (
-                        len(tup) != 2
-                        or tup[0] < 0
-                        or tup[0] >= len(values["dataset"])
-                        or any(i < 0 for i in tup[1])
-                        or any(i >= len(values["target_cols"]) for i in tup[1])
-                    )
-                elif isinstance(tup, int):
-                    # With single index, we assume all targets are indexed.
-                    # This simplifies split definitions, because you can specify X instead of (X, 1), (X, 2), ...
-                    # Changing the index here to a consistent format for downstream processing.
-                    invalid = tup < 0 or tup >= len(values["dataset"])
-                    tup = (tup, list(range(len(values["target_cols"]))))
-
-                else:
-                    invalid = True
-
-                if invalid:
-                    raise ValueError("The predefined split contains invalid indices")
-
-                checked_indices.append(tup)
-
-            return checked_indices
-
-        # Check the train set
-        train_pairs = _check(v[0])
-
-        # Check the test sets and whether any of them overlap with train
-        if isinstance(v[1], dict):
-            test_pairs = {k: _check(v) for k, v in v[1].items()}
-            overlapping = any(tup in train_pairs for subset in test_pairs.values() for tup in subset)
-        else:
-            test_pairs = _check(v[1])
-            overlapping = any(tup in train_pairs for tup in test_pairs)
-
-        if overlapping:
-            raise ValueError("The predefined split specifies overlapping train and test sets")
-
-        return train_pairs, test_pairs

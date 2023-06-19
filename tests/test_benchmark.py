@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from polaris import load_benchmark
-from polaris.dataset import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification, Subset
+from polaris.data import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification, Subset
 from polaris.utils import fs
 
 

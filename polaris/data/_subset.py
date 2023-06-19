@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Union, List, Sequence, Tuple, Any, Dict
-from polaris.dataset import Dataset
+from polaris.data import Dataset
 
 
 class Subset:
