@@ -1,10 +1,10 @@
-from polaris.data.benchmark._split_mixins import SingleTaskSplitMixin, MultiTaskSplitMixin
+from polaris.data.benchmark._mixins import SingleTaskMixin, MultiTaskMixin
 from polaris.data.benchmark._base import BenchmarkSpecification
 
 
-class SingleTaskBenchmarkSpecification(SingleTaskSplitMixin, BenchmarkSpecification):
+class SingleTaskBenchmarkSpecification(SingleTaskMixin, BenchmarkSpecification):
     pass
 
 
-class MultiTaskBenchmarkSpecification(MultiTaskSplitMixin, BenchmarkSpecification):
+class MultiTaskBenchmarkSpecification(MultiTaskMixin, BenchmarkSpecification):
     pass

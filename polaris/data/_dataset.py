@@ -8,11 +8,11 @@ import pandas as pd
 from hashlib import md5
 from collections import defaultdict
 from typing import Dict, Optional, Union, List
-from pydantic import BaseModel, PrivateAttr, validator, root_validator
+from pydantic import BaseModel, PrivateAttr, validator, root_validator, Field
 from loguru import logger
 
 from polaris.utils import fs
-from polaris.data import Modality
+from polaris.data._column import ColumnAnnotation, Modality
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.io import robust_file_copy
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
@@ -43,8 +43,8 @@ class Dataset(BaseModel):
     # The data source, e.g. a DOI, Github repo or URI
     source: str
 
-    # Annotates each column with the modality of that column
-    modalities: Dict[str, Union[str, Modality]]
+    # Annotates each column with the modality of that column and additional meta-data
+    annotations: Dict[str, Union[str, Modality, ColumnAnnotation]] = Field(default_factory=dict)
 
     # Hash of the dataset, used to verify that the dataset is the expected version
     checksum: Optional[str] = None
@@ -67,21 +67,26 @@ class Dataset(BaseModel):
             v = pd.read_parquet(v)
         return v
 
-    @validator("modalities")
-    def validate_modalities(cls, v, values):
+    @validator("annotations")
+    def validate_annotations(cls, v, values):
         """
-        Set missing modalities to unknown and convert strings to modalities.
-        For all modalities that require pointers, verify all paths listed exist.
+        Set missing annotations to default.
+        For all columns that contain pointers, verify all paths listed exist.
         """
         # Exit early if a previous validation step failed
         if "table" not in values:
             return v
-        # Fill missing modalities and convert strings to modalities
+
+        # Verify that all annotations are for columns that exist
+        if any(k not in values["table"].columns for k in v):
+            raise InvalidDatasetError("There is annotations for columns that do not exist")
+
+        # Set a default for missing annotations and convert strings to Modality
         for c in values["table"].columns:
             if c not in v:
-                v[c] = Modality.UNKNOWN
-            if not isinstance(v[c], Modality):
-                v[c] = Modality[v[c].upper()]
+                v[c] = ColumnAnnotation()
+            if isinstance(v[c], (str, Modality)):
+                v[c] = ColumnAnnotation(modality=v[c])
 
             # Verify that pointer columns have valid extensions and exist
             if v[c].is_pointer():
@@ -101,10 +106,14 @@ class Dataset(BaseModel):
         If no cache_dir is provided, set it to the default cache dir and make sure it exists
         """
 
+        # This is still ran when some fields are not specified
+        if any(k not in values for k in ["table", "annotations"]) or len(values["annotations"]) == 0:
+            return
+
         # Verify the checksum
         # NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
         actual = values["checksum"]
-        expected = cls._compute_checksum(values["table"], values["modalities"])
+        expected = cls._compute_checksum(values["table"], values["annotations"])
 
         if actual is None:
             values["checksum"] = expected
@@ -141,7 +150,7 @@ class Dataset(BaseModel):
         To specify additional columns, we use a dict with the column -> index -> value format.
         """
 
-        expected_user_attrs = ["name", "description", "source", "modalities"]
+        expected_user_attrs = ["name", "description", "source", "annotations"]
 
         root = zarr.open_group(path)
         if any(k not in root.attrs for k in expected_user_attrs):
@@ -174,7 +183,7 @@ class Dataset(BaseModel):
         return cls(table=table, **root.attrs)
 
     @staticmethod
-    def _compute_checksum(table, modalities):
+    def _compute_checksum(table, annotations):
         """
         Computes a hash of the dataset.
 
@@ -198,7 +207,7 @@ class Dataset(BaseModel):
         hash_fn.update(table_hash)
 
         for c in df.columns:
-            modality = modalities[c].name.encode("utf-8")
+            modality = annotations[c].modality.name.encode("utf-8")
             hash_fn.update(modality)
 
         checksum = hash_fn.hexdigest()
@@ -210,7 +219,7 @@ class Dataset(BaseModel):
 
     def __repr__(self):
         """Pretty-prints the table by adding the modalities and checksum"""
-        self.table.loc[""] = [f"[{self.modalities[c]}]" for c in self.table.columns]
+        self.table.loc[""] = [f"[{self.annotations[c].modality}]" for c in self.table.columns]
         s = repr(self.table)
         s += f" [checksum {self.checksum}]"
         self.table.drop(self.table.tail(1).index, inplace=True)
@@ -229,6 +238,7 @@ class Dataset(BaseModel):
         """
         Save the dataset to a destination directory
         """
+        fs.mkdir(destination, exist_ok=True)
         table_path = fs.join(destination, "table.parquet")
         dataset_path = fs.join(destination, "dataset.yaml")
         pointer_dir = fs.join(destination, "data")
@@ -244,14 +254,14 @@ class Dataset(BaseModel):
         new_table = self.table.copy(deep=True)
 
         for c in new_table.columns:
-            if self.modalities[c].is_pointer():
+            if self.annotations[c].is_pointer():
                 new_table[c] = new_table[c].apply(_copy_and_update)
 
         serialized = self.dict()
         serialized["table"] = table_path
-        serialized["modalities"] = {k: m.name for k, m in self.modalities.items()}
+        serialized["annotations"] = {k: m.dict() for k, m in self.annotations.items()}
         # We need to recompute the checksum, as the pointer paths have changed
-        serialized["checksum"] = self._compute_checksum(new_table, self.modalities)
+        serialized["checksum"] = self._compute_checksum(new_table, self.annotations)
 
         new_table.to_parquet(table_path)
         with fsspec.open(dataset_path, "w") as f:
@@ -286,7 +296,7 @@ class Dataset(BaseModel):
             return zarr.convenience.load(path)
 
         value = self.table.loc[row, col]
-        if not self.modalities[col].is_pointer():
+        if not self.annotations[col].is_pointer():
             return value
 
         # In the case it is a pointer column, we need to load additional data into memory
@@ -321,7 +331,7 @@ class Dataset(BaseModel):
             column_subset = [column_subset]
 
         for col in column_subset:
-            if not self.modalities[col].is_pointer():
+            if not self.annotations[col].is_pointer():
                 continue
 
             paths = self.table[col].values

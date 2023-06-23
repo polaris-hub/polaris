@@ -1,9 +1,18 @@
 from typing import Sequence
-from pydantic import BaseModel, root_validator
+from pydantic import validator, root_validator, BaseModel
+
+from polaris.evaluate import BenchmarkResults
+from polaris.utils.types import Predictions
 
 
-class SingleTaskSplitMixin(BaseModel):
+class SingleTaskMixin(BaseModel):
     """Mixin for any single-task benchmark specification"""
+
+    @validator("target_cols", check_fields=False)
+    def validate_target_cols(cls, v):
+        if not len(v) == 1:
+            raise ValueError("A single-task benchmark should specify a single target column")
+        return v
 
     @root_validator(skip_on_failure=True)
     def validate_single_task_split(cls, values):
@@ -21,8 +30,14 @@ class SingleTaskSplitMixin(BaseModel):
         return values
 
 
-class MultiTaskSplitMixin(BaseModel):
+class MultiTaskMixin(BaseModel):
     """Mixin for any multi-task benchmark specification"""
+
+    @validator("target_cols", check_fields=False)
+    def validate_target_cols(cls, v):
+        if not len(v) > 1:
+            raise ValueError("A multi-task benchmark should specify at least two target columns")
+        return v
 
     @staticmethod
     def check_split_partition(indices, no_datapoints: int, no_targets: int):
@@ -60,7 +75,6 @@ class MultiTaskSplitMixin(BaseModel):
         A valid multitask split assigns each input, target pair exclusively to a single partition.
         It is not required that the split covers the entirety of a dataset.
         """
-
         # Extract the relevant data
         v = values["split"]
         no_datapoints = len(values["dataset"])

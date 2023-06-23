@@ -24,7 +24,7 @@ def test_load_data(modality, tmp_path):
         name="name",
         description="descr",
         source="source",
-        modalities={"A": modality},
+        annotations={"A": modality},
         cache_dir=tmpdir,
     )
 

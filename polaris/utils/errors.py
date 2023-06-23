@@ -6,5 +6,13 @@ class InvalidBenchmarkError(ValueError):
     pass
 
 
+class InvalidResultError(ValueError):
+    pass
+
+
 class PolarisChecksumError(ValueError):
+    pass
+
+
+class TestAccessError(Exception):
     pass

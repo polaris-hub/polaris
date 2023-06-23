@@ -3,7 +3,7 @@ import pytest
 import datamol as dm
 import zarr
 
-from polaris.data import Dataset, BenchmarkSpecification
+from polaris.data import Dataset, MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
 from polaris.data import Modality
 from polaris.utils import fs
 
@@ -20,7 +20,7 @@ def test_dataset(test_data):
         name="Test",
         description="Go wild in your test cases with this awesome dataset",
         source="Datamol",
-        modalities={
+        annotations={
             "smiles": Modality.MOLECULE,
         },
     )
@@ -38,7 +38,7 @@ def test_zarr_archive(tmp_path):
     root.attrs["name"] = "Test"
     root.attrs["description"] = "Go wild in your test cases with this awesome dataset"
     root.attrs["source"] = "Imagination"
-    root.attrs["modalities"] = {"A": "MOLECULE_3D", "B": "IMAGE"}
+    root.attrs["annotations"] = {"A": "MOLECULE_3D", "B": "IMAGE"}
     return tmp_path
 
 
@@ -46,7 +46,7 @@ def test_zarr_archive(tmp_path):
 def test_single_task_benchmark(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
-    return BenchmarkSpecification(
+    return SingleTaskBenchmarkSpecification(
         dataset=test_dataset,
         metrics=["mean_absolute_error"],
         split=(train_indices, test_indices),
@@ -60,7 +60,7 @@ def test_multi_task_benchmark(test_dataset):
     # For the sake of simplicity, just use a small set of indices
     train_indices = [0, (1, [0])]
     test_indices = [(1, [1]), 2]
-    return BenchmarkSpecification(
+    return MultiTaskBenchmarkSpecification(
         dataset=test_dataset,
         metrics=["mean_absolute_error"],
         split=(train_indices, test_indices),

@@ -1,4 +1,4 @@
-from polaris.data._modality import Modality
+from polaris.data._column import Modality
 from polaris.data._dataset import Dataset
 from polaris.data._subset import Subset
 from polaris.data.benchmark import (

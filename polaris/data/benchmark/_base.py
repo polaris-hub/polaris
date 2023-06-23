@@ -1,27 +1,17 @@
-from hashlib import md5
-
+import numpy as np
 import yaml
 import fsspec
 
-import numpy as np
-
+from hashlib import md5
 from pydantic import BaseModel, validator, root_validator
 from typing import Union, List, Dict, Tuple, Optional, Any
 
 from polaris.data import Dataset, Subset
-from polaris.evaluate import Metric
+from polaris.evaluate import Metric, BenchmarkResults
 from polaris.utils import fs
+from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import PolarisChecksumError
-
-
-# A split is defined by a sequence of integers (single-task) or by a sequence of integer pairs (multi-task)
-_SPLIT_PARTITION_TYPE = List[Union[int, Tuple[int, Union[List[int], int]]]]
-
-# A split is a pair of which the first item is always assumed to be the train set.
-# The second item can either be a single test set or a dictionary with multiple, named test sets.
-_SPLIT_TYPE_HINT = Tuple[
-    _SPLIT_PARTITION_TYPE, Union[_SPLIT_PARTITION_TYPE, Dict[str, _SPLIT_PARTITION_TYPE]]
-]
+from polaris.utils.types import Predictions, Split
 
 
 class BenchmarkSpecification(BaseModel):
@@ -38,7 +28,7 @@ class BenchmarkSpecification(BaseModel):
     dataset: Union[Dataset, str, Dict[str, Any]]
     target_cols: Union[List[str], str]
     input_cols: Union[List[str], str]
-    split: _SPLIT_TYPE_HINT
+    split: Split
     metrics: Union[Union[Metric, str], List[Union[Metric, str]]]
     checksum: Optional[str] = None
 
@@ -60,14 +50,11 @@ class BenchmarkSpecification(BaseModel):
     @validator("target_cols", "input_cols")
     def validate_cols(cls, v, values):
         """Verifies all columns are present in the dataset."""
-        # Exit early as a prior validation step failed
-        if "dataset" not in values:
-            return v
         if not isinstance(v, List):
             v = [v]
         if len(v) == 0:
             raise ValueError("Specify at least a single column")
-        if not all(c in values["dataset"].table.columns for c in v):
+        if "dataset" in values and not all(c in values["dataset"].table.columns for c in v):
             raise ValueError(f"Not all specified target columns were found in the dataset.")
         return v
 
@@ -99,14 +86,14 @@ class BenchmarkSpecification(BaseModel):
             raise ValueError("The predefined split contains empty partitions")
         return v
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_checksum(cls, values):
         """
         If a checksum is provided, verify it matches what the checksum should be.
         If no checksum is provided, make sure it is set.
         """
 
-        # Skip validation as an earlier step has failed
+        # Skip validation as some attributes are missing
         if not all(k in values for k in ["dataset", "target_cols", "input_cols", "split", "metrics"]):
             return values
 
@@ -171,50 +158,98 @@ class BenchmarkSpecification(BaseModel):
 
     def save(self, destination: str):
         """Saves the benchmark to a yaml file."""
+
+        fs.mkdir(destination, exist_ok=True)
+
         data = self.dict()
         data["dataset"] = self.dataset.save(destination=destination)
         data["metrics"] = [m.name for m in self.metrics]
         data["split"] = [list(v) if isinstance(v, tuple) else v for v in self.split]
+
         path = fs.join(destination, "benchmark.yaml")
         with fsspec.open(path, "w") as f:
             yaml.dump(data, f)
+
         return path
-
-    def get_no_tasks(self):
-        """The number of tasks."""
-        return len(self.target_cols)
-
-    def is_multi_task(self):
-        """Whether a dataset has multiple targets."""
-        return self.get_no_tasks() > 1
-
-    def get_no_inputs(self):
-        """The number of inputs."""
-        return len(self.input_cols)
-
-    def is_multi_input(self):
-        """Whether a dataset has multiple inputs."""
-        return self.get_no_inputs() > 1
 
     def get_no_test_sets(self):
         """The number of test sets."""
         return len(self.split[1]) if isinstance(self.split[1], dict) else 1
 
-    def get_train_test_split(self) -> Tuple[Subset, Union[Subset, Dict[str, Subset]]]:
+    def get_train_test_split(
+        self, input_format: str = "dict", target_format: str = "dict"
+    ) -> Tuple[Subset, Union[Subset, Dict[str, Subset]]]:
         """Endpoint for returning the train and test sets."""
-        train = Subset(self.dataset, self.split[0], self.input_cols, self.target_cols)
+
+        def _get_subset(indices, hide_targets):
+            return Subset(
+                dataset=self.dataset,
+                indices=indices,
+                input_cols=self.input_cols,
+                input_format=input_format,
+                target_cols=self.target_cols,
+                target_format=target_format,
+                hide_targets=hide_targets,
+            )
+
+        train = _get_subset(self.split[0], hide_targets=False)
         if isinstance(self.split[1], dict):
-            test = {
-                k: Subset(self.dataset, v, self.input_cols, self.target_cols)
-                for k, v in self.split[1].items()
-            }
+            test = {k: _get_subset(v, hide_targets=True) for k, v in self.split[1].items()}
         else:
-            test = Subset(self.dataset, self.split[1], self.input_cols, self.target_cols)
+            test = _get_subset(self.split[1], hide_targets=True)
         return train, test
 
-    def evaluate(
-        self,
-        y_pred: Union[np.ndarray, Dict[str, np.ndarray]],
-        y_true: Optional[Union[np.ndarray, Dict[str, np.ndarray]]] = None,
-    ):
-        pass
+    def evaluate(self, y_pred: Predictions) -> BenchmarkResults:
+        """
+        Execute the evaluation protocol for the benchmark.
+
+        We make the following assumptions:
+            (1) There can be one or multiple test sets
+            (2) There can be one or multiple targets
+            (3) The metrics are constant across test sets
+            (4) The metrics are constant across targets
+            (5) There can be metrics which measure across tasks.
+        """
+
+        # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
+        # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
+        # See also the `hide_targets` parameter in the `Subset` class.
+        test = self.get_train_test_split()[1]
+
+        with tmp_attribute_change(test, "hide_targets", False):
+            if isinstance(test, dict):
+                y_true = {k: v.targets for k, v in test.items()}
+            else:
+                y_true = {"test": test.targets}
+
+        if not isinstance(y_pred, dict) or all(isinstance(v, np.ndarray) for v in y_pred.values()):
+            y_pred = {"test": y_pred}
+
+        scores = {}
+
+        # For every test set...
+        for test_label, y_true_subset in y_true.items():
+            scores[test_label] = {}
+
+            # For every metric...
+            for metric in self.metrics:
+                if metric.is_multitask or not isinstance(y_true_subset, dict):
+                    # Either single-task or multi-task but with a metric across targets
+                    scores[test_label][metric.name] = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
+                    continue
+
+                # Otherwise, for every target...
+                for target_label, y_true_target in y_true_subset.items():
+                    if target_label not in scores[test_label]:
+                        scores[test_label][target_label] = {}
+
+                    # Single-task metrics for a multi-task benchmark
+                    # In such a setting, there can be NaN values, which we thus have to filter out.
+                    mask = ~np.isnan(y_true_target)
+                    score = metric(y_true=y_true_target[mask], y_pred=y_pred[test_label][target_label][mask])
+                    scores[test_label][target_label][metric.name] = score
+
+        if len(scores) == 1:
+            scores = scores["test"]
+
+        return BenchmarkResults(results=scores, benchmark_id=self.checksum)
