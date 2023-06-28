@@ -44,7 +44,7 @@ def load_benchmark(path: str):
         options = client.list_benchmarks()
         if path not in options:
             raise InvalidBenchmarkError(f"{path} is not a valid task. Make sure it exists!")
-        return client.load_benchmarks(path)
+        return client.load_benchmark(path)
 
     with fsspec.open(path, "r") as f:
         data = yaml.safe_load(f)

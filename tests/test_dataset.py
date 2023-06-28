@@ -24,7 +24,7 @@ def test_load_data(modality, tmp_path):
         name="name",
         description="descr",
         source="source",
-        modalities={"A": modality},
+        annotations={"A": modality},
         cache_dir=tmpdir,
     )
 
@@ -39,7 +39,7 @@ def test_load_data(modality, tmp_path):
 
 
 def test_dataset_checksum(test_dataset):
-    original = test_dataset.checksum
+    original = test_dataset.md5sum
     assert original is not None
 
     # Without any changes, same hash
@@ -58,20 +58,20 @@ def test_dataset_checksum(test_dataset):
     Dataset(**kwargs)
 
     # Without any changes, but different hash
-    kwargs["checksum"] = "invalid"
+    kwargs["md5sum"] = "invalid"
     with pytest.raises(ValidationError):
         Dataset(**kwargs)
 
     # With changes, but same hash
-    kwargs["checksum"] = original
+    kwargs["md5sum"] = original
     kwargs["table"] = kwargs["table"].iloc[:-1]
     with pytest.raises(ValidationError):
         Dataset(**kwargs)
 
     # With changes, but no hash
-    kwargs["checksum"] = None
+    kwargs["md5sum"] = None
     dataset = Dataset(**kwargs)
-    assert dataset.checksum is not None
+    assert dataset.md5sum is not None
 
 
 def test_dataset_from_zarr(test_zarr_archive):
@@ -82,7 +82,7 @@ def test_dataset_from_zarr(test_zarr_archive):
 
 
 def test_dataset_from_yaml(test_dataset, tmpdir):
-    test_dataset.save(str(tmpdir))
+    test_dataset.to_yaml(str(tmpdir))
 
     path = fs.join(str(tmpdir), "dataset.yaml")
     new_dataset = Dataset.from_yaml(path)
