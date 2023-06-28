@@ -3,8 +3,8 @@ import pytest
 import datamol as dm
 import zarr
 
-from polaris.data import Dataset, MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
-from polaris.data import Modality
+from polaris.dataset import Dataset, MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
+from polaris.dataset import Modality
 from polaris.utils import fs
 
 

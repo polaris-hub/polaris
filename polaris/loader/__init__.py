@@ -1,7 +1,7 @@
 import fsspec
 import yaml
 
-from polaris.data import Dataset, SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification
+from polaris.dataset import Dataset, SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification
 from polaris.hub import PolarisClient
 from polaris.utils.errors import InvalidDatasetError, InvalidBenchmarkError
 from polaris.utils import fs

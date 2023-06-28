@@ -29,14 +29,20 @@ class ColumnAnnotation(BaseModel):
     Annotates columns in the dataset with additional information
     """
 
-    # The data modality describes the data type and affects how the data is processed
+    """
+    The data modality describes the data type and affects how the data is processed
+    """
     modality: Union[str, Modality] = Modality.UNKNOWN
 
-    # The protocol describes how the data was generated
+    """
+    The protocol describes how the data was generated
+    """
     protocol: Optional[str] = None
 
-    # User attributes allow for additional meta-data to be stored
-    user_attributes: dict = Field(default_factory=dict)
+    """
+    User attributes allow for additional meta-data to be stored
+    """
+    user_attributes: dict = {}
 
     class Config:
         arbitrary_types_allowed = True
@@ -51,7 +57,10 @@ class ColumnAnnotation(BaseModel):
     def dict(self, *args, **kwargs):
         """Light wrapper to always return the modality as a string, keeping it serializable"""
         data = super().dict(*args, **kwargs)
-        data["modality"] = data["modality"].name
+
+        # The Pydantic dict() API allows a user to exclude keys, so we have to check if `modality` exists.
+        if "modality" in data:
+            data["modality"] = data["modality"].name
         return data
 
     def is_pointer(self):

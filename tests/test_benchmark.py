@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from polaris import load_benchmark
-from polaris.data import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification, Subset
+from polaris.dataset import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification, Subset
 from polaris.utils import fs
 
 
@@ -171,7 +171,7 @@ def test_benchmark_split(test_single_task_benchmark):
 
 
 def test_benchmark_from_yaml(test_single_task_benchmark, tmpdir):
-    test_single_task_benchmark.save(str(tmpdir))
+    test_single_task_benchmark.to_yaml(str(tmpdir))
 
     path = fs.join(str(tmpdir), "benchmark.yaml")
     new_benchmark = SingleTaskBenchmarkSpecification.from_yaml(path)

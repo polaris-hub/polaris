@@ -1,8 +1,8 @@
 from typing import Sequence
 
 from pydantic import validator, root_validator
-from polaris.utils.types import SplitIndices
-from polaris.data.benchmark import BenchmarkSpecification
+from polaris.utils.types import SplitIndicesType
+from polaris.benchmark import BenchmarkSpecification
 
 
 class SingleTaskBenchmarkSpecification(BenchmarkSpecification):
@@ -40,7 +40,7 @@ class MultiTaskBenchmarkSpecification(BenchmarkSpecification):
         return v
 
     @staticmethod
-    def check_split_partition(indices: SplitIndices, no_datapoints: int, no_targets: int):
+    def check_split_partition(indices: SplitIndicesType, no_datapoints: int, no_targets: int):
         """Helper method to easily check indices for a single partition."""
         checked_indices = []
         for tup in indices:

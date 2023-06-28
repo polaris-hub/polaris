@@ -1,7 +1,7 @@
-from polaris.data._column import Modality
-from polaris.data._dataset import Dataset
-from polaris.data._subset import Subset
-from polaris.data.benchmark import (
+from polaris.dataset._column import Modality, ColumnAnnotation
+from polaris.dataset._dataset import Dataset
+from polaris.dataset._subset import Subset
+from polaris.benchmark import (
     BenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
     MultiTaskBenchmarkSpecification,
@@ -10,6 +10,7 @@ from polaris.data.benchmark import (
 
 __all__ = [
     "Modality",
+    "ColumnAnnotation",
     "BenchmarkSpecification",
     "SingleTaskBenchmarkSpecification",
     "MultiTaskBenchmarkSpecification",

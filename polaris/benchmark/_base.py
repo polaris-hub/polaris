@@ -6,12 +6,12 @@ from hashlib import md5
 from pydantic import BaseModel, validator, root_validator
 from typing import Union, List, Dict, Tuple, Optional, Any
 
-from polaris.data import Dataset, Subset
+from polaris.dataset import Dataset, Subset
 from polaris.evaluate import Metric, BenchmarkResults
 from polaris.utils import fs
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import PolarisChecksumError
-from polaris.utils.types import Predictions, Split
+from polaris.utils.types import PredictionsType, SplitType
 
 
 class BenchmarkSpecification(BaseModel):
@@ -25,12 +25,35 @@ class BenchmarkSpecification(BaseModel):
       4) A predefined, static train-test split to use during evaluation.
     """
 
+    """
+    A benchmark specification is based on a dataset
+    """
     dataset: Union[Dataset, str, Dict[str, Any]]
+
+    """
+    The columns of the original dataset that should be used as targets.
+    """
     target_cols: Union[List[str], str]
+
+    """
+    The columns of the original dataset that should be used as inputs.
+    """
     input_cols: Union[List[str], str]
-    split: Split
+
+    """
+    The predefined train-test split to use for evaluation.
+    """
+    split: SplitType
+
+    """
+    The metrics to use for evaluating performance
+    """
     metrics: Union[Union[Metric, str], List[Union[Metric, str]]]
-    checksum: Optional[str] = None
+
+    """
+    The checksum is used to verify the version of the benchmark specification.
+    """
+    md5sum: Optional[str] = None
 
     class Config:
         arbitrary_types_allowed = True
@@ -97,7 +120,7 @@ class BenchmarkSpecification(BaseModel):
         if not all(k in values for k in ["dataset", "target_cols", "input_cols", "split", "metrics"]):
             return values
 
-        checksum = values["checksum"]
+        checksum = values["md5sum"]
 
         expected = cls._compute_checksum(
             dataset=values["dataset"],
@@ -108,7 +131,7 @@ class BenchmarkSpecification(BaseModel):
         )
 
         if checksum is None:
-            values["checksum"] = expected
+            values["md5sum"] = expected
         elif checksum != expected:
             raise PolarisChecksumError(
                 "The dataset checksum does not match what was specified in the meta-data. "
@@ -135,7 +158,7 @@ class BenchmarkSpecification(BaseModel):
         """
 
         hash_fn = md5()
-        hash_fn.update(dataset.checksum.encode("utf-8"))
+        hash_fn.update(dataset.md5sum.encode("utf-8"))
         for c in sorted(target_cols):
             hash_fn.update(c.encode("utf-8"))
         for c in sorted(input_cols):
@@ -154,15 +177,15 @@ class BenchmarkSpecification(BaseModel):
     def __eq__(self, other):
         if not isinstance(other, BenchmarkSpecification):
             return False
-        return self.checksum == other.checksum
+        return self.md5sum == other.md5sum
 
-    def save(self, destination: str):
+    def to_yaml(self, destination: str):
         """Saves the benchmark to a yaml file."""
 
         fs.mkdir(destination, exist_ok=True)
 
         data = self.dict()
-        data["dataset"] = self.dataset.save(destination=destination)
+        data["dataset"] = self.dataset.to_yaml(destination=destination)
         data["metrics"] = [m.name for m in self.metrics]
         data["split"] = [list(v) if isinstance(v, tuple) else v for v in self.split]
 
@@ -199,7 +222,7 @@ class BenchmarkSpecification(BaseModel):
             test = _get_subset(self.split[1], hide_targets=True)
         return train, test
 
-    def evaluate(self, y_pred: Predictions) -> BenchmarkResults:
+    def evaluate(self, y_pred: PredictionsType) -> BenchmarkResults:
         """
         Execute the evaluation protocol for the benchmark.
 
@@ -216,7 +239,7 @@ class BenchmarkSpecification(BaseModel):
         # See also the `hide_targets` parameter in the `Subset` class.
         test = self.get_train_test_split()[1]
 
-        with tmp_attribute_change(test, "hide_targets", False):
+        with tmp_attribute_change(test, "_hide_targets", False):
             if isinstance(test, dict):
                 y_true = {k: v.targets for k, v in test.items()}
             else:
@@ -252,4 +275,4 @@ class BenchmarkSpecification(BaseModel):
         if len(scores) == 1:
             scores = scores["test"]
 
-        return BenchmarkResults(results=scores, benchmark_id=self.checksum)
+        return BenchmarkResults(results=scores, benchmark_id=self.md5sum)

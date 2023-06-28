@@ -1,3 +1,5 @@
+import string
+
 import yaml
 import zarr
 import fsspec
@@ -12,7 +14,7 @@ from pydantic import BaseModel, PrivateAttr, validator, root_validator, Field
 from loguru import logger
 
 from polaris.utils import fs
-from polaris.data._column import ColumnAnnotation, Modality
+from polaris.dataset._column import ColumnAnnotation, Modality
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.io import robust_file_copy
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
@@ -30,26 +32,41 @@ class Dataset(BaseModel):
     """
 
     _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
+    _CACHE_SUBDIR = "datasets"
 
-    # The table stores row-wise datapoints
+    """
+    The table stores row-wise datapoints
+    """
     table: Union[pd.DataFrame, str]
 
-    # The public-facing name of the dataset
+    """
+    The public-facing name of the dataset
+    """
     name: str
 
-    # A beginner-friendly description of the dataset
+    """
+    A beginner-friendly description of the dataset
+    """
     description: str
 
-    # The data source, e.g. a DOI, Github repo or URI
+    """
+    The data source, e.g. a DOI, Github repo or URI
+    """
     source: str
 
-    # Annotates each column with the modality of that column and additional meta-data
-    annotations: Dict[str, Union[str, Modality, ColumnAnnotation]] = Field(default_factory=dict)
+    """
+    Annotates each column with the modality of that column and additional meta-data
+    """
+    annotations: Dict[str, Union[str, Modality, ColumnAnnotation]] = {}
 
-    # Hash of the dataset, used to verify that the dataset is the expected version
-    checksum: Optional[str] = None
+    """
+    Hash of the dataset, used to verify that the dataset is the expected version
+    """
+    md5sum: Optional[str] = None
 
-    # Where the dataset is cached to locally
+    """
+    Where the dataset is cached to locally
+    """
     cache_dir: Optional[str] = None
 
     _path_to_hash: Dict[str, Dict[str, str]] = PrivateAttr(defaultdict(dict))
@@ -63,8 +80,18 @@ class Dataset(BaseModel):
         """If the table is not a dataframe yet, assume it's a path and try load it."""
         if not isinstance(v, pd.DataFrame):
             if not fs.is_file(v) or fs.get_extension(v) not in cls._SUPPORTED_TABLE_EXTENSIONS:
-                raise InvalidDatasetError(f" {v} is not a valid DataFrame or .parquet path.")
+                raise InvalidDatasetError(f"{v} is not a valid DataFrame or .parquet path.")
             v = pd.read_parquet(v)
+        return v
+
+    @validator("name")
+    def validate_name(cls, v):
+        """
+        Verify the name only contains valid characters which can be used in a file path.
+        """
+        valid_characters = string.ascii_letters + string.digits + "_-"
+        if not all(c in valid_characters for c in v):
+            raise InvalidDatasetError(f"`name` can only contain alpha-numeric characters, - or _, found {v}")
         return v
 
     @validator("annotations")
@@ -107,25 +134,27 @@ class Dataset(BaseModel):
         """
 
         # This is still ran when some fields are not specified
-        if any(k not in values for k in ["table", "annotations"]) or len(values["annotations"]) == 0:
+        if any(k not in values for k in ["table", "annotations", "name"]) or len(values["annotations"]) == 0:
             return
 
         # Verify the checksum
         # NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
-        actual = values["checksum"]
+        actual = values["md5sum"]
         expected = cls._compute_checksum(values["table"], values["annotations"])
 
         if actual is None:
-            values["checksum"] = expected
+            values["md5sum"] = expected
         elif actual != expected:
             raise PolarisChecksumError(
-                "The dataset checksum does not match what was specified in the meta-data. "
+                "The dataset md5sum does not match what was specified in the meta-data. "
                 f"{actual} != {expected}"
             )
 
         # Set the default cache dir if none and make sure it exists
         if values["cache_dir"] is None:
-            values["cache_dir"] = fs.join(DEFAULT_CACHE_DIR, values["name"], values["checksum"])
+            values["cache_dir"] = fs.join(
+                DEFAULT_CACHE_DIR, cls._CACHE_SUBDIR, values["name"], values["md5sum"]
+            )
         fs.mkdir(values["cache_dir"], exist_ok=True)
 
         return values
@@ -221,7 +250,7 @@ class Dataset(BaseModel):
         """Pretty-prints the table by adding the modalities and checksum"""
         self.table.loc[""] = [f"[{self.annotations[c].modality}]" for c in self.table.columns]
         s = repr(self.table)
-        s += f" [checksum {self.checksum}]"
+        s += f" [md5sum {self.md5sum}]"
         self.table.drop(self.table.tail(1).index, inplace=True)
         return s
 
@@ -232,9 +261,9 @@ class Dataset(BaseModel):
         """Whether two datasets are equal is solely determined by the checksum"""
         if not isinstance(other, Dataset):
             return False
-        return self.checksum == other.checksum
+        return self.md5sum == other.md5sum
 
-    def save(self, destination: str):
+    def to_yaml(self, destination: str):
         """
         Save the dataset to a destination directory
         """
@@ -261,7 +290,7 @@ class Dataset(BaseModel):
         serialized["table"] = table_path
         serialized["annotations"] = {k: m.dict() for k, m in self.annotations.items()}
         # We need to recompute the checksum, as the pointer paths have changed
-        serialized["checksum"] = self._compute_checksum(new_table, self.annotations)
+        serialized["md5sum"] = self._compute_checksum(new_table, self.annotations)
 
         new_table.to_parquet(table_path)
         with fsspec.open(dataset_path, "w") as f:

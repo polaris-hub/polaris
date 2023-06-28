@@ -15,28 +15,42 @@ class BenchmarkResults(BaseModel):
       This is needed since we want to be able to aggregate results across benchmarks for a model too.
     """
 
-    # Benchmark results are stored as a dictionary
+    """
+    Benchmark results are stored as a dictionary
+    """
     results: dict
 
-    # The benchmark these results were generated for
+    """
+    The benchmark these results were generated for
+    """
     benchmark_id: str
 
-    # The name to identify the results by.
-    # If not specified, this is given a default value which can be edited later through the Hub.
+    """
+    The name to identify the results by.
+    If not specified, this is given a default value which can be edited later through the Hub.
+    """
     name: Optional[str] = None
 
-    # Tags to categorize the results by.
+    """
+    Tags to categorize the results by.
+    """
     tags: dict = Field(default_factory=list)
 
-    # User attributes allow for additional meta-data to be stored
-    # If users repeatedly specify the same attribute, we can extract it into an additional field
+    """
+    User attributes allow for additional meta-data to be stored
+    If users repeatedly specify the same attribute, we can extract it into an additional field
+    """
     user_attributes: dict = Field(default_factory=dict)
 
-    # The user associated with the results. Automatically set.
-    _user_name: str = PrivateAttr()
+    """
+    The user associated with the results. Automatically set.
+    """
+    _user_name: Optional[str] = PrivateAttr(default_factory=PolarisClient.get_client().get_active_user)
 
-    # The time-stamp at which the results were created. Automatically set.
-    _created_at: datetime = PrivateAttr()
+    """
+    The time-stamp at which the results were created. Automatically set.
+    """
+    _created_at: datetime = Field(default_factory=datetime.now)
 
     @validator("results")
     def validate_results(cls, v):
@@ -62,12 +76,13 @@ class BenchmarkResults(BaseModel):
 
     def __init__(self, **data: Any):
         super().__init__(**data)
-        self._created_at = datetime.now()
-        self._user_name = PolarisClient().get_active_user()
 
         if self.name is None:
-            self.name = f"{self._user_name}_{self._created_at}"
+            if self._user_name is None:
+                self.name = str(self._created_at)
+            else:
+                self.name = f"{self._user_name}_{str(self._created_at)}"
 
-    def upload(self):
+    def upload_to_hub(self):
         """Upload to the hub"""
-        return PolarisClient().upload_results(self)
+        return PolarisClient().upload_results_to_hub(self)

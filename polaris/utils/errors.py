@@ -14,5 +14,9 @@ class PolarisChecksumError(ValueError):
     pass
 
 
+class PolarisUnauthorizedError(Exception):
+    pass
+
+
 class TestAccessError(Exception):
     pass

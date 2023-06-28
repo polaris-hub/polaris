@@ -1,4 +1,4 @@
-from polaris.data import Subset
+from polaris.dataset import Subset
 
 
 def test_single_task_indexing(test_dataset):

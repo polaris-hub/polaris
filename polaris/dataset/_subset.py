@@ -1,9 +1,9 @@
 import numpy as np
 from typing import Union, List, Sequence, Tuple, Any, Dict, Literal, Optional
-from polaris.data import Dataset
+from polaris.dataset import Dataset
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import TestAccessError
-from polaris.utils.types import Datapoint
+from polaris.utils.types import DatapointType
 
 
 class Subset:
@@ -30,7 +30,6 @@ class Subset:
         self.indices = indices
         self.target_cols = target_cols if isinstance(target_cols, list) else [target_cols]
         self.input_cols = input_cols if isinstance(input_cols, list) else [input_cols]
-        self.hide_targets = hide_targets
 
         # Validate the output format
         if input_format not in self._SUPPORTED_FORMATS:
@@ -46,6 +45,9 @@ class Subset:
 
         # For the iterator implementation
         self._pointer = 0
+
+        # This is a protected attribute to make explicit it should not be changed once set.
+        self._hide_targets = hide_targets
 
     @property
     def is_multi_task(self):
@@ -69,7 +71,7 @@ class Subset:
         Scikit-learn style access to the targets.
         If the dataset is multi-target, this will return a dict of arrays.
         """
-        if self.hide_targets:
+        if self._hide_targets:
             raise TestAccessError("Within Polaris, you should not need to access the targets of the test set")
         return self.as_array("y")
 
@@ -84,12 +86,12 @@ class Subset:
 
     def _extract(
         self,
-        data: Datapoint,
+        data: DatapointType,
         data_type: Union[Literal["x"], Literal["y"], Literal["xy"]],
         key: Optional[str] = None,
     ):
         """Helper function to extract data from the return format of this class"""
-        if self.hide_targets:
+        if self._hide_targets:
             return data
         x, y = data
         ret = x if data_type == "x" else y
@@ -123,7 +125,7 @@ class Subset:
     def __len__(self):
         return len(self.indices)
 
-    def __getitem__(self, item) -> Datapoint:
+    def __getitem__(self, item) -> DatapointType:
         """
         This method always returns an (X, y) tuple
 
@@ -145,7 +147,7 @@ class Subset:
         ins = {col: self.dataset.get_data(row.name, col) for col in self.input_cols}
         ins = self._convert(ins, self.input_cols, self._input_format)
 
-        if self.hide_targets:
+        if self._hide_targets:
             # If we are not allowed to access the targets, we return the inputs only.
             # This is useful to make accidental access to the test set less likely.
             return ins
