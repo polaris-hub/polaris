@@ -11,6 +11,7 @@ from polaris.evaluate import Metric, BenchmarkResults
 from polaris.utils import fs
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import PolarisChecksumError
+from polaris.utils.misc import listit
 from polaris.utils.types import PredictionsType, SplitType
 
 
@@ -166,10 +167,7 @@ class BenchmarkSpecification(BaseModel):
         for m in sorted(metrics, key=lambda k: k.name):
             hash_fn.update(m.name.encode("utf-8"))
 
-        # TODO (cwognum): Just encoding this as a string is a MAJOR limitation.
-        #  This means that the same split, but represented in a different format or order is considered different.
-        #  As the API is still unstable, I currently left it at is.
-        hash_fn.update(str(split).encode("utf-8"))
+        # TODO (cwognum): This should also account for the split, but I am not sure how to do this efficiently
 
         checksum = hash_fn.hexdigest()
         return checksum
@@ -187,7 +185,7 @@ class BenchmarkSpecification(BaseModel):
         data = self.dict()
         data["dataset"] = self.dataset.to_yaml(destination=destination)
         data["metrics"] = [m.name for m in self.metrics]
-        data["split"] = [list(v) if isinstance(v, tuple) else v for v in self.split]
+        data["split"] = listit(self.split)
 
         path = fs.join(destination, "benchmark.yaml")
         with fsspec.open(path, "w") as f:

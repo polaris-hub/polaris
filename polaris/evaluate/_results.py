@@ -85,4 +85,4 @@ class BenchmarkResults(BaseModel):
 
     def upload_to_hub(self):
         """Upload to the hub"""
-        return PolarisClient().upload_results_to_hub(self)
+        return PolarisClient.get_client().upload_results_to_hub(self)
