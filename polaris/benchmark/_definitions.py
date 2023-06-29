@@ -1,7 +1,4 @@
-from typing import Sequence
-
-from pydantic import validator, root_validator
-from polaris.utils.types import SplitIndicesType
+from pydantic import validator
 from polaris.benchmark import BenchmarkSpecification
 
 

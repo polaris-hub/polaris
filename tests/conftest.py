@@ -32,9 +32,9 @@ def test_zarr_archive(tmp_path):
     root = zarr.open_group(tmp_path, mode="w")
     group_a = root.create_group("A/")
     group_b = root.create_group("B/")
-    group_a.array("data", data=np.random.random((100, 2048)))
-    group_b.array("data", data=np.random.random((100, 2048)))
-    root.attrs["C"] = {"data": 0.0}
+    group_a.array(0, data=np.random.random((100, 2048)))
+    group_b.array(0, data=np.random.random((100, 2048)))
+    root.attrs["C"] = {0: 0.0}
     root.attrs["name"] = "Test"
     root.attrs["description"] = "Go wild in your test cases with this awesome dataset"
     root.attrs["source"] = "Imagination"

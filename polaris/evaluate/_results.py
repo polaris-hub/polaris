@@ -50,7 +50,7 @@ class BenchmarkResults(BaseModel):
     """
     The time-stamp at which the results were created. Automatically set.
     """
-    _created_at: datetime = Field(default_factory=datetime.now)
+    _created_at: datetime = PrivateAttr(default_factory=datetime.now)
 
     @validator("results")
     def validate_results(cls, v):
