@@ -23,7 +23,7 @@ def create_filelock(lock_name: str, cache_dir_path: str = DEFAULT_CACHE_DIR):
     return filelock.FileLock(lock_path)
 
 
-def robust_file_copy(
+def robust_copy(
     source_path: str,
     destination_path: str,
     md5sum: Optional[str] = None,
@@ -33,8 +33,8 @@ def robust_file_copy(
     leave_progress: bool = True,
     chunk_size: int = 2048,
 ):
-    if not fs.is_file(source_path) and not fs.get_extension(source_path) == "zarr":
-        raise ValueError(f"{source_path} is a directory!")
+    if not fs.is_file(source_path) and get_zarr_root(source_path) is None:
+        raise ValueError(f"{source_path} is a directory and not part of a .zarr hierarchy!")
 
     if md5sum is None and fs.is_file(source_path):
         # NOTE (cwognum): This effectively means we will not check the checksum of .zarr files.
@@ -101,12 +101,9 @@ def download_with_checksum(
 
     # Download the artifact if not already in the cache.
     if not fs.exists(destination_path):
-        zarr_root = get_zarr_root(source_path)
-        if zarr_root is not None:
-            # In case of .zarr files, we copy the entire hierarchy of the .zarr file.
-            # Instead of just copying a sub-file.
+        if fs.is_dir(source_path):
             fs.copy_dir(
-                zarr_root,
+                source_path,
                 destination_path,
                 progress=progress,
                 leave_progress=leave_progress,

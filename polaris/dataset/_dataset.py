@@ -1,3 +1,4 @@
+import os.path
 import string
 
 import yaml
@@ -9,14 +10,14 @@ import pandas as pd
 
 from hashlib import md5
 from collections import defaultdict
-from typing import Dict, Optional, Union, List
-from pydantic import BaseModel, PrivateAttr, validator, root_validator, Field
+from typing import Dict, Optional, Union, Tuple
+from pydantic import BaseModel, PrivateAttr, validator, root_validator
 from loguru import logger
 
 from polaris.utils import fs
 from polaris.dataset._column import ColumnAnnotation, Modality
 from polaris.utils.constants import DEFAULT_CACHE_DIR
-from polaris.utils.io import robust_file_copy
+from polaris.utils.io import robust_copy, get_zarr_root
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 
 
@@ -33,44 +34,47 @@ class Dataset(BaseModel):
 
     _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
     _CACHE_SUBDIR = "datasets"
+    _INDEX_SEP = "#"
+    _INDEX_FMT = "{path}" + _INDEX_SEP + "{index}"
 
     """
-    The table stores row-wise datapoints
-    """
+        The table stores row-wise datapoints
+        """
     table: Union[pd.DataFrame, str]
 
     """
-    The public-facing name of the dataset
-    """
+        The public-facing name of the dataset
+        """
     name: str
 
     """
-    A beginner-friendly description of the dataset
-    """
+        A beginner-friendly description of the dataset
+        """
     description: str
 
     """
-    The data source, e.g. a DOI, Github repo or URI
-    """
+        The data source, e.g. a DOI, Github repo or URI
+        """
     source: str
 
     """
-    Annotates each column with the modality of that column and additional meta-data
-    """
+        Annotates each column with the modality of that column and additional meta-data
+        """
     annotations: Dict[str, Union[str, Modality, ColumnAnnotation]] = {}
 
     """
-    Hash of the dataset, used to verify that the dataset is the expected version
-    """
+        Hash of the dataset, used to verify that the dataset is the expected version
+        """
     md5sum: Optional[str] = None
 
     """
-    Where the dataset is cached to locally
-    """
+        Where the dataset is cached to locally
+        """
     cache_dir: Optional[str] = None
 
     _path_to_hash: Dict[str, Dict[str, str]] = PrivateAttr(defaultdict(dict))
     _has_been_warned: bool = PrivateAttr(False)
+    _has_been_cached: bool = PrivateAttr(False)
 
     class Config:
         arbitrary_types_allowed = True
@@ -114,15 +118,6 @@ class Dataset(BaseModel):
                 v[c] = ColumnAnnotation()
             if isinstance(v[c], (str, Modality)):
                 v[c] = ColumnAnnotation(modality=v[c])
-
-            # Verify that pointer columns have valid extensions and exist
-            if v[c].is_pointer():
-                paths = values["table"][c].values
-                if any(not fs.exists(p) for p in paths):
-                    raise InvalidDatasetError(
-                        f"The {c} [{v[c]}] column contains pointers "
-                        f"that reference files which do not exist."
-                    )
         return v
 
     @root_validator(skip_on_failure=True)
@@ -192,8 +187,20 @@ class Dataset(BaseModel):
         # Parse any group into a pointer column
         data = defaultdict(dict)
         for col, group in root.groups():
-            for name, arr in group.arrays():
-                data[col][name] = fs.join(path, arr.path)
+            keys = list(group.array_keys())
+
+            if len(keys) == 1:
+                arr = group[keys[0]]
+                for i, arr_row in enumerate(arr):
+                    data[col][i] = cls._INDEX_FMT.format(path=fs.join(path, arr.name), index=i)
+
+            else:
+                for name, arr in group.arrays():
+                    try:
+                        name = int(name)
+                    except ValueError as error:
+                        raise TypeError(f"Array names in .zarr hierarchies should be integers") from error
+                    data[col][name] = fs.join(path, arr.path)
 
         # Parse additional columns from the user attributes
         for col in root.attrs:
@@ -203,8 +210,15 @@ class Dataset(BaseModel):
                         f"Expected the dictionary type for user attr `{col}`, found {type(root.attrs[col])}"
                     )
                 # All non-expected user attrs are assumed to be additional columns
-                # These should be specified as dictionaries: index -> value
-                data[col] = root.attrs.pop(col)
+                # These should be specified as dicts with index -> value
+                d = {}
+                for k, v in root.attrs.pop(col).items():
+                    try:
+                        k = int(k)
+                    except ValueError as error:
+                        raise TypeError(f"Column names in .zarr hierarchies should be integers") from error
+                    d[k] = v
+                data[col] = d
 
         # Construct the dataset
         table = pd.DataFrame(data)
@@ -263,6 +277,39 @@ class Dataset(BaseModel):
             return False
         return self.md5sum == other.md5sum
 
+    def _copy_and_update_pointers(
+        self, save_dir: str, table: Optional[pd.DataFrame] = None, inplace: bool = False
+    ) -> pd.DataFrame:
+        """Copy and update the path in the table to the new destination"""
+
+        def fn(path):
+            """Helper function that can be used within Pandas apply to copy and update all files"""
+
+            # We copy the entire .zarr hierarchy
+            root = get_zarr_root(path)
+            if root is None:
+                raise NotImplementedError(
+                    "Only the .zarr file format is currently supported for pointer columns"
+                )
+
+            # We could introduce name collisions here and thus use a hash of the original path for the destination
+            dst = fs.join(save_dir, f"{md5(root.encode('utf-8')).hexdigest()}.zarr")
+            robust_copy(root, dst)
+
+            diff = os.path.relpath(path, root)
+            dst = fs.join(dst, diff)
+            return dst
+
+        if table is None:
+            table = self.table
+        if not inplace:
+            table = self.table.copy(deep=True)
+
+        for c in table.columns:
+            if self.annotations[c].is_pointer():
+                table[c] = table[c].apply(fn)
+        return table
+
     def to_yaml(self, destination: str):
         """
         Save the dataset to a destination directory
@@ -272,19 +319,8 @@ class Dataset(BaseModel):
         dataset_path = fs.join(destination, "dataset.yaml")
         pointer_dir = fs.join(destination, "data")
 
-        def _copy_and_update(src):
-            """Copy and update the path in the table to the new destination"""
-            ext = fs.get_extension(src)
-            dst = fs.join(pointer_dir, f"{md5(src.encode('utf-8')).hexdigest()}.{ext}")
-            robust_file_copy(src, dst)
-            return dst
-
         # Save additional data
-        new_table = self.table.copy(deep=True)
-
-        for c in new_table.columns:
-            if self.annotations[c].is_pointer():
-                new_table[c] = new_table[c].apply(_copy_and_update)
+        new_table = self._copy_and_update_pointers(pointer_dir, inplace=False)
 
         serialized = self.dict()
         serialized["table"] = table_path
@@ -304,6 +340,8 @@ class Dataset(BaseModel):
         """
         if value not in self._path_to_hash[column]:
             h = md5(value.encode("utf-8")).hexdigest()
+
+            value, _ = self._split_index_from_path(value)
             ext = fs.get_extension(value)
             dst = fs.join(self.cache_dir, column, f"{h}.{ext}")
 
@@ -313,59 +351,63 @@ class Dataset(BaseModel):
 
         return self._path_to_hash[column][value]
 
+    def _split_index_from_path(self, path: str) -> Tuple[str, Optional[int]]:
+        """
+        Paths can have an additional index appended to them.
+        This extracts that index from the path.
+        """
+        index = None
+        if self._INDEX_SEP in path:
+            path, index = path.split(self._INDEX_SEP)
+            index = int(index)
+        return path, index
+
     def get_data(self, row, col):
         """
         Helper function to get data from the Dataset. Since the dataset might contain pointers to
         external files, data retrieval is more complicated than just indexing the table.
         """
 
-        def _load(path: str) -> np.ndarray:
+        def _load(p: str, index: Optional[int]) -> np.ndarray:
             # NOTE (cwognum): We will want to support more formats than just .zarr in the future
             #  which is why I have it in a separate function.
-            return zarr.convenience.load(path)
+            arr = zarr.convenience.load(p)
+            if index is not None:
+                arr = arr[index]
+            return arr
 
         value = self.table.loc[row, col]
         if not self.annotations[col].is_pointer():
             return value
 
+        value, index = self._split_index_from_path(value)
+
         # In the case it is a pointer column, we need to load additional data into memory
         # We first check if the data has been downloaded to the cache.
         path = self.get_cache_path(column=col, value=value)
         if fs.exists(path):
-            return _load(path)
+            return _load(path, index)
 
         # If it doesn't exist, we load from the original path and warn if not local
-        if not fs.is_local_path(path) and not self._has_been_warned:
+        if not fs.is_local_path(value) and not self._has_been_warned:
             logger.warning(
                 f"You're loading data from a remote location. "
                 f"To speed up this process, consider caching the dataset first "
-                f"using {self.__class__.__name__}.download()"
+                f"using {self.__class__.__name__}.cache()"
             )
             self._has_been_warned = True
-        return _load(value)
+        return _load(value, index)
 
     def size(self):
         return len(self), len(self.table.columns)
 
-    def download(self, column_subset: Optional[Union[str, List[str]]] = None) -> str:
+    def cache(self) -> str:
         """
         Download all additional data for pointer columns.
         This does not change any data in the table itself, but populates a mapping from the table paths
         to the cached paths. This thus keeps the original dataset intact.
         """
-
-        if column_subset is None:
-            column_subset = self.table.columns.values.tolist()
-        if not isinstance(column_subset, list):
-            column_subset = [column_subset]
-
-        for col in column_subset:
-            if not self.annotations[col].is_pointer():
-                continue
-
-            paths = self.table[col].values
-            for src in paths:
-                dst = self.get_cache_path(col, src)
-                robust_file_copy(src, dst)
-
+        if not self._has_been_cached:
+            self._copy_and_update_pointers(self.cache_dir, inplace=True)
+            self._has_been_cached = True
         return self.cache_dir

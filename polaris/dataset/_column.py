@@ -1,7 +1,7 @@
 import enum
 from typing import Optional, Union
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, validator
 
 
 class Modality(enum.Enum):

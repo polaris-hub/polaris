@@ -34,7 +34,7 @@ def test_load_data(modality, tmp_path):
     assert (data == arr).all()
 
     # With caching
-    dataset.download()
+    dataset.cache()
     data = dataset.get_data(row=0, col="A")
     assert (data == arr).all()
 
@@ -81,9 +81,10 @@ def test_dataset_checksum(test_dataset):
 
 def test_dataset_from_zarr(test_zarr_archive):
     dataset = Dataset.from_zarr(test_zarr_archive)
-    assert dataset.get_data("data", "A").shape == (100, 2048)
-    assert dataset.get_data("data", "B").shape == (100, 2048)
-    assert dataset.get_data("data", "C") == 0.0
+    assert len(dataset.table) == 100
+    assert dataset.get_data(row=0, col="A").shape == (2048,)
+    assert dataset.get_data(row=0, col="B").shape == (2048,)
+    assert dataset.get_data(row=0, col="C") == 0.0
 
 
 def test_dataset_from_yaml(test_dataset, tmpdir):
