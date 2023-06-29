@@ -48,7 +48,7 @@ def test_single_task_benchmark(test_dataset):
     test_indices = list(range(90, 100))
     return SingleTaskBenchmarkSpecification(
         dataset=test_dataset,
-        metrics=["mean_absolute_error"],
+        metrics=["mean_absolute_error", "mean_squared_error"],
         split=(train_indices, test_indices),
         target_cols="expt",
         input_cols="smiles",
@@ -58,8 +58,8 @@ def test_single_task_benchmark(test_dataset):
 @pytest.fixture(scope="module")
 def test_multi_task_benchmark(test_dataset):
     # For the sake of simplicity, just use a small set of indices
-    train_indices = [0, (1, [0])]
-    test_indices = [(1, [1]), 2]
+    train_indices = list(range(90))
+    test_indices = list(range(90, 100))
     return MultiTaskBenchmarkSpecification(
         dataset=test_dataset,
         metrics=["mean_absolute_error"],
