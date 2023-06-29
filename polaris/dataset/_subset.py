@@ -139,11 +139,9 @@ class Subset:
         idx = self.indices[item]
 
         # Get the row from the base table
-        row_idx = idx[0] if self.is_multi_task else idx
-        row = self.dataset.table.iloc[row_idx]
+        row = self.dataset.table.iloc[idx]
 
         # Load the input modalities
-        # NOTE (cwognum): We currently do not support splits across inputs, so we do not need to do any indexing.
         ins = {col: self.dataset.get_data(row.name, col) for col in self.input_cols}
         ins = self._convert(ins, self.input_cols, self._input_format)
 
@@ -153,12 +151,7 @@ class Subset:
             return ins
 
         # Retrieve the targets
-        target_idx = self.target_cols
-        if self.is_multi_task:
-            target_idx = [target_idx[i] for i in idx[1]]
-
-        # If in a multi-task setting a target is missing due to indexing, we return the np NaN.
-        outs = {c: row[c] if c in target_idx else np.nan for c in self.target_cols}
+        outs = {col: self.dataset.get_data(row.name, col) for col in self.target_cols}
         outs = self._convert(outs, self.target_cols, self._target_format)
 
         return ins, outs

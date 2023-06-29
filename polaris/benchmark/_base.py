@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import yaml
 import fsspec
@@ -98,16 +100,41 @@ class BenchmarkSpecification(BaseModel):
         return v
 
     @validator("split")
-    def validate_split(cls, v):
+    def validate_split(cls, v, values):
         """
-        Verifies there is at least two, non-empty partitions
+        Verifies that:
+          1) There is at least two, non-empty partitions
+          2) All indices are valid given the dataset
+          3) There is no duplicate indices in any of the sets
+          3) There is no overlap between the train and test set
         """
+
+        # There is at least two, non-empty partitions
         if (
             len(v[0]) == 0
             or (isinstance(v[1], dict) and any(len(v) == 0 for v in v[1].values()))
             or (not isinstance(v[1], dict) and len(v[1]) == 0)
         ):
             raise ValueError("The predefined split contains empty partitions")
+
+        train_indices = v[0]
+        test_indices = [i for part in v[1].values() for i in part] if isinstance(v[1], dict) else v[1]
+
+        # The train and test indices do not overlap
+        if any(i in train_indices for i in test_indices):
+            raise ValueError("The predefined split specifies overlapping train and test sets")
+
+        # Duplicate indices
+        if len(set(train_indices)) != len(train_indices):
+            raise ValueError("The training set contains duplicate indices")
+        if len(set(test_indices)) != len(test_indices):
+            raise ValueError("The test set contains duplicate indices")
+
+        # All indices are valid given the dataset
+        if "dataset" in values:
+            if any(i < 0 or i >= len(values["dataset"]) for i in train_indices + test_indices):
+                raise ValueError("The predefined split contains invalid indices")
+
         return v
 
     @root_validator(skip_on_failure=True)
@@ -153,9 +180,6 @@ class BenchmarkSpecification(BaseModel):
         Computes a hash of the benchmark.
 
         This is meant to uniquely identify the benchmark and can be used to verify the version.
-
-        (1) Is not sensitive to the ordering of the columns or metrics
-        (2) IS sensitive to the ordering of the splits
         """
 
         hash_fn = md5()
@@ -167,7 +191,8 @@ class BenchmarkSpecification(BaseModel):
         for m in sorted(metrics, key=lambda k: k.name):
             hash_fn.update(m.name.encode("utf-8"))
 
-        # TODO (cwognum): This should also account for the split, but I am not sure how to do this efficiently
+        s = json.dumps(sorted(split))
+        hash_fn.update(s.encode("utf-8"))
 
         checksum = hash_fn.hexdigest()
         return checksum

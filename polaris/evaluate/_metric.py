@@ -1,6 +1,7 @@
 from typing import Callable
 from sklearn.metrics import (
     mean_absolute_error as sklearn_mae,
+    mean_squared_error as sklearn_mse,
     accuracy_score as sklearn_acc,
 )
 
@@ -35,6 +36,10 @@ class Metric:
         """Singleton access to an already registered metric"""
         return METRICS_REGISTRY[name]
 
+    @staticmethod
+    def list_supported_metrics():
+        return sorted(list(METRICS_REGISTRY.keys()))
+
     def score(self, y_true, y_pred):
         """Compute the metric"""
         return self.fn(y_true, y_pred)
@@ -48,4 +53,5 @@ class Metric:
 #  - Add support for more metrics
 #  - Any preprocessing needed? For example changing the shape / dtype? Converting from torch tensors or lists?
 mean_absolute_error = Metric("mean_absolute_error", sklearn_mae)
+mean_squared_error = Metric("mean_squared_error", sklearn_mse)
 accuracy = Metric("accuracy", sklearn_acc)

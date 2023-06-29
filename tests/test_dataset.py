@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from polaris.dataset import Dataset, Modality
 from polaris.loader import load_dataset
 from polaris.utils import fs
+from polaris.utils.errors import PolarisChecksumError
 
 
 @pytest.mark.parametrize("modality", [mod for mod in list(Modality) if mod.is_pointer()])
@@ -57,16 +58,20 @@ def test_dataset_checksum(test_dataset):
     kwargs["table"] = kwargs["table"][kwargs["table"].columns[::-1]]
     Dataset(**kwargs)
 
+    def _check_for_failure(_kwargs):
+        with pytest.raises(ValidationError) as error:
+            Dataset(**_kwargs)
+            assert error.error_count() == 1  # noqa
+            assert isinstance(error.errors()[0], PolarisChecksumError)  # noqa
+
     # Without any changes, but different hash
     kwargs["md5sum"] = "invalid"
-    with pytest.raises(ValidationError):
-        Dataset(**kwargs)
+    _check_for_failure(kwargs)
 
     # With changes, but same hash
     kwargs["md5sum"] = original
     kwargs["table"] = kwargs["table"].iloc[:-1]
-    with pytest.raises(ValidationError):
-        Dataset(**kwargs)
+    _check_for_failure(kwargs)
 
     # With changes, but no hash
     kwargs["md5sum"] = None
