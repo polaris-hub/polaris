@@ -38,38 +38,38 @@ class Dataset(BaseModel):
     _INDEX_FMT = "{path}" + _INDEX_SEP + "{index}"
 
     """
-        The table stores row-wise datapoints
-        """
+    The table stores row-wise datapoints
+    """
     table: Union[pd.DataFrame, str]
 
     """
-        The public-facing name of the dataset
-        """
+    The public-facing name of the dataset
+    """
     name: str
 
     """
-        A beginner-friendly description of the dataset
-        """
+    A beginner-friendly description of the dataset
+    """
     description: str
 
     """
-        The data source, e.g. a DOI, Github repo or URI
-        """
+    The data source, e.g. a DOI, Github repo or URI
+    """
     source: str
 
     """
-        Annotates each column with the modality of that column and additional meta-data
-        """
+    Annotates each column with the modality of that column and additional meta-data
+    """
     annotations: Dict[str, Union[str, Modality, ColumnAnnotation]] = {}
 
     """
-        Hash of the dataset, used to verify that the dataset is the expected version
-        """
+    Hash of the dataset, used to verify that the dataset is the expected version
+    """
     md5sum: Optional[str] = None
 
     """
-        Where the dataset is cached to locally
-        """
+    Where the dataset is cached to locally
+    """
     cache_dir: Optional[str] = None
 
     _path_to_hash: Dict[str, Dict[str, str]] = PrivateAttr(defaultdict(dict))
