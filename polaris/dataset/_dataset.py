@@ -37,7 +37,7 @@ class Dataset(BaseModel):
     _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
     _CACHE_SUBDIR = "datasets"
     _INDEX_SEP = "#"
-    _INDEX_FMT = "{path}" + _INDEX_SEP + "{index}"
+    _INDEX_FMT = f"{{path}}{_INDEX_SEP}{{index}}"
 
     """
     The table stores row-wise datapoints
@@ -73,6 +73,18 @@ class Dataset(BaseModel):
     Where the dataset is cached to locally
     """
     cache_dir: Optional[str] = None
+
+    """
+    The dataset URL on the Polaris Hub.
+    """
+
+    # TODO(hadim): `computed_field` is only available in the very recent pydantic 2.x
+    # Uncomment once https://github.com/conda-forge/pydantic-feedstock/pull/82 is merged
+    # @computed_field
+    @property
+    def polaris_hub_url(self) -> Optional[str]:
+        # NOTE(hadim): putting as default here but we could make it optional
+        return "https://polaris.io/dataset/ORG_OR_USER/DATASET_NAME?"
 
     _path_to_hash: Dict[str, Dict[str, str]] = PrivateAttr(defaultdict(dict))
     _has_been_warned: bool = PrivateAttr(False)
@@ -270,15 +282,8 @@ class Dataset(BaseModel):
         for k, v in self.annotations.items():
             repr_dict["annotations"][k] = v.modality.name
 
-        # NOTE(hadim): probably backport in its' own method and also sometime it will be None
-        # if the dataset does not exist on the hub.
-        repr_dict["polaris_hub_url"] = f"https://polaris.io/dataset/ORG_OR_USER/{self.name}"
-
-        # NOTE(hadim): some metadata below
-        # Make them properties?
-        repr_dict["n_datapoints"] = len(self)
-        repr_dict["n_columns"] = len(self.table.columns)
-        repr_dict["dataset_size_mb"] = 128
+        # TODO(hadim): remove once @compute_field is available
+        repr_dict["polaris_hub_url"] = self.polaris_hub_url
 
         return repr_dict
 
@@ -289,7 +294,7 @@ class Dataset(BaseModel):
         return dict2html(self._repr_dict_())
 
     def __str__(self):
-        return json.dumps(self.__repr__(), indent=2)
+        return self.__repr__()
 
     def __eq__(self, other):
         """Whether two datasets are equal is solely determined by the checksum"""

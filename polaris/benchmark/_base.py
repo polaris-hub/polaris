@@ -59,6 +59,29 @@ class BenchmarkSpecification(BaseModel):
     """
     md5sum: Optional[str] = None
 
+    """
+    The main metric is the first on the `metrics` field.
+    """
+
+    # TODO(hadim): `computed_field` is only available in the very recent pydantic 2.x
+    # Uncomment once https://github.com/conda-forge/pydantic-feedstock/pull/82 is merged
+    # @computed_field
+    @property
+    def main_metric(self) -> Union[Metric, str]:
+        return self.metrics[0]
+
+    """
+    The benchmark URL on the Polaris Hub.
+    """
+
+    # TODO(hadim): `computed_field` is only available in the very recent pydantic 2.x
+    # Uncomment once https://github.com/conda-forge/pydantic-feedstock/pull/82 is merged
+    # @computed_field
+    @property
+    def polaris_hub_url(self) -> Optional[str]:
+        # NOTE(hadim): putting as default here but we could make it optional
+        return "https://polaris.io/benchmark/ORG_OR_USER/BENCHMARK_NAME?"
+
     class Config:
         arbitrary_types_allowed = True
 
@@ -95,9 +118,15 @@ class BenchmarkSpecification(BaseModel):
         """
         if not isinstance(v, List):
             v = [v]
+
         v = [m if isinstance(m, Metric) else Metric.get_by_name(m) for m in v]
+
         if len(set(m.name for m in v)) != len(v):
             raise ValueError("The task specifies duplicate metrics")
+
+        if len(v) == 0:
+            raise ValueError("Specify at least one metric")
+
         return v
 
     @validator("split")
@@ -309,15 +338,16 @@ class BenchmarkSpecification(BaseModel):
 
         repr_dict["dataset_name"] = self.dataset.name
         repr_dict["metrics"] = [m.name for m in self.metrics]
-        repr_dict["main_metric"] = "MAIN_METRIC?"
+
+        # TODO(hadim): remove once @compute_field is available
+        repr_dict["main_metric"] = self.main_metric.name
 
         # Make them properties?
         repr_dict["n_input_cols"] = len(self.input_cols)
         repr_dict["n_target_cols"] = len(self.target_cols)
 
-        # NOTE(hadim): probably backport in its' own method and also sometime it will be None
-        # if the dataset does not exist on the hub.
-        repr_dict["polaris_hub_url"] = f"https://polaris.io/benchmark/ORG_OR_USER/BENCHMARK_NAME?"
+        # TODO(hadim): remove once @compute_field is available
+        repr_dict["polaris_hub_url"] = self.polaris_hub_url
 
         return repr_dict
 
@@ -328,4 +358,4 @@ class BenchmarkSpecification(BaseModel):
         return dict2html(self._repr_dict_())
 
     def __str__(self):
-        return json.dumps(self.__repr__(), indent=2)
+        return self.__repr__()
