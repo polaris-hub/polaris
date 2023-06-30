@@ -1,94 +1,97 @@
-# script to clean curate endpoint measures
-import numpy as np
 from typing import List
 from typing import Dict
 import pandas as pd
+from sklearn.utils.multiclass import type_of_target
 
 from scipy.stats import zscore
-from .utils.class_convertor import DatasetClassConverter
-from ._chemistry_curator import UNIQUE_ID, NO_STEREO_UNIQUE_ID
+from .utils import discretizer
+from ._chemistry_curator import UNIQUE_ID, NO_STEREO_UNIQUE_ID, NUM_DEF_STEREO_CENTER, NUM_STEREO_CENTER
 
-DUP_COL = "is_duplicated"
-MAX_CLASSES = 10
-CAT = "categorical"
-CNT = "continuous"
-
-
-def _detect_data_type(values: np.ndarray):
-    """Detect the type of input values `continuous` or `categorical`"""
-    num_vals = len(np.unique(values))
-    if num_vals < 2:
-        return None
-    elif num_vals > MAX_CLASSES:
-        return CNT
-    return CAT
+CAT = ["binary", "multiclass"]
+CNT = ["continuous"]
+CLS_PREFIX = "CLASS_"
 
 
 def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str) -> List:
     """Detect molecule stereoisomers which show activity cliff.
-       The activity cliff is defined either by `zscore > 3` for continuous value,
-       or different class label for categorical values.
+       For continuous data, the activity cliff is defined by the `zscore` difference greater than 1.
+       For categorical data, the activity cliff is defined by class labels for categorical values.
+       It's recommended to use provide clear thresholds to classify the bioactivity if possible.
 
     Args:
         data: Dataframe which contains unique ID which identifies the stereoisomers.
         data_col: Column name for the targeted activity
     """
-    data_type = _detect_data_type(data[data_col].dropna())
+    data_type = type_of_target(data[data_col].dropna().values, input_name=data_col)
 
     if data_type is None:
         raise ValueError(f"The column {data_col} contains less than 2 unique values.")
 
     mol_with_cliff = []
-    for hashmol_id, group_df in data.groupby(NO_STEREO_UNIQUE_ID):
-        if data_type == CNT:
-            group_df["zscore"] = zscore(group_df[data_col])
-            has_cliff = group_df["zscore"].abs().max() > 3
-        else:
-            has_cliff = len(group_df[data_col].unique()) > 1
+    if data_type in CNT:
+        data[f"{data_col}_zscore"] = zscore(data[data_col].values, nan_policy="omit")
 
-        if has_cliff:
-            mol_with_cliff.append(hashmol_id)
+    for hashmol_id, group_df in data.groupby(NO_STEREO_UNIQUE_ID):
+        if group_df.shape[0] > 1:
+            if data_type in CNT:
+                has_cliff = (group_df[f"{data_col}_zscore"].max() - group_df[f"{data_col}_zscore"].min()) > 1
+            else:
+                has_cliff = len(group_df[data_col].unique()) > 1
+
+            if has_cliff:
+                mol_with_cliff.append(hashmol_id)
 
     return mol_with_cliff
 
 
 def _process_stereo_activity_cliff(
-    data: pd.DataFrame,
-    data_cols: List[str],
-    mask_stereo_cliff: bool = False,
+    data: pd.DataFrame, data_cols: List[str], mask_stereo_undefined_mols: bool = True
 ):
-    """Detect and/or mask out the molecule stereoisomers which show activity cliff
+    """Detect and/or mask out the molecule stereoisomers which show activity cliff.
+       Teh
 
     Args:
         data: Parsed dataset
-        data_cols: Data column names to be processed
-        mask_stereo_cliff: Whether mask out the stereoisomers which show activity cliff from dataset.
-            This is recommended if the downstream molecule representation is unable to identify the stereoisomers.
+        data_cols: Data column names to be processed.
+        mask_stereo_undefined_mols: Whether remove molecules and the bioactivity which shows chiral shift
+                                    but stereo information not defined in the molecule representation.
     """
     for data_col in data_cols:
+        data_col_mask = (
+            [data_col, data_col[len(CLS_PREFIX) :]] if data_col.startswith(CLS_PREFIX) else data_col
+        )
         mol_with_cliff = _detect_stereo_activity_cliff(data, data_col)
         data.loc[data[NO_STEREO_UNIQUE_ID].isin(mol_with_cliff), f"{data_col}_stereo_cliff"] = True
-        if mask_stereo_cliff:
-            data.loc[data[NO_STEREO_UNIQUE_ID].isin(mol_with_cliff), data_col] = None
+        if len(mol_with_cliff) > 0 and mask_stereo_undefined_mols:
+            mol_ids = data.query(f"`{data_col}_stereo_cliff`==True & {NUM_DEF_STEREO_CENTER}==0")[
+                UNIQUE_ID
+            ].values
+            data.loc[data[UNIQUE_ID].isin(mol_ids), data_col_mask] = None
     return data
 
 
-def _merge_duplicates(data: pd.DataFrame, data_cols: List[str], merge_on: str = UNIQUE_ID) -> pd.DataFrame:
+def _merge_duplicates(
+    data: pd.DataFrame, data_cols: List[str], merge_on: List[str] = [UNIQUE_ID], keep_all_rows: bool = False
+) -> pd.DataFrame:
     """Merge molecules with multiple measurements.
-        Median is used to compute the average value cross all measurements
+       To be robust to the outliers, `median` is used to compute the average value cross all measurements.
 
     Args:
         data: Parsed dataset
         data_cols: Data column names to be processed
-        merge_on: Column name to identify the duplicated molecules
+        merge_on: Column name to identify the duplicated molecules.
+                  dy default, `molhash_id` is used to identify the replicated molecule.
 
     """
-    merged_df = []
-    id_cols = list({merge_on, NO_STEREO_UNIQUE_ID})
-    for uid, df in data.groupby(by=id_cols):
-        uid = list(uid) if isinstance(uid, tuple) else [uid]
-        merged_df.append(uid + df[data_cols].median(axis=0, skipna=True).tolist())
-    merged_df = pd.DataFrame(merged_df, columns=id_cols + data_cols)
+    df_list = []
+    # Include 'molhash without stereo information' additionally for easily tracking the stereoisomers
+    for uid, df in data.groupby(by=merge_on):
+        data_vals = df[data_cols].median(axis=0, skipna=True).tolist()
+        df.loc[:, data_cols] = data_vals
+        df_list.append(df)
+    merged_df = pd.concat(df_list).sort_values(by=merge_on)
+    if not keep_all_rows:
+        merged_df = merged_df.drop_duplicates(subset=merge_on, keep="first").reset_index(drop=True)
     return merged_df
 
 
@@ -96,7 +99,7 @@ def _class_conversion(
     data: pd.DataFrame,
     data_cols: List[str],
     conversion_params: List[dict],
-    prefix: str = "CLASS_",
+    prefix: str = CLS_PREFIX,
 ) -> pd.DataFrame:
     """
     Apply binary or multiclass conversion to the data columns by the given thresholds
@@ -120,18 +123,17 @@ def _class_conversion(
     Returns:
         dataset: Dataset with clss columns
     """
-    data_converter = DatasetClassConverter(
-        data_columns=data_cols,
-        converter_params=conversion_params,
-    )
-    dataset = data_converter.transform(dataset=data, prefix=prefix)
-    return dataset
+    for data_col in data_cols:
+        thresholds = conversion_params.get(data_col, None)
+        if thresholds is not None:
+            data[f"{prefix}{data_col}"] = discretizer(X=data[data_col].values, allow_nan=True, **thresholds)
+    return data
 
 
 def run_data_curation(
     data: pd.DataFrame,
     data_cols: List[str],
-    mask_stereo_cliff: bool = False,
+    mask_stereo_undefined_mols: bool = False,
     ignore_stereo: bool = False,
     class_thresholds: Dict = None,
 ) -> pd.DataFrame:
@@ -140,27 +142,31 @@ def run_data_curation(
     Args:
         data: Dataframe which include molecule, measured values.
         data_cols: Column names for the data of interest.
-        mask_stereo_cliff: Whether mask the molecule stereo pairs which show activity cliff from dataset.
+        mask_stereo_undefined_mols: Whether mask the molecule stereo pairs which show activity cliff from dataset.
         ignore_stereo: Ignore the stereochemistry information from data curation.
         class_thresholds: Parameters to define class labels for the above listed `data_cols`.
     """
     # User should deal with scaling and normalization on their end
 
-    # merge
     data = _merge_duplicates(
-        data=data, data_cols=data_cols, merge_on=NO_STEREO_UNIQUE_ID if ignore_stereo else UNIQUE_ID
+        data=data,
+        data_cols=data_cols,
+        merge_on=[NO_STEREO_UNIQUE_ID] if ignore_stereo else [UNIQUE_ID],
     )
-
     # class conversion
     if class_thresholds:
-        data = _class_conversion(data, data_cols, class_thresholds, prefix="CLASS_")
-
+        data = _class_conversion(data, data_cols, class_thresholds, prefix=CLS_PREFIX)
     if not ignore_stereo:
         # detect stereo activity cliff, keep or remove
         data = _process_stereo_activity_cliff(
             data=data,
-            data_cols=[f"CLASS_{data_col}" for data_col in data_cols] if class_thresholds else data_cols,
-            mask_stereo_cliff=mask_stereo_cliff,
+            data_cols=[
+                f"{CLS_PREFIX}{data_col}" if f"{CLS_PREFIX}{data_col}" in data.columns else data_col
+                for data_col in data_cols
+            ]
+            if class_thresholds
+            else data_cols,
+            mask_stereo_undefined_mols=mask_stereo_undefined_mols,
         )
 
     return data

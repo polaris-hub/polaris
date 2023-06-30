@@ -2,7 +2,7 @@
 
 from typing import Optional, Union, List, Tuple, Iterable
 import pandas as pd
-from rdkit.Chem.EnumerateStereoisomers import EnumerateStereoisomers, StereoEnumerationOptions
+from rdkit.Chem import FindMolChiralCenters
 
 import datamol as dm
 from datamol.mol import Mol
@@ -10,13 +10,21 @@ from datamol.mol import Mol
 UNIQUE_ID = "molhash_id"
 NO_STEREO_UNIQUE_ID = "molhash_id_no_stereo"
 SMILES_COL = "smiles"
+STEREO_DEF = "stereo_defined"
+NUM_STEREO_CENTER = "num_stereo_center"
+NUM_DEF_STEREO_CENTER = "num_defined_stereo_center"
 
 
-def clean_mol(
+def _num_stereo_centers(mol: Mol, only_defined=False):
+    stereo_centers = FindMolChiralCenters(mol, force=True, includeUnassigned=not only_defined)
+    return len(stereo_centers)
+
+
+def _curate_mol(
     mol: Union[Mol, str],
     remove_salt_solvent: bool = True,
     remove_stereo: bool = False,
-) -> Mol:
+) -> dict:
     """Clean and standardize molecule to ensure the quality molecular structures from various resources.
        It comes with the option of remove salts/solvents and stereochemistry information from the molecule.
 
@@ -29,6 +37,8 @@ def clean_mol(
                        If it's known that the stereochemistry do not contribute to the bioactivity of interest,
                        the stereochemistry information can be removed.
 
+    Returns:
+        mol_dict: Dictionary of curated molecule with unique ids.
     """
     with dm.without_rdkit_log():
         mol = dm.to_mol(mol)
@@ -63,7 +73,15 @@ def clean_mol(
                 uncharge=False,
                 stereo=not remove_stereo,
             )
-        return mol
+
+        mol_dict = {
+            SMILES_COL: dm.to_smiles(mol, canonical=True),
+            UNIQUE_ID: dm.hash_mol(mol),
+            NO_STEREO_UNIQUE_ID: dm.hash_mol(mol, hash_scheme="no_stereo"),
+            NUM_STEREO_CENTER: _num_stereo_centers(mol),
+            NUM_DEF_STEREO_CENTER: _num_stereo_centers(mol, only_defined=True),
+        }
+        return mol_dict
 
 
 def run_chemistry_curation(
@@ -91,24 +109,11 @@ def run_chemistry_curation(
     See Also:
         <datamol.utils.parallelized>
     """
-    clean_mols = dm.parallelized(
-        fn=lambda mol: clean_mol(mol, remove_stereo=ignore_stereo, remove_salt_solvent=remove_salt_solvent),
+    mol_list = dm.parallelized(
+        fn=lambda mol: _curate_mol(mol, remove_stereo=ignore_stereo, remove_salt_solvent=remove_salt_solvent),
         inputs_list=mols,
         **parallelized_args,
     )
-    clean_smiles = [dm.to_smiles(mol, canonical=True) for mol in clean_mols]
 
-    # compute mol hash with all molecular info
-    mol_ids = dm.parallelized(fn=dm.hash_mol, inputs_list=clean_mols, **parallelized_args)
-    # compute mol ignoring stereo info layer
-    mol_ids_no_stereo = dm.parallelized(
-        fn=lambda mol: dm.hash_mol(mol, hash_scheme="no_stereo"), inputs_list=clean_mols, **parallelized_args
-    )
-
-    return pd.DataFrame(
-        {
-            SMILES_COL: clean_smiles,
-            UNIQUE_ID: mol_ids,
-            NO_STEREO_UNIQUE_ID: mol_ids_no_stereo,
-        }
-    )
+    mol_dataframe = pd.DataFrame(mol_list)
+    return mol_dataframe
