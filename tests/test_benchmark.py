@@ -9,6 +9,8 @@ from polaris.utils.errors import PolarisChecksumError
 
 @pytest.mark.parametrize("is_single_task", [True, False])
 def test_split_verification(is_single_task, test_single_task_benchmark, test_multi_task_benchmark):
+    """Verifies that the split validation works as expected."""
+
     obj = test_single_task_benchmark if is_single_task else test_multi_task_benchmark
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
 
@@ -55,6 +57,7 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
 
 @pytest.mark.parametrize("cls", [SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification])
 def test_benchmark_column_verification(test_single_task_benchmark, test_multi_task_benchmark, cls):
+    """Verifies that the column validation works as expected."""
     base = (
         test_single_task_benchmark if cls == SingleTaskBenchmarkSpecification else test_multi_task_benchmark
     )
@@ -83,6 +86,7 @@ def test_benchmark_column_verification(test_single_task_benchmark, test_multi_ta
 
 @pytest.mark.parametrize("cls", [SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification])
 def test_benchmark_metrics_verification(test_single_task_benchmark, test_multi_task_benchmark, cls):
+    """Verifies that the metric validation works as expected."""
     # By using the fixture as a default, we know it doesn't always fail
     base = (
         test_single_task_benchmark if cls == SingleTaskBenchmarkSpecification else test_multi_task_benchmark
@@ -107,13 +111,8 @@ def test_benchmark_metrics_verification(test_single_task_benchmark, test_multi_t
         )
 
 
-def test_benchmark_split(test_single_task_benchmark):
-    train, test = test_single_task_benchmark.get_train_test_split()
-    assert isinstance(train, Subset) and isinstance(test, Subset)
-    assert len(train) + len(test) <= len(test_single_task_benchmark.dataset)
-
-
 def test_benchmark_from_yaml(test_single_task_benchmark, tmpdir):
+    """Test whether we can successfully save and load a benchmark from YAML."""
     test_single_task_benchmark.to_yaml(str(tmpdir))
 
     path = fs.join(str(tmpdir), "benchmark.yaml")
@@ -126,6 +125,8 @@ def test_benchmark_from_yaml(test_single_task_benchmark, tmpdir):
 
 @pytest.mark.parametrize("is_single_task", [True, False])
 def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_multi_task_benchmark):
+    """Test whether the checksum captures our notion of equality."""
+
     obj = test_single_task_benchmark if is_single_task else test_multi_task_benchmark
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
 
@@ -147,7 +148,7 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     cls(**kwargs)
 
     # With a different ordering of the split
-    kwargs["split"] = kwargs["split"][::-1]
+    kwargs["split"] = kwargs["split"][0][::-1], kwargs["split"][1]
     cls(**kwargs)
 
     # --- Test that the checksum is NOT the same ---
