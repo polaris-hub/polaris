@@ -71,8 +71,6 @@ class Subset:
         Scikit-learn style access to the targets.
         If the dataset is multi-target, this will return a dict of arrays.
         """
-        if self._hide_targets:
-            raise TestAccessError("Within Polaris, you should not need to access the targets of the test set")
         return self.as_array("y")
 
     @staticmethod
@@ -107,6 +105,9 @@ class Subset:
 
         if data_type == "xy":
             return self.as_array("x"), self.as_array("y")
+
+        if data_type == "y" and self._hide_targets:
+            raise TestAccessError("Within Polaris, you should not need to access the targets of the test set")
 
         if not self.is_multi_task:
             return np.array([self._extract(ret, data_type) for ret in self])

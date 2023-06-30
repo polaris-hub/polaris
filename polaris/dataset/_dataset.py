@@ -176,7 +176,7 @@ class Dataset(BaseModel):
 
         expected_user_attrs = ["name", "description", "source", "annotations"]
 
-        root = zarr.open_group(path)
+        root = zarr.open_group(path, "r")
         if any(k not in root.attrs for k in expected_user_attrs):
             raise InvalidDatasetError(
                 f"To load a dataset from a .zarr hierarchy, the root group must contain "
@@ -203,16 +203,18 @@ class Dataset(BaseModel):
                     data[col][name] = fs.join(path, arr.path)
 
         # Parse additional columns from the user attributes
-        for col in root.attrs:
+        attrs = root.attrs.asdict()
+        cols = list(attrs.keys())
+        for col in cols:
             if col not in expected_user_attrs:
-                if not isinstance(root.attrs[col], dict):
+                if not isinstance(attrs[col], dict):
                     raise TypeError(
-                        f"Expected the dictionary type for user attr `{col}`, found {type(root.attrs[col])}"
+                        f"Expected the dictionary type for user attr `{col}`, found {type(attrs[col])}"
                     )
                 # All non-expected user attrs are assumed to be additional columns
                 # These should be specified as dicts with index -> value
                 d = {}
-                for k, v in root.attrs.pop(col).items():
+                for k, v in attrs.pop(col).items():
                     try:
                         k = int(k)
                     except ValueError as error:
@@ -222,8 +224,7 @@ class Dataset(BaseModel):
 
         # Construct the dataset
         table = pd.DataFrame(data)
-
-        return cls(table=table, **root.attrs)
+        return cls(table=table, **attrs)
 
     @staticmethod
     def _compute_checksum(table, annotations):

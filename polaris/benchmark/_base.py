@@ -134,7 +134,6 @@ class BenchmarkSpecification(BaseModel):
         if "dataset" in values:
             if any(i < 0 or i >= len(values["dataset"]) for i in train_indices + test_indices):
                 raise ValueError("The predefined split contains invalid indices")
-
         return v
 
     @root_validator(skip_on_failure=True)
@@ -191,8 +190,18 @@ class BenchmarkSpecification(BaseModel):
         for m in sorted(metrics, key=lambda k: k.name):
             hash_fn.update(m.name.encode("utf-8"))
 
-        s = json.dumps(sorted(split))
+        if not isinstance(split[1], dict):
+            split = split[0], {"test": split[1]}
+
+        # Train set
+        s = json.dumps(sorted(split[0]))
         hash_fn.update(s.encode("utf-8"))
+
+        # Test sets
+        for k in sorted(split[1].keys()):
+            s = json.dumps(sorted(split[1][k]))
+            hash_fn.update(k.encode("utf-8"))
+            hash_fn.update(s.encode("utf-8"))
 
         checksum = hash_fn.hexdigest()
         return checksum
@@ -262,14 +271,20 @@ class BenchmarkSpecification(BaseModel):
         # See also the `hide_targets` parameter in the `Subset` class.
         test = self.get_train_test_split()[1]
 
-        with tmp_attribute_change(test, "_hide_targets", False):
-            if isinstance(test, dict):
-                y_true = {k: v.targets for k, v in test.items()}
-            else:
-                y_true = {"test": test.targets}
+        if not isinstance(test, dict):
+            test = {"test": test}
 
-        if not isinstance(y_pred, dict) or all(isinstance(v, np.ndarray) for v in y_pred.values()):
+        y_true = {}
+        for k, test_subset in test.items():
+            with tmp_attribute_change(test_subset, "_hide_targets", False):
+                y_true[k] = test_subset.targets
+
+        if not isinstance(y_pred, dict) or all(k in self.target_cols for k in y_pred):
             y_pred = {"test": y_pred}
+        if any(k not in y_pred for k in test.keys()):
+            raise KeyError(
+                f"Missing keys for at least one of the test sets. Expecting: {sorted(test.keys())}"
+            )
 
         scores = {}
 
