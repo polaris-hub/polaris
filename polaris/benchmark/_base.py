@@ -15,6 +15,7 @@ from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import PolarisChecksumError
 from polaris.utils.misc import listit
 from polaris.utils.types import PredictionsType, SplitType
+from polaris.utils.dict2html import dict2html
 
 
 class BenchmarkSpecification(BaseModel):
@@ -299,3 +300,32 @@ class BenchmarkSpecification(BaseModel):
             scores = scores["test"]
 
         return BenchmarkResults(results=scores, benchmark_id=self.md5sum)
+
+    def _repr_dict_(self) -> dict:
+        repr_dict = self.dict()
+
+        repr_dict.pop("dataset")
+        repr_dict.pop("split")
+
+        repr_dict["dataset_name"] = self.dataset.name
+        repr_dict["metrics"] = [m.name for m in self.metrics]
+        repr_dict["main_metric"] = "MAIN_METRIC?"
+
+        # Make them properties?
+        repr_dict["n_input_cols"] = len(self.input_cols)
+        repr_dict["n_target_cols"] = len(self.target_cols)
+
+        # NOTE(hadim): probably backport in its' own method and also sometime it will be None
+        # if the dataset does not exist on the hub.
+        repr_dict["polaris_hub_url"] = f"https://polaris.io/benchmark/ORG_OR_USER/BENCHMARK_NAME?"
+
+        return repr_dict
+
+    def __repr__(self):
+        return json.dumps(self._repr_dict_(), indent=2)
+
+    def _repr_html_(self):
+        return dict2html(self._repr_dict_())
+
+    def __str__(self):
+        return json.dumps(self.__repr__(), indent=2)
