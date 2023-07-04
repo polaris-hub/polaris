@@ -4,6 +4,7 @@ import string
 import yaml
 import zarr
 import fsspec
+import json
 
 import numpy as np
 import pandas as pd
@@ -19,6 +20,7 @@ from polaris.dataset._column import ColumnAnnotation, Modality
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.io import robust_copy, get_zarr_root
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
+from polaris.utils.dict2html import dict2html
 
 
 class Dataset(BaseModel):
@@ -35,7 +37,7 @@ class Dataset(BaseModel):
     _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
     _CACHE_SUBDIR = "datasets"
     _INDEX_SEP = "#"
-    _INDEX_FMT = "{path}" + _INDEX_SEP + "{index}"
+    _INDEX_FMT = f"{{path}}{_INDEX_SEP}{{index}}"
 
     """
     The table stores row-wise datapoints
@@ -71,6 +73,18 @@ class Dataset(BaseModel):
     Where the dataset is cached to locally
     """
     cache_dir: Optional[str] = None
+
+    """
+    The dataset URL on the Polaris Hub.
+    """
+
+    # TODO(hadim): `computed_field` is only available in the very recent pydantic 2.x
+    # Uncomment once https://github.com/conda-forge/pydantic-feedstock/pull/82 is merged
+    # @computed_field
+    @property
+    def polaris_hub_url(self) -> Optional[str]:
+        # NOTE(hadim): putting as default here but we could make it optional
+        return "https://polaris.io/dataset/ORG_OR_USER/DATASET_NAME?"
 
     _path_to_hash: Dict[str, Dict[str, str]] = PrivateAttr(defaultdict(dict))
     _has_been_warned: bool = PrivateAttr(False)
@@ -261,13 +275,24 @@ class Dataset(BaseModel):
         """Return the number of datapoints"""
         return len(self.table)
 
+    def _repr_dict_(self) -> dict:
+        repr_dict = self.dict()
+        repr_dict.pop("table")
+
+        repr_dict["annotations"] = {}
+        for k, v in self.annotations.items():
+            repr_dict["annotations"][k] = v.modality.name
+
+        # TODO(hadim): remove once @compute_field is available
+        repr_dict["polaris_hub_url"] = self.polaris_hub_url
+
+        return repr_dict
+
     def __repr__(self):
-        """Pretty-prints the table by adding the modalities and checksum"""
-        self.table.loc[""] = [f"[{self.annotations[c].modality}]" for c in self.table.columns]
-        s = repr(self.table)
-        s += f" [md5sum {self.md5sum}]"
-        self.table.drop(self.table.tail(1).index, inplace=True)
-        return s
+        return json.dumps(self._repr_dict_(), indent=2)
+
+    def _repr_html_(self):
+        return dict2html(self._repr_dict_())
 
     def __str__(self):
         return self.__repr__()
