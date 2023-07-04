@@ -13,9 +13,10 @@ def modified_spatial_stats_dmat(
     include_test_in_bootstrap: bool = True,
     random_seed: Optional[int] = 19,
 ):
+    """Calculates F using closest member of train to test instead of vice-versa."""
+
     rng = random.Random(random_seed)
 
-    """Calculates F using closest member of train to test instead of vice-versa."""
     g_vals = get_distance_cdf_dmat(
         dmat,
         test_indices,
