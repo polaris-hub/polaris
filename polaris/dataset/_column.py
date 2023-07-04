@@ -54,9 +54,9 @@ class ColumnAnnotation(BaseModel):
             v = Modality[v.upper()]
         return v
 
-    def dict(self, *args, **kwargs):
+    def model_dump(self, *args, **kwargs):
         """Light wrapper to always return the modality as a string, keeping it serializable"""
-        data = super().dict(*args, **kwargs)
+        data = super().model_dump(*args, **kwargs)
 
         # The Pydantic dict() API allows a user to exclude keys, so we have to check if `modality` exists.
         if "modality" in data:

@@ -3,6 +3,7 @@ import string
 
 import yaml
 import zarr
+import zarr.convenience
 import fsspec
 import json
 
@@ -12,7 +13,7 @@ import pandas as pd
 from hashlib import md5
 from collections import defaultdict
 from typing import Dict, Optional, Union, Tuple
-from pydantic import BaseModel, PrivateAttr, validator, root_validator, computed_field
+from pydantic import BaseModel, PrivateAttr, field_validator, model_validator, computed_field
 from loguru import logger
 
 from polaris.utils import fs
@@ -91,7 +92,7 @@ class Dataset(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    @validator("table")
+    @field_validator("table")
     def validate_table(cls, v):
         """If the table is not a dataframe yet, assume it's a path and try load it."""
         if not isinstance(v, pd.DataFrame):
@@ -100,7 +101,7 @@ class Dataset(BaseModel):
             v = pd.read_parquet(v)
         return v
 
-    @validator("name")
+    @field_validator("name")
     def validate_name(cls, v):
         """
         Verify the name only contains valid characters which can be used in a file path.
@@ -110,7 +111,7 @@ class Dataset(BaseModel):
             raise InvalidDatasetError(f"`name` can only contain alpha-numeric characters, - or _, found {v}")
         return v
 
-    @validator("annotations")
+    @field_validator("annotations")
     def validate_annotations(cls, v, values):
         """
         Set missing annotations to default.
@@ -132,7 +133,10 @@ class Dataset(BaseModel):
                 v[c] = ColumnAnnotation(modality=v[c])
         return v
 
-    @root_validator(skip_on_failure=True)
+    # TODO(hadim): see https://github.com/pydantic/pydantic/issues/6277
+    # and https://github.com/pydantic/pydantic/pull/6279
+    @model_validator(mode="after")
+    @classmethod
     def validate_checksum_and_cache_dir(cls, values):
         """
         If a checksum is provided, verify it matches what the checksum should be.
@@ -170,11 +174,11 @@ class Dataset(BaseModel):
     def from_yaml(cls, path: str) -> "Dataset":
         """
         Loads a dataset from a yaml file.
-        This is a very thin wrapper around pydantic's parse_obj.
+        This is a very thin wrapper around pydantic's model_validate.
         """
         with fsspec.open(path, "r") as fd:
             data = yaml.safe_load(fd)
-        return Dataset.parse_obj(data)
+        return Dataset.model_validate(data)
 
     @classmethod
     def from_zarr(cls, path: str):
@@ -274,7 +278,7 @@ class Dataset(BaseModel):
         return len(self.table)
 
     def _repr_dict_(self) -> dict:
-        repr_dict = self.dict()
+        repr_dict = self.model_dump()
         repr_dict.pop("table")
 
         repr_dict["annotations"] = {}
@@ -346,9 +350,9 @@ class Dataset(BaseModel):
         # Save additional data
         new_table = self._copy_and_update_pointers(pointer_dir, inplace=False)
 
-        serialized = self.dict()
+        serialized = self.model_dump()
         serialized["table"] = table_path
-        serialized["annotations"] = {k: m.dict() for k, m in self.annotations.items()}
+        serialized["annotations"] = {k: m.model_dump() for k, m in self.annotations.items()}
         # We need to recompute the checksum, as the pointer paths have changed
         serialized["md5sum"] = self._compute_checksum(new_table, self.annotations)
 

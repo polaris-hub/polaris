@@ -136,7 +136,7 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     # --- Test that the checksum is the same with insignificant changes ---
 
     # Without any changes, same hash
-    kwargs = obj.dict()
+    kwargs = obj.model_dump()
     cls(**kwargs)
 
     # With a different ordering of the target columns
@@ -159,25 +159,25 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
             assert isinstance(error.errors()[0], PolarisChecksumError)  # noqa
 
     # Split
-    kwargs = obj.dict()
+    kwargs = obj.model_dump()
     kwargs["split"] = kwargs["split"][0][1:] + [-1], kwargs["split"][1]
     _check_for_failure(kwargs)
 
-    kwargs = obj.dict()
+    kwargs = obj.model_dump()
     kwargs["split"] = kwargs["split"][0], kwargs["split"][1][1:] + [-1]
     _check_for_failure(kwargs)
 
     # Metrics
-    kwargs = obj.dict()
+    kwargs = obj.model_dump()
     kwargs["metrics"] = kwargs["metrics"][1:] + ["accuracy"]
     _check_for_failure(kwargs)
 
     # Target columns
-    kwargs = obj.dict()
+    kwargs = obj.model_dump()
     kwargs["target_cols"] = kwargs["target_cols"][1:] + ["iupac"]
     _check_for_failure(kwargs)
 
-    kwargs = obj.dict()
+    kwargs = obj.model_dump()
     kwargs["input_cols"] = kwargs["input_cols"][1:] + ["iupac"]
     _check_for_failure(kwargs)
 

@@ -72,7 +72,7 @@ def test_dataset_checksum(test_dataset):
     assert original is not None
 
     # Without any changes, same hash
-    kwargs = test_dataset.dict()
+    kwargs = test_dataset.model_dump()
     Dataset(**kwargs)
 
     # With unimportant changes, same hash

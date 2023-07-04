@@ -5,7 +5,7 @@ import yaml
 import fsspec
 
 from hashlib import md5
-from pydantic import BaseModel, validator, root_validator, computed_field
+from pydantic import BaseModel, field_validator, model_validator, computed_field
 from typing import Union, List, Dict, Tuple, Optional, Any
 
 from polaris.dataset import Dataset, Subset
@@ -83,7 +83,7 @@ class BenchmarkSpecification(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    @validator("dataset")
+    @field_validator("dataset")
     def validate_dataset(cls, v):
         """
         Allows either passing a Dataset object or the kwargs to create one
@@ -95,7 +95,7 @@ class BenchmarkSpecification(BaseModel):
             v = Dataset.from_yaml(v)
         return v
 
-    @validator("target_cols", "input_cols")
+    @field_validator("target_cols", "input_cols")
     def validate_cols(cls, v, values):
         """Verifies all columns are present in the dataset."""
         if not isinstance(v, List):
@@ -106,7 +106,7 @@ class BenchmarkSpecification(BaseModel):
             raise ValueError(f"Not all specified target columns were found in the dataset.")
         return v
 
-    @validator("metrics")
+    @field_validator("metrics")
     def validate_metrics(cls, v):
         """
         Verifies all specified metrics are either a Metric object or a valid metric name.
@@ -127,7 +127,7 @@ class BenchmarkSpecification(BaseModel):
 
         return v
 
-    @validator("split")
+    @field_validator("split")
     def validate_split(cls, v, values):
         """
         Verifies that:
@@ -164,7 +164,8 @@ class BenchmarkSpecification(BaseModel):
                 raise ValueError("The predefined split contains invalid indices")
         return v
 
-    @root_validator(skip_on_failure=True)
+    @model_validator(mode="after")
+    @classmethod
     def validate_checksum(cls, values):
         """
         If a checksum is provided, verify it matches what the checksum should be.
@@ -199,7 +200,7 @@ class BenchmarkSpecification(BaseModel):
         """Loads a benchmark from a yaml file."""
         with fsspec.open(path, "r") as f:
             data = yaml.safe_load(f)
-        return cls.parse_obj(data)
+        return cls.model_validate(data)
 
     @staticmethod
     def _compute_checksum(dataset, target_cols, input_cols, split, metrics):
@@ -244,7 +245,7 @@ class BenchmarkSpecification(BaseModel):
 
         fs.mkdir(destination, exist_ok=True)
 
-        data = self.dict()
+        data = self.model_dump()
         data["dataset"] = self.dataset.to_yaml(destination=destination)
         data["metrics"] = [m.name for m in self.metrics]
         data["split"] = listit(self.split)
@@ -344,7 +345,7 @@ class BenchmarkSpecification(BaseModel):
         return BenchmarkResults(results=scores, benchmark_id=self.md5sum)
 
     def _repr_dict_(self) -> dict:
-        repr_dict = self.dict()
+        repr_dict = self.model_dump()
 
         repr_dict.pop("dataset")
         repr_dict.pop("split")
