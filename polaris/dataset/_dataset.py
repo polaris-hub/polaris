@@ -12,7 +12,7 @@ import pandas as pd
 from hashlib import md5
 from collections import defaultdict
 from typing import Dict, Optional, Union, Tuple
-from pydantic import BaseModel, PrivateAttr, validator, root_validator
+from pydantic import BaseModel, PrivateAttr, validator, root_validator, computed_field
 from loguru import logger
 
 from polaris.utils import fs
@@ -78,9 +78,7 @@ class Dataset(BaseModel):
     The dataset URL on the Polaris Hub.
     """
 
-    # TODO(hadim): `computed_field` is only available in the very recent pydantic 2.x
-    # Uncomment once https://github.com/conda-forge/pydantic-feedstock/pull/82 is merged
-    # @computed_field
+    @computed_field
     @property
     def polaris_hub_url(self) -> Optional[str]:
         # NOTE(hadim): putting as default here but we could make it optional

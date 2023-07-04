@@ -5,7 +5,7 @@ import yaml
 import fsspec
 
 from hashlib import md5
-from pydantic import BaseModel, validator, root_validator
+from pydantic import BaseModel, validator, root_validator, computed_field
 from typing import Union, List, Dict, Tuple, Optional, Any
 
 from polaris.dataset import Dataset, Subset
@@ -63,9 +63,7 @@ class BenchmarkSpecification(BaseModel):
     The main metric is the first on the `metrics` field.
     """
 
-    # TODO(hadim): `computed_field` is only available in the very recent pydantic 2.x
-    # Uncomment once https://github.com/conda-forge/pydantic-feedstock/pull/82 is merged
-    # @computed_field
+    @computed_field
     @property
     def main_metric(self) -> Union[Metric, str]:
         return self.metrics[0]
