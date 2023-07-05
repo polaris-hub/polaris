@@ -49,6 +49,7 @@ def run_SIMPD(
     simpd_descriptors: Optional[pd.DataFrame] = None,
     target_train_frac_active: float = -1,
     target_test_frac_active: float = -1,
+    target_test_set_frac: float = 0.2,
     target_delta_test_frac_active: Optional[float] = None,
     target_GF_delta_window: Tuple[int, int] = (10, 30),
     target_G_val: int = 70,
@@ -84,7 +85,9 @@ def run_SIMPD(
 
     max_points = len(data)
     keep = max_points  # NOTE(hadim): I think this is just for dev purposes
-    n_max = int(0.2 * keep)  # NOTE(hadim): should that 0.2 be configurable?
+
+    assert target_test_set_frac > 0 and target_test_set_frac < 1
+    n_max = int(target_test_set_frac * keep)
 
     if verbose:
         logger.info(f"Working with {keep} points and picking {n_max}")

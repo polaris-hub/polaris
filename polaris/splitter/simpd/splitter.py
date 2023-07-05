@@ -37,6 +37,7 @@ class SIMPDSplitter(BaseShuffleSplit):
         simpd_descriptors: Optional[pd.DataFrame] = None,
         target_train_frac_active: float = -1,
         target_test_frac_active: float = -1,
+        target_test_set_frac: float = 0.2,
         target_delta_test_frac_active: Optional[float] = None,
         target_GF_delta_window: Tuple[int, int] = (10, 30),
         target_G_val: int = 70,
@@ -65,6 +66,7 @@ class SIMPDSplitter(BaseShuffleSplit):
                 Load them from `polaris.splitter.simpd.DEFAULT_SIMPD_DESCRIPTORS`.
             target_train_frac_active: The target fraction of active compounds in the training set. Set to -1 to disable.
             target_test_frac_active: The target fraction of active compounds in the test set. Set to -1 to disable.
+            target_test_set_frac: The target fraction of the test set.
             target_delta_test_frac_active: The target delta of active between the test and training set.
             target_GF_delta_window: The target window for the GF delta.
             target_G_val: The target G value.
@@ -87,6 +89,7 @@ class SIMPDSplitter(BaseShuffleSplit):
         self.simpd_descriptors = simpd_descriptors
         self.target_train_frac_active = target_train_frac_active
         self.target_test_frac_active = target_test_frac_active
+        self.target_test_set_frac = target_test_set_frac
         self.target_delta_test_frac_active = target_delta_test_frac_active
         self.target_GF_delta_window = target_GF_delta_window
         self.target_G_val = target_G_val
@@ -139,6 +142,7 @@ class SIMPDSplitter(BaseShuffleSplit):
         args["simpd_descriptors"] = self.simpd_descriptors
         args["target_train_frac_active"] = self.target_train_frac_active
         args["target_test_frac_active"] = self.target_test_frac_active
+        args["target_test_set_frac"] = self.target_test_set_frac
         args["target_delta_test_frac_active"] = self.target_delta_test_frac_active
         args["target_GF_delta_window"] = self.target_GF_delta_window
         args["target_G_val"] = self.target_G_val
