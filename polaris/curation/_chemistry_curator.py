@@ -1,5 +1,3 @@
-# script for curating chemical molecules from either sdf or smiles
-
 from typing import Optional, Union, List, Tuple, Iterable
 import pandas as pd
 from rdkit.Chem import FindMolChiralCenters

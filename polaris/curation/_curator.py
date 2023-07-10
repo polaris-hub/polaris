@@ -10,6 +10,17 @@ ORI_PREFIX = "ORI_"
 class MolecularCurator:
     """
     Apply curation process on given dataset on both chemistry and endpoint measurements
+
+    Args:
+        data: Data frame which contains molecule and bioactivity data columns
+        mol_col: Molecule column name
+        data_cols: Bioactivity data column names
+        mask_stereo_undefined_mols: If set to 'True', for the molecule which contains undefined stereochemistry
+            center, the bioactivity data will be set to 'Nan' and be ignored.
+        ignore_stereo: If set to 'True', the stereochemistry information will be ignored from data processing steps,
+            such as detect replicated molecules, detection of activity cliff.
+        class_thresholds: Dictionary of bioactivity column names and the thresholds for discretizing
+            the continuous data.
     """
 
     def __init__(
