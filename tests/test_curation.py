@@ -5,9 +5,7 @@ import numpy as np
 import datamol as dm
 from polaris.curation.utils import discretizer
 from polaris.curation import run_chemistry_curation
-from polaris.curation._data_curator import _process_stereo_activity_cliff
-from polaris.curation._chemistry_curator import NO_STEREO_UNIQUE_ID, NUM_DEF_STEREO_CENTER
-
+from polaris.curation.utils import outlier_detection, OUTLIER_METHOD
 
 def test_discretizer():
     X = [[1.0, -1.0, 2.0], [2.0, 0.0, 0.0], [0.0, 1.0, -1.0]]
@@ -58,3 +56,11 @@ def test_run_chemistry_curation():
     for smiles in df.smiles:
         mol = dm.to_mol(smiles)
         assert dm.same_mol(dm.remove_salts_solvents(mol), mol)
+
+
+
+def test_zscore_outlier():
+    data = pd.DataFrame(np.random.normal(0, 0.1, size=(50,)), columns=["data_col"])
+    data.loc[45: , "data_col"] = 100
+    outilers = outlier_detection(X=data[["data_col"]].values.flatten())
+    assert len(outilers) == 5

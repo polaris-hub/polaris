@@ -3,6 +3,11 @@ import numpy as np
 from numbers import Real
 from sklearn.utils import check_array
 from sklearn.base import OneToOneFeatureMixin, TransformerMixin, BaseEstimator, _fit_context
+from sklearn.ensemble import IsolationForest
+from sklearn.svm import OneClassSVM
+from sklearn.covariance import EllipticEnvelope
+from sklearn.neighbors import LocalOutlierFactor
+from sklearn.utils.validation import check_is_fitted
 
 
 def discretizer(
@@ -157,3 +162,54 @@ class Discretizer(OneToOneFeatureMixin, TransformerMixin, BaseEstimator):
 
     def _more_tags(self):
         return {"stateless": True}
+
+
+def modified_zscore(data, consistency_correction=1.4826):
+    """Compute the modified Zscore which is robust to outliers"""
+    median = np.median(data)
+
+    deviation_from_med = np.array(data) - median
+
+    mad = np.median(np.abs(deviation_from_med))
+    mod_zscore = deviation_from_med / (consistency_correction * mad)
+    return mod_zscore, mad
+
+
+class zscore_outlier:
+    def __init__(self, threshold: float = 2):
+        self.zscore_ = None
+        self.threshold = threshold
+        self.mad = None
+
+    def fit(self, X):
+        self.zscore_, self.mad = modified_zscore(X)
+
+    def predict(self, X, y=None):
+        check_is_fitted(self)
+        result = np.ones_like(X)
+        ind = np.argwhere(np.absolute(self.zscore_) > self.threshold)
+        result[ind] = -1
+        return result
+
+    def fit_predict(self, X, y=None):
+        self.fit(X)
+        return self.predict(X)
+
+
+OUTLIER_METHOD = {
+    "iso": IsolationForest,
+    "lof": LocalOutlierFactor,
+    "svm": OneClassSVM,
+    "ee": EllipticEnvelope,
+    "zscore": zscore_outlier,
+}
+
+
+def outlier_detection(X: np.ndarray, method="zscore", **kwargs) -> np.ndarray:
+    """Detect outliers by Isolation Forest"""
+    if method not in OUTLIER_METHOD:
+        raise ValueError("The detection name must be in 'iso', 'lof', 'svm', 'ee' and 'zscore'.")
+    detector = OUTLIER_METHOD.get(method)(**kwargs)
+    pred = detector.fit_predict(X)
+    outlier_index = np.argwhere(pred == -1)
+    return outlier_index

@@ -1,5 +1,7 @@
 from typing import List
 from typing import Dict
+from loguru import logger
+
 import pandas as pd
 from sklearn.utils.multiclass import type_of_target
 
@@ -130,12 +132,60 @@ def _class_conversion(
     return data
 
 
+from polaris.curation.utils import outlier_detection
+
+
+def check_outliers(data, data_cols, method: str = "zscore", prefix="OUTLIER", **kwargs) -> pd.DataFrame:
+    """Automatic detection of outliers of bioactivity
+
+    Args:
+        data: Parsed dataset
+        data_cols: Data column names for outlier detections
+        method: Algorithm name of outlier detection. The supported methods are
+            "iso": IsolationForest
+            "lof": LocalOutlierFactor
+            "svm": OneClassSVM
+            "ee": EllipticEnvelope
+            "zscore": zscore_outlier
+        kwargs: Additional parameters for the automatic outlier detection method.
+        prefix: Prefix for the boolean column which indicate whether the data point is an outlier.
+
+    Returns:
+        Dataframe with added boolean column for outliers.
+
+    See also:
+        <sklearn.ensemble.IsolationForest>
+        <sklearn.svm.OneClassSVM>
+        <sklearn.covariance.EllipticEnvelope>
+        <sklearn.neighbors.LocalOutlierFactor>
+        <polaris.curation.util.zscore_outlier>
+
+    """
+    for data_col in data_cols:
+        outlier_col = f"{prefix}_{data_col}"
+        data[f"{prefix}_{data_col}"] = None
+        ind = data.index.values
+        notna_ind = ind[data[data_col].notna()]
+        data.loc[notna_ind, outlier_col] = False
+        outlier_ind = outlier_detection(X=data[data_col].dropna().values, method=method, **kwargs)
+        outlier_ind = notna_ind[outlier_ind]
+
+        data.loc[outlier_ind, outlier_col] = True
+
+        if len(outlier_ind) > 0:
+            logger.warning(
+                f"Detected {len(outlier_ind)} outliers for data column {data_col}. "
+                f"Please revise the data and consider remove the outliers. "
+            )
+
+
 def run_data_curation(
     data: pd.DataFrame,
     data_cols: List[str],
     mask_stereo_undefined_mols: bool = False,
     ignore_stereo: bool = False,
     class_thresholds: Dict = None,
+    outlier_params: Dict = None,
 ) -> pd.DataFrame:
     """Perform curation on the measured values from biological assay
 
@@ -145,9 +195,11 @@ def run_data_curation(
         mask_stereo_undefined_mols: Whether mask the molecule stereo pairs which show activity cliff from dataset.
         ignore_stereo: Ignore the stereochemistry information from data curation.
         class_thresholds: Parameters to define class labels for the above listed `data_cols`.
+        outlier_params: Parameters for outlier detection.
     """
-    # User should deal with scaling and normalization on their end
+    data = check_outliers(data, data_cols, **outlier_params)
 
+    # User should deal with scaling and normalization on their end
     data = _merge_duplicates(
         data=data,
         data_cols=data_cols,
