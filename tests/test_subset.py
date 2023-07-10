@@ -1,38 +1,10 @@
+import pytest
 from polaris.dataset import Subset
-
-
-def test_single_task_indexing(test_dataset):
-    target_col = "expt"
-    input_col = "smiles"
-
-    task = Subset(test_dataset, list(range(5)), input_col, target_col)
-
-    assert len(task) == 5
-    for i in range(5):
-        assert test_dataset.table.loc[i, input_col] == task[i][0]
-        assert test_dataset.table.loc[i, target_col] == task[i][1]
-
-
-def test_multi_task_indexing(test_dataset):
-    target_cols = ["expt", "calc"]
-    input_col = "smiles"
-
-    task = Subset(test_dataset, [(i, [0, 1]) for i in range(5)], input_col, target_cols)
-
-    assert len(task) == 5
-    for i in range(5):
-        assert test_dataset.table.loc[i, input_col] == task[i][0]
-        assert (test_dataset.table.loc[i, target_cols].values == task[i][1]).all()
-
-    # With sparsity (indices have changed)
-    task = Subset(test_dataset, [(i, [0]) for i in range(5)], input_col, target_cols)
-    assert len(task) == 5
-    for i in range(5):
-        assert test_dataset.table.loc[i, input_col] == task[i][0]
-        assert test_dataset.table.loc[i, target_cols[0]] == task[i][1][0]
+from polaris.utils.errors import TestAccessError
 
 
 def test_consistency_across_access_methods(test_dataset):
+    """Using the various endpoints of the Subset API should not lead to the same data."""
     indices = list(range(5))
     task = Subset(test_dataset, indices, "smiles", "expt")
 
@@ -51,3 +23,28 @@ def test_consistency_across_access_methods(test_dataset):
     # Property
     assert (task.inputs == expected_smiles).all()
     assert (task.targets == expected_targets).all()
+
+
+def test_access_to_test_set(test_single_task_benchmark):
+    """A user should not have access to the test set targets."""
+
+    train, test = test_single_task_benchmark.get_train_test_split()
+    assert test._hide_targets
+    assert not train._hide_targets
+
+    with pytest.raises(TestAccessError):
+        y = test.as_array("y")
+    with pytest.raises(TestAccessError):
+        y = test.targets
+
+    # Check if iterable style access returns just the SMILES
+    for x in test:
+        assert isinstance(x, str)
+    for i in range(len(test)):
+        assert isinstance(test[i], str)
+
+    # For the train set it should work
+    y = train.targets
+    y = train.as_array("y")
+    assert all(isinstance(y, float) for x, y in train)
+    assert all(isinstance(train[i][1], float) for i in range(len(train)))

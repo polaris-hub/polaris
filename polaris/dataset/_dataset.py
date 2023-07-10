@@ -1,21 +1,26 @@
+import os.path
+import string
+
 import yaml
 import zarr
 import fsspec
+import json
 
 import numpy as np
 import pandas as pd
 
 from hashlib import md5
 from collections import defaultdict
-from typing import Dict, Optional, Union, List
-from pydantic import BaseModel, PrivateAttr, validator
+from typing import Dict, Optional, Union, Tuple
+from pydantic import BaseModel, PrivateAttr, validator, root_validator
 from loguru import logger
 
 from polaris.utils import fs
-from polaris.dataset import Modality
+from polaris.dataset._column import ColumnAnnotation, Modality
 from polaris.utils.constants import DEFAULT_CACHE_DIR
-from polaris.utils.io import robust_file_copy
+from polaris.utils.io import robust_copy, get_zarr_root
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
+from polaris.utils.dict2html import dict2html
 
 
 class Dataset(BaseModel):
@@ -30,30 +35,60 @@ class Dataset(BaseModel):
     """
 
     _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
+    _CACHE_SUBDIR = "datasets"
+    _INDEX_SEP = "#"
+    _INDEX_FMT = f"{{path}}{_INDEX_SEP}{{index}}"
 
-    # The table stores row-wise datapoints
+    """
+    The table stores row-wise datapoints
+    """
     table: Union[pd.DataFrame, str]
 
-    # The public-facing name of the dataset
+    """
+    The public-facing name of the dataset
+    """
     name: str
 
-    # A beginner-friendly description of the dataset
+    """
+    A beginner-friendly description of the dataset
+    """
     description: str
 
-    # The data source, e.g. a DOI, Github repo or URI
+    """
+    The data source, e.g. a DOI, Github repo or URI
+    """
     source: str
 
-    # Annotates each column with the modality of that column
-    modalities: Dict[str, Union[str, Modality]]
+    """
+    Annotates each column with the modality of that column and additional meta-data
+    """
+    annotations: Dict[str, Union[str, Modality, ColumnAnnotation]] = {}
 
-    # Hash of the dataset, used to verify that the dataset is the expected version
-    checksum: Optional[str] = None
+    """
+    Hash of the dataset, used to verify that the dataset is the expected version
+    """
+    md5sum: Optional[str] = None
 
-    # Where the dataset is cached to locally
+    """
+    Where the dataset is cached to locally
+    """
     cache_dir: Optional[str] = None
+
+    """
+    The dataset URL on the Polaris Hub.
+    """
+
+    # TODO(hadim): `computed_field` is only available in the very recent pydantic 2.x
+    # Uncomment once https://github.com/conda-forge/pydantic-feedstock/pull/82 is merged
+    # @computed_field
+    @property
+    def polaris_hub_url(self) -> Optional[str]:
+        # NOTE(hadim): putting as default here but we could make it optional
+        return "https://polaris.io/dataset/ORG_OR_USER/DATASET_NAME?"
 
     _path_to_hash: Dict[str, Dict[str, str]] = PrivateAttr(defaultdict(dict))
     _has_been_warned: bool = PrivateAttr(False)
+    _has_been_cached: bool = PrivateAttr(False)
 
     class Config:
         arbitrary_types_allowed = True
@@ -63,71 +98,75 @@ class Dataset(BaseModel):
         """If the table is not a dataframe yet, assume it's a path and try load it."""
         if not isinstance(v, pd.DataFrame):
             if not fs.is_file(v) or fs.get_extension(v) not in cls._SUPPORTED_TABLE_EXTENSIONS:
-                raise InvalidDatasetError(f" {v} is not a valid DataFrame or .parquet path.")
+                raise InvalidDatasetError(f"{v} is not a valid DataFrame or .parquet path.")
             v = pd.read_parquet(v)
         return v
 
-    @validator("modalities")
-    def validate_modalities(cls, v, values):
+    @validator("name")
+    def validate_name(cls, v):
         """
-        Set missing modalities to unknown and convert strings to modalities.
-        For all modalities that require pointers, verify all paths listed exist.
+        Verify the name only contains valid characters which can be used in a file path.
         """
-        # Fill missing modalities and convert strings to modalities
-        for c in values["table"].columns:
-            if c not in v:
-                v[c] = Modality.UNKNOWN
-            if not isinstance(v[c], Modality):
-                v[c] = Modality[v[c].upper()]
-
-            # Verify that pointer columns have valid extensions and exist
-            if v[c].is_pointer():
-                paths = values["table"][c].values
-                if any(not fs.exists(p) for p in paths):
-                    raise InvalidDatasetError(
-                        f"The {c} [{v[c]}] column contains pointers "
-                        f"that reference files which do not exist."
-                    )
+        valid_characters = string.ascii_letters + string.digits + "_-"
+        if not all(c in valid_characters for c in v):
+            raise InvalidDatasetError(f"`name` can only contain alpha-numeric characters, - or _, found {v}")
         return v
 
-    @validator("checksum", always=True)
-    def validate_checksum(cls, v, values):
+    @validator("annotations")
+    def validate_annotations(cls, v, values):
+        """
+        Set missing annotations to default.
+        For all columns that contain pointers, verify all paths listed exist.
+        """
+        # Exit early if a previous validation step failed
+        if "table" not in values:
+            return v
+
+        # Verify that all annotations are for columns that exist
+        if any(k not in values["table"].columns for k in v):
+            raise InvalidDatasetError("There is annotations for columns that do not exist")
+
+        # Set a default for missing annotations and convert strings to Modality
+        for c in values["table"].columns:
+            if c not in v:
+                v[c] = ColumnAnnotation()
+            if isinstance(v[c], (str, Modality)):
+                v[c] = ColumnAnnotation(modality=v[c])
+        return v
+
+    @root_validator(skip_on_failure=True)
+    def validate_checksum_and_cache_dir(cls, values):
         """
         If a checksum is provided, verify it matches what the checksum should be.
         If no checksum is provided, make sure it is set.
-
-        NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
+        If no cache_dir is provided, set it to the default cache dir and make sure it exists
         """
 
-        # Skip validation as an earlier step has failed
-        if not all(k in values for k in ["table", "modalities"]):
-            return v
+        # This is still ran when some fields are not specified
+        if any(k not in values for k in ["table", "annotations", "name"]) or len(values["annotations"]) == 0:
+            return
 
-        expected = cls._compute_checksum(values["table"], values["modalities"])
+        # Verify the checksum
+        # NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
+        actual = values["md5sum"]
+        expected = cls._compute_checksum(values["table"], values["annotations"])
 
-        if v is None:
-            v = expected
-        elif v != expected:
+        if actual is None:
+            values["md5sum"] = expected
+        elif actual != expected:
             raise PolarisChecksumError(
-                "The dataset checksum does not match what was specified in the meta-data. "
-                f"{v} != {expected}"
+                "The dataset md5sum does not match what was specified in the meta-data. "
+                f"{actual} != {expected}"
             )
-        return v
-
-    @validator("cache_dir", always=True)
-    def validate_cache_dir(cls, v, values):
-        """If no cache_dir is provided, set it to the default cache dir and make sure it exists"""
-
-        # Skip validation as an earlier step has failed
-        if any(k not in values for k in ["name", "checksum"]):
-            return v
 
         # Set the default cache dir if none and make sure it exists
-        if v is None:
-            v = fs.join(DEFAULT_CACHE_DIR, values["name"], values["checksum"])
-        fs.mkdir(v, exist_ok=True)
+        if values["cache_dir"] is None:
+            values["cache_dir"] = fs.join(
+                DEFAULT_CACHE_DIR, cls._CACHE_SUBDIR, values["name"], values["md5sum"]
+            )
+        fs.mkdir(values["cache_dir"], exist_ok=True)
 
-        return v
+        return values
 
     @classmethod
     def from_yaml(cls, path: str) -> "Dataset":
@@ -149,9 +188,9 @@ class Dataset(BaseModel):
         To specify additional columns, we use a dict with the column -> index -> value format.
         """
 
-        expected_user_attrs = ["name", "description", "source", "modalities"]
+        expected_user_attrs = ["name", "description", "source", "annotations"]
 
-        root = zarr.open_group(path)
+        root = zarr.open_group(path, "r")
         if any(k not in root.attrs for k in expected_user_attrs):
             raise InvalidDatasetError(
                 f"To load a dataset from a .zarr hierarchy, the root group must contain "
@@ -162,27 +201,47 @@ class Dataset(BaseModel):
         # Parse any group into a pointer column
         data = defaultdict(dict)
         for col, group in root.groups():
-            for name, arr in group.arrays():
-                data[col][name] = fs.join(path, arr.path)
+            keys = list(group.array_keys())
+
+            if len(keys) == 1:
+                arr = group[keys[0]]
+                for i, arr_row in enumerate(arr):
+                    data[col][i] = cls._INDEX_FMT.format(path=fs.join(path, arr.name), index=i)
+
+            else:
+                for name, arr in group.arrays():
+                    try:
+                        name = int(name)
+                    except ValueError as error:
+                        raise TypeError(f"Array names in .zarr hierarchies should be integers") from error
+                    data[col][name] = fs.join(path, arr.path)
 
         # Parse additional columns from the user attributes
-        for col in root.attrs:
+        attrs = root.attrs.asdict()
+        cols = list(attrs.keys())
+        for col in cols:
             if col not in expected_user_attrs:
-                if not isinstance(root.attrs[col], dict):
+                if not isinstance(attrs[col], dict):
                     raise TypeError(
-                        f"Expected the dictionary type for user attr `{col}`, found {type(root.attrs[col])}"
+                        f"Expected the dictionary type for user attr `{col}`, found {type(attrs[col])}"
                     )
                 # All non-expected user attrs are assumed to be additional columns
-                # These should be specified as dictionaries: index -> value
-                data[col] = root.attrs.pop(col)
+                # These should be specified as dicts with index -> value
+                d = {}
+                for k, v in attrs.pop(col).items():
+                    try:
+                        k = int(k)
+                    except ValueError as error:
+                        raise TypeError(f"Column names in .zarr hierarchies should be integers") from error
+                    d[k] = v
+                data[col] = d
 
         # Construct the dataset
         table = pd.DataFrame(data)
-
-        return cls(table=table, **root.attrs)
+        return cls(table=table, **attrs)
 
     @staticmethod
-    def _compute_checksum(table, modalities):
+    def _compute_checksum(table, annotations):
         """
         Computes a hash of the dataset.
 
@@ -206,7 +265,7 @@ class Dataset(BaseModel):
         hash_fn.update(table_hash)
 
         for c in df.columns:
-            modality = modalities[c].name.encode("utf-8")
+            modality = annotations[c].modality.name.encode("utf-8")
             hash_fn.update(modality)
 
         checksum = hash_fn.hexdigest()
@@ -216,13 +275,24 @@ class Dataset(BaseModel):
         """Return the number of datapoints"""
         return len(self.table)
 
+    def _repr_dict_(self) -> dict:
+        repr_dict = self.dict()
+        repr_dict.pop("table")
+
+        repr_dict["annotations"] = {}
+        for k, v in self.annotations.items():
+            repr_dict["annotations"][k] = v.modality.name
+
+        # TODO(hadim): remove once @compute_field is available
+        repr_dict["polaris_hub_url"] = self.polaris_hub_url
+
+        return repr_dict
+
     def __repr__(self):
-        """Pretty-prints the table by adding the modalities and checksum"""
-        self.table.loc[""] = [f"[{self.modalities[c]}]" for c in self.table.columns]
-        s = repr(self.table)
-        s += f" [checksum {self.checksum}]"
-        self.table.drop(self.table.tail(1).index, inplace=True)
-        return s
+        return json.dumps(self._repr_dict_(), indent=2)
+
+    def _repr_html_(self):
+        return dict2html(self._repr_dict_())
 
     def __str__(self):
         return self.__repr__()
@@ -231,35 +301,58 @@ class Dataset(BaseModel):
         """Whether two datasets are equal is solely determined by the checksum"""
         if not isinstance(other, Dataset):
             return False
-        return self.checksum == other.checksum
+        return self.md5sum == other.md5sum
 
-    def save(self, destination: str):
+    def _copy_and_update_pointers(
+        self, save_dir: str, table: Optional[pd.DataFrame] = None, inplace: bool = False
+    ) -> pd.DataFrame:
+        """Copy and update the path in the table to the new destination"""
+
+        def fn(path):
+            """Helper function that can be used within Pandas apply to copy and update all files"""
+
+            # We copy the entire .zarr hierarchy
+            root = get_zarr_root(path)
+            if root is None:
+                raise NotImplementedError(
+                    "Only the .zarr file format is currently supported for pointer columns"
+                )
+
+            # We could introduce name collisions here and thus use a hash of the original path for the destination
+            dst = fs.join(save_dir, f"{md5(root.encode('utf-8')).hexdigest()}.zarr")
+            robust_copy(root, dst)
+
+            diff = os.path.relpath(path, root)
+            dst = fs.join(dst, diff)
+            return dst
+
+        if table is None:
+            table = self.table
+        if not inplace:
+            table = self.table.copy(deep=True)
+
+        for c in table.columns:
+            if self.annotations[c].is_pointer():
+                table[c] = table[c].apply(fn)
+        return table
+
+    def to_yaml(self, destination: str):
         """
         Save the dataset to a destination directory
         """
+        fs.mkdir(destination, exist_ok=True)
         table_path = fs.join(destination, "table.parquet")
         dataset_path = fs.join(destination, "dataset.yaml")
         pointer_dir = fs.join(destination, "data")
 
-        def _copy_and_update(src):
-            """Copy and update the path in the table to the new destination"""
-            ext = fs.get_extension(src)
-            dst = fs.join(pointer_dir, f"{md5(src.encode('utf-8')).hexdigest()}.{ext}")
-            robust_file_copy(src, dst)
-            return dst
-
         # Save additional data
-        new_table = self.table.copy(deep=True)
-
-        for c in new_table.columns:
-            if self.modalities[c].is_pointer():
-                new_table[c] = new_table[c].apply(_copy_and_update)
+        new_table = self._copy_and_update_pointers(pointer_dir, inplace=False)
 
         serialized = self.dict()
         serialized["table"] = table_path
-        serialized["modalities"] = {k: m.name for k, m in self.modalities.items()}
+        serialized["annotations"] = {k: m.dict() for k, m in self.annotations.items()}
         # We need to recompute the checksum, as the pointer paths have changed
-        serialized["checksum"] = self._compute_checksum(new_table, self.modalities)
+        serialized["md5sum"] = self._compute_checksum(new_table, self.annotations)
 
         new_table.to_parquet(table_path)
         with fsspec.open(dataset_path, "w") as f:
@@ -273,6 +366,8 @@ class Dataset(BaseModel):
         """
         if value not in self._path_to_hash[column]:
             h = md5(value.encode("utf-8")).hexdigest()
+
+            value, _ = self._split_index_from_path(value)
             ext = fs.get_extension(value)
             dst = fs.join(self.cache_dir, column, f"{h}.{ext}")
 
@@ -282,59 +377,63 @@ class Dataset(BaseModel):
 
         return self._path_to_hash[column][value]
 
+    def _split_index_from_path(self, path: str) -> Tuple[str, Optional[int]]:
+        """
+        Paths can have an additional index appended to them.
+        This extracts that index from the path.
+        """
+        index = None
+        if self._INDEX_SEP in path:
+            path, index = path.split(self._INDEX_SEP)
+            index = int(index)
+        return path, index
+
     def get_data(self, row, col):
         """
         Helper function to get data from the Dataset. Since the dataset might contain pointers to
         external files, data retrieval is more complicated than just indexing the table.
         """
 
-        def _load(path: str) -> np.ndarray:
+        def _load(p: str, index: Optional[int]) -> np.ndarray:
             # NOTE (cwognum): We will want to support more formats than just .zarr in the future
             #  which is why I have it in a separate function.
-            return zarr.convenience.load(path)
+            arr = zarr.convenience.load(p)
+            if index is not None:
+                arr = arr[index]
+            return arr
 
         value = self.table.loc[row, col]
-        if not self.modalities[col].is_pointer():
+        if not self.annotations[col].is_pointer():
             return value
+
+        value, index = self._split_index_from_path(value)
 
         # In the case it is a pointer column, we need to load additional data into memory
         # We first check if the data has been downloaded to the cache.
         path = self.get_cache_path(column=col, value=value)
         if fs.exists(path):
-            return _load(path)
+            return _load(path, index)
 
         # If it doesn't exist, we load from the original path and warn if not local
-        if not fs.is_local_path(path) and not self._has_been_warned:
+        if not fs.is_local_path(value) and not self._has_been_warned:
             logger.warning(
                 f"You're loading data from a remote location. "
                 f"To speed up this process, consider caching the dataset first "
-                f"using {self.__class__.__name__}.download()"
+                f"using {self.__class__.__name__}.cache()"
             )
             self._has_been_warned = True
-        return _load(value)
+        return _load(value, index)
 
     def size(self):
         return len(self), len(self.table.columns)
 
-    def download(self, column_subset: Optional[Union[str, List[str]]] = None) -> str:
+    def cache(self) -> str:
         """
         Download all additional data for pointer columns.
         This does not change any data in the table itself, but populates a mapping from the table paths
         to the cached paths. This thus keeps the original dataset intact.
         """
-
-        if column_subset is None:
-            column_subset = self.table.columns.values.tolist()
-        if not isinstance(column_subset, list):
-            column_subset = [column_subset]
-
-        for col in column_subset:
-            if not self.modalities[col].is_pointer():
-                continue
-
-            paths = self.table[col].values
-            for src in paths:
-                dst = self.get_cache_path(col, src)
-                robust_file_copy(src, dst)
-
+        if not self._has_been_cached:
+            self._copy_and_update_pointers(self.cache_dir, inplace=True)
+            self._has_been_cached = True
         return self.cache_dir
