@@ -63,6 +63,6 @@ def test_outlier_detection_zscore():
     data = pd.DataFrame(np.random.normal(0, 0.1, size=(100, 1)), columns=["data_col"])
     # create 5 data points which are out of distribution
     num_outlier = 5
-    data.loc[:num_outlier-1, "data_col"] = 100
+    data.loc[: num_outlier - 1, "data_col"] = 100
     outilers = outlier_detection(X=data[["data_col"]].values, method="zscore")
     assert len(outilers) == num_outlier
