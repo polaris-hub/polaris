@@ -1,6 +1,9 @@
 import numpy as np
-from typing import Union, List, Sequence, Tuple, Any, Dict
+from typing import Union, List, Sequence, Literal, Optional
 from polaris.dataset import Dataset
+from polaris.utils.context import tmp_attribute_change
+from polaris.utils.errors import TestAccessError
+from polaris.utils.types import DatapointType
 
 
 class Subset:
@@ -21,6 +24,7 @@ class Subset:
         target_cols: Union[List[str], str],
         input_format: str = "dict",
         target_format: str = "tuple",
+        hide_targets: bool = False,
     ):
         self.dataset = dataset
         self.indices = indices
@@ -42,6 +46,9 @@ class Subset:
         # For the iterator implementation
         self._pointer = 0
 
+        # This is a protected attribute to make explicit it should not be changed once set.
+        self._hide_targets = hide_targets
+
     @property
     def is_multi_task(self):
         return len(self.target_cols) > 1
@@ -56,20 +63,7 @@ class Subset:
         Scikit-learn style access to the inputs.
         If the dataset is multi-input, this will return a dict of arrays.
         """
-        if not self.is_multi_input:
-            return np.array([x for x, y in self])
-
-        # Temporarily set it to dict
-        original = self._input_format
-        self._input_format = "dict"
-
-        out = {}
-        for k in self.input_cols:
-            out[k] = np.array([x[k] for x, y in self])
-
-        # Revert format
-        self._input_format = original
-        return self._convert(out, self.input_cols, self._input_format)
+        return self.as_array("x")
 
     @property
     def targets(self):
@@ -77,20 +71,7 @@ class Subset:
         Scikit-learn style access to the targets.
         If the dataset is multi-target, this will return a dict of arrays.
         """
-        if not self.is_multi_task:
-            return np.array([y for x, y in self])
-
-        # Temporarily set it to dict
-        original = self._target_format
-        self._target_format = "dict"
-
-        out = {}
-        for k in self.input_cols:
-            out[k] = np.array([y[k] for x, y in self])
-
-        # Revert format
-        self._target_format = original
-        return self._convert(out, self.target_cols, self._target_format)
+        return self.as_array("y")
 
     @staticmethod
     def _convert(data: dict, order: List[str], fmt: str):
@@ -101,12 +82,51 @@ class Subset:
             data = tuple(data[k] for k in order)
         return data
 
+    def _extract(
+        self,
+        data: DatapointType,
+        data_type: Union[Literal["x"], Literal["y"], Literal["xy"]],
+        key: Optional[str] = None,
+    ):
+        """Helper function to extract data from the return format of this class"""
+        if self._hide_targets:
+            return data
+        x, y = data
+        ret = x if data_type == "x" else y
+        if not isinstance(ret, dict) or key is None:
+            return ret
+        return ret[key]
+
+    def as_array(self, data_type: Union[Literal["x"], Literal["y"], Literal["xy"]]):
+        """
+        Scikit-learn style access to the targets and inputs.
+        If the dataset is multi-target, this will return a dict of arrays.
+        """
+
+        if data_type == "xy":
+            return self.as_array("x"), self.as_array("y")
+
+        if data_type == "y" and self._hide_targets:
+            raise TestAccessError("Within Polaris, you should not need to access the targets of the test set")
+
+        if not self.is_multi_task:
+            return np.array([self._extract(ret, data_type) for ret in self])
+
+        out = {}
+        columns = self.input_cols if data_type == "x" else self.target_cols
+
+        # Temporarily change the target format for easier conversion
+        with tmp_attribute_change(self, "_target_format", "dict"):
+            with tmp_attribute_change(self, "_input_format", "dict"):
+                for k in columns:
+                    out[k] = np.array([self._extract(ret, data_type, k) for ret in self])
+
+        return self._convert(out, self.target_cols, self._target_format)
+
     def __len__(self):
         return len(self.indices)
 
-    def __getitem__(
-        self, item
-    ) -> Tuple[Union[Any, Tuple, Dict[str, Any]], Union[Any, Tuple, Dict[str, Any]]]:
+    def __getitem__(self, item) -> DatapointType:
         """
         This method always returns an (X, y) tuple
 
@@ -120,24 +140,21 @@ class Subset:
         idx = self.indices[item]
 
         # Get the row from the base table
-        row_idx = idx[0] if self.is_multi_task else idx
-        row = self.dataset.table.iloc[row_idx]
-
-        # Retrieve the targets
-        target_idx = self.target_cols
-        if self.is_multi_task:
-            target_idx = [target_idx[i] for i in idx[1]]
-
-        # If in a multi-task setting a target is missing due to indexing, we return the np NaN.
-        outs = {c: row[c] if c in target_idx else np.nan for c in self.target_cols}
+        row = self.dataset.table.iloc[idx]
 
         # Load the input modalities
-        # NOTE (cwognum): We currently do not support splits across inputs, so we do not need to do any indexing.
         ins = {col: self.dataset.get_data(row.name, col) for col in self.input_cols}
-
-        # Convert to the right format
         ins = self._convert(ins, self.input_cols, self._input_format)
+
+        if self._hide_targets:
+            # If we are not allowed to access the targets, we return the inputs only.
+            # This is useful to make accidental access to the test set less likely.
+            return ins
+
+        # Retrieve the targets
+        outs = {col: self.dataset.get_data(row.name, col) for col in self.target_cols}
         outs = self._convert(outs, self.target_cols, self._target_format)
+
         return ins, outs
 
     def __iter__(self):

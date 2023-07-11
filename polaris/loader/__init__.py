@@ -17,7 +17,7 @@ def load_dataset(path: str):
 
     if not is_file:
         # Load from the Hub
-        client = PolarisClient()
+        client = PolarisClient.get_client()
         options = client.list_datasets()
         if path not in options:
             raise InvalidDatasetError(f"{path} is not a valid dataset.")
@@ -40,11 +40,11 @@ def load_benchmark(path: str):
 
     if not is_file:
         # Load from the Hub
-        client = PolarisClient()
+        client = PolarisClient.get_client()
         options = client.list_benchmarks()
         if path not in options:
             raise InvalidBenchmarkError(f"{path} is not a valid task. Make sure it exists!")
-        return client.load_benchmarks(path)
+        return client.load_benchmark(path)
 
     with fsspec.open(path, "r") as f:
         data = yaml.safe_load(f)
@@ -53,4 +53,4 @@ def load_benchmark(path: str):
     #  e.g. we might end up with a single class per benchmark.
     is_single_task = isinstance(data["target_cols"], str) or len(data["target_cols"]) == 1
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
-    return cls(**data)
+    return cls.from_yaml(path)
