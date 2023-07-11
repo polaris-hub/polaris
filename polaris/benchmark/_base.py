@@ -5,7 +5,14 @@ import yaml
 import fsspec
 
 from hashlib import md5
-from pydantic import BaseModel, validator, root_validator
+from pydantic import (
+    BaseModel,
+    FieldValidationInfo,
+    field_validator,
+    model_validator,
+    computed_field,
+    field_serializer,
+)
 from typing import Union, List, Dict, Tuple, Optional, Any
 
 from polaris.dataset import Dataset, Subset
@@ -62,30 +69,21 @@ class BenchmarkSpecification(BaseModel):
     """
     The main metric is the first on the `metrics` field.
     """
+    main_metric: Optional[Union[str, Metric]] = None
 
-    # TODO(hadim): `computed_field` is only available in the very recent pydantic 2.x
-    # Uncomment once https://github.com/conda-forge/pydantic-feedstock/pull/82 is merged
-    # @computed_field
-    @property
-    def main_metric(self) -> Union[Metric, str]:
-        return self.metrics[0]
-
-    """
-    The benchmark URL on the Polaris Hub.
-    """
-
-    # TODO(hadim): `computed_field` is only available in the very recent pydantic 2.x
-    # Uncomment once https://github.com/conda-forge/pydantic-feedstock/pull/82 is merged
-    # @computed_field
+    @computed_field
     @property
     def polaris_hub_url(self) -> Optional[str]:
+        """
+        The benchmark URL on the Polaris Hub.
+        """
         # NOTE(hadim): putting as default here but we could make it optional
         return "https://polaris.io/benchmark/ORG_OR_USER/BENCHMARK_NAME?"
 
     class Config:
         arbitrary_types_allowed = True
 
-    @validator("dataset")
+    @field_validator("dataset")
     def validate_dataset(cls, v):
         """
         Allows either passing a Dataset object or the kwargs to create one
@@ -97,18 +95,20 @@ class BenchmarkSpecification(BaseModel):
             v = Dataset.from_yaml(v)
         return v
 
-    @validator("target_cols", "input_cols")
-    def validate_cols(cls, v, values):
+    @field_validator("target_cols", "input_cols")
+    def validate_cols(cls, v, info: FieldValidationInfo):
         """Verifies all columns are present in the dataset."""
         if not isinstance(v, List):
             v = [v]
         if len(v) == 0:
             raise ValueError("Specify at least a single column")
-        if "dataset" in values and not all(c in values["dataset"].table.columns for c in v):
+        if info.data.get("dataset") is not None and not all(
+            c in info.data["dataset"].table.columns for c in v
+        ):
             raise ValueError(f"Not all specified target columns were found in the dataset.")
         return v
 
-    @validator("metrics")
+    @field_validator("metrics")
     def validate_metrics(cls, v):
         """
         Verifies all specified metrics are either a Metric object or a valid metric name.
@@ -129,8 +129,8 @@ class BenchmarkSpecification(BaseModel):
 
         return v
 
-    @validator("split")
-    def validate_split(cls, v, values):
+    @field_validator("split")
+    def validate_split(cls, v, info: FieldValidationInfo):
         """
         Verifies that:
           1) There is at least two, non-empty partitions
@@ -161,47 +161,63 @@ class BenchmarkSpecification(BaseModel):
             raise ValueError("The test set contains duplicate indices")
 
         # All indices are valid given the dataset
-        if "dataset" in values:
-            if any(i < 0 or i >= len(values["dataset"]) for i in train_indices + test_indices):
+        if info.data["dataset"] is not None:
+            if any(i < 0 or i >= len(info.data["dataset"]) for i in train_indices + test_indices):
                 raise ValueError("The predefined split contains invalid indices")
         return v
 
-    @root_validator(skip_on_failure=True)
-    def validate_checksum(cls, values):
+    @model_validator(mode="after")
+    @classmethod
+    def validate_checksum(cls, m: "BenchmarkSpecification"):
         """
         If a checksum is provided, verify it matches what the checksum should be.
         If no checksum is provided, make sure it is set.
+        Also sets a default metric if missing.
         """
 
-        # Skip validation as some attributes are missing
-        if not all(k in values for k in ["dataset", "target_cols", "input_cols", "split", "metrics"]):
-            return values
-
-        checksum = values["md5sum"]
+        # Validate checksum
+        checksum = m.md5sum
 
         expected = cls._compute_checksum(
-            dataset=values["dataset"],
-            target_cols=values["target_cols"],
-            input_cols=values["input_cols"],
-            split=values["split"],
-            metrics=values["metrics"],
+            dataset=m.dataset,
+            target_cols=m.target_cols,
+            input_cols=m.input_cols,
+            split=m.split,
+            metrics=m.metrics,
         )
 
         if checksum is None:
-            values["md5sum"] = expected
+            m.md5sum = expected
         elif checksum != expected:
             raise PolarisChecksumError(
                 "The dataset checksum does not match what was specified in the meta-data. "
                 f"{checksum} != {expected}"
             )
-        return values
+
+        # Set a default main metric if not set yet
+        if m.main_metric is None:
+            m.main_metric = m.metrics[0]
+
+        return m
+
+    @field_serializer("metrics", "main_metric")
+    def serialize_metrics(self, v):
+        """Return the string identifier so we can serialize the object"""
+        if isinstance(v, Metric):
+            return v.name
+        return [m.name for m in v]
+
+    @field_serializer("split")
+    def serialize_split(self, v):
+        """Convert any tuple to list to make sure it's serializable"""
+        return listit(v)
 
     @classmethod
     def from_yaml(cls, path):
         """Loads a benchmark from a yaml file."""
         with fsspec.open(path, "r") as f:
             data = yaml.safe_load(f)
-        return cls.parse_obj(data)
+        return cls.model_validate(data)
 
     @staticmethod
     def _compute_checksum(dataset, target_cols, input_cols, split, metrics):
@@ -246,10 +262,8 @@ class BenchmarkSpecification(BaseModel):
 
         fs.mkdir(destination, exist_ok=True)
 
-        data = self.dict()
+        data = self.model_dump()
         data["dataset"] = self.dataset.to_yaml(destination=destination)
-        data["metrics"] = [m.name for m in self.metrics]
-        data["split"] = listit(self.split)
 
         path = fs.join(destination, "benchmark.yaml")
         with fsspec.open(path, "w") as f:
@@ -346,16 +360,12 @@ class BenchmarkSpecification(BaseModel):
         return BenchmarkResults(results=scores, benchmark_id=self.md5sum)
 
     def _repr_dict_(self) -> dict:
-        repr_dict = self.dict()
+        repr_dict = self.model_dump()
 
         repr_dict.pop("dataset")
         repr_dict.pop("split")
 
         repr_dict["dataset_name"] = self.dataset.name
-        repr_dict["metrics"] = [m.name for m in self.metrics]
-
-        # TODO(hadim): remove once @compute_field is available
-        repr_dict["main_metric"] = self.main_metric.name
 
         # Make them properties?
         repr_dict["n_input_cols"] = len(self.input_cols)
