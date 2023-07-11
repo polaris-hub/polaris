@@ -5,16 +5,15 @@ from loguru import logger
 import pandas as pd
 from sklearn.utils.multiclass import type_of_target
 
-from scipy.stats import zscore
-from .utils import discretizer
-from ._chemistry_curator import UNIQUE_ID, NO_STEREO_UNIQUE_ID, NUM_DEF_STEREO_CENTER, NUM_STEREO_CENTER
+from .utils import discretizer, outlier_detection, modified_zscore
+from ._chemistry_curator import UNIQUE_ID, NO_STEREO_UNIQUE_ID, NUM_DEF_STEREO_CENTER
 
 CAT = ["binary", "multiclass"]
 CNT = ["continuous"]
 CLS_PREFIX = "CLASS_"
 
 
-def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str) -> List:
+def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str, threshold: float = 1) -> List:
     """Detect molecule stereoisomers which show activity cliff.
        For continuous data, the activity cliff is defined by the `zscore` difference greater than 1.
        For categorical data, the activity cliff is defined by class labels for categorical values.
@@ -23,6 +22,9 @@ def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str) -> List:
     Args:
         data: Dataframe which contains unique ID which identifies the stereoisomers.
         data_col: Column name for the targeted activity
+        threshold: Zscore threshold which defines the activity cliff.
+                   By default, for continuous values, the activity cliff is defined as if the difference between zscores
+                   is greater than 1.
     """
     data_type = type_of_target(data[data_col].dropna().values, input_name=data_col)
 
@@ -31,12 +33,15 @@ def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str) -> List:
 
     mol_with_cliff = []
     if data_type in CNT:
-        data[f"{data_col}_zscore"] = zscore(data[data_col].values, nan_policy="omit")
+        # compute modified zscore
+        data[f"{data_col}_zscore"] = modified_zscore(data[data_col].values)[0]
 
     for hashmol_id, group_df in data.groupby(NO_STEREO_UNIQUE_ID):
         if group_df.shape[0] > 1:
             if data_type in CNT:
-                has_cliff = (group_df[f"{data_col}_zscore"].max() - group_df[f"{data_col}_zscore"].min()) > 1
+                has_cliff = (
+                    group_df[f"{data_col}_zscore"].max() - group_df[f"{data_col}_zscore"].min()
+                ) > threshold
             else:
                 has_cliff = len(group_df[data_col].unique()) > 1
 
@@ -132,9 +137,6 @@ def _class_conversion(
     return data
 
 
-from polaris.curation.utils import outlier_detection
-
-
 def check_outliers(data, data_cols, method: str = "zscore", prefix="OUTLIER", **kwargs) -> pd.DataFrame:
     """Automatic detection of outliers of bioactivity
 
@@ -146,8 +148,9 @@ def check_outliers(data, data_cols, method: str = "zscore", prefix="OUTLIER", **
             "lof": LocalOutlierFactor
             "svm": OneClassSVM
             "ee": EllipticEnvelope
-            "zscore": zscore_outlier
+            "zscore": ZscoreOutlier
         kwargs: Additional parameters for the automatic outlier detection method.
+                The parameters impact largely the detection therefore should be carefully chosen.
         prefix: Prefix for the boolean column which indicate whether the data point is an outlier.
 
     Returns:
@@ -158,7 +161,7 @@ def check_outliers(data, data_cols, method: str = "zscore", prefix="OUTLIER", **
         <sklearn.svm.OneClassSVM>
         <sklearn.covariance.EllipticEnvelope>
         <sklearn.neighbors.LocalOutlierFactor>
-        <polaris.curation.util.zscore_outlier>
+        <polaris.curation.util.ZscoreOutlier>
 
     """
     for data_col in data_cols:
@@ -167,16 +170,17 @@ def check_outliers(data, data_cols, method: str = "zscore", prefix="OUTLIER", **
         ind = data.index.values
         notna_ind = ind[data[data_col].notna()]
         data.loc[notna_ind, outlier_col] = False
-        outlier_ind = outlier_detection(X=data[data_col].dropna().values, method=method, **kwargs)
+        outlier_ind = outlier_detection(X=data[data_col].dropna().values, method=method, **kwargs)[:, 0]
         outlier_ind = notna_ind[outlier_ind]
 
         data.loc[outlier_ind, outlier_col] = True
 
         if len(outlier_ind) > 0:
             logger.warning(
-                f"Detected {len(outlier_ind)} outliers for data column {data_col}. "
+                f"Detected {len(outlier_ind)} outliers for data column {data_col} using {method}. "
                 f"Please revise the data and consider remove the outliers. "
             )
+    return data
 
 
 def run_data_curation(
@@ -197,7 +201,7 @@ def run_data_curation(
         class_thresholds: Parameters to define class labels for the above listed `data_cols`.
         outlier_params: Parameters for outlier detection.
     """
-    data = check_outliers(data, data_cols, **outlier_params)
+    data = check_outliers(data, data_cols, **outlier_params if outlier_params is not None else {})
 
     # User should deal with scaling and normalization on their end
     data = _merge_duplicates(

@@ -7,6 +7,7 @@ from polaris.curation.utils import discretizer
 from polaris.curation import run_chemistry_curation
 from polaris.curation.utils import outlier_detection, OUTLIER_METHOD
 
+
 def test_discretizer():
     X = [[1.0, -1.0, 2.0], [2.0, 0.0, 0.0], [0.0, 1.0, -1.0]]
     thresholds_binary = [0.5]
@@ -58,9 +59,10 @@ def test_run_chemistry_curation():
         assert dm.same_mol(dm.remove_salts_solvents(mol), mol)
 
 
-
-def test_zscore_outlier():
-    data = pd.DataFrame(np.random.normal(0, 0.1, size=(50,)), columns=["data_col"])
-    data.loc[45: , "data_col"] = 100
-    outilers = outlier_detection(X=data[["data_col"]].values.flatten())
-    assert len(outilers) == 5
+def test_outlier_detection_zscore():
+    data = pd.DataFrame(np.random.normal(0, 0.1, size=(100, 1)), columns=["data_col"])
+    # create 5 data points which are out of distribution
+    num_outlier = 5
+    data.loc[:num_outlier-1, "data_col"] = 100
+    outilers = outlier_detection(X=data[["data_col"]].values, method="zscore")
+    assert len(outilers) == num_outlier

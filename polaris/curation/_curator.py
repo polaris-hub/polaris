@@ -21,6 +21,11 @@ class MolecularCurator:
             such as detect replicated molecules, detection of activity cliff.
         class_thresholds: Dictionary of bioactivity column names and the thresholds for discretizing
             the continuous data.
+        outlier_params: Parameters for automatic outlier detection.
+
+    See Also:
+        <polaris.curation._data_curator.run_data_curation>
+        <polaris.curation._chemistry_curator.run_chemistry_curation>
     """
 
     def __init__(
@@ -30,7 +35,8 @@ class MolecularCurator:
         data_cols: str,
         mask_stereo_undefined_mols: bool = False,
         ignore_stereo: bool = False,
-        class_thresholds: dict = None,
+        class_thresholds: Optional[dict] = None,
+        outlier_params: Optional[dict] = None,
     ):
         self.data = data
         self.mol_col = mol_col
@@ -38,6 +44,7 @@ class MolecularCurator:
         self.mask_stereo_undefined_mols = mask_stereo_undefined_mols
         self.ignore_stereo = ignore_stereo
         self.class_thresholds = class_thresholds
+        self.outlier_params = outlier_params
 
     def run(self):
         # copy the original data columns
@@ -58,6 +65,7 @@ class MolecularCurator:
             mask_stereo_undefined_mols=self.mask_stereo_undefined_mols,
             ignore_stereo=self.ignore_stereo,
             class_thresholds=self.class_thresholds,
+            outlier_params=self.outlier_params,
         )
 
         data.reset_index(drop=True, inplace=True)

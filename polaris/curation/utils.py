@@ -1,5 +1,6 @@
-from typing import Union, List, Any, Optional
+from typing import Union, List
 import numpy as np
+from scipy import stats
 from numbers import Real
 from sklearn.utils import check_array
 from sklearn.base import OneToOneFeatureMixin, TransformerMixin, BaseEstimator, _fit_context
@@ -138,7 +139,7 @@ class Discretizer(OneToOneFeatureMixin, TransformerMixin, BaseEstimator):
         return self
 
     def transform(self, X, copy=None):
-        """Convert each element of X to multiclas label.
+        """Convert each element of X to multiclass label.
 
         Parameters
         ----------
@@ -166,23 +167,34 @@ class Discretizer(OneToOneFeatureMixin, TransformerMixin, BaseEstimator):
 
 def modified_zscore(data, consistency_correction=1.4826):
     """Compute the modified Zscore which is robust to outliers"""
-    median = np.median(data)
+    median = np.nanmedian(data)
 
     deviation_from_med = np.array(data) - median
 
-    mad = np.median(np.abs(deviation_from_med))
+    mad = np.nanmedian(np.abs(deviation_from_med))
     mod_zscore = deviation_from_med / (consistency_correction * mad)
     return mod_zscore, mad
 
 
-class zscore_outlier:
-    def __init__(self, threshold: float = 2):
+class ZscoreOutlier:
+    """Detect outliers by the absolute value of modified Zscore.
+    Args:
+        threshold: zscore threshold to define the outliers. By default, the outlier is defined if the absolute value
+        of modified zscore greater than 3.
+        modified: When set to 'True', modified Zscore is used.
+    """
+
+    def __init__(self, threshold: float = 3, modified: bool = False):
         self.zscore_ = None
         self.threshold = threshold
+        self.modified = modified
         self.mad = None
 
     def fit(self, X):
-        self.zscore_, self.mad = modified_zscore(X)
+        if self.modified:
+            self.zscore_, self.mad = modified_zscore(X)
+        else:
+            self.zscore_ = stats.zscore(X)
 
     def predict(self, X, y=None):
         check_is_fitted(self)
@@ -201,12 +213,27 @@ OUTLIER_METHOD = {
     "lof": LocalOutlierFactor,
     "svm": OneClassSVM,
     "ee": EllipticEnvelope,
-    "zscore": zscore_outlier,
+    "zscore": ZscoreOutlier,
 }
 
 
 def outlier_detection(X: np.ndarray, method="zscore", **kwargs) -> np.ndarray:
-    """Detect outliers by Isolation Forest"""
+    """Automatic detection of data outliers.
+
+    Args:
+        X: Array of values to be analyzed.
+        method: Name of the algorithm to be used for outlier detection.
+                The supported methods are
+                    'iso' for IsolationForest,
+                    'lof' for LocalOutlierFactor,
+                    'svm' for OneClassSVM,
+                    'ee' for EllipticEnvelope, and
+                    'zscore' for ZscoreOutlier.
+        kwargs: Additional parameters for the outlier detection algorithm.
+
+    Returns:
+        outlier_index: Index of detected outliers in the input data X.
+    """
     if method not in OUTLIER_METHOD:
         raise ValueError("The detection name must be in 'iso', 'lof', 'svm', 'ee' and 'zscore'.")
     detector = OUTLIER_METHOD.get(method)(**kwargs)
