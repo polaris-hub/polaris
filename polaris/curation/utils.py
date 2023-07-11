@@ -16,8 +16,8 @@ NumpyNDArray = TypeVar("numpy.ndarray")
 
 
 class LabelOrder(Enum):
-    acs = "acsending"
-    desc = "decsending"
+    acs = "ascending"
+    desc = "descending"
 
 
 def discretizer(
@@ -26,7 +26,7 @@ def discretizer(
     thresholds: np.ndarray = [0.0],
     copy: bool = True,
     allow_nan: bool = True,
-    label_order: LabelOrder = "ascending",
+    label_order: LabelOrder = LabelOrder.acs,
 ):
     """Thresholding of array-like or scipy.sparse matrix into binary or multiclass labels.
 
@@ -66,6 +66,8 @@ def discretizer(
     See Also:
         MultiClassDiscretizer : Performs multiclass discretizer using the Transformer API
     """
+    if label_order not in [LabelOrder.acs, LabelOrder.desc]:
+        raise ValueError(f"Please specify `label_order` using the {LabelOrder}")
 
     X = check_array(
         X,
@@ -78,13 +80,13 @@ def discretizer(
     nan_idx = np.isnan(X)
 
     binarize = True if len(thresholds) == 1 else False
-    if label_order == "descending":
+    if label_order == LabelOrder.desc:
         thresholds = np.flip(thresholds)
     X = np.digitize(X, thresholds)
     if allow_nan:
         X = X.astype(np.float64)
         X[nan_idx] = np.nan
-    if binarize and label_order == "descending":
+    if binarize and label_order == LabelOrder.desc:
         X = 1 - X
     return X
 
@@ -112,7 +114,7 @@ class Discretizer(OneToOneFeatureMixin, TransformerMixin, BaseEstimator, BaseMod
 
     thresholds: List = Field(default=[0])
     copy_object: bool = Field(default=True, alias="copy")
-    label_order: LabelOrder = Field(default="ascending")
+    label_order: LabelOrder = Field(default=LabelOrder.acs)
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y=None):

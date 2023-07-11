@@ -1,11 +1,12 @@
 import pandas as pd
+import pydantic
 import pytest
 import numpy as np
 
 import datamol as dm
-from polaris.curation.utils import discretizer
+from polaris.curation.utils import discretizer, Discretizer
 from polaris.curation import run_chemistry_curation
-from polaris.curation.utils import outlier_detection, OUTLIER_METHOD
+from polaris.curation.utils import outlier_detection, LabelOrder
 
 
 def test_discretizer():
@@ -16,14 +17,20 @@ def test_discretizer():
     values_binary = discretizer(X=X, thresholds=thresholds_binary)
     assert np.array_equal(values_binary, np.array([[1, 0, 1], [1, 0, 0], [0, 1, 0]]))
 
-    values_binary_r = discretizer(X=X, thresholds=thresholds_binary, label_order="descending")
+    values_binary_r = discretizer(X=X, thresholds=thresholds_binary, label_order=LabelOrder.desc)
     assert np.array_equal(values_binary_r, np.array([[0, 1, 0], [0, 1, 1], [1, 0, 1]]))
 
     values_multiclass = discretizer(X=X, thresholds=thresholds_multiclass)
     assert np.array_equal(values_multiclass, np.array([[2, 0, 2], [2, 1, 1], [1, 2, 0]]))
 
-    values_multiclass_r = discretizer(X=X, thresholds=thresholds_multiclass, label_order="descending")
+    values_multiclass_r = discretizer(X=X, thresholds=thresholds_multiclass, label_order=LabelOrder.desc)
     assert np.array_equal(values_multiclass_r, np.array([[0, 2, 0], [0, 1, 1], [1, 0, 2]]))
+
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
+        Discretizer(thresholds=thresholds_multiclass, label_order="WrongType")
+
+    with pytest.raises(ValueError):
+        discretizer(X=X, thresholds=thresholds_multiclass, label_order="WrongType")
 
 
 def test_run_chemistry_curation():
