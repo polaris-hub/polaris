@@ -2,8 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from polaris import load_benchmark
-from polaris.dataset import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification, Subset
-from polaris.utils import fs
+from polaris.dataset import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification
 from polaris.utils.errors import PolarisChecksumError
 
 
@@ -113,9 +112,7 @@ def test_benchmark_metrics_verification(test_single_task_benchmark, test_multi_t
 
 def test_benchmark_from_yaml(test_single_task_benchmark, tmpdir):
     """Test whether we can successfully save and load a benchmark from YAML."""
-    test_single_task_benchmark.to_yaml(str(tmpdir))
-
-    path = fs.join(str(tmpdir), "benchmark.yaml")
+    path = test_single_task_benchmark.to_yaml(str(tmpdir))
     new_benchmark = SingleTaskBenchmarkSpecification.from_yaml(path)
     assert new_benchmark == test_single_task_benchmark
 

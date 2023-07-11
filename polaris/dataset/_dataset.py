@@ -13,7 +13,14 @@ import pandas as pd
 from hashlib import md5
 from collections import defaultdict
 from typing import Dict, Optional, Union, Tuple
-from pydantic import BaseModel, PrivateAttr, field_validator, model_validator, computed_field
+from pydantic import (
+    BaseModel,
+    PrivateAttr,
+    field_validator,
+    model_validator,
+    computed_field,
+    FieldValidationInfo,
+)
 from loguru import logger
 
 from polaris.utils import fs
@@ -96,7 +103,7 @@ class Dataset(BaseModel):
     def validate_table(cls, v):
         """If the table is not a dataframe yet, assume it's a path and try load it."""
         if not isinstance(v, pd.DataFrame):
-            if not fs.is_file(v) or fs.get_extension(v) not in cls._SUPPORTED_TABLE_EXTENSIONS:
+            if not fs.is_file(v) or fs.get_extension(v) not in cls._SUPPORTED_TABLE_EXTENSIONS.get_default():
                 raise InvalidDatasetError(f"{v} is not a valid DataFrame or .parquet path.")
             v = pd.read_parquet(v)
         return v
@@ -112,49 +119,43 @@ class Dataset(BaseModel):
         return v
 
     @field_validator("annotations")
-    def validate_annotations(cls, v, values):
+    def validate_annotations(cls, v, info: FieldValidationInfo):
         """
         Set missing annotations to default.
         For all columns that contain pointers, verify all paths listed exist.
         """
         # Exit early if a previous validation step failed
-        if "table" not in values:
+        if "table" not in info.data:
             return v
 
         # Verify that all annotations are for columns that exist
-        if any(k not in values["table"].columns for k in v):
+        if any(k not in info.data["table"].columns for k in v):
             raise InvalidDatasetError("There is annotations for columns that do not exist")
 
         # Set a default for missing annotations and convert strings to Modality
-        for c in values["table"].columns:
+        for c in info.data["table"].columns:
             if c not in v:
                 v[c] = ColumnAnnotation()
             if isinstance(v[c], (str, Modality)):
                 v[c] = ColumnAnnotation(modality=v[c])
         return v
 
-    # TODO(hadim): see https://github.com/pydantic/pydantic/issues/6277
-    # and https://github.com/pydantic/pydantic/pull/6279
     @model_validator(mode="after")
     @classmethod
-    def validate_checksum_and_cache_dir(cls, values):
+    def validate_checksum_and_cache_dir(cls, m: "Dataset"):
         """
         If a checksum is provided, verify it matches what the checksum should be.
         If no checksum is provided, make sure it is set.
         If no cache_dir is provided, set it to the default cache dir and make sure it exists
         """
 
-        # This is still ran when some fields are not specified
-        if any(k not in values for k in ["table", "annotations", "name"]) or len(values["annotations"]) == 0:
-            return
-
         # Verify the checksum
         # NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
-        actual = values["md5sum"]
-        expected = cls._compute_checksum(values["table"], values["annotations"])
+        actual = m.md5sum
+        expected = cls._compute_checksum(m.table, m.annotations)
 
         if actual is None:
-            values["md5sum"] = expected
+            m.md5sum = expected
         elif actual != expected:
             raise PolarisChecksumError(
                 "The dataset md5sum does not match what was specified in the meta-data. "
@@ -162,13 +163,11 @@ class Dataset(BaseModel):
             )
 
         # Set the default cache dir if none and make sure it exists
-        if values["cache_dir"] is None:
-            values["cache_dir"] = fs.join(
-                DEFAULT_CACHE_DIR, cls._CACHE_SUBDIR, values["name"], values["md5sum"]
-            )
-        fs.mkdir(values["cache_dir"], exist_ok=True)
+        if m.cache_dir is None:
+            m.cache_dir = fs.join(DEFAULT_CACHE_DIR, cls._CACHE_SUBDIR, m.name, m.md5sum)
+        fs.mkdir(m.cache_dir, exist_ok=True)
 
-        return values
+        return m
 
     @classmethod
     def from_yaml(cls, path: str) -> "Dataset":
@@ -278,23 +277,18 @@ class Dataset(BaseModel):
         return len(self.table)
 
     def _repr_dict_(self) -> dict:
+        """Utility function for pretty-printing to the command line and jupyter notebooks"""
         repr_dict = self.model_dump()
         repr_dict.pop("table")
-
-        repr_dict["annotations"] = {}
-        for k, v in self.annotations.items():
-            repr_dict["annotations"][k] = v.modality.name
-
-        # TODO(hadim): remove once @compute_field is available
         repr_dict["polaris_hub_url"] = self.polaris_hub_url
-
         return repr_dict
+
+    def _repr_html_(self):
+        """For pretty-printing in Jupyter Notebooks"""
+        return dict2html(self._repr_dict_())
 
     def __repr__(self):
         return json.dumps(self._repr_dict_(), indent=2)
-
-    def _repr_html_(self):
-        return dict2html(self._repr_dict_())
 
     def __str__(self):
         return self.__repr__()
@@ -352,7 +346,7 @@ class Dataset(BaseModel):
 
         serialized = self.model_dump()
         serialized["table"] = table_path
-        serialized["annotations"] = {k: m.model_dump() for k, m in self.annotations.items()}
+
         # We need to recompute the checksum, as the pointer paths have changed
         serialized["md5sum"] = self._compute_checksum(new_table, self.annotations)
 
