@@ -1,7 +1,8 @@
-from typing import Union, List
+from typing import Union, List, Optional, TypeVar
 import numpy as np
 from scipy import stats
-from numbers import Real
+from enum import Enum
+from pydantic import BaseModel, Field
 from sklearn.utils import check_array
 from sklearn.base import OneToOneFeatureMixin, TransformerMixin, BaseEstimator, _fit_context
 from sklearn.ensemble import IsolationForest
@@ -10,6 +11,14 @@ from sklearn.covariance import EllipticEnvelope
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.utils.validation import check_is_fitted
 
+PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
+NumpyNDArray = TypeVar("numpy.ndarray")
+
+
+class LabelOrder(Enum):
+    acs = "acsending"
+    desc = "decsending"
+
 
 def discretizer(
     X: np.ndarray,
@@ -17,7 +26,7 @@ def discretizer(
     thresholds: np.ndarray = [0.0],
     copy: bool = True,
     allow_nan: bool = True,
-    label_order="ascending",
+    label_order: LabelOrder = "ascending",
 ):
     """Thresholding of array-like or scipy.sparse matrix into binary or multiclass labels.
 
@@ -80,14 +89,13 @@ def discretizer(
     return X
 
 
-class Discretizer(OneToOneFeatureMixin, TransformerMixin, BaseEstimator):
-    """Discretizer continuous data (set feature values to 0, 1, 2 etc.)
-       according to a list thresholds e.g. [threshold_1, threshold_2].
+class Discretizer(OneToOneFeatureMixin, TransformerMixin, BaseEstimator, BaseModel):
+    """Discretizer continuous data according to a list thresholds e.g. [threshold_1, threshold_2].
 
-    In the above example, values falls in left of threshold_1 are mapped to 0, values fall in
-    the interval between threshold_1 and threshold_2 are mapped to 1, while values fall on the right
-    threshold_2 are mapped to 2. The threshold values must be in ascending or descending order.
-    To reverse the label order, set `label_order` to `descending`.
+       In the above example, values falls in left of threshold_1 are mapped to 0, values fall in
+       the interval between threshold_1 and threshold_2 are mapped to 1, while values fall on the right
+       threshold_2 are mapped to 2. The threshold values must be in ascending or descending order.
+       To reverse the label order, set `label_order` to `descending`.
 
     Args:
         thresholds : np.ndarray, default=0.0
@@ -102,18 +110,9 @@ class Discretizer(OneToOneFeatureMixin, TransformerMixin, BaseEstimator):
         discretizer : Equivalent function without the estimator API.
     """
 
-    _parameter_constraints: dict = {
-        "thresholds": [List[Real], np.ndarray],
-        "copy": ["boolean"],
-        "label_order": [str],
-    }
-
-    def __init__(
-        self, *, thresholds: Union[np.ndarray, list] = [0.0], copy=True, label_order: bool = "ascending"
-    ):
-        self.thresholds = thresholds
-        self.copy = copy
-        self.label_order = label_order
+    thresholds: List = Field(default=[0])
+    copy_object: bool = Field(default=True, alias="copy")
+    label_order: LabelOrder = Field(default="ascending")
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y=None):
@@ -122,18 +121,16 @@ class Discretizer(OneToOneFeatureMixin, TransformerMixin, BaseEstimator):
         This method allows to: (i) validate the estimator's parameters and
         (ii) be consistent with the scikit-learn transformer API.
 
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            The data.
+        Args:
+            X : {array-like, sparse matrix} of shape (n_samples, n_features)
+                The data.
 
-        y : None
-            Ignored.
+            y : None
+                Ignored.
 
-        Returns
-        -------
-        self : object
-            Fitted transformer.
+        Returns:
+            self : object
+                Fitted transformer.
         """
         self._validate_data(X, accept_sparse="csr")
         return self
@@ -141,20 +138,18 @@ class Discretizer(OneToOneFeatureMixin, TransformerMixin, BaseEstimator):
     def transform(self, X, copy=None):
         """Convert each element of X to multiclass label.
 
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            The data to binarize, element by element.
-            scipy.sparse matrices should be in CSR format to avoid an
-            un-necessary copy.
+        Args:
+            X : {array-like, sparse matrix} of shape (n_samples, n_features)
+                The data to binarize, element by element.
+                scipy.sparse matrices should be in CSR format to avoid an
+                un-necessary copy.
 
-        copy : bool
-            Copy the input X or not.
+            copy : bool
+                Copy the input X or not.
 
         Returns
-        -------
-        X_tr : {ndarray, sparse matrix} of shape (n_samples, n_features)
-            Transformed array.
+            X_tr : {ndarray, sparse matrix} of shape (n_samples, n_features)
+                Transformed array.
         """
         copy = copy if copy is not None else self.copy
         # check_array
@@ -176,7 +171,7 @@ def modified_zscore(data, consistency_correction=1.4826):
     return mod_zscore, mad
 
 
-class ZscoreOutlier:
+class ZscoreOutlier(BaseModel):
     """Detect outliers by the absolute value of modified Zscore.
     Args:
         threshold: zscore threshold to define the outliers. By default, the outlier is defined if the absolute value
@@ -184,11 +179,10 @@ class ZscoreOutlier:
         modified: When set to 'True', modified Zscore is used.
     """
 
-    def __init__(self, threshold: float = 3, modified: bool = False):
-        self.zscore_ = None
-        self.threshold = threshold
-        self.modified = modified
-        self.mad = None
+    threshold: float = 3
+    modified: bool = False
+    zscore_: NumpyNDArray = None
+    mad: float = None
 
     def fit(self, X):
         if self.modified:

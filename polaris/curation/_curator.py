@@ -1,13 +1,15 @@
 # class to perform data curation for both chemistry and endpoint measured values
-from typing import Union, Optional
-import pandas as pd
+from typing import Union, Optional, List
+from pydantic import BaseModel
+from typing import TypeVar
 from ._chemistry_curator import run_chemistry_curation, UNIQUE_ID, NO_STEREO_UNIQUE_ID, SMILES_COL
 from ._data_curator import run_data_curation
+from .utils import PandasDataFrame
 
 ORI_PREFIX = "ORI_"
 
 
-class MolecularCurator:
+class MolecularCurator(BaseModel):
     """
     Apply curation process on given dataset on both chemistry and endpoint measurements
 
@@ -28,23 +30,13 @@ class MolecularCurator:
         <polaris.curation._chemistry_curator.run_chemistry_curation>
     """
 
-    def __init__(
-        self,
-        data: pd.DataFrame,
-        mol_col: str,
-        data_cols: str,
-        mask_stereo_undefined_mols: bool = False,
-        ignore_stereo: bool = False,
-        class_thresholds: Optional[dict] = None,
-        outlier_params: Optional[dict] = None,
-    ):
-        self.data = data
-        self.mol_col = mol_col
-        self.data_cols = data_cols
-        self.mask_stereo_undefined_mols = mask_stereo_undefined_mols
-        self.ignore_stereo = ignore_stereo
-        self.class_thresholds = class_thresholds
-        self.outlier_params = outlier_params
+    data: PandasDataFrame
+    mol_col: str
+    data_cols: List[str]
+    mask_stereo_undefined_mols: bool = False
+    ignore_stereo: bool = False
+    class_thresholds: Optional[dict] = None
+    outlier_params: Optional[dict] = None
 
     def run(self):
         # copy the original data columns
