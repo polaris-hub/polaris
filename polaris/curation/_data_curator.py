@@ -13,11 +13,13 @@ CONTINUOUS = ["continuous"]
 CLASS_PREFIX = "CLASS_"
 
 
-def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str, threshold: float = 1) -> List:
-    """Detect molecule stereoisomers which show activity cliff.
+def _identify_stereoisomers_with_activity_cliff(
+    data: pd.DataFrame, data_col: str, threshold: float = 1, groupby_col: str = NO_STEREO_UNIQUE_ID
+) -> List:
+    """Identify the stereoisomers which show activity cliff.
        For continuous data, the activity cliff is defined by the `zscore` difference greater than 1.
        For categorical data, the activity cliff is defined by class labels for categorical values.
-       It's recommended to use provide clear thresholds to classify the bioactivity if possible.
+       It's recommended to provide clear thresholds to classify the bioactivity if possible.
 
     Args:
         data: Dataframe which contains unique ID which identifies the stereoisomers.
@@ -25,6 +27,11 @@ def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str, threshold: 
         threshold: Zscore threshold which defines the activity cliff.
                    By default, for continuous values, the activity cliff is defined as if the difference between zscores
                    is greater than 1.
+        groupby_col: Column name which can be used to identifier the stereoisomers.
+
+    Returns:
+        mol_hash_ids_with_cliff: A list mol hash ids for the stereoisomer molecules which show activity cliff.
+
     """
     data_type = type_of_target(data[data_col].dropna().values, input_name=data_col)
 
@@ -36,7 +43,7 @@ def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str, threshold: 
         # compute modified zscore
         data[f"{data_col}_zscore"] = modified_zscore(data[data_col].values)[0]
 
-    for hashmol_id, group_df in data.groupby(NO_STEREO_UNIQUE_ID):
+    for hashmol_id, group_df in data.groupby(groupby_col):
         if group_df.shape[0] > 1:
             if data_type in CONTINUOUS:
                 has_cliff = (
@@ -51,23 +58,23 @@ def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str, threshold: 
     return mol_hash_ids_with_cliff
 
 
-def _process_stereo_activity_cliff(
-    data: pd.DataFrame, data_cols: List[str], mask_stereo_undefined_mols: bool = True
+def _process_stereoisomer_with_activity_cliff(
+    data: pd.DataFrame, data_cols: List[str], mask_stereo_undefined_mols: bool = True, **kwargs
 ):
-    """Detect and/or mask out the molecule stereoisomers which show activity cliff.
-       Teh
+    """Identify and discard the stereoisomers which the stereocenter are not well-defined but show activity cliff.
 
     Args:
         data: Parsed dataset
         data_cols: Data column names to be processed.
         mask_stereo_undefined_mols: Whether remove molecules and the bioactivity which shows chiral shift
                                     but stereo information not defined in the molecule representation.
+        kwargs: Parameters for identify the activity cliff between the stereoisomers.
     """
     for data_col in data_cols:
         data_col_mask = (
             [data_col, data_col[len(CLASS_PREFIX) :]] if data_col.startswith(CLASS_PREFIX) else data_col
         )
-        mol_with_cliff = _detect_stereo_activity_cliff(data, data_col)
+        mol_with_cliff = _identify_stereoisomers_with_activity_cliff(data=data, data_col=data_col, **kwargs)
         data.loc[data[NO_STEREO_UNIQUE_ID].isin(mol_with_cliff), f"{data_col}_stereo_cliff"] = True
         if len(mol_with_cliff) > 0 and mask_stereo_undefined_mols:
             mol_ids = data.query(f"`{data_col}_stereo_cliff`==True & {NUM_DEF_STEREO_CENTER}==0")[
@@ -78,7 +85,7 @@ def _process_stereo_activity_cliff(
 
 
 def _merge_duplicates(
-    data: pd.DataFrame, data_cols: List[str], merge_on: List[str] = [UNIQUE_ID], keep_all_rows: bool = False
+    data: pd.DataFrame, data_cols: List[str], merge_on=None, keep_all_rows: bool = False
 ) -> pd.DataFrame:
     """Merge molecules with multiple measurements.
        To be robust to the outliers, `median` is used to compute the average value cross all measurements.
@@ -90,6 +97,9 @@ def _merge_duplicates(
                   dy default, `molhash_id` is used to identify the replicated molecule.
 
     """
+    if merge_on is None:
+        merge_on = [UNIQUE_ID]
+
     df_list = []
     # Include 'molhash without stereo information' additionally for easily tracking the stereoisomers
     for uid, df in data.groupby(by=merge_on):
@@ -190,6 +200,7 @@ def run_data_curation(
     ignore_stereo: bool = False,
     class_thresholds: Dict = None,
     outlier_params: Dict = None,
+    activity_cliff_params: Dict = None,
 ) -> pd.DataFrame:
     """Perform curation on the measured values from biological assay
 
@@ -200,6 +211,10 @@ def run_data_curation(
         ignore_stereo: Ignore the stereochemistry information from data curation.
         class_thresholds: Parameters to define class labels for the above listed `data_cols`.
         outlier_params: Parameters for outlier detection.
+        activity_cliff_params: Parameter for identify the activity cliff between the stereoisomers.
+
+    See Also:
+
     """
     data = check_outliers(data, data_cols, **outlier_params if outlier_params is not None else {})
 
@@ -214,7 +229,7 @@ def run_data_curation(
         data = _class_conversion(data, data_cols, class_thresholds, prefix=CLASS_PREFIX)
     if not ignore_stereo:
         # detect stereo activity cliff, keep or remove
-        data = _process_stereo_activity_cliff(
+        data = _process_stereoisomer_with_activity_cliff(
             data=data,
             data_cols=[
                 f"{CLASS_PREFIX}{data_col}" if f"{CLASS_PREFIX}{data_col}" in data.columns else data_col
@@ -223,6 +238,7 @@ def run_data_curation(
             if class_thresholds
             else data_cols,
             mask_stereo_undefined_mols=mask_stereo_undefined_mols,
+            **activity_cliff_params if activity_cliff_params is not None else {},
         )
 
     return data

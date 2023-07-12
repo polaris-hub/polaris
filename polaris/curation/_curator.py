@@ -1,10 +1,8 @@
 # class to perform data curation for both chemistry and endpoint measured values
-from typing import Union, Optional, List
+from typing import Optional, List
 
-import pandas as pd
 from pydantic import BaseModel
-from typing import TypeVar
-from ._chemistry_curator import run_chemistry_curation, UNIQUE_ID, NO_STEREO_UNIQUE_ID, SMILES_COL
+from ._chemistry_curator import run_chemistry_curation
 from ._data_curator import run_data_curation
 from .utils import PandasDataFrame
 
@@ -26,6 +24,7 @@ class MolecularCurator(BaseModel):
         class_thresholds: Dictionary of bioactivity column names and the thresholds for discretizing
             the continuous data.
         outlier_params: Parameters for automatic outlier detection.
+        progress: Whether show progress of the parallelization process.
 
     See Also:
         <polaris.curation._data_curator.run_data_curation>
@@ -39,6 +38,8 @@ class MolecularCurator(BaseModel):
     ignore_stereo: bool = False
     class_thresholds: Optional[dict] = None
     outlier_params: Optional[dict] = None
+    activity_cliff_params: Optional[dict] = None
+    progress: bool = False
 
     def __call__(self):
         # copy the original data columns
@@ -47,7 +48,9 @@ class MolecularCurator(BaseModel):
             data[f"{ORI_PREFIX}{data_col}"] = self.data[data_col].copy()
 
         # run chemistry curation
-        dataframe = run_chemistry_curation(self.data[self.mol_col], ignore_stereo=self.ignore_stereo)
+        dataframe = run_chemistry_curation(
+            self.data[self.mol_col], ignore_stereo=self.ignore_stereo, progress=False
+        )
 
         for col in dataframe.columns:
             data[col] = dataframe[col].values
@@ -60,6 +63,7 @@ class MolecularCurator(BaseModel):
             ignore_stereo=self.ignore_stereo,
             class_thresholds=self.class_thresholds,
             outlier_params=self.outlier_params,
+            activity_cliff_params=self.activity_cliff_params,
         )
 
         data = data.reset_index(drop=True)

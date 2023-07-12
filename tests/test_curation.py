@@ -7,6 +7,7 @@ import datamol as dm
 from polaris.curation.utils import discretizer, Discretizer
 from polaris.curation import run_chemistry_curation
 from polaris.curation.utils import outlier_detection, LabelOrder
+from polaris.curation._data_curator import _merge_duplicates, _identify_stereoisomers_with_activity_cliff
 
 
 def test_discretizer():
@@ -73,3 +74,45 @@ def test_outlier_detection_zscore():
     data.loc[: num_outlier - 1, "data_col"] = 100
     outilers = outlier_detection(X=data[["data_col"]].values, method="zscore")
     assert len(outilers) == num_outlier
+
+
+def test_identify_stereoisomers_with_activity_cliff():
+    vals = list(np.random.randint(0, 10, 50)) * 2 + np.random.normal(0, 0.01, 100)
+    groups = list(range(50)) * 2
+    num_cliff = 10
+    index_cliff = np.random.randint(0, 50, num_cliff)
+    vals[index_cliff] = 1000
+
+    data = pd.DataFrame({"data_col": vals, "groupby_col": groups})
+    ids = _identify_stereoisomers_with_activity_cliff(
+        data=data, data_col="data_col", groupby_col="groupby_col", threshold=1
+    )
+    # check if identifed ids are correct
+    assert set(ids) == set(index_cliff)
+
+
+def test_merge_duplicates():
+    num_sample = 100
+    ids = np.array(range(num_sample))
+    max_ind = max(ids)
+    num_dup = 5
+    for index in range(num_dup):
+        ids[max_ind - index] = index
+    data_col_1 = np.random.normal(1, 0.01, 100)
+    data_col_2 = np.random.normal(2, 0.01, 100)
+    data_col_3 = np.random.normal(3, 0.01, 100)
+    data = pd.DataFrame(
+        {"data_col_1": data_col_1, "data_col_2": data_col_2, "data_col_3": data_col_3, "ids": ids}
+    )
+
+    merged = _merge_duplicates(
+        data=data, data_cols=["data_col_1", "data_col_2", "data_col_3"], merge_on=["ids"]
+    )
+
+    # check the data points been merged
+    assert data.shape[0] == merged.shape[0] + num_dup
+    # check the merged values are correct
+    for index in range(num_dup):
+        assert data.loc[[index, max_ind - index], "data_col_1"].median() == merged.loc[index, "data_col_1"]
+        assert data.loc[[index, max_ind - index], "data_col_2"].median() == merged.loc[index, "data_col_2"]
+        assert data.loc[[index, max_ind - index], "data_col_3"].median() == merged.loc[index, "data_col_3"]

@@ -46,6 +46,24 @@ def _curate_mol(
         mol = dm.fix_mol(mol)
         # sanitize molecule
         mol = dm.sanitize_mol(mol, sanifix=True, charge_neutral=False)
+
+        if remove_salt_solvent:
+            # standardize here to ensure the success the substructure matching for
+            mol = dm.standardize_mol(
+                mol=mol,
+                disconnect_metals=False,
+                reionize=True,
+                normalize=True,
+                uncharge=False,
+                stereo=not remove_stereo,
+            )
+            # remove salts
+            mol = dm.remove_salts_solvents(mol)
+
+        # remove stereochemistry information
+        if remove_stereo:
+            mol = dm.remove_stereochemistry(mol)
+
         # standardize
         mol = dm.standardize_mol(
             mol=mol,
@@ -55,24 +73,6 @@ def _curate_mol(
             uncharge=False,
             stereo=not remove_stereo,
         )
-        # remove salts
-        if remove_salt_solvent:
-            mol = dm.remove_salts_solvents(mol)
-
-        # remove stereo
-        if remove_stereo:
-            mol = dm.remove_stereochemistry(mol)
-
-        # standardize again
-        if remove_salt_solvent or remove_stereo:
-            mol = dm.standardize_mol(
-                mol=mol,
-                disconnect_metals=False,
-                reionize=True,
-                normalize=True,
-                uncharge=False,
-                stereo=not remove_stereo,
-            )
 
         mol_dict = {
             SMILES_COL: dm.to_smiles(mol, canonical=True),
