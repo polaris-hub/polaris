@@ -26,7 +26,7 @@ def test_discretizer():
     values_multiclass_r = discretizer(X=X, thresholds=thresholds_multiclass, label_order=LabelOrder.desc)
     assert np.array_equal(values_multiclass_r, np.array([[0, 2, 0], [0, 1, 1], [1, 0, 2]]))
 
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
+    with pytest.raises(pydantic.ValidationError):
         Discretizer(thresholds=thresholds_multiclass, label_order="WrongType")
 
     with pytest.raises(ValueError):
