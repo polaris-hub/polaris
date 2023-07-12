@@ -96,8 +96,9 @@ class Dataset(BaseModel):
     _has_been_warned: bool = PrivateAttr(False)
     _has_been_cached: bool = PrivateAttr(False)
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = {
+        "arbitrary_types_allowed": True,
+    }
 
     @field_validator("table")
     def validate_table(cls, v):

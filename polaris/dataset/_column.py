@@ -44,8 +44,9 @@ class ColumnAnnotation(BaseModel):
     """
     user_attributes: dict = {}
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = {
+        "arbitrary_types_allowed": True,
+    }
 
     @field_validator("modality")
     def validate_modality(cls, v):
