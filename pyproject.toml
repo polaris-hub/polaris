@@ -60,6 +60,19 @@ include = '\.pyi?$'
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--verbose --durations=10"
+addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=78 --cov-report xml --cov-report term"
 testpaths = ["tests"]
-filterwarnings = []
+filterwarnings = [
+    "ignore::DeprecationWarning:jupyter_client.connect.*:",
+]
+
+[tool.coverage.run]
+source = ["polaris/"]
+disable_warnings = ["no-data-collected"]
+data_file = ".coverage/coverage"
+
+[tool.coverage.report]
+omit = ["polaris/__init__.py", "polaris/_version.py"]
+
+[tool.coverage.xml]
+output = "coverage.xml"

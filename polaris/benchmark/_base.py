@@ -80,8 +80,9 @@ class BenchmarkSpecification(BaseModel):
         # NOTE(hadim): putting as default here but we could make it optional
         return "https://polaris.io/benchmark/ORG_OR_USER/BENCHMARK_NAME?"
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = {
+        "arbitrary_types_allowed": True,
+    }
 
     @field_validator("dataset")
     def validate_dataset(cls, v):
