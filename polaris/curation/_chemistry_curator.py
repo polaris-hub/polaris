@@ -1,4 +1,6 @@
-from typing import Optional, Union, List, Tuple, Iterable
+from typing import Optional, Union, List, Any
+import functools
+
 import pandas as pd
 from rdkit.Chem import FindMolChiralCenters
 
@@ -13,7 +15,7 @@ NUM_STEREO_CENTER = "num_stereo_center"
 NUM_DEF_STEREO_CENTER = "num_defined_stereo_center"
 
 
-def _num_stereo_centers(mol: Mol, only_defined=False):
+def _num_stereo_centers(mol: Mol, only_defined: bool = False):
     stereo_centers = FindMolChiralCenters(mol, force=True, includeUnassigned=not only_defined)
     return len(stereo_centers)
 
@@ -86,7 +88,8 @@ def run_chemistry_curation(
     mols: List[Union[Mol, str]],
     ignore_stereo: bool = False,
     remove_salt_solvent: bool = True,
-    **parallelized_args,
+    progress: bool = False,
+    **parallelized_args: Any,
 ) -> pd.DataFrame:
     """Perform curation on the input molecules.
 
@@ -99,6 +102,7 @@ def run_chemistry_curation(
         remove_salt_solvent: When set to 'True', all disconnected salts and solvents
                              will be removed from molecule. In most of the cases,
                              the salts/solvents are recommended to be removed.
+        progress: Whether show progress of the parallelization process.
         parallelized_args: Additional parameters for <datamol.utils.parallelized> to control the parallelization process.
 
     Returns:
@@ -107,9 +111,13 @@ def run_chemistry_curation(
     See Also:
         <datamol.utils.parallelized>
     """
+    _curate_fn = functools.partial(
+        _curate_mol, remove_stereo=ignore_stereo, remove_salt_solvent=remove_salt_solvent
+    )
     mol_list = dm.parallelized(
-        fn=lambda mol: _curate_mol(mol, remove_stereo=ignore_stereo, remove_salt_solvent=remove_salt_solvent),
+        fn=_curate_fn,
         inputs_list=mols,
+        progress=progress,
         **parallelized_args,
     )
 

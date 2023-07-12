@@ -1,12 +1,14 @@
 # class to perform data curation for both chemistry and endpoint measured values
 from typing import Union, Optional, List
+
+import pandas as pd
 from pydantic import BaseModel
 from typing import TypeVar
 from ._chemistry_curator import run_chemistry_curation, UNIQUE_ID, NO_STEREO_UNIQUE_ID, SMILES_COL
 from ._data_curator import run_data_curation
 from .utils import PandasDataFrame
 
-ORI_PREFIX = "ORI_"
+ORI_PREFIX = "ORIGINAL_"
 
 
 class MolecularCurator(BaseModel):
@@ -31,14 +33,14 @@ class MolecularCurator(BaseModel):
     """
 
     data: PandasDataFrame
-    mol_col: str
+    mol_col: str = "smiles"
     data_cols: List[str]
     mask_stereo_undefined_mols: bool = False
     ignore_stereo: bool = False
     class_thresholds: Optional[dict] = None
     outlier_params: Optional[dict] = None
 
-    def run(self):
+    def __call__(self):
         # copy the original data columns
         data = self.data.copy()
         for data_col in self.data_cols + [self.mol_col]:
@@ -60,8 +62,5 @@ class MolecularCurator(BaseModel):
             outlier_params=self.outlier_params,
         )
 
-        data.reset_index(drop=True, inplace=True)
+        data = data.reset_index(drop=True)
         return data
-
-    def __call__(self):
-        return self.run()

@@ -8,9 +8,9 @@ from sklearn.utils.multiclass import type_of_target
 from .utils import discretizer, outlier_detection, modified_zscore
 from ._chemistry_curator import UNIQUE_ID, NO_STEREO_UNIQUE_ID, NUM_DEF_STEREO_CENTER
 
-CAT = ["binary", "multiclass"]
-CNT = ["continuous"]
-CLS_PREFIX = "CLASS_"
+CATEGORIES = ["binary", "multiclass"]
+CONTINUOUS = ["continuous"]
+CLASS_PREFIX = "CLASS_"
 
 
 def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str, threshold: float = 1) -> List:
@@ -31,14 +31,14 @@ def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str, threshold: 
     if data_type is None:
         raise ValueError(f"The column {data_col} contains less than 2 unique values.")
 
-    mol_with_cliff = []
-    if data_type in CNT:
+    mol_hash_ids_with_cliff = []
+    if data_type in CONTINUOUS:
         # compute modified zscore
         data[f"{data_col}_zscore"] = modified_zscore(data[data_col].values)[0]
 
     for hashmol_id, group_df in data.groupby(NO_STEREO_UNIQUE_ID):
         if group_df.shape[0] > 1:
-            if data_type in CNT:
+            if data_type in CONTINUOUS:
                 has_cliff = (
                     group_df[f"{data_col}_zscore"].max() - group_df[f"{data_col}_zscore"].min()
                 ) > threshold
@@ -46,9 +46,9 @@ def _detect_stereo_activity_cliff(data: pd.DataFrame, data_col: str, threshold: 
                 has_cliff = len(group_df[data_col].unique()) > 1
 
             if has_cliff:
-                mol_with_cliff.append(hashmol_id)
+                mol_hash_ids_with_cliff.append(hashmol_id)
 
-    return mol_with_cliff
+    return mol_hash_ids_with_cliff
 
 
 def _process_stereo_activity_cliff(
@@ -65,7 +65,7 @@ def _process_stereo_activity_cliff(
     """
     for data_col in data_cols:
         data_col_mask = (
-            [data_col, data_col[len(CLS_PREFIX) :]] if data_col.startswith(CLS_PREFIX) else data_col
+            [data_col, data_col[len(CLASS_PREFIX) :]] if data_col.startswith(CLASS_PREFIX) else data_col
         )
         mol_with_cliff = _detect_stereo_activity_cliff(data, data_col)
         data.loc[data[NO_STEREO_UNIQUE_ID].isin(mol_with_cliff), f"{data_col}_stereo_cliff"] = True
@@ -106,7 +106,7 @@ def _class_conversion(
     data: pd.DataFrame,
     data_cols: List[str],
     conversion_params: List[dict],
-    prefix: str = CLS_PREFIX,
+    prefix: str = CLASS_PREFIX,
 ) -> pd.DataFrame:
     """
     Apply binary or multiclass conversion to the data columns by the given thresholds
@@ -211,13 +211,13 @@ def run_data_curation(
     )
     # class conversion
     if class_thresholds:
-        data = _class_conversion(data, data_cols, class_thresholds, prefix=CLS_PREFIX)
+        data = _class_conversion(data, data_cols, class_thresholds, prefix=CLASS_PREFIX)
     if not ignore_stereo:
         # detect stereo activity cliff, keep or remove
         data = _process_stereo_activity_cliff(
             data=data,
             data_cols=[
-                f"{CLS_PREFIX}{data_col}" if f"{CLS_PREFIX}{data_col}" in data.columns else data_col
+                f"{CLASS_PREFIX}{data_col}" if f"{CLASS_PREFIX}{data_col}" in data.columns else data_col
                 for data_col in data_cols
             ]
             if class_thresholds

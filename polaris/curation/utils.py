@@ -22,8 +22,7 @@ class LabelOrder(Enum):
 
 def discretizer(
     X: np.ndarray,
-    *,
-    thresholds: np.ndarray = [0.0],
+    thresholds: Union[np.ndarray, list],
     copy: bool = True,
     allow_nan: bool = True,
     label_order: LabelOrder = LabelOrder.acs,
@@ -31,26 +30,21 @@ def discretizer(
     """Thresholding of array-like or scipy.sparse matrix into binary or multiclass labels.
 
     Args:
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            The data to binarize, element by element.
+        X : The data to discretize, element by element.
             scipy.sparse matrices should be in CSR or CSC format to avoid an
             un-necessary copy.
 
-        thresholds : float, default=0.0
-            Feature values below or equal to this are replaced by 0, above it by 1.
+        thresholds: Feature values below or equal to this are replaced by 0, above it by 1.
             Threshold may not be less than 0 for operations on sparse matrices.
 
-        copy : bool, default=True
-            Set to False to perform inplace discretization and avoid a copy
+        copy: Set to False to perform inplace discretization and avoid a copy
             (if the input is already a numpy array or a scipy.sparse CSR / CSC
             matrix and if axis is 1).
 
-        allow_nan: bool
-            Set to True to allow nans in the array for discretization. Otherwise,
+        allow_nan: Set to True to allow nans in the array for discretization. Otherwise,
             an error will be raised instead.
 
-        label_order: str
-            The continuous values are discretized to labels 0, 1, 2, .., N with respect to given
+        label_order: The continuous values are discretized to labels 0, 1, 2, .., N with respect to given
             threshold bins [threshold_1, threshold_2,.., threshould_n].
             When set to 'ascending', the class label is in ascending order with the threshold
             bins that `0` represents negative class or lower class, while 1, 2, 3 are for higher classes.
@@ -60,11 +54,10 @@ def discretizer(
             by`X < 0.5`. In this case, `label_order` should be `descending`.
 
     Returns:
-        X_tr : {ndarray, sparse matrix} of shape (n_samples, n_features)
-            The transformed data.
+        X_tr: The transformed data.
 
     See Also:
-        MultiClassDiscretizer : Performs multiclass discretizer using the Transformer API
+        Discretizer : Performs multiclass discretizer using the Transformer API
     """
     if label_order not in [LabelOrder.acs, LabelOrder.desc]:
         raise ValueError(f"Please specify `label_order` using the {LabelOrder}")
@@ -162,8 +155,17 @@ class Discretizer(OneToOneFeatureMixin, TransformerMixin, BaseEstimator, BaseMod
         return {"stateless": True}
 
 
-def modified_zscore(data, consistency_correction=1.4826):
-    """Compute the modified Zscore which is robust to outliers"""
+def modified_zscore(data: np.ndarray, consistency_correction: float = 1.4826):
+    """
+    The modified z score is calculated from the median absolute deviation (MAD).
+    These values must be multiplied by a constant to approximate the standard deviation.
+
+    The modified z score might be more robust than the standard z score because it relies
+    on the median (MED) for calculating the z score.
+
+            modified Z score = (X-MED)/(consistency_correction*MAD)
+
+    """
     median = np.nanmedian(data)
 
     deviation_from_med = np.array(data) - median
