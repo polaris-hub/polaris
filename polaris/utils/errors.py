@@ -19,4 +19,7 @@ class PolarisUnauthorizedError(Exception):
 
 
 class TestAccessError(Exception):
+    # Prevent pytest to collect this as a test
+    __test__ = False
+
     pass
