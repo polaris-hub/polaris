@@ -25,7 +25,7 @@ def discretizer(
     thresholds: Union[np.ndarray, list],
     copy: bool = True,
     allow_nan: bool = True,
-    label_order: LabelOrder = LabelOrder.acs,
+    label_order: LabelOrder = LabelOrder.acs.value,
 ):
     """Thresholding of array-like or scipy.sparse matrix into binary or multiclass labels.
 
@@ -59,8 +59,10 @@ def discretizer(
     See Also:
         Discretizer : Performs multiclass discretizer using the Transformer API
     """
-    if label_order not in [LabelOrder.acs, LabelOrder.desc]:
-        raise ValueError(f"Please specify `label_order` using the {LabelOrder}")
+    if label_order not in [LabelOrder.acs.value, LabelOrder.desc.value]:
+        raise ValueError(
+            f"Please specify `label_order` using the {LabelOrder.desc.value} or {LabelOrder.acs.value}"
+        )
 
     X = check_array(
         X,
@@ -73,13 +75,13 @@ def discretizer(
     nan_idx = np.isnan(X)
 
     binarize = True if len(thresholds) == 1 else False
-    if label_order == LabelOrder.desc:
+    if label_order == LabelOrder.desc.value:
         thresholds = np.flip(thresholds)
     X = np.digitize(X, thresholds)
     if allow_nan:
         X = X.astype(np.float64)
         X[nan_idx] = np.nan
-    if binarize and label_order == LabelOrder.desc:
+    if binarize and label_order == LabelOrder.desc.value:
         X = 1 - X
     return X
 
