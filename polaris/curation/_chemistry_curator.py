@@ -1,4 +1,4 @@
-from typing import Optional, Union, List, Any
+from typing import Union, List, Any, Tuple
 import functools
 
 import pandas as pd
@@ -11,13 +11,33 @@ UNIQUE_ID = "molhash_id"
 NO_STEREO_UNIQUE_ID = "molhash_id_no_stereo"
 SMILES_COL = "smiles"
 STEREO_DEF = "stereo_defined"
-NUM_STEREO_CENTER = "num_stereo_center"
+NUM_UNDEF_STEREO_CENTER = "num_undefined_stereo_center"
 NUM_DEF_STEREO_CENTER = "num_defined_stereo_center"
 
 
-def _num_stereo_centers(mol: Mol, only_defined: bool = False):
-    stereo_centers = FindMolChiralCenters(mol, force=True, includeUnassigned=not only_defined)
-    return len(stereo_centers)
+def _num_stereo_centers(mol: Mol) -> List[int]:
+    """Get the number of defined and undefined stereo centers of a given molecule
+        by accessing the all and only defined stereo centers.
+        It's to facilitate the analysis of the stereo isomers.
+        None will be return if there is no stereo centers in the molecule.
+
+     Args:
+         mol: Molecule
+
+    Returns:
+        nun_defined_centers: Number of defined stereo centers.
+        nun_undefined_centers: Number of undefined stereo centers.
+
+    See Also:
+        <rdkit.Chem.FindMolChiralCenters>
+
+    """
+    num_all_centers = len(FindMolChiralCenters(mol, force=True, includeUnassigned=True))
+    num_defined_centers = len(FindMolChiralCenters(mol, force=True, includeUnassigned=False))
+    if num_all_centers == 0:
+        return None, None
+    nun_undefined_centers = num_all_centers - num_defined_centers
+    return num_defined_centers, nun_undefined_centers
 
 
 def _curate_mol(
@@ -74,12 +94,14 @@ def _curate_mol(
             stereo=not remove_stereo,
         )
 
+        num_defined_centers, num_undefined_centers = _num_stereo_centers(mol)
+
         mol_dict = {
             SMILES_COL: dm.to_smiles(mol, canonical=True),
             UNIQUE_ID: dm.hash_mol(mol),
             NO_STEREO_UNIQUE_ID: dm.hash_mol(mol, hash_scheme="no_stereo"),
-            NUM_STEREO_CENTER: _num_stereo_centers(mol),
-            NUM_DEF_STEREO_CENTER: _num_stereo_centers(mol, only_defined=True),
+            NUM_UNDEF_STEREO_CENTER: num_undefined_centers,
+            NUM_DEF_STEREO_CENTER: num_defined_centers,
         }
         return mol_dict
 

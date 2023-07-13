@@ -8,6 +8,7 @@ from polaris.curation.utils import discretizer, Discretizer
 from polaris.curation import run_chemistry_curation
 from polaris.curation.utils import outlier_detection, LabelOrder
 from polaris.curation._data_curator import _merge_duplicates, _identify_stereoisomers_with_activity_cliff
+from polaris.curation._chemistry_curator import _num_stereo_centers
 
 
 def test_discretizer():
@@ -116,3 +117,29 @@ def test_merge_duplicates():
         assert data.loc[[index, max_ind - index], "data_col_1"].median() == merged.loc[index, "data_col_1"]
         assert data.loc[[index, max_ind - index], "data_col_2"].median() == merged.loc[index, "data_col_2"]
         assert data.loc[[index, max_ind - index], "data_col_3"].median() == merged.loc[index, "data_col_3"]
+
+
+def test_num_undefined_stereo_centers():
+    # mol with no stereo centers
+    mol = dm.to_mol("CCCC")
+    num_defined, num_undefined = _num_stereo_centers(mol)
+    assert num_defined is None
+    assert num_undefined is None
+
+    # mol with all defined centers
+    mol = dm.to_mol("C1C[C@H](C)[C@H](C)[C@H](C)C1")
+    num_defined, num_undefined = _num_stereo_centers(mol)
+    assert num_defined == 3
+    assert num_undefined == 0
+
+    # mol with partial defined centers
+    mol = dm.to_mol("C[C@H](F)C(F)(Cl)Br")
+    num_defined, num_undefined = _num_stereo_centers(mol)
+    assert num_defined == 1
+    assert num_undefined == 1
+
+    # mol with no defined centers
+    mol = dm.to_mol("CC(F)C(F)(Cl)Br")
+    num_defined, num_undefined = _num_stereo_centers(mol)
+    assert num_defined == 0
+    assert num_undefined == 2
