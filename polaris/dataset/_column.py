@@ -1,7 +1,7 @@
 import enum
 from typing import Optional, Union
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator, field_serializer
 
 
 class Modality(enum.Enum):
@@ -44,24 +44,21 @@ class ColumnAnnotation(BaseModel):
     """
     user_attributes: dict = {}
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = {
+        "arbitrary_types_allowed": True,
+    }
 
-    @validator("modality")
+    @field_validator("modality")
     def validate_modality(cls, v):
         """Tries to converts a string to the Enum"""
         if isinstance(v, str):
             v = Modality[v.upper()]
         return v
 
-    def dict(self, *args, **kwargs):
-        """Light wrapper to always return the modality as a string, keeping it serializable"""
-        data = super().dict(*args, **kwargs)
-
-        # The Pydantic dict() API allows a user to exclude keys, so we have to check if `modality` exists.
-        if "modality" in data:
-            data["modality"] = data["modality"].name
-        return data
+    @field_serializer("modality")
+    def serialize_modality(self, v: Modality):
+        """Return the modality as a string, keeping it serializable"""
+        return v.name
 
     def is_pointer(self):
         """

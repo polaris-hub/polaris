@@ -13,9 +13,6 @@ LICENSE: MIT
 - 30/06/2023: adapted from: https://github.com/softvar/json2html/blob/e1feea273b210d11e4b2e59b9778a0bb4845fbd4/json2html/jsonconv.py
 """
 
-from collections import OrderedDict
-import json as json_parser
-
 from html import escape as html_escape
 
 text = str

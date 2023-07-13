@@ -1,6 +1,6 @@
 from typing import Any, Optional, Dict, List
 from datetime import datetime
-from pydantic import BaseModel, Field, PrivateAttr, validator
+from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from polaris.evaluate._metric import METRICS_REGISTRY
 from polaris.hub import PolarisClient
@@ -52,7 +52,7 @@ class BenchmarkResults(BaseModel):
     """
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
 
-    @validator("results")
+    @field_validator("results")
     def validate_results(cls, v):
         def _find_lowest_level_dicts(d: Dict) -> List[Dict]:
             """Helper function to find lowest-level dictionaries in a hierarchy of dicts"""
