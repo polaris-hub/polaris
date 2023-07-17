@@ -17,7 +17,7 @@ class ClusterSampling(Sampling):
     def __init__(
         self,
         distance_threshold: float = 0.65,
-        cluster_size_threshold: int = -1,
+        cluster_size_threshold: Optional[int] = None,
         selection_strategy: Literal["DIVERSE", "CLUSTERS_SPLIT"] = "DIVERSE",
         clusters: Optional[List[List[int]]] = None,
     ):
