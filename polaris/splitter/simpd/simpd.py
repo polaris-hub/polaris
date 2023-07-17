@@ -79,7 +79,7 @@ def run_SIMPD(
     # NOTE(hadim): it's possible to use `multiprocessing.Pool` as well.
     if num_threads > 1:
         pool = multiprocessing.pool.ThreadPool(num_threads)
-        runner = runner = StarmapParallelization(pool.starmap)
+        runner = StarmapParallelization(pool.starmap)
     else:
         runner = None
 
