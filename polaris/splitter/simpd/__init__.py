@@ -3,7 +3,7 @@ try:
     import pymoo
 except ImportError:
     raise ImportError(
-        "To use the SIMPDB splitter you need to install `pymoo`. Please install it with `micromamba install pymoo`."
+        "To use the SIMPD splitter you need to install `pymoo`. Please install it with `micromamba install pymoo`."
     )
 
 
