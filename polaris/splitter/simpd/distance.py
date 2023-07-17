@@ -9,7 +9,7 @@ def modified_spatial_stats_dmat(
     dmat: np.ndarray,
     test_indices: np.ndarray,
     train_indices: np.ndarray,
-    vals=np.arange(0, 1.01, 0.01),
+    vals: np.ndarray = np.arange(0, 1.01, 0.01),
     include_test_in_bootstrap: bool = True,
     random_seed: Optional[int] = 19,
 ):
@@ -52,12 +52,12 @@ def get_distance_cdf_dmat(
     from each point in fps1.
     """
     dmat = dmat[idx1][:, idx2]
-    nPts = len(idx1)
+    n_points = len(idx1)
     if remove_self:
-        for i in range(nPts):
+        for i in range(n_points):
             dmat[i, i] = 10
     dmat = np.min(dmat, axis=1)
     res = []
     for v in vals:
-        res.append(np.sum(dmat <= v) / nPts)
+        res.append(np.sum(dmat <= v) / n_points)
     return res
