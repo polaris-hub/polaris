@@ -317,8 +317,7 @@ class Dataset(BaseModel):
 
                 for row in self.table.index:
                     # Save the data to the array
-                    arr[row][:] = self.get_data(row=row, col=col)
-
+                    arr[row] = self.get_data(row=row, col=col)
             else:
                 for row in self.table.index:
                     # Create an array per datapoint

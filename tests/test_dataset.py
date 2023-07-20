@@ -161,7 +161,7 @@ def test_dataset_from_zarr_to_json_and_back(
     new_dataset = load_dataset(path)
     assert _equality_test(dataset, new_dataset)
 
-    path = new_dataset.to_zarr(zarr_dir, "single" if array_per_datapoint else "multiple")
+    path = new_dataset.to_zarr(zarr_dir, "multiple" if array_per_datapoint else "single")
     new_dataset = load_dataset(path)
     assert _equality_test(dataset, new_dataset)
 
