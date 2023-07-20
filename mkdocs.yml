@@ -13,7 +13,9 @@ nav:
   - Getting started:
     - Polaris: index.md
     - Quickstart: quickstart.md
-  - Tutorials: community/community.md
+  - Tutorials:
+    - Custom dataset and benchmarks: tutorials/custom_dataset_benchmark.ipynb
+    - Creating datasets with zarr: tutorials/dataset_zarr.ipynb
   - API Reference:
       - Core:
         - Dataset: api/dataset.md
