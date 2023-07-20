@@ -1,7 +1,8 @@
 import fsspec
 import yaml
 
-from polaris.dataset import Dataset, SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification
+from polaris.dataset import Dataset
+from polaris.benchmark import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification
 from polaris.hub import PolarisClient
 from polaris.utils.errors import InvalidDatasetError, InvalidBenchmarkError
 from polaris.utils import fs
@@ -53,4 +54,4 @@ def load_benchmark(path: str):
     #  e.g. we might end up with a single class per benchmark.
     is_single_task = isinstance(data["target_cols"], str) or len(data["target_cols"]) == 1
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
-    return cls.from_yaml(path)
+    return cls.from_json(path)

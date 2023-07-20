@@ -1,16 +1,13 @@
 import json
-
-import numpy as np
-import yaml
 import fsspec
 
+import numpy as np
 from hashlib import md5
 from pydantic import (
     BaseModel,
     FieldValidationInfo,
     field_validator,
     model_validator,
-    computed_field,
     field_serializer,
 )
 from typing import Union, List, Dict, Tuple, Optional, Any
@@ -21,71 +18,64 @@ from polaris.utils import fs
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import PolarisChecksumError
 from polaris.utils.misc import listit
-from polaris.utils.types import PredictionsType, SplitType
+from polaris.utils.types import PredictionsType, SplitType, DataFormat
 from polaris.utils.dict2html import dict2html
 
 
 class BenchmarkSpecification(BaseModel):
-    """
-    This class contains all information needed to produce ML-ready datasets.
+    """This class wraps a [`Dataset`][polaris.dataset.Dataset] with additional data
+     to specify the evaluation logic.
 
-    Specifically, it:
-      1) What dataset(s) to use;
-      2) Specifies which columns are used as input and which columns are used as target;
-      3) Which metrics should be used to evaluate performance on this task;
-      4) A predefined, static train-test split to use during evaluation.
+    Specifically, it specifies:
+
+    1. Which dataset to use (see [`Dataset`][polaris.dataset.Dataset]);
+    2. Which columns are used as input and which columns are used as target;
+    3. Which metrics should be used to evaluate performance on this task;
+    4. A predefined, static train-test split to use during evaluation.
+
+    info: Subclasses
+        Polaris includes various subclasses of the `BenchmarkSpecification` that provide a more precise data-model or
+         additional logic, e.g. [`SingleTaskBenchmarkSpecification`][polaris.benchmark.SingleTaskBenchmarkSpecification].
+
+    Examples:
+        Basic API usage:
+        ```python
+        import polaris as po
+
+        benchmark = po.load_benchmark("/path/to/benchmark")
+        train, test = benchmark.get_train_test_split()
+
+        # Work your magic
+        predictions = ...
+
+        benchmark.evaluate(predictions)
+        ```
+
+    Attributes:
+        dataset: The dataset the benchmark specification is based on.
+        target_cols: The column(s) of the original dataset that should be used as target.
+        input_cols: The column(s) of the original dataset that should be used as input.
+        split: The predefined train-test split to use for evaluation.
+        metrics: The metrics to use for evaluating performance
+        main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
     """
 
-    """
-    A benchmark specification is based on a dataset
-    """
+    # Public attributes
     dataset: Union[Dataset, str, Dict[str, Any]]
-
-    """
-    The columns of the original dataset that should be used as targets.
-    """
     target_cols: Union[List[str], str]
-
-    """
-    The columns of the original dataset that should be used as inputs.
-    """
     input_cols: Union[List[str], str]
-
-    """
-    The predefined train-test split to use for evaluation.
-    """
     split: SplitType
-
-    """
-    The metrics to use for evaluating performance
-    """
     metrics: Union[Union[Metric, str], List[Union[Metric, str]]]
-
-    """
-    The checksum is used to verify the version of the benchmark specification.
-    """
-    md5sum: Optional[str] = None
-
-    """
-    The main metric is the first on the `metrics` field.
-    """
     main_metric: Optional[Union[str, Metric]] = None
 
-    @computed_field
-    @property
-    def polaris_hub_url(self) -> Optional[str]:
-        """
-        The benchmark URL on the Polaris Hub.
-        """
-        # NOTE(hadim): putting as default here but we could make it optional
-        return "https://polaris.io/benchmark/ORG_OR_USER/BENCHMARK_NAME?"
+    # The checksum is used to verify the version of the benchmark specification.
+    md5sum: Optional[str] = None
 
-    model_config = {
-        "arbitrary_types_allowed": True,
-    }
+    # Pydantic config
+    model_config = {"arbitrary_types_allowed": True}
 
     @field_validator("dataset")
-    def validate_dataset(cls, v):
+    def _validate_dataset(cls, v):
         """
         Allows either passing a Dataset object or the kwargs to create one
         TODO (cwognum): Allow multiple datasets to be used as part of a benchmark
@@ -93,11 +83,11 @@ class BenchmarkSpecification(BaseModel):
         if isinstance(v, dict):
             v = Dataset(**v)
         elif isinstance(v, str):
-            v = Dataset.from_yaml(v)
+            v = Dataset.from_json(v)
         return v
 
     @field_validator("target_cols", "input_cols")
-    def validate_cols(cls, v, info: FieldValidationInfo):
+    def _validate_cols(cls, v, info: FieldValidationInfo):
         """Verifies all columns are present in the dataset."""
         if not isinstance(v, List):
             v = [v]
@@ -110,7 +100,7 @@ class BenchmarkSpecification(BaseModel):
         return v
 
     @field_validator("metrics")
-    def validate_metrics(cls, v):
+    def _validate_metrics(cls, v):
         """
         Verifies all specified metrics are either a Metric object or a valid metric name.
         Also verifies there are no duplicate metrics.
@@ -131,7 +121,7 @@ class BenchmarkSpecification(BaseModel):
         return v
 
     @field_validator("split")
-    def validate_split(cls, v, info: FieldValidationInfo):
+    def _validate_split(cls, v, info: FieldValidationInfo):
         """
         Verifies that:
           1) There is at least two, non-empty partitions
@@ -169,7 +159,7 @@ class BenchmarkSpecification(BaseModel):
 
     @model_validator(mode="after")
     @classmethod
-    def validate_checksum(cls, m: "BenchmarkSpecification"):
+    def _validate_checksum(cls, m: "BenchmarkSpecification"):
         """
         If a checksum is provided, verify it matches what the checksum should be.
         If no checksum is provided, make sure it is set.
@@ -202,23 +192,16 @@ class BenchmarkSpecification(BaseModel):
         return m
 
     @field_serializer("metrics", "main_metric")
-    def serialize_metrics(self, v):
+    def _serialize_metrics(self, v):
         """Return the string identifier so we can serialize the object"""
         if isinstance(v, Metric):
             return v.name
         return [m.name for m in v]
 
     @field_serializer("split")
-    def serialize_split(self, v):
+    def _serialize_split(self, v):
         """Convert any tuple to list to make sure it's serializable"""
         return listit(v)
-
-    @classmethod
-    def from_yaml(cls, path):
-        """Loads a benchmark from a yaml file."""
-        with fsspec.open(path, "r") as f:
-            data = yaml.safe_load(f)
-        return cls.model_validate(data)
 
     @staticmethod
     def _compute_checksum(dataset, target_cols, input_cols, split, metrics):
@@ -253,33 +236,25 @@ class BenchmarkSpecification(BaseModel):
         checksum = hash_fn.hexdigest()
         return checksum
 
-    def __eq__(self, other):
-        if not isinstance(other, BenchmarkSpecification):
-            return False
-        return self.md5sum == other.md5sum
-
-    def to_yaml(self, destination: str):
-        """Saves the benchmark to a yaml file."""
-
-        fs.mkdir(destination, exist_ok=True)
-
-        data = self.model_dump()
-        data["dataset"] = self.dataset.to_json(destination=destination)
-
-        path = fs.join(destination, "benchmark.yaml")
-        with fsspec.open(path, "w") as f:
-            yaml.dump(data, f)
-
-        return path
-
-    def get_no_test_sets(self):
-        """The number of test sets."""
-        return len(self.split[1]) if isinstance(self.split[1], dict) else 1
-
     def get_train_test_split(
-        self, input_format: str = "dict", target_format: str = "dict"
-    ) -> Tuple[Subset, Union[Subset, Dict[str, Subset]]]:
-        """Endpoint for returning the train and test sets."""
+        self, input_format: DataFormat = "dict", target_format: DataFormat = "dict"
+    ) -> Tuple[Subset, Union["Subset", Dict[str, Subset]]]:
+        """Construct the train and test sets, given the split in the benchmark specification.
+
+        Returns [`Subset`][polaris.dataset.Subset] objects, which offer several ways of accessing the data
+        and can thus easily serve as a basis to build framework-specific (e.g. PyTorch, Tensorflow)
+        data-loaders on top of.
+
+        Args:
+            input_format: How the input data is returned from the `Subset` object.
+            target_format: How the target data is returned from the `Subset` object.
+                This will only affect the train set.
+
+        Returns:
+            A tuple with the train `Subset` and test `Subset` objects.
+                If there are multiple test sets, these are returned in a dictionary and each test set has
+                an associated name. The targets of the test set can not be accessed.
+        """
 
         def _get_subset(indices, hide_targets):
             return Subset(
@@ -300,15 +275,26 @@ class BenchmarkSpecification(BaseModel):
         return train, test
 
     def evaluate(self, y_pred: PredictionsType) -> BenchmarkResults:
-        """
-        Execute the evaluation protocol for the benchmark.
+        """Execute the evaluation protocol for the benchmark, given a set of predictions.
 
-        We make the following assumptions:
-            (1) There can be one or multiple test sets
-            (2) There can be one or multiple targets
-            (3) The metrics are constant across test sets
-            (4) The metrics are constant across targets
-            (5) There can be metrics which measure across tasks.
+        info: What about `y_true`?
+            Contrary to other frameworks that you might be familiar with, we opted for a signature that includes just
+            the predictions. This reduces the chance of accidentally using the test targets during training.
+
+        For this method, we make the following assumptions:
+
+        1. There can be one or multiple test set(s);
+        2. There can be one or multiple target(s);
+        3. The metrics are _constant_ across test sets;
+        4. The metrics are _constant_ across targets;
+        5. There can be metrics which measure across tasks.
+
+        Args:
+            y_pred: The predictions for the test set, as NumPy arrays. If there are multiple test sets,
+                this should be a dictionary with the test set names as keys.
+
+        Returns:
+            A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
@@ -360,28 +346,64 @@ class BenchmarkSpecification(BaseModel):
 
         return BenchmarkResults(results=scores, benchmark_id=self.md5sum)
 
-    def _repr_dict_(self) -> dict:
-        repr_dict = self.model_dump()
+    @classmethod
+    def from_json(cls, path):
+        """Loads a benchmark from a JSON file.
 
+        Args:
+            path: Loads a benchmark specification from a JSON file.
+        """
+        with fsspec.open(path, "r") as f:
+            data = json.load(f)
+        return cls.model_validate(data)
+
+    def to_json(self, destination: str) -> str:
+        """Save the benchmark to a destination directory as a JSON file.
+
+        Warning: Multiple files
+            Perhaps unintuitive, this method creates multiple files in the destination directory as it also saves
+            the dataset it is based on to the specified destination.
+            See the docstring of [`Dataset.to_json`][polaris.dataset.Dataset.to_json] for more information.
+
+        Args:
+            destination: The _directory_ to save the associated data to.
+
+        Returns:
+            The path to the JSON file.
+        """
+
+        fs.mkdir(destination, exist_ok=True)
+
+        data = self.model_dump()
+        data["dataset"] = self.dataset.to_json(destination=destination)
+
+        path = fs.join(destination, "benchmark.json")
+        with fsspec.open(path, "w") as f:
+            json.dump(data, f)
+
+        return path
+
+    def _repr_dict_(self) -> dict:
+        """Utility function for pretty-printing to the command line and jupyter notebooks"""
+        repr_dict = self.model_dump()
         repr_dict.pop("dataset")
         repr_dict.pop("split")
-
         repr_dict["dataset_name"] = self.dataset.name
-
-        # Make them properties?
         repr_dict["n_input_cols"] = len(self.input_cols)
         repr_dict["n_target_cols"] = len(self.target_cols)
-
-        # TODO(hadim): remove once @compute_field is available
-        repr_dict["polaris_hub_url"] = self.polaris_hub_url
-
         return repr_dict
+
+    def _repr_html_(self):
+        """For pretty printing in Jupyter."""
+        return dict2html(self._repr_dict_())
 
     def __repr__(self):
         return json.dumps(self._repr_dict_(), indent=2)
 
-    def _repr_html_(self):
-        return dict2html(self._repr_dict_())
-
     def __str__(self):
         return self.__repr__()
+
+    def __eq__(self, other):
+        if not isinstance(other, BenchmarkSpecification):
+            return False
+        return self.md5sum == other.md5sum

@@ -3,15 +3,44 @@ from typing import Union, List, Sequence, Literal, Optional
 from polaris.dataset import Dataset
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import TestAccessError
-from polaris.utils.types import DatapointType
+from polaris.utils.types import DatapointType, DataFormat
 
 
 class Subset:
-    """
-    A subset is an ML-ready dataset, corresponding to a single partition of a split dataset.
-    This is the starting point for any framework-specific Dataset implementation and therefore
-    implements various ways to access the data. Since the logic can be complex, this class ensures
-    everyone using our benchmarks uses the exact same datasets.
+    """The `Subset` class provides easy access to a single partition of a split dataset.
+
+    This should be the starting point for any framework-specific (e.g. PyTorch, Tensorflow) data-loader implementation.
+    How the data is loaded in Polaris can be non-trivial, so this class is provided to abstract away the details.
+    To easily build framework-specific data-loaders, a `Subset` supports various styles of accessing the data:
+
+    1. **In memory**: Loads the entire dataset in memory and returns a single array with all datapoints,
+        this style is accessible through the `subset.targets` and `subset.inputs` properties.
+    2. **List**: Index the subset like a list, this style is accessible through the `subset[idx]` syntax.
+    3. **Iterator**: Iterate over the subset, this style is accessible through the `iter(subset)` syntax.
+
+    Examples:
+        The different styles of accessing the data:
+
+        ```python
+        import polaris as po
+
+        benchmark = po.load_benchmark(...)
+        train, test = benchmark.split()
+
+        # Load the entire dataset in memory, useful for e.g. scikit-learn.
+        X = train.inputs
+        y = train.targets
+
+        # Access a single datapoint as with a list, useful for e.g. PyTorch.
+        x, y = train[0]
+
+        # Iterate over the dataset, useful for very large datasets.
+        for x, y in train:
+            ...
+        ```
+
+    Raises:
+        TestAccessError: When trying to access the targets of the test set (specified by the `hide_targets` attribute).
     """
 
     _SUPPORTED_FORMATS = ["dict", "tuple"]
@@ -22,8 +51,8 @@ class Subset:
         indices: List[Union[int, Sequence[int]]],
         input_cols: Union[List[str], str],
         target_cols: Union[List[str], str],
-        input_format: str = "dict",
-        target_format: str = "tuple",
+        input_format: DataFormat = "dict",
+        target_format: DataFormat = "tuple",
         hide_targets: bool = False,
     ):
         self.dataset = dataset
@@ -131,10 +160,11 @@ class Subset:
         This method always returns an (X, y) tuple
 
         Some special cases:
-            1. It supports multi-input datasets, in which case X is a dict with multiple values.
-            2. It supports multi-task datasets, in which case y is a dict with multiple values.
-            3. In case a dataset has a pointer column (i.e. a path to an external file with the actual data),
-               this method also loads that data to memory.
+
+        1. It supports multi-input datasets, in which case X is a dict with multiple values.
+        2. It supports multi-task datasets, in which case y is a dict with multiple values.
+        3. In case a dataset has a pointer column (i.e. a path to an external file with the actual data),
+            this method also loads that data to memory.
         """
 
         idx = self.indices[item]

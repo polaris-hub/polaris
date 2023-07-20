@@ -11,12 +11,7 @@ import pandas as pd
 from hashlib import md5
 from collections import defaultdict
 from typing import Dict, Optional, Union, Tuple, Literal
-from pydantic import (
-    BaseModel,
-    PrivateAttr,
-    field_validator,
-    model_validator,
-)
+from pydantic import BaseModel, field_validator, model_validator
 from loguru import logger
 
 from polaris.utils import fs
@@ -25,6 +20,13 @@ from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.io import robust_copy, get_zarr_root
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 from polaris.utils.dict2html import dict2html
+
+
+# Constants
+_SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
+_CACHE_SUBDIR = "datasets"
+_INDEX_SEP = "#"
+_INDEX_FMT = f"{{path}}{_INDEX_SEP}{{index}}"
 
 
 class Dataset(BaseModel):
@@ -52,25 +54,19 @@ class Dataset(BaseModel):
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
     """
 
-    # Constants
-    _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
-    _CACHE_SUBDIR = "datasets"
-    _INDEX_SEP = "#"
-    _INDEX_FMT = f"{{path}}{_INDEX_SEP}{{index}}"
-
     # Public attributes
     table: Union[pd.DataFrame, str]
     annotations: Dict[str, ColumnAnnotation] = {}
     name: Optional[str] = None
     description: Optional[str] = None
     source: Optional[str] = None
-    md5sum: Optional[str] = None
-    cache_dir: Optional[str] = None
+    md5sum: Optional[str] = None  # The checksum is used to verify the version of the benchmark specification.
+    cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.
 
     # Private attributes
-    _path_to_hash: Dict[str, Dict[str, str]] = PrivateAttr(defaultdict(dict))
-    _has_been_warned: bool = PrivateAttr(False)
-    _has_been_cached: bool = PrivateAttr(False)
+    _path_to_hash: Dict[str, Dict[str, str]] = defaultdict(dict)
+    _has_been_warned: bool = False
+    _has_been_cached: bool = False
 
     # Pydantic config
     model_config = {"arbitrary_types_allowed": True}
@@ -79,7 +75,7 @@ class Dataset(BaseModel):
     def _validate_table(cls, v):
         """If the table is not a dataframe yet, assume it's a path and try load it."""
         if not isinstance(v, pd.DataFrame):
-            if not fs.is_file(v) or fs.get_extension(v) not in cls._SUPPORTED_TABLE_EXTENSIONS.get_default():
+            if not fs.is_file(v) or fs.get_extension(v) not in _SUPPORTED_TABLE_EXTENSIONS:
                 raise InvalidDatasetError(f"{v} is not a valid DataFrame or .parquet path.")
             v = pd.read_parquet(v)
         return v
@@ -128,7 +124,7 @@ class Dataset(BaseModel):
 
         # Set the default cache dir if none and make sure it exists
         if m.cache_dir is None:
-            m.cache_dir = fs.join(DEFAULT_CACHE_DIR, cls._CACHE_SUBDIR, m.name, m.md5sum)
+            m.cache_dir = fs.join(DEFAULT_CACHE_DIR, _CACHE_SUBDIR, m.name, m.md5sum)
         fs.mkdir(m.cache_dir, exist_ok=True)
 
         return m
@@ -225,7 +221,7 @@ class Dataset(BaseModel):
             path: The path to the root of the `.zarr` directory. Should be compatible with fsspec.
         """
 
-        root = zarr.open_group(path, "r")
+        root = zarr.open(path, "r")
 
         # Get the user attributes
         attrs = root.attrs.asdict()
@@ -250,7 +246,7 @@ class Dataset(BaseModel):
                 arr = group[keys[0]]
                 for i, arr_row in enumerate(arr):
                     # In case all data is saved in a single array, we construct a path with an index suffix.
-                    data[col][i] = cls._INDEX_FMT.format(path=fs.join(path, arr.name), index=i)
+                    data[col][i] = _INDEX_FMT.format(path=fs.join(path, arr.name), index=i)
 
             else:
                 for name, arr in group.arrays():
@@ -307,7 +303,7 @@ class Dataset(BaseModel):
         if not isinstance(array_mode, dict):
             array_mode = {k: array_mode for k in self.table.columns}
 
-        root = zarr.open_group(path, "w")
+        root = zarr.open(path, "w")
         for col in self.table.columns:
             group = root.create_group(col)
 
@@ -326,16 +322,18 @@ class Dataset(BaseModel):
             else:
                 for row in self.table.index:
                     # Create an array per datapoint
-                    arr = group.empty(col, shape=example.shape, dtype=example.dtype)
+                    arr = group.empty(row, shape=example.shape, dtype=example.dtype)
 
                     # Save the data to the array
                     arr[:] = self.get_data(row=row, col=col)
 
         # Save the meta-data
-        root.user_attrs["name"] = self.name
-        root.user_attrs["description"] = self.description
-        root.user_attrs["source"] = self.source
-        root.user_attrs["annotations"] = {k: v.model_dump() for k, v in self.annotations}
+        root.user_attrs = {
+            "name": self.name,
+            "description": self.description,
+            "source": self.source,
+            "annotations": {k: v.model_dump() for k, v in self.annotations.items()},
+        }
         return path
 
     def to_json(self, destination: str) -> str:
@@ -426,8 +424,8 @@ class Dataset(BaseModel):
         This extracts that index from the path.
         """
         index = None
-        if self._INDEX_SEP in path:
-            path, index = path.split(self._INDEX_SEP)
+        if _INDEX_SEP in path:
+            path, index = path.split(_INDEX_SEP)
             index = int(index)
         return path, index
 
@@ -475,7 +473,6 @@ class Dataset(BaseModel):
         return dict2html(self._repr_dict_())
 
     def __len__(self):
-        """Return the number of datapoints"""
         return len(self.table)
 
     def __repr__(self):

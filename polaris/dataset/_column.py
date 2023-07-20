@@ -10,7 +10,7 @@ class ColumnAnnotation(BaseModel):
 
     Attributes:
         is_pointer: Annotates whether a column is a pointer column. If so, it does not contain data,
-         but rather contains references to blobs of data from which the data is loaded.
+            but rather contains references to blobs of data from which the data is loaded.
         modality: The data modality describes the data type and is used to categorize datasets on the hub.
             This is a string that can only contain alpha-numeric characters, - or _.
         protocol: The protocol describes how the data was generated.

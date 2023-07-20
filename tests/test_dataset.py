@@ -147,18 +147,21 @@ def test_dataset_from_zarr_to_json_and_back(
     can be saved to and loaded from json.
     """
 
+    tmpdir = str(tmpdir)
+    json_dir = fs.join(tmpdir, "json")
+    zarr_dir = fs.join(tmpdir, "zarr")
+
     archive = test_zarr_archive_multiple_arrays if array_per_datapoint else test_zarr_archive_single_array
     dataset = Dataset.from_zarr(archive)
-    dataset.to_json(str(tmpdir))
+    path = dataset.to_json(json_dir)
 
-    path = fs.join(str(tmpdir), "dataset.json")
     new_dataset = Dataset.from_json(path)
     assert _equality_test(dataset, new_dataset)
 
     new_dataset = load_dataset(path)
     assert _equality_test(dataset, new_dataset)
 
-    path = new_dataset.to_zarr(str(tmpdir), "single" if array_per_datapoint else "multiple")
+    path = new_dataset.to_zarr(zarr_dir, "single" if array_per_datapoint else "multiple")
     new_dataset = load_dataset(path)
     assert _equality_test(dataset, new_dataset)
 
