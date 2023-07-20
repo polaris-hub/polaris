@@ -3,8 +3,12 @@ import pytest
 import datamol as dm
 import zarr
 
-from polaris.dataset import Dataset, MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
-from polaris.dataset import Modality
+from polaris.dataset import (
+    Dataset,
+    MultiTaskBenchmarkSpecification,
+    SingleTaskBenchmarkSpecification,
+    ColumnAnnotation,
+)
 from polaris.utils import fs
 
 
@@ -23,12 +27,6 @@ def _get_zarr_archive(tmp_path, datapoint_per_array: bool):
 
     _populate_group(group_a)
     _populate_group(group_b)
-
-    root.attrs["C"] = {i: 0.0 for i in range(100)}
-    root.attrs["name"] = "Test"
-    root.attrs["description"] = "Go wild in your test cases with this awesome dataset"
-    root.attrs["source"] = "Imagination"
-    root.attrs["annotations"] = {"A": "MOLECULE_3D", "B": "IMAGE"}
     return tmp_path
 
 
@@ -39,15 +37,7 @@ def test_data():
 
 @pytest.fixture(scope="module")
 def test_dataset(test_data):
-    return Dataset(
-        table=test_data,
-        name="Test",
-        description="Go wild in your test cases with this awesome dataset",
-        source="Datamol",
-        annotations={
-            "smiles": Modality.MOLECULE,
-        },
-    )
+    return Dataset(table=test_data)
 
 
 @pytest.fixture(scope="function")

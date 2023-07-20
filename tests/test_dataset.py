@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from pydantic import ValidationError
 
-from polaris.dataset import Dataset, Modality
+from polaris.dataset import Dataset
 from polaris.loader import load_dataset
 from polaris.utils import fs
 from polaris.utils.errors import PolarisChecksumError
@@ -34,8 +34,7 @@ def _equality_test(dataset_1, dataset_2):
     return True
 
 
-@pytest.mark.parametrize("modality", [mod for mod in list(Modality) if mod.is_pointer()])
-def test_load_data(modality, tmp_path):
+def test_load_data(tmp_path):
     """Test accessing the data, specifically whether pointer columns are properly handled."""
 
     # Dummy data (could e.g. be a 3D structure or Image)
@@ -46,14 +45,7 @@ def test_load_data(modality, tmp_path):
     zarr.save(path, arr)
 
     table = pd.DataFrame({"A": [path]}, index=[0])
-    dataset = Dataset(
-        table=table,
-        name="name",
-        description="descr",
-        source="source",
-        annotations={"A": modality},
-        cache_dir=tmpdir,
-    )
+    dataset = Dataset(table=table, cache_dir=tmpdir, annotations={"A": {"is_pointer": True}})
 
     # Without caching
     data = dataset.get_data(row=0, col="A")
@@ -118,7 +110,6 @@ def test_dataset_from_zarr(
     for i in range(100):
         assert dataset.get_data(row=i, col="A").shape == (2048,)
         assert dataset.get_data(row=i, col="B").shape == (2048,)
-        assert dataset.get_data(row=i, col="C") == 0.0
 
 
 def test_dataset_from_zarr_equality(test_zarr_archive_single_array, test_zarr_archive_multiple_arrays):
@@ -131,13 +122,13 @@ def test_dataset_from_zarr_equality(test_zarr_archive_single_array, test_zarr_ar
     assert _equality_test(dataset_1, dataset_2)
 
 
-def test_dataset_from_yaml(test_dataset, tmpdir):
-    """Test whether the dataset can be saved and loaded from yaml."""
-    test_dataset.to_yaml(str(tmpdir))
+def test_dataset_from_json(test_dataset, tmpdir):
+    """Test whether the dataset can be saved and loaded from json."""
+    test_dataset.to_json(str(tmpdir))
 
-    path = fs.join(str(tmpdir), "dataset.yaml")
+    path = fs.join(str(tmpdir), "dataset.json")
 
-    new_dataset = Dataset.from_yaml(path)
+    new_dataset = Dataset.from_json(path)
     assert _equality_test(test_dataset, new_dataset)
 
     new_dataset = load_dataset(path)
@@ -145,7 +136,7 @@ def test_dataset_from_yaml(test_dataset, tmpdir):
 
 
 @pytest.mark.parametrize("array_per_datapoint", [True, False])
-def test_dataset_from_zarr_to_yaml(
+def test_dataset_from_zarr_to_json_and_back(
     test_zarr_archive_single_array,
     test_zarr_archive_multiple_arrays,
     array_per_datapoint,
@@ -153,17 +144,21 @@ def test_dataset_from_zarr_to_yaml(
 ):
     """
     Test whether a dataset with pointer columns, instantiated from a zarr archive,
-    can be saved to and loaded from yaml.
+    can be saved to and loaded from json.
     """
 
     archive = test_zarr_archive_multiple_arrays if array_per_datapoint else test_zarr_archive_single_array
     dataset = Dataset.from_zarr(archive)
-    dataset.to_yaml(str(tmpdir))
+    dataset.to_json(str(tmpdir))
 
-    path = fs.join(str(tmpdir), "dataset.yaml")
-    new_dataset = Dataset.from_yaml(path)
+    path = fs.join(str(tmpdir), "dataset.json")
+    new_dataset = Dataset.from_json(path)
     assert _equality_test(dataset, new_dataset)
 
+    new_dataset = load_dataset(path)
+    assert _equality_test(dataset, new_dataset)
+
+    path = new_dataset.to_zarr(str(tmpdir), "single" if array_per_datapoint else "multiple")
     new_dataset = load_dataset(path)
     assert _equality_test(dataset, new_dataset)
 

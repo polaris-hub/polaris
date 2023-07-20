@@ -25,8 +25,8 @@ def load_dataset(path: str):
 
     if extension == "zarr":
         return Dataset.from_zarr(path)
-    elif extension == "yaml":
-        return Dataset.from_yaml(path)
+    elif extension == "json":
+        return Dataset.from_json(path)
 
     raise NotImplementedError("This should not be reached.")
 

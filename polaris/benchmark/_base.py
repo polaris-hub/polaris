@@ -264,7 +264,7 @@ class BenchmarkSpecification(BaseModel):
         fs.mkdir(destination, exist_ok=True)
 
         data = self.model_dump()
-        data["dataset"] = self.dataset.to_yaml(destination=destination)
+        data["dataset"] = self.dataset.to_json(destination=destination)
 
         path = fs.join(destination, "benchmark.yaml")
         with fsspec.open(path, "w") as f:
