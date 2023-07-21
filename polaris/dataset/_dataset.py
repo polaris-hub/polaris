@@ -49,9 +49,12 @@ class Dataset(BaseModel):
         name: A URL-compatible name for the dataset, can only use alpha-numeric characters, underscores and dashes).
         description: A beginner-friendly, short description of the dataset.
         source: The data source, e.g. a DOI, Github repo or URI.
+        md5sum: The checksum is used to verify the version of the benchmark specification. If specified, it will
+            raise an error if the specified checksum doesn't match the computed checksum.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
+        PolarisChecksumError: If the specified checksum does not match the computed checksum.
     """
 
     # Public attributes
@@ -60,7 +63,7 @@ class Dataset(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     source: Optional[str] = None
-    md5sum: Optional[str] = None  # The checksum is used to verify the version of the benchmark specification.
+    md5sum: Optional[str] = None
     cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.
 
     # Private attributes
@@ -183,7 +186,7 @@ class Dataset(BaseModel):
 
         # In the case it is a pointer column, we need to load additional data into memory
         # We first check if the data has been downloaded to the cache.
-        path = self.get_cache_path(column=col, value=value)
+        path = self._get_cache_path(column=col, value=value)
         if fs.exists(path):
             return _load(path, index)
 
@@ -390,7 +393,7 @@ class Dataset(BaseModel):
             self._has_been_cached = True
         return self.cache_dir
 
-    def get_cache_path(self, column: str, value: str) -> Optional[str]:
+    def _get_cache_path(self, column: str, value: str) -> Optional[str]:
         """
         Returns where the data _would be_ cached for any entry in the pointer columns,
         or None if the column is not a pointer column.

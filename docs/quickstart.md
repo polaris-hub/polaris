@@ -6,11 +6,11 @@ First things first, let's install Polaris!
 We highly recommend using a [Conda Python distribution](https://github.com/conda-forge/miniforge), such as `mamba`:
 
 ```
-mamba install -c conda-forge molfeat
+mamba install -c conda-forge polaris
 ```
 
 ??? info "Other installation options"
-    You can replace `mamba` by `conda`. The package is also pip installable if you need it: `pip install polaris.`
+    You can replace `mamba` by `conda`. The package is also pip installable if you need it: `pip install polaris`.
 
 ## Benchmarking API
 At its core, Polaris is a benchmarking library. It provides a simple API to run benchmarks. While it can be used

@@ -1,6 +1,17 @@
-import string
-from typing import Optional
-from pydantic import BaseModel, field_validator
+import enum
+from typing import Optional, Union
+from pydantic import BaseModel, field_validator, field_serializer
+
+
+class Modality(enum.Enum):
+    """Used to Annotate columns in a dataset."""
+
+    UNKNOWN = "unknown"
+    MOLECULE = "molecule"
+    MOLECULE_3D = "molecule_3D"
+    PROTEIN = "protein"
+    PROTEIN_3D = "protein_3D"
+    IMAGE = "image"
 
 
 class ColumnAnnotation(BaseModel):
@@ -11,29 +22,27 @@ class ColumnAnnotation(BaseModel):
     Attributes:
         is_pointer: Annotates whether a column is a pointer column. If so, it does not contain data,
             but rather contains references to blobs of data from which the data is loaded.
-        modality: The data modality describes the data type and is used to categorize datasets on the hub.
-            This is a string that can only contain alpha-numeric characters, - or _.
+        modality: The data modality describes the data type and is used to categorize datasets on the hub
+            and while it does not affect logic in this library, it does affect the logic of the hub.
         protocol: The protocol describes how the data was generated.
         user_attributes: Any additional meta-data can be stored in the user attributes.
     """
 
     is_pointer: bool = False
-    modality: Optional[str] = None
+    modality: Union[str, Modality] = Modality.UNKNOWN
     protocol: Optional[str] = None
     user_attributes: dict = {}
 
-    model_config = {
-        "arbitrary_types_allowed": True,
-    }
+    model_config = {"arbitrary_types_allowed": True}
 
     @field_validator("modality")
     def _validate_modality(cls, v):
-        """
-        Since this might be used on the hub as a URL, we want to avoid any special characters.
-        """
-        if v is not None:
-            valid_characters = string.ascii_letters + string.digits + "_-"
-            if not all(c in valid_characters for c in v):
-                raise ValueError(f"`name` can only contain alpha-numeric characters, - or _, found {v}")
-            v = v.lower()
+        """Tries to converts a string to the Enum"""
+        if isinstance(v, str):
+            v = Modality[v.upper()]
         return v
+
+    @field_serializer("modality")
+    def _serialize_modality(self, v: Modality):
+        """Return the modality as a string, keeping it serializable"""
+        return v.name
