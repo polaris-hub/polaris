@@ -215,7 +215,7 @@ class Dataset(BaseModel):
 
         Tip: Tutorial
             To learn more about the zarr format, see the
-            [tutorial](https://zarr.readthedocs.io/en/stable/tutorial.html).
+            [tutorial](../tutorials/dataset_zarr.ipynb).
 
         Args:
             path: The path to the root of the `.zarr` directory. Should be compatible with fsspec.
@@ -283,7 +283,7 @@ class Dataset(BaseModel):
 
         Tip: Tutorial
             To learn more about the zarr format, see the
-            [tutorial](https://zarr.readthedocs.io/en/stable/tutorial.html).
+            [tutorial](../tutorials/dataset_zarr.ipynb).
 
         Args:
             destination: The _directory_ to save the associated data to.
