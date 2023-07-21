@@ -25,7 +25,7 @@ class Subset:
         import polaris as po
 
         benchmark = po.load_benchmark(...)
-        train, test = benchmark.split()
+        train, test = benchmark.get_train_test_split()
 
         # Load the entire dataset in memory, useful for e.g. scikit-learn.
         X = train.inputs

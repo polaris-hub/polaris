@@ -5,7 +5,7 @@
         filters: ["!^_", "!md5sum", "!get_cache_path"]
 
 ---
-# Subclasses
+## Subclasses
 
 ::: polaris.benchmark.SingleTaskBenchmarkSpecification
 
