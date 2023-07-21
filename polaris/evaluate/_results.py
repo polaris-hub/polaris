@@ -8,52 +8,42 @@ from polaris.utils.errors import InvalidResultError
 
 
 class BenchmarkResults(BaseModel):
-    """
-    Base class for saving benchmarking results
+    """Class for saving benchmarking results
 
-    TODO (cwognum): An open question is how to best categorize a methodology (e.g. a model).
-      This is needed since we want to be able to aggregate results across benchmarks for a model too.
+    This object is returned by [`BenchmarkSpecification.evaluate`][polaris.benchmark.BenchmarkSpecification.evaluate].
+    In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
+    the results with the Polaris Hub.
+
+    question: Categorizing methods
+        An open question is how to best categorize a methodology (e.g. a model).
+        This is needed since we would like to be able to aggregate results across benchmarks too,
+        to say something about which (type of) methods performs best _in general_.
+
+    Attributes:
+        results: Benchmark results are stored as a dictionary
+        benchmark_id: The benchmark these results were generated for
+        name: The name to identify the results by.
+        tags: Tags to categorize the results by.
+        user_attributes: User attributes allow for additional meta-data to be stored
+        _user_name: The user associated with the results. Automatically set.
+        _created_at: The time-stamp at which the results were created. Automatically set.
     """
 
-    """
-    Benchmark results are stored as a dictionary
-    """
+    # Public attributes
     results: dict
-
-    """
-    The benchmark these results were generated for
-    """
     benchmark_id: str
-
-    """
-    The name to identify the results by.
-    If not specified, this is given a default value which can be edited later through the Hub.
-    """
     name: Optional[str] = None
-
-    """
-    Tags to categorize the results by.
-    """
     tags: dict = Field(default_factory=list)
-
-    """
-    User attributes allow for additional meta-data to be stored
-    If users repeatedly specify the same attribute, we can extract it into an additional field
-    """
     user_attributes: dict = Field(default_factory=dict)
 
-    """
-    The user associated with the results. Automatically set.
-    """
+    # Private attributes
     _user_name: Optional[str] = PrivateAttr(default_factory=PolarisClient.get_client().get_active_user)
-
-    """
-    The time-stamp at which the results were created. Automatically set.
-    """
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
 
     @field_validator("results")
-    def validate_results(cls, v):
+    def _validate_results(cls, v):
+        """Checks if all metrics are valid and if all scores are floats"""
+
         def _find_lowest_level_dicts(d: Dict) -> List[Dict]:
             """Helper function to find lowest-level dictionaries in a hierarchy of dicts"""
             ret = []
@@ -84,5 +74,9 @@ class BenchmarkResults(BaseModel):
                 self.name = f"{self._user_name}_{str(self._created_at)}"
 
     def upload_to_hub(self):
-        """Upload to the hub"""
+        """Upload the results to the hub
+
+        This will upload the results to your account in the Polaris Hub. By default, these results are private.
+        If you want to share them, you can do so in your account. This might trigger a review process.
+        """
         return PolarisClient.get_client().upload_results_to_hub(self)

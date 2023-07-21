@@ -1,4 +1,4 @@
-site_name: "polaris"
+site_name: "Polaris"
 site_description: "Polaris: Foster the development of impactful AI models in drug discovery."
 site_url: "https://github.com/datamol-io/polaris"
 repo_url: "https://github.com/datamol-io/polaris"
@@ -10,21 +10,45 @@ use_directory_urls: false
 docs_dir: "docs"
 
 nav:
-  - Overview: index.md
+  - Getting started:
+    - Polaris: index.md
+    - Quickstart: quickstart.md
+  - Tutorials:
+    - Custom dataset and benchmarks: tutorials/custom_dataset_benchmark.ipynb
+    - Creating datasets with zarr: tutorials/dataset_zarr.ipynb
+  - API Reference:
+      - Core:
+        - Dataset: api/dataset.md
+        - Benchmark: api/benchmark.md
+        - Subset: api/subset.md
+        - Evaluation: api/evaluation.md
+      - Additional:
+          Types: api/utils.types.md
+  - Community: community/community.md
+  - Polaris Hub: https://polaris-hub.vercel.app/
 
 theme:
   name: material
-  # NOTE(hadim): to customize the material primary and secondary
-  # color check `docs/assets/css/polaris-custom.css`.
+  # NOTE(hadim): to customize the material primary and secondary color,
+  # see check `docs/assets/css/custom-polaris.css`.
+  palette:
+    primary: deep purple
+    accent: indigo
+
   features:
     - navigation.tabs
-    - navigation.expand
-  # favicon: images/logo.png
-  # logo: images/logo.svg
+    - navigation.sections
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+  favicon: images/logo-black.svg
+  logo: images/logo-white.svg
 
 extra_css:
-  - _assets/css/custom.css
-  - _assets/css/custom-polaris.css
+  - assets/css/custom-polaris.css
 
 extra_javascript:
   - javascripts/config.js
@@ -33,18 +57,24 @@ extra_javascript:
 
 markdown_extensions:
   - admonition
-  - markdown_include.include
-  - pymdownx.emoji
-  - pymdownx.magiclink
-  - pymdownx.superfences
-  - pymdownx.tabbed
-  - pymdownx.tasklist
+  - attr_list
+  - md_in_html
+  - tables
   - pymdownx.details
-  - mkdocs-click
-  - pymdownx.arithmatex:
-      generic: true
-  - toc:
-      permalink: true
+  - pymdownx.superfences
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight:
+        anchor_linenums: true
+        line_spans: __span
+        pygments_lang_class: true
 
 watch:
   - polaris/
@@ -60,11 +90,14 @@ plugins:
             - sys.path.append("docs")
             - sys.path.append("polaris")
           options:
-            new_path_syntax: yes
             show_root_heading: yes
             heading_level: 3
             show_source: false
-
+            group_by_category: true
+            members_order: source
+            separate_signature: true
+            show_signature_annotations: true
+            line_length: 80
   - mkdocs-jupyter:
       execute: False
 
@@ -75,3 +108,29 @@ extra:
   version:
     # Multi versioning provider for mkdocs-material (used for the JS selector)
     provider: mike
+  analytics:
+    provider: google
+    property: G-23R9EJVY37
+    # Widget at the bottom of every page to collect information about the user experience
+    # The data is collected in Google Analytics
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/emoticon-happy-outline
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback!
+        - icon: material/emoticon-sad-outline
+          name: This page could be improved
+          data: 0
+          # NOTE (cwognum): It could be useful to have a link to a feedback form here
+          note: >- 
+            Thanks for your feedback!
+  consent:
+    title: Cookie consent
+    description: >- 
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.
