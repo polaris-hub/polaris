@@ -96,7 +96,7 @@ class BenchmarkSpecification(BaseModel):
         if info.data.get("dataset") is not None and not all(
             c in info.data["dataset"].table.columns for c in v
         ):
-            raise ValueError(f"Not all specified target columns were found in the dataset.")
+            raise ValueError("Not all specified target columns were found in the dataset.")
         return v
 
     @field_validator("metrics")

@@ -255,7 +255,7 @@ class MOODSplitter(BaseShuffleSplit):
         """
 
         if X_deployment is None and deployment_distances is None:
-            raise ValueError(f"You need to specify either `X_deployment` or `deployment_distances`")
+            raise ValueError("You need to specify either `X_deployment` or `deployment_distances`")
 
         deployment_is_smiles = all(isinstance(x, str) for x in X_deployment)
         train_is_smiles = all(isinstance(x, str) for x in X)

@@ -33,9 +33,9 @@ def test_access_to_test_set(test_single_task_benchmark):
     assert not train._hide_targets
 
     with pytest.raises(TestAccessError):
-        y = test.as_array("y")
+        test.as_array("y")
     with pytest.raises(TestAccessError):
-        y = test.targets
+        test.targets
 
     # Check if iterable style access returns just the SMILES
     for x in test:
@@ -44,7 +44,5 @@ def test_access_to_test_set(test_single_task_benchmark):
         assert isinstance(test[i], str)
 
     # For the train set it should work
-    y = train.targets
-    y = train.as_array("y")
     assert all(isinstance(y, float) for x, y in train)
     assert all(isinstance(train[i][1], float) for i in range(len(train)))

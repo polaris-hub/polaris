@@ -45,7 +45,7 @@ def plot_distance_distributions(
     for idx, dist in enumerate(distances):
         sns.kdeplot(dist, color=colors[idx], linestyle=styles[idx], ax=ax, label=labels[idx])
 
-    ax.set_xlabel(f"Distance")
+    ax.set_xlabel("Distance")
 
     if show_legend:
         ax.legend()

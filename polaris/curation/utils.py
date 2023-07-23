@@ -1,4 +1,4 @@
-from typing import Union, List, Optional, TypeVar
+from typing import Union, List, TypeVar
 import numpy as np
 from scipy import stats
 from enum import Enum

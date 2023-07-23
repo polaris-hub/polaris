@@ -62,9 +62,7 @@ include = '\.pyi?$'
 minversion = "6.0"
 addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=78 --cov-report xml --cov-report term"
 testpaths = ["tests"]
-filterwarnings = [
-    "ignore::DeprecationWarning:jupyter_client.connect.*:",
-]
+filterwarnings = ["ignore::DeprecationWarning:jupyter_client.connect.*:"]
 
 [tool.coverage.run]
 source = ["polaris/"]
@@ -76,3 +74,16 @@ omit = ["polaris/__init__.py", "polaris/_version.py"]
 
 [tool.coverage.xml]
 output = "coverage.xml"
+
+[tool.ruff]
+ignore = [
+    "E501", # Never enforce `E501` (line length violations).
+]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = [
+    "F401", # imported but unused
+    "E402", # Module level import not at top of file
+]

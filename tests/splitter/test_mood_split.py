@@ -1,7 +1,6 @@
 import datamol as dm
 import numpy as np
 from sklearn.model_selection import ShuffleSplit
-from sklearn.utils.multiclass import type_of_target
 
 from polaris.splitter import (
     MOODSplitter,
