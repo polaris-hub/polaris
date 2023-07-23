@@ -93,16 +93,10 @@ def assign_using_clusters(
     n_test: int,
     cluster_size_threshold: float = 5,
     n_samples: int = 1,
-    selection_strategy: Literal["DIVERSE", "CLUSTERS_SPLIT"] = "DIVERSE",
     combine_random: bool = False,
     clusters: Optional[List[List[int]]] = None,
     random_seed: Optional[int] = 19,
 ):
-    if selection_strategy not in ["DIVERSE", "CLUSTERS_SPLIT"]:
-        raise ValueError(
-            f"Invalid selection strategy: {selection_strategy}. Valid values are 'DIVERSE' or 'CLUSTERS_SPLIT'."
-        )
-
     if clusters is not None:
         large_clusters = clusters
     else:
@@ -117,26 +111,13 @@ def assign_using_clusters(
     rng = random.Random(random_seed)
 
     res = []
-    for i in range(n_samples):
-        if selection_strategy == "DIVERSE":
-            ordered = []
-            for c in large_clusters:
-                # randomize the points in the cluster
-                rng.shuffle(c)
-                ordered.extend((i / len(c), x) for i, x in enumerate(c))
-            ordered = [y for x, y in sorted(ordered)]
-            test = ordered[:n_test]
-
-        elif selection_strategy == "CLUSTERS_SPLIT":
-            rng.shuffle(large_clusters)
-            test = []
-            for clus in large_clusters:
-                nRequired = n_test - len(test)
-                test.extend(clus[:nRequired])
-                if len(test) >= n_test:
-                    break
-        else:
-            raise ValueError(f"Invalid selection strategy: {selection_strategy}.")
-
+    for _ in range(n_samples):
+        rng.shuffle(large_clusters)
+        test = []
+        for clus in large_clusters:
+            nRequired = n_test - len(test)
+            test.extend(clus[:nRequired])
+            if len(test) >= n_test:
+                break
         res.append(test)
     return res

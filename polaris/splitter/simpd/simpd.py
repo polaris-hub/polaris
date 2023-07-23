@@ -42,7 +42,6 @@ def run_SIMPD(
     mol_column: str = "mol",
     activity_column: str = "active",
     # GA parameters
-    selection_strategy: Literal["DIVERSE", "CLUSTERS_SPLIT"] = "CLUSTERS_SPLIT",
     pop_size: int = 500,
     ngens: int = 100,
     # SIMPD objectives and constraints
@@ -131,10 +130,7 @@ def run_SIMPD(
     )
 
     # Init the sampling
-    sampling = ClusterSampling(
-        selection_strategy=selection_strategy,
-        clusters=clusters,
-    )
+    sampling = ClusterSampling(clusters=clusters)
 
     # Init the GA algorithm
     algorithm = NSGA2(

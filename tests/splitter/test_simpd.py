@@ -13,7 +13,6 @@ def test_simpd():
     args["n_splits"] = 5
 
     # GA parameters
-    args["selection_strategy"] = "CLUSTERS_SPLIT"  # from DIVERSE, CLUSTERS_SPLIT
     args["pop_size"] = 500
     args["ngens"] = 2
 

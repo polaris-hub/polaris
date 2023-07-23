@@ -18,19 +18,12 @@ class ClusterSampling(Sampling):
         self,
         distance_threshold: float = 0.65,
         cluster_size_threshold: int = -1,
-        selection_strategy: Literal["DIVERSE", "CLUSTERS_SPLIT"] = "DIVERSE",
         clusters: Optional[List[List[int]]] = None,
     ):
         super().__init__()
 
-        if selection_strategy not in ["DIVERSE", "CLUSTERS_SPLIT"]:
-            raise ValueError(
-                f"Invalid selection strategy: {selection_strategy}. Valid values are 'DIVERSE' or 'CLUSTERS_SPLIT'."
-            )
-
         self._distance_threshold = distance_threshold
         self._cluster_size_threshold = cluster_size_threshold
-        self._selection_strategy = selection_strategy
         self._clusters = clusters
 
     def _do(self, problem, n_samples, **kwargs):
@@ -45,7 +38,6 @@ class ClusterSampling(Sampling):
             n_test=problem.n_max,
             cluster_size_threshold=cluster_size_threshold,
             n_samples=n_samples,
-            selection_strategy=self._selection_strategy,  # type: ignore
             clusters=self._clusters,
         )
         X = np.full((n_samples, problem.n_var), False, dtype=bool)

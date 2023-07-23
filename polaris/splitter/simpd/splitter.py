@@ -30,7 +30,6 @@ class SIMPDSplitter(BaseShuffleSplit):
         self,
         n_splits: int = 1,
         # GA parameters
-        selection_strategy: Literal["DIVERSE", "CLUSTERS_SPLIT"] = "CLUSTERS_SPLIT",
         pop_size: int = 500,
         ngens: int = 100,
         # SIMPD objectives and constraints
@@ -59,7 +58,6 @@ class SIMPDSplitter(BaseShuffleSplit):
 
         Args:
             n_splits: Number of splits to generate.
-            selection_strategy: The selection strategy to use for the GA. One of ["DIVERSE", "CLUSTERS_SPLIT"].
             pop_size: The population size for the GA.
             ngens: The number of generations for the GA.
             simpd_descriptors: The descriptors to use for the GA. If None, the default descriptors from the paper will be used.
@@ -83,7 +81,6 @@ class SIMPDSplitter(BaseShuffleSplit):
         super().__init__()
 
         self.n_splits = n_splits
-        self.selection_strategy = selection_strategy
         self.pop_size = pop_size
         self.ngens = ngens
         self.simpd_descriptors = simpd_descriptors
@@ -134,7 +131,6 @@ class SIMPDSplitter(BaseShuffleSplit):
         args["activity_column"] = "activivity"
 
         # GA parameters
-        args["selection_strategy"] = self.selection_strategy
         args["pop_size"] = self.pop_size
         args["ngens"] = self.ngens
 
