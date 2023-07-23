@@ -215,7 +215,7 @@ class Dataset(BaseModel):
                     try:
                         name = int(name)
                     except ValueError as error:
-                        raise TypeError(f"Array names in .zarr hierarchies should be integers") from error
+                        raise TypeError("Array names in .zarr hierarchies should be integers") from error
                     data[col][name] = fs.join(path, arr.path)
 
         # Parse additional columns from the user attributes

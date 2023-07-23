@@ -58,13 +58,6 @@ line-length = 110
 target-version = ['py310', 'py311']
 include = '\.pyi?$'
 
-[tool.ruff]
-line-length = 110
-target-version = "py311"
-ignore = [
-    "E501", # Never enforce `E501` (line length violations).
-]
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=78 --cov-report xml --cov-report term"
@@ -81,3 +74,62 @@ omit = ["polaris/__init__.py", "polaris/_version.py"]
 
 [tool.coverage.xml]
 output = "coverage.xml"
+
+[tool.ruff]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+select = ["E", "F"]
+ignore = [
+    "E501", # Never enforce `E501` (line length violations).
+]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "I",
+    "N",
+    "Q",
+    "S",
+    "T",
+    "W",
+    "ANN",
+    "ARG",
+    "BLE",
+    "COM",
+    "DJ",
+    "DTZ",
+    "EM",
+    "ERA",
+    "EXE",
+    "FBT",
+    "ICN",
+    "INP",
+    "ISC",
+    "NPY",
+    "PD",
+    "PGH",
+    "PIE",
+    "PL",
+    "PT",
+    "PTH",
+    "PYI",
+    "RET",
+    "RSE",
+    "RUF",
+    "SIM",
+    "SLF",
+    "TCH",
+    "TID",
+    "TRY",
+    "UP",
+    "YTT",
+]
+unfixable = []
+
+line-length = 110
+target-version = "py311"
