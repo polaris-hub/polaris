@@ -54,9 +54,9 @@ def get_distance_cdf_dmat(
     dmat = dmat[idx1][:, idx2]
     n_points = len(idx1)
     if remove_self:
-        for i in range(n_points):
-            dmat[i, i] = 10
-    dmat = np.min(dmat, axis=1)
+        np.fill_diagonal(dmat, np.nan)
+    dmat = np.nanmin(dmat, axis=1)
+
     res = []
     for v in vals:
         res.append(np.sum(dmat <= v) / n_points)
