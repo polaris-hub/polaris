@@ -23,7 +23,7 @@ nav:
         - Subset: api/subset.md
         - Evaluation: api/evaluation.md
       - Additional:
-          Types: api/utils.types.md
+          - Types: api/utils.types.md
   - Community: community/community.md
   - Polaris Hub: https://polaris-hub.vercel.app/
 
@@ -125,11 +125,11 @@ extra:
           name: This page could be improved
           data: 0
           # NOTE (cwognum): It could be useful to have a link to a feedback form here
-          note: >- 
+          note: >-
             Thanks for your feedback!
   consent:
     title: Cookie consent
-    description: >- 
+    description: >-
       We use cookies to recognize your repeated visits and preferences, as well
       as to measure the effectiveness of our documentation and whether users
       find what they're searching for. With your consent, you're helping us to

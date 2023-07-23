@@ -347,7 +347,7 @@ class BenchmarkSpecification(BaseModel):
         return BenchmarkResults(results=scores, benchmark_id=self.md5sum)
 
     @classmethod
-    def from_json(cls, path):
+    def from_json(cls, path: str):
         """Loads a benchmark from a JSON file.
 
         Args:
