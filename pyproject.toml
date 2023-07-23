@@ -58,13 +58,18 @@ line-length = 110
 target-version = ['py310', 'py311']
 include = '\.pyi?$'
 
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+ignore = [
+    "E501", # Never enforce `E501` (line length violations).
+]
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=78 --cov-report xml --cov-report term"
 testpaths = ["tests"]
-filterwarnings = [
-    "ignore::DeprecationWarning:jupyter_client.connect.*:",
-]
+filterwarnings = ["ignore::DeprecationWarning:jupyter_client.connect.*:"]
 
 [tool.coverage.run]
 source = ["polaris/"]
