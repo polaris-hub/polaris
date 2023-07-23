@@ -1,13 +1,10 @@
 import enum
 from typing import Optional, Union
-
 from pydantic import BaseModel, field_validator, field_serializer
 
 
 class Modality(enum.Enum):
-    """
-    Used to Annotate columns in a dataset.
-    """
+    """Used to Annotate columns in a dataset."""
 
     UNKNOWN = "unknown"
     MOLECULE = "molecule"
@@ -16,53 +13,36 @@ class Modality(enum.Enum):
     PROTEIN_3D = "protein_3D"
     IMAGE = "image"
 
-    def is_pointer(self):
-        """
-        For complex modalities, we store the data in external files. The columns then
-        just contain pointers to these files, instead of the actual data itself.
-        """
-        return self in [Modality.MOLECULE_3D, Modality.PROTEIN_3D, Modality.IMAGE]
-
 
 class ColumnAnnotation(BaseModel):
     """
-    Annotates columns in the dataset with additional information
+    The `ColumnAnnotation` class is used to annotate the columns of the [`Dataset`][polaris.dataset.Dataset] object.
+    This mostly just stores meta-data and does not affect the logic. The exception is the `is_pointer` attribute.
+
+    Attributes:
+        is_pointer: Annotates whether a column is a pointer column. If so, it does not contain data,
+            but rather contains references to blobs of data from which the data is loaded.
+        modality: The data modality describes the data type and is used to categorize datasets on the hub
+            and while it does not affect logic in this library, it does affect the logic of the hub.
+        protocol: The protocol describes how the data was generated.
+        user_attributes: Any additional meta-data can be stored in the user attributes.
     """
 
-    """
-    The data modality describes the data type and affects how the data is processed
-    """
+    is_pointer: bool = False
     modality: Union[str, Modality] = Modality.UNKNOWN
-
-    """
-    The protocol describes how the data was generated
-    """
     protocol: Optional[str] = None
-
-    """
-    User attributes allow for additional meta-data to be stored
-    """
     user_attributes: dict = {}
 
-    model_config = {
-        "arbitrary_types_allowed": True,
-    }
+    model_config = {"arbitrary_types_allowed": True}
 
     @field_validator("modality")
-    def validate_modality(cls, v):
+    def _validate_modality(cls, v):
         """Tries to converts a string to the Enum"""
         if isinstance(v, str):
             v = Modality[v.upper()]
         return v
 
     @field_serializer("modality")
-    def serialize_modality(self, v: Modality):
+    def _serialize_modality(self, v: Modality):
         """Return the modality as a string, keeping it serializable"""
         return v.name
-
-    def is_pointer(self):
-        """
-        If a column is a pointer, it means that it's data is stored in an external file
-        and that the associated column contains paths to those files.
-        """
-        return self.modality.is_pointer()
