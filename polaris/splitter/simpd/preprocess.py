@@ -8,6 +8,7 @@ import datamol as dm
 import numpy as np
 
 from scipy.spatial import distance
+from sklearn.utils.multiclass import type_of_target
 
 from .descriptors import DEFAULT_SIMPD_DESCRIPTORS
 
@@ -80,10 +81,10 @@ def preprocess_SIMPD_mols(
     distance_matrix = distance.squareform(distance_matrix, force="tomatrix")
 
     # Check the activity column only contains 0 or 1 values
-    activity_unique_values = set(data[activity_column].unique())
-    if activity_unique_values != {0, 1}:
+    target_type = type_of_target(data[activity_column])
+    if target_type != "binary":
         raise ValueError(
-            f"The activity column '{activity_column}' must contains only 0 (inactive) and 1 (active) values. Contains: {activity_unique_values}."
+            f"The activity column '{activity_column}' must be of type 'binary', found '{target_type}'. Contains: {data[activity_column].values}."
         )
 
     return descriptor_values, fps, descriptor_delta_targets, distance_matrix
