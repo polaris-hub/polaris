@@ -34,23 +34,23 @@ def cluster_data(
     cs = sorted(cs, key=lambda x: len(x), reverse=True)
 
     # start with the large clusters
-    largeClusters = [list(c) for c in cs if len(c) >= cluster_size_threshold]
-    if not largeClusters:
+    large_clusters = [list(c) for c in cs if len(c) >= cluster_size_threshold]
+    if not large_clusters:
         raise ValueError("no clusters found")
 
     # now combine the small clusters to make larger ones
     if combine_random:
-        tmpCluster = []
+        tmp_cluster = []
         for c in cs:
             if len(c) >= cluster_size_threshold:
                 continue
-            tmpCluster.extend(c)
-            if len(tmpCluster) >= cluster_size_threshold:
-                rng.shuffle(tmpCluster)
-                largeClusters.append(tmpCluster)
-                tmpCluster = []
-        if tmpCluster:
-            largeClusters.append(tmpCluster)
+            tmp_cluster.extend(c)
+            if len(tmp_cluster) >= cluster_size_threshold:
+                rng.shuffle(tmp_cluster)
+                large_clusters.append(tmp_cluster)
+                tmp_cluster = []
+        if tmp_cluster:
+            large_clusters.append(tmp_cluster)
     else:
         # add points from small clusters to the nearest larger cluster
         # nearest is defined by the nearest neighbor in that cluster
@@ -60,16 +60,16 @@ def cluster_data(
             for idx in c:
                 closest = -1
                 minD = 1e5
-                for cidx, clust in enumerate(largeClusters):
+                for cidx, clust in enumerate(large_clusters):
                     for elem in clust:
                         d = dmat[idx, elem]
                         if d < minD:
                             closest = cidx
                             minD = d
                 assert closest > -1
-                largeClusters[closest].append(idx)
+                large_clusters[closest].append(idx)
 
-    return largeClusters
+    return large_clusters
 
 
 def population_cluster_entropy(X, clusters: List[List[int]]):
