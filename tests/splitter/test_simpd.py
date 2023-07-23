@@ -42,7 +42,7 @@ def test_simpd():
     X = data["mol"].to_numpy()
     y = data["active"].to_numpy()
 
-    results = splitter.fit(X=X, y=y)
+    splitter.fit(X=X, y=y)
 
     for train_ind, test_ind in splitter.split(X):
         assert len(train_ind) + len(test_ind) == len(data)

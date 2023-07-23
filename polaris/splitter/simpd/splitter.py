@@ -4,8 +4,6 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from loguru import logger
-
 from sklearn.model_selection import BaseShuffleSplit
 
 from .simpd import run_SIMPD

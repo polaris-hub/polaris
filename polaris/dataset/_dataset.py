@@ -234,7 +234,7 @@ class Dataset(BaseModel):
                     try:
                         k = int(k)
                     except ValueError as error:
-                        raise TypeError(f"Column names in .zarr hierarchies should be integers") from error
+                        raise TypeError("Column names in .zarr hierarchies should be integers") from error
                     d[k] = v
                 data[col] = d
 

@@ -18,7 +18,7 @@ from polaris.utils.errors import PolarisChecksumError
 def create_filelock(lock_name: str, cache_dir_path: str = DEFAULT_CACHE_DIR):
     """Create an empty lock file into `cache_dir_path/locks/lock_name`"""
     lock_path = fs.join(cache_dir_path, "_lock_files", lock_name)
-    with fsspec.open(lock_path, "w", auto_mkdir=True) as f:
+    with fsspec.open(lock_path, "w", auto_mkdir=True):
         pass
     return filelock.FileLock(lock_path)
 

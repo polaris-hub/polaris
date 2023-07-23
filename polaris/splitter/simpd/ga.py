@@ -42,8 +42,8 @@ class ClusterSampling(Sampling):
         X = np.full((n_samples, problem.n_var), False, dtype=bool)
 
         for k in range(n_samples):
-            I = assignments[k]
-            X[k, I] = True
+            assignments_indices = assignments[k]
+            X[k, assignments_indices] = True
 
         return X
 
@@ -70,9 +70,9 @@ class SIMPDBinaryCrossover(Crossover):
 
             n_remaining = problem.n_max - np.sum(both_are_true)
 
-            I = np.where(np.logical_xor(p1, p2))[0]
+            assignments_indices = np.where(np.logical_xor(p1, p2))[0]
 
-            S = I[np.random.permutation(len(I))][:n_remaining]
+            S = assignments_indices[np.random.permutation(len(assignments_indices))][:n_remaining]
             _X[0, k, S] = True
 
         return _X
