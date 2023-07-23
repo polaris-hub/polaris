@@ -22,9 +22,7 @@ def cluster_data(
     rng = random.Random(random_seed)
 
     nfps = len(dmat)
-    symmDmat = []
-    for i in range(1, nfps):
-        symmDmat.extend(dmat[i, :i])
+    symmDmat = dmat[np.tril_indices(nfps, k=-1)]
 
     cs = Butina.ClusterData(
         symmDmat,
