@@ -1,4 +1,3 @@
-from typing import Literal
 from typing import Tuple
 from typing import Optional
 

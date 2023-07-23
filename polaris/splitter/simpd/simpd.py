@@ -1,5 +1,4 @@
 from typing import Tuple
-from typing import Literal
 from typing import Optional
 from typing import cast
 from typing import List
