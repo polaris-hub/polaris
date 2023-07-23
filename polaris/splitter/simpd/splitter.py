@@ -123,8 +123,7 @@ class SIMPDSplitter(BaseShuffleSplit):
         """
 
         # Create a dataframe
-        data = pd.DataFrame([X, y]).T
-        data.columns = ["mol", "activivity"]
+        data = pd.DataFrame({"mol": X, "activivity": y})
 
         # Prepare the arguments
         args = {}

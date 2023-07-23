@@ -1,3 +1,5 @@
+import pytest
+
 import datamol as dm
 
 from polaris.splitter.simpd import SIMPDSplitter
@@ -47,3 +49,16 @@ def test_simpd():
         assert len(set(train_ind).intersection(set(test_ind))) == 0
         assert len(train_ind) > len(test_ind)
         assert len(train_ind) > 0 and len(test_ind) > 0
+
+
+def test_simpd_not_binary_fails():
+    data = dm.freesolv()
+    data = data.iloc[:100]
+    data["mol"] = data["smiles"].apply(dm.to_mol)
+
+    splitter = SIMPDSplitter()
+    X = data["mol"].to_numpy()
+    y = data["expt"].to_numpy()
+
+    with pytest.raises(ValueError):
+        splitter.fit(X=X, y=y)
