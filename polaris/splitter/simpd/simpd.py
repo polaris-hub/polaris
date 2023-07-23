@@ -44,6 +44,7 @@ def run_SIMPD(
     # GA parameters
     pop_size: int = 500,
     ngens: int = 100,
+    swap_fraction: float = 0.1,
     # SIMPD objectives and constraints
     simpd_descriptors: Optional[pd.DataFrame] = None,
     target_train_frac_active: float = -1,
@@ -137,7 +138,7 @@ def run_SIMPD(
         pop_size=pop_size,
         sampling=sampling,  # type: ignore
         crossover=SIMPDBinaryCrossover(),  # type: ignore
-        mutation=SIMPDMutation(),  # type: ignore
+        mutation=SIMPDMutation(swap_fraction=swap_fraction),  # type: ignore
         eliminate_duplicates=True,
     )
 

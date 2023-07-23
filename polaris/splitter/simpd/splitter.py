@@ -32,6 +32,7 @@ class SIMPDSplitter(BaseShuffleSplit):
         # GA parameters
         pop_size: int = 500,
         ngens: int = 100,
+        swap_fraction: float = 0.1,
         # SIMPD objectives and constraints
         simpd_descriptors: Optional[pd.DataFrame] = None,
         target_train_frac_active: float = -1,
@@ -60,6 +61,7 @@ class SIMPDSplitter(BaseShuffleSplit):
             n_splits: Number of splits to generate.
             pop_size: The population size for the GA.
             ngens: The number of generations for the GA.
+            swap_fraction: The swap fraction for the GA. Swap N% of the bits in each mutation.
             simpd_descriptors: The descriptors to use for the GA. If None, the default descriptors from the paper will be used.
                 Load them from `polaris.splitter.simpd.DEFAULT_SIMPD_DESCRIPTORS`.
             target_train_frac_active: The target fraction of active compounds in the training set. Set to -1 to disable.
@@ -83,6 +85,7 @@ class SIMPDSplitter(BaseShuffleSplit):
         self.n_splits = n_splits
         self.pop_size = pop_size
         self.ngens = ngens
+        self.swap_fraction = swap_fraction
         self.simpd_descriptors = simpd_descriptors
         self.target_train_frac_active = target_train_frac_active
         self.target_test_frac_active = target_test_frac_active
@@ -133,6 +136,7 @@ class SIMPDSplitter(BaseShuffleSplit):
         # GA parameters
         args["pop_size"] = self.pop_size
         args["ngens"] = self.ngens
+        args["swap_fraction"] = self.swap_fraction
 
         # SIMPD objectives and constraints
         args["simpd_descriptors"] = self.simpd_descriptors

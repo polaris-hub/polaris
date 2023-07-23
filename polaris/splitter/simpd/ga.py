@@ -85,14 +85,16 @@ class SIMPDMutation(Mutation):
     This is adapted from the pymoo documentation
     """
 
+    def __init__(self, swap_fraction: float = 0.1):
+        super().__init__()
+        self.swap_fraction = swap_fraction
+
     def _do(self, problem, X, **kwargs):
         for i in range(X.shape[0]):
             X[i, :] = X[i, :]
             is_false = np.where(np.logical_not(X[i, :]))[0]
             is_true = np.where(X[i, :])[0]
-            # swap N% of the bits in each mutation
-            swapFrac = 0.1
-            X[i, np.random.choice(is_false, size=int(swapFrac * problem.n_max))] = True
-            X[i, np.random.choice(is_true, size=int(swapFrac * problem.n_max))] = False
+            X[i, np.random.choice(is_false, size=int(self.swap_fraction * problem.n_max))] = True
+            X[i, np.random.choice(is_true, size=int(self.swap_fraction * problem.n_max))] = False
 
         return X
