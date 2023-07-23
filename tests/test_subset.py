@@ -33,9 +33,9 @@ def test_access_to_test_set(test_single_task_benchmark):
     assert not train._hide_targets
 
     with pytest.raises(TestAccessError):
-        y = test.as_array("y")
+        test.as_array("y")
     with pytest.raises(TestAccessError):
-        y = test.targets
+        test.targets
 
     # Check if iterable style access returns just the SMILES
     for x in test:
