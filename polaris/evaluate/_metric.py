@@ -1,11 +1,9 @@
 from typing import Callable, List
 
 import numpy as np
-from sklearn.metrics import (
-    mean_absolute_error as sklearn_mae,
-    mean_squared_error as sklearn_mse,
-    accuracy_score as sklearn_acc,
-)
+from sklearn.metrics import accuracy_score as sklearn_acc
+from sklearn.metrics import mean_absolute_error as sklearn_mae
+from sklearn.metrics import mean_squared_error as sklearn_mse
 
 METRICS_REGISTRY = {}
 

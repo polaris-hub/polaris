@@ -1,7 +1,7 @@
-import pydantic_settings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class PolarisHubSettings(pydantic_settings.BaseSettings):
+class PolarisHubSettings(BaseSettings):
     """Settings for the OAuth2 Polaris Hub API Client.
 
     These settings can be found through your Polaris Hub account.
@@ -18,4 +18,4 @@ class PolarisHubSettings(pydantic_settings.BaseSettings):
     client_secret: str
 
     # Configuration of the pydantic model
-    model_config = {"env_prefix": "POLARIS_"}
+    model_config = SettingsConfigDict(env_prefix="POLARIS_")

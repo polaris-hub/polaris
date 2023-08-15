@@ -1,14 +1,20 @@
-from typing import Union, List, TypeVar
-import numpy as np
-from scipy import stats
 from enum import Enum
+from typing import List, TypeVar, Union
+
+import numpy as np
 from pydantic import BaseModel, Field
-from sklearn.utils import check_array
-from sklearn.base import OneToOneFeatureMixin, TransformerMixin, BaseEstimator, _fit_context
-from sklearn.ensemble import IsolationForest
-from sklearn.svm import OneClassSVM
+from scipy import stats
+from sklearn.base import (
+    BaseEstimator,
+    OneToOneFeatureMixin,
+    TransformerMixin,
+    _fit_context,
+)
 from sklearn.covariance import EllipticEnvelope
+from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
+from sklearn.svm import OneClassSVM
+from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")

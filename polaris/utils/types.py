@@ -1,6 +1,7 @@
+from typing import Any, Dict, List, Literal, Tuple, Union
+
 import numpy as np
 from typing_extensions import TypeAlias
-from typing import List, Tuple, Union, Dict, Any, Literal
 
 SplitIndicesType: TypeAlias = List[int]
 """

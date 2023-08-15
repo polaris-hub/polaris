@@ -1,26 +1,24 @@
+import json
 import os.path
 import string
+from collections import defaultdict
+from hashlib import md5
+from typing import Dict, Literal, Optional, Tuple, Union
 
-import zarr
 import fsspec
-import json
-
 import numpy as np
 import pandas as pd
-
-from hashlib import md5
-from collections import defaultdict
-from typing import Dict, Optional, Union, Tuple, Literal
-from pydantic import BaseModel, field_validator, model_validator
+import zarr
 from loguru import logger
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from polaris.utils import fs
 from polaris.dataset._column import ColumnAnnotation
+from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
-from polaris.utils.io import robust_copy, get_zarr_root
-from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 from polaris.utils.dict2html import dict2html
-
+from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
+from polaris.utils.io import get_zarr_root, robust_copy
+from polaris.utils.misc import to_lower_camel
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -59,12 +57,13 @@ class Dataset(BaseModel):
 
     # Public attributes
     table: Union[pd.DataFrame, str]
-    annotations: Dict[str, ColumnAnnotation] = {}
+    annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
     name: Optional[str] = None
     description: Optional[str] = None
     source: Optional[str] = None
     md5sum: Optional[str] = None
     cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.
+    user_attributes: Dict[str, str] = Field(default_factory=dict)
 
     # Private attributes
     _path_to_hash: Dict[str, Dict[str, str]] = defaultdict(dict)
@@ -72,7 +71,7 @@ class Dataset(BaseModel):
     _has_been_cached: bool = False
 
     # Pydantic config
-    model_config = {"arbitrary_types_allowed": True}
+    model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_lower_camel)
 
     @field_validator("table")
     def _validate_table(cls, v):

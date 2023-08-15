@@ -1,9 +1,10 @@
-from typing import Any, Optional, Dict, List
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from polaris.evaluate._metric import METRICS_REGISTRY
-from polaris.hub import api
+from polaris.hub.api import upload_results_to_hub
 from polaris.utils.errors import InvalidResultError
 
 
@@ -34,7 +35,7 @@ class BenchmarkResults(BaseModel):
     benchmark_id: str
     name: Optional[str] = None
     tags: dict = Field(default_factory=list)
-    user_attributes: dict = Field(default_factory=dict)
+    user_attributes: Dict[str, str] = Field(default_factory=dict)
 
     # Private attributes
     _user_name: Optional[str] = PrivateAttr(default=None)
@@ -79,4 +80,4 @@ class BenchmarkResults(BaseModel):
         This will upload the results to your account in the Polaris Hub. By default, these results are private.
         If you want to share them, you can do so in your account. This might trigger a review process.
         """
-        return api.upload_results_to_hub(self)
+        return upload_results_to_hub(self)

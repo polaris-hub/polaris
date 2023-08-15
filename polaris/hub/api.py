@@ -1,11 +1,16 @@
+from __future__ import annotations  # Will be the default in Python >=3.11, see PEP 563
+
 import webbrowser
+from typing import TYPE_CHECKING, List, Optional
 
 from loguru import logger
-from typing import List, Optional
 
 from polaris.dataset import Dataset
 from polaris.hub._client import PolarisHubClient
-from polaris.evaluate import BenchmarkResults
+
+if TYPE_CHECKING:
+    # This prevents a ciruclar import, while allowing type checking
+    from polaris.evaluate import BenchmarkResults
 
 
 def login_to_hub(
@@ -15,10 +20,7 @@ def login_to_hub(
 ):
     """Login to the Polaris Hub using OAuth2 protocol."""
 
-    with PolarisHubClient(
-        env_file=client_env_file,
-        load_token_if_exists=not overwrite,
-    ) as client:
+    with PolarisHubClient(env_file=client_env_file) as client:
         # Check if the user is already logged in
         if client.token is not None and not overwrite:
             info = client.user_info
@@ -58,8 +60,7 @@ def list_datasets(client_env_file: Optional[str] = None):
         response = client.get("/dataset")
         response.raise_for_status()
         response = response.json()
-        print(response)
-    return []
+    return response["data"]
 
 
 def get_dataset(owner: str, name: str, client_env_file: Optional[str] = None):
@@ -67,7 +68,6 @@ def get_dataset(owner: str, name: str, client_env_file: Optional[str] = None):
         response = client.get(f"/dataset/{owner}/{name}")
         response.raise_for_status()
         response = response.json()
-        print(response)
     return Dataset(**response)
 
 
@@ -85,3 +85,15 @@ def get_benchmark(client_env_file: Optional[str] = None):
 def upload_results_to_hub(results: BenchmarkResults, client_env_file: Optional[str] = None):
     with PolarisHubClient(env_file=client_env_file) as client:
         ...
+
+
+if __name__ == "__main__":
+    with PolarisHubClient(env_file="/Users/cas.wognum/polaris.env") as client:
+        print(client.user_info)
+
+    # datasets = list_datasets(client_env_file="/Users/cas.wognum/polaris.env")
+
+    # ds = datasets[0]
+    # ds["table"] = ds["tableContent"]["url"]
+    # print(ds["tableContent"]["url"])
+    # print(Dataset(**ds))

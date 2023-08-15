@@ -1,25 +1,27 @@
 import json
-import fsspec
-
-import numpy as np
 from hashlib import md5
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import fsspec
+import numpy as np
 from pydantic import (
     BaseModel,
+    ConfigDict,
+    Field,
     FieldValidationInfo,
+    field_serializer,
     field_validator,
     model_validator,
-    field_serializer,
 )
-from typing import Union, List, Dict, Tuple, Optional, Any
 
 from polaris.dataset import Dataset, Subset
-from polaris.evaluate import Metric, BenchmarkResults
+from polaris.evaluate import BenchmarkResults, Metric
 from polaris.utils import fs
 from polaris.utils.context import tmp_attribute_change
-from polaris.utils.errors import PolarisChecksumError
-from polaris.utils.misc import listit
-from polaris.utils.types import PredictionsType, SplitType, DataFormat
 from polaris.utils.dict2html import dict2html
+from polaris.utils.errors import PolarisChecksumError
+from polaris.utils.misc import listit, to_lower_camel
+from polaris.utils.types import DataFormat, PredictionsType, SplitType
 
 
 class BenchmarkSpecification(BaseModel):
@@ -67,12 +69,13 @@ class BenchmarkSpecification(BaseModel):
     split: SplitType
     metrics: Union[Union[Metric, str], List[Union[Metric, str]]]
     main_metric: Optional[Union[str, Metric]] = None
+    user_attributes: Dict[str, str] = Field(default_factory=dict)
 
     # The checksum is used to verify the version of the benchmark specification.
     md5sum: Optional[str] = None
 
     # Pydantic config
-    model_config = {"arbitrary_types_allowed": True}
+    model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_lower_camel)
 
     @field_validator("dataset")
     def _validate_dataset(cls, v):

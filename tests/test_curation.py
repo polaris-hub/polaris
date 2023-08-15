@@ -1,19 +1,23 @@
+import datamol as dm
+import numpy as np
 import pandas as pd
 import pydantic
 import pytest
-import numpy as np
 
-import datamol as dm
-from polaris.curation.utils import discretizer, Discretizer
 from polaris.curation import run_chemistry_curation
-from polaris.curation.utils import outlier_detection, LabelOrder
+from polaris.curation._chemistry_curator import _num_stereo_centers
 from polaris.curation._data_curator import (
+    _class_conversion,
+    _identify_stereoisomers_with_activity_cliff,
     _merge_duplicates,
     check_outliers,
-    _identify_stereoisomers_with_activity_cliff,
-    _class_conversion,
 )
-from polaris.curation._chemistry_curator import _num_stereo_centers
+from polaris.curation.utils import (
+    Discretizer,
+    LabelOrder,
+    discretizer,
+    outlier_detection,
+)
 
 
 def test_discretizer():

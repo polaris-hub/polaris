@@ -1,6 +1,9 @@
 import enum
-from typing import Optional, Union
-from pydantic import BaseModel, field_validator, field_serializer
+from typing import Dict, Optional, Union
+
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
+
+from polaris.utils.misc import to_lower_camel
 
 
 class Modality(enum.Enum):
@@ -31,9 +34,9 @@ class ColumnAnnotation(BaseModel):
     is_pointer: bool = False
     modality: Union[str, Modality] = Modality.UNKNOWN
     protocol: Optional[str] = None
-    user_attributes: dict = {}
+    user_attributes: Dict[str, str] = Field(default_factory=dict)
 
-    model_config = {"arbitrary_types_allowed": True}
+    model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_lower_camel)
 
     @field_validator("modality")
     def _validate_modality(cls, v):

@@ -87,3 +87,6 @@ target-version = "py311"
     "F401", # imported but unused
     "E402", # Module level import not at top of file
 ]
+
+[tool.isort]
+profile = "black"

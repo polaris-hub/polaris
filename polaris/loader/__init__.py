@@ -1,11 +1,14 @@
 import fsspec
 import yaml
 
+from polaris.benchmark import (
+    MultiTaskBenchmarkSpecification,
+    SingleTaskBenchmarkSpecification,
+)
 from polaris.dataset import Dataset
-from polaris.benchmark import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification
 from polaris.hub import api
-from polaris.utils.errors import InvalidDatasetError, InvalidBenchmarkError
 from polaris.utils import fs
+from polaris.utils.errors import InvalidBenchmarkError, InvalidDatasetError
 
 
 def load_dataset(path: str):

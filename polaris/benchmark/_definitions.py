@@ -1,4 +1,5 @@
 from pydantic import field_validator
+
 from polaris.benchmark import BenchmarkSpecification
 
 

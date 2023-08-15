@@ -1,7 +1,7 @@
-import zarr
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
+import zarr
 from pydantic import ValidationError
 
 from polaris.dataset import Dataset

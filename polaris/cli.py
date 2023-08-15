@@ -1,12 +1,9 @@
 import datetime
-import webbrowser
+from typing import Optional
+
 import typer
-import yaml
 
-from typing import Optional, Union
-from loguru import logger
 from polaris.hub.api import login_to_hub
-
 
 app = typer.Typer(
     add_completion=False,

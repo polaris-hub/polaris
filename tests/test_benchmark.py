@@ -2,7 +2,10 @@ import pytest
 from pydantic import ValidationError
 
 from polaris import load_benchmark
-from polaris.benchmark import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification
+from polaris.benchmark import (
+    MultiTaskBenchmarkSpecification,
+    SingleTaskBenchmarkSpecification,
+)
 from polaris.utils.errors import PolarisChecksumError
 
 
