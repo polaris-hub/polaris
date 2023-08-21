@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from pydantic import BaseModel, Field, PrivateAttr
 
@@ -7,10 +7,12 @@ from polaris.evaluate._metric import Metric
 from polaris.hub import PolarisClient
 
 # Define some helpful type aliases
-TestLabel = str
-TargetLabel = str
-MetricScores = dict[Metric, float]
-Results = MetricScores | dict[TestLabel, MetricScores | dict[TargetLabel, MetricScores]]
+TestLabelType = str
+TargetLabelType = str
+MetricScoresType = dict[Metric, float]
+ResultsType = Union[
+    MetricScoresType, dict[TestLabelType, Union[MetricScoresType, dict[TargetLabelType, MetricScoresType]]]
+]
 
 
 class BenchmarkResults(BaseModel):
@@ -36,7 +38,7 @@ class BenchmarkResults(BaseModel):
     """
 
     # Public attributes
-    results: Results
+    results: ResultsType
     benchmark_id: str
     name: Optional[str] = None
     tags: list[str] = Field(default_factory=list)

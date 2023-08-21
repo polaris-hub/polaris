@@ -2,7 +2,17 @@ from enum import Enum
 from typing import Callable
 
 import numpy as np
+from pydantic import BaseModel
 from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error
+
+
+class MetricInfo(BaseModel):
+    """
+    Metric metadata
+    """
+
+    fn: Callable
+    is_multitask: bool = False
 
 
 class Metric(Enum):
@@ -15,19 +25,19 @@ class Metric(Enum):
     #  - Any preprocessing needed? For example changing the shape / dtype? Converting from torch tensors or lists?
     """
 
-    mean_absolute_error = (mean_absolute_error, False)
-    mean_squared_error = (mean_squared_error, False)
-    accuracy = (accuracy_score, False)
+    mean_absolute_error = MetricInfo(fn=mean_absolute_error)
+    mean_squared_error = MetricInfo(fn=mean_squared_error)
+    accuracy = MetricInfo(fn=accuracy_score)
 
     @property
     def fn(self) -> Callable:
         """The callable that actually computes the metric"""
-        return self.value[0]
+        return self.value.fn
 
     @property
     def is_multitask(self) -> bool:
         """Whether the metric expects a single set of predictions or a dict of predictions."""
-        return self.value[1]
+        return self.value.is_multitask
 
     def score(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         """Endpoint for computing the metric.
@@ -36,7 +46,7 @@ class Metric(Enum):
 
         ```python
         metric = Metric.mean_absolute_error
-        assert metric.score(y_true=first., y_pred=second) = metric(y_true=first, y_pred=second)
+        assert metric.score(y_true=first, y_pred=second) = metric(y_true=first, y_pred=second)
         ```
         """
         return self.fn(y_true, y_pred)

@@ -1,13 +1,13 @@
 import json
 from hashlib import md5
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import fsspec
 import numpy as np
 from pydantic import BaseModel, FieldValidationInfo, field_serializer, field_validator, model_validator
 
 from polaris.dataset import Dataset, Subset
-from polaris.evaluate import BenchmarkResults, Metric, Results
+from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.utils import fs
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
@@ -15,7 +15,7 @@ from polaris.utils.errors import PolarisChecksumError
 from polaris.utils.misc import listit
 from polaris.utils.types import DataFormat, PredictionsType, SplitType
 
-Columns = str | list[str]
+ColumnsType = Union[str, list[str]]
 
 
 class BenchmarkSpecification(BaseModel):
@@ -57,12 +57,12 @@ class BenchmarkSpecification(BaseModel):
     """
 
     # Public attributes
-    dataset: Dataset | str | dict[str, Any]
-    target_cols: Columns
-    input_cols: Columns
+    dataset: Union[Dataset, str, dict[str, Any]]
+    target_cols: ColumnsType
+    input_cols: ColumnsType
     split: SplitType
-    metrics: str | Metric | list[str | Metric]
-    main_metric: Optional[str | Metric] = None
+    metrics: Union[str, Metric, list[Union[str, Metric]]]
+    main_metric: Optional[Union[str, Metric]] = None
 
     # The checksum is used to verify the version of the benchmark specification.
     md5sum: Optional[str] = None
@@ -234,7 +234,7 @@ class BenchmarkSpecification(BaseModel):
 
     def get_train_test_split(
         self, input_format: DataFormat = "dict", target_format: DataFormat = "dict"
-    ) -> Tuple[Subset, Union["Subset", Dict[str, Subset]]]:
+    ) -> tuple[Subset, Union["Subset", dict[str, Subset]]]:
         """Construct the train and test sets, given the split in the benchmark specification.
 
         Returns [`Subset`][polaris.dataset.Subset] objects, which offer several ways of accessing the data
@@ -313,7 +313,7 @@ class BenchmarkSpecification(BaseModel):
                 f"Missing keys for at least one of the test sets. Expecting: {sorted(test.keys())}"
             )
 
-        scores: Results = {}
+        scores: ResultsType = {}
 
         # For every test set...
         for test_label, y_true_subset in y_true.items():
