@@ -1,10 +1,16 @@
-from typing import Any, Optional, Dict, List
 from datetime import datetime
-from pydantic import BaseModel, Field, PrivateAttr, field_validator
+from typing import Any, Optional
 
-from polaris.evaluate._metric import METRICS_REGISTRY
+from pydantic import BaseModel, Field, PrivateAttr
+
+from polaris.evaluate._metric import Metric
 from polaris.hub import PolarisClient
-from polaris.utils.errors import InvalidResultError
+
+# Define some helpful type aliases
+TestLabel = str
+TargetLabel = str
+MetricScores = dict[Metric, float]
+Results = MetricScores | dict[TestLabel, MetricScores | dict[TargetLabel, MetricScores]]
 
 
 class BenchmarkResults(BaseModel):
@@ -30,39 +36,15 @@ class BenchmarkResults(BaseModel):
     """
 
     # Public attributes
-    results: dict
+    results: Results
     benchmark_id: str
     name: Optional[str] = None
-    tags: dict = Field(default_factory=list)
-    user_attributes: dict = Field(default_factory=dict)
+    tags: list[str] = Field(default_factory=list)
+    user_attributes: dict[str, str] = Field(default_factory=dict)
 
     # Private attributes
     _user_name: Optional[str] = PrivateAttr(default_factory=PolarisClient.get_client().get_active_user)
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
-
-    @field_validator("results")
-    def _validate_results(cls, v):
-        """Checks if all metrics are valid and if all scores are floats"""
-
-        def _find_lowest_level_dicts(d: Dict) -> List[Dict]:
-            """Helper function to find lowest-level dictionaries in a hierarchy of dicts"""
-            ret = []
-            if isinstance(d, dict) and not any(isinstance(vv, dict) for vv in d.values()):
-                return [d]
-            if isinstance(d, dict):
-                for kk, vv in d.items():
-                    ret.extend(_find_lowest_level_dicts(vv))
-                return ret
-            return ret
-
-        low_level_dicts = _find_lowest_level_dicts(v)
-        for low_level_dict in low_level_dicts:
-            for metric, score in low_level_dict.items():
-                if metric not in METRICS_REGISTRY:
-                    raise InvalidResultError(f"{metric} is not a supported metric in the Polaris framework.")
-                if not isinstance(score, float):
-                    raise InvalidResultError(f"Scores must be floats. Got {type(score)} for metric {metric}")
-            return v
 
     def __init__(self, **data: Any):
         super().__init__(**data)

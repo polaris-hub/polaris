@@ -62,6 +62,7 @@ include = '\.pyi?$'
 minversion = "6.0"
 addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=75 --cov-report xml --cov-report term"
 testpaths = ["tests"]
+pythonpath = "."
 filterwarnings = ["ignore::DeprecationWarning:jupyter_client.connect.*:"]
 
 [tool.coverage.run]
