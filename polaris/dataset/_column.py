@@ -36,7 +36,9 @@ class ColumnAnnotation(BaseModel):
     protocol: Optional[str] = None
     user_attributes: Dict[str, str] = Field(default_factory=dict)
 
-    model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_lower_camel)
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, alias_generator=to_lower_camel, populate_by_name=True
+    )
 
     @field_validator("modality")
     def _validate_modality(cls, v):

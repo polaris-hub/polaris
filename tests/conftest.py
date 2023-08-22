@@ -54,6 +54,7 @@ def test_single_task_benchmark(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     return SingleTaskBenchmarkSpecification(
+        name="single-task-benchmark",
         dataset=test_dataset,
         metrics=["mean_absolute_error", "mean_squared_error"],
         split=(train_indices, test_indices),
@@ -67,6 +68,7 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
     train_indices = list(range(90))
     test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
     return SingleTaskBenchmarkSpecification(
+        name="single-task-benchmark",
         dataset=test_dataset,
         metrics=["mean_absolute_error", "mean_squared_error"],
         split=(train_indices, test_indices),
@@ -81,6 +83,7 @@ def test_multi_task_benchmark(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     return MultiTaskBenchmarkSpecification(
+        name="multi-task-benchmark",
         dataset=test_dataset,
         metrics=["mean_absolute_error"],
         split=(train_indices, test_indices),

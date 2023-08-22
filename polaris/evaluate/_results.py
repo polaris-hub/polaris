@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel, Field, PrivateAttr
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 from polaris.evaluate._metric import Metric
+from polaris.utils.misc import to_lower_camel
 from polaris.utils.types import HubOwner
 
 # Define some helpful type aliases
@@ -50,6 +51,8 @@ class BenchmarkResults(BaseModel):
     # Private attributes
     _user_name: Optional[str] = PrivateAttr(default=None)
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
+
+    model_config = ConfigDict(alias_generator=to_lower_camel, populate_by_name=True)
 
     def __init__(self, **data: Any):
         super().__init__(**data)

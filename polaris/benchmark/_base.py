@@ -83,7 +83,9 @@ class BenchmarkSpecification(BaseModel):
     md5sum: Optional[str] = None
 
     # Pydantic config
-    model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_lower_camel)
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, alias_generator=to_lower_camel, populate_by_name=True
+    )
 
     @field_validator("dataset")
     def _validate_dataset(cls, v):

@@ -75,7 +75,9 @@ class Dataset(BaseModel):
     _has_been_cached: bool = False
 
     # Pydantic config
-    model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_lower_camel)
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, alias_generator=to_lower_camel, populate_by_name=True
+    )
 
     @field_validator("table")
     def _validate_table(cls, v):
