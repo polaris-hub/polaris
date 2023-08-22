@@ -19,7 +19,7 @@
         <link rel="next" href="dataset_zarr.html">
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.19">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
     
     
       
@@ -1979,13 +1979,13 @@ table = pd.read_csv(PATH)</div>
 
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span>
     <span class="c1"># The table is the core data-structure required to construct a dataset</span>
-    <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span> 
-    
+    <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span>
+
     <span class="c1"># All other arguments provide additional meta-data and are optional.</span>
     <span class="c1"># The exception is the `is_pointer` attribute in the `ColumnAnnotation` object, which</span>
-    <span class="c1"># we will get back to in a later tutorial. </span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">"Fang_2023_DMPK"</span><span class="p">,</span> 
-    <span class="n">description</span><span class="o">=</span><span class="s2">"120 prospective data sets, collected over 20 months across six ADME in vitro endpoints"</span><span class="p">,</span> 
+    <span class="c1"># we will get back to in a later tutorial.</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"Fang_2023_DMPK"</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"120 prospective data sets, collected over 20 months across six ADME in vitro endpoints"</span><span class="p">,</span>
     <span class="n">source</span><span class="o">=</span><span class="s2">"https://doi.org/10.1021/acs.jcim.3c00160"</span><span class="p">,</span>
     <span class="n">annotations</span><span class="o">=</span><span class="p">{</span>
         <span class="s2">"SMILES"</span><span class="p">:</span> <span class="n">ColumnAnnotation</span><span class="p">(</span><span class="n">modality</span><span class="o">=</span><span class="s2">"molecule"</span><span class="p">),</span>
@@ -2000,13 +2000,13 @@ table = pd.read_csv(PATH)</div>
 
 dataset = Dataset(
     # The table is the core data-structure required to construct a dataset
-    table=table, 
-    
+    table=table,
+
     # All other arguments provide additional meta-data and are optional.
     # The exception is the `is_pointer` attribute in the `ColumnAnnotation` object, which
-    # we will get back to in a later tutorial. 
-    name="Fang_2023_DMPK", 
-    description="120 prospective data sets, collected over 20 months across six ADME in vitro endpoints", 
+    # we will get back to in a later tutorial.
+    name="Fang_2023_DMPK",
+    description="120 prospective data sets, collected over 20 months across six ADME in vitro endpoints",
     source="https://doi.org/10.1021/acs.jcim.3c00160",
     annotations={
         "SMILES": ColumnAnnotation(modality="molecule"),
@@ -2068,7 +2068,7 @@ dataset = Dataset(
 <span class="p">)</span>
 
 <span class="n">benchmark</span> <span class="o">=</span> <span class="n">SingleTaskBenchmarkSpecification</span><span class="p">(</span>
-    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> 
+    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
     <span class="n">target_cols</span><span class="o">=</span><span class="s2">"LOG SOLUBILITY PH 6.8 (ug/mL)"</span><span class="p">,</span>
     <span class="n">input_cols</span><span class="o">=</span><span class="s2">"SMILES"</span><span class="p">,</span>
     <span class="n">split</span><span class="o">=</span><span class="n">split</span><span class="p">,</span>
@@ -2085,7 +2085,7 @@ split = (
 )
 
 benchmark = SingleTaskBenchmarkSpecification(
-    dataset=dataset, 
+    dataset=dataset,
     target_cols="LOG SOLUBILITY PH 6.8 (ug/mL)",
     input_cols="SMILES",
     split=split,
@@ -2129,11 +2129,11 @@ For more information, see the <code>Metric</code> class.</p>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.evaluate</span> <span class="kn">import</span> <span class="n">Metric</span>
 
-<span class="n">Metric</span><span class="o">.</span><span class="n">list_supported_metrics</span><span class="p">()</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">Metric</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-5">from polaris.evaluate import Metric
 
-Metric.list_supported_metrics()</div>
+list(Metric)</div>
 </div>
 </div>
 </div>
@@ -2184,7 +2184,7 @@ Metric.list_supported_metrics()</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.benchmark</span> <span class="kn">import</span> <span class="n">MultiTaskBenchmarkSpecification</span>
 
 <span class="n">benchmark</span> <span class="o">=</span> <span class="n">MultiTaskBenchmarkSpecification</span><span class="p">(</span>
-    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> 
+    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
     <span class="n">target_cols</span><span class="o">=</span><span class="s2">"LOG SOLUBILITY PH 6.8 (ug/mL)"</span><span class="p">,</span>
     <span class="n">input_cols</span><span class="o">=</span><span class="s2">"SMILES"</span><span class="p">,</span>
     <span class="n">split</span><span class="o">=</span><span class="n">split</span><span class="p">,</span>
@@ -2194,7 +2194,7 @@ Metric.list_supported_metrics()</div>
 <div class="clipboard-copy-txt" id="cell-6">from polaris.benchmark import MultiTaskBenchmarkSpecification
 
 benchmark = MultiTaskBenchmarkSpecification(
-    dataset=dataset, 
+    dataset=dataset,
     target_cols="LOG SOLUBILITY PH 6.8 (ug/mL)",
     input_cols="SMILES",
     split=split,
@@ -2259,7 +2259,7 @@ target_cols
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Let's try that again, but now with two target columns</span>
 <span class="n">benchmark</span> <span class="o">=</span> <span class="n">MultiTaskBenchmarkSpecification</span><span class="p">(</span>
-    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> 
+    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
     <span class="n">target_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">"LOG SOLUBILITY PH 6.8 (ug/mL)"</span><span class="p">,</span> <span class="s2">"LOG HLM_CLint (mL/min/kg)"</span><span class="p">],</span>
     <span class="n">input_cols</span><span class="o">=</span><span class="s2">"SMILES"</span><span class="p">,</span>
     <span class="n">split</span><span class="o">=</span><span class="n">split</span><span class="p">,</span>
@@ -2268,7 +2268,7 @@ target_cols
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-7"># Let's try that again, but now with two target columns
 benchmark = MultiTaskBenchmarkSpecification(
-    dataset=dataset, 
+    dataset=dataset,
     target_cols=["LOG SOLUBILITY PH 6.8 (ug/mL)", "LOG HLM_CLint (mL/min/kg)"],
     input_cols="SMILES",
     split=split,
@@ -2501,10 +2501,10 @@ benchmark = po.load_benchmark(path)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">train</span><span class="p">:</span> 
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">train</span><span class="p">:</span>
     <span class="k">pass</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-12">for x, y in train: 
+<div class="clipboard-copy-txt" id="cell-12">for x, y in train:
     pass</div>
 </div>
 </div>
@@ -2599,10 +2599,10 @@ y = train.targets</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">test</span><span class="p">:</span> 
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">test</span><span class="p">:</span>
     <span class="k">pass</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-15">for x in test: 
+<div class="clipboard-copy-txt" id="cell-15">for x in test:
     pass</div>
 </div>
 </div>

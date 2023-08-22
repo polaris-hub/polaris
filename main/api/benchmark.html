@@ -19,7 +19,7 @@
         <link rel="next" href="subset.html">
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.19">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
     
     
       
@@ -933,7 +933,7 @@
         <tr>
           <td><code>dataset</code></td>
           <td>
-                <code><span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Dataset" href="dataset.html#polaris.dataset.Dataset">Dataset</a>, str, <span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>
+                <code><span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Dataset" href="dataset.html#polaris.dataset.Dataset">Dataset</a>, str, dict[str, <span title="typing.Any">Any</span>]]</code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -944,7 +944,7 @@
         <tr>
           <td><code>target_cols</code></td>
           <td>
-                <code><span title="typing.Union">Union</span>[<span title="typing.List">List</span>[str], str]</code>
+                <code><span title="polaris.benchmark._base.ColumnsType">ColumnsType</span></code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -955,7 +955,7 @@
         <tr>
           <td><code>input_cols</code></td>
           <td>
-                <code><span title="typing.Union">Union</span>[<span title="typing.List">List</span>[str], str]</code>
+                <code><span title="polaris.benchmark._base.ColumnsType">ColumnsType</span></code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -977,7 +977,7 @@
         <tr>
           <td><code>metrics</code></td>
           <td>
-                <code><span title="typing.Union">Union</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.evaluate.Metric" href="evaluation.html#polaris.evaluate.Metric">Metric</a>, str], <span title="typing.List">List</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.evaluate.Metric" href="evaluation.html#polaris.evaluate.Metric">Metric</a>, str]]]</code>
+                <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.evaluate.Metric" href="evaluation.html#polaris.evaluate.Metric">Metric</a>, list[<span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.evaluate.Metric" href="evaluation.html#polaris.evaluate.Metric">Metric</a>]]]</code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -1024,7 +1024,7 @@
 </h4>
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">get_train_test_split</span><span class="p">(</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">input_format</span><span class="p">:</span> <span class="n">DataFormat</span> <span class="o">=</span> <span class="s2">&quot;dict&quot;</span><span class="p">,</span> <span class="n">target_format</span><span class="p">:</span> <span class="n">DataFormat</span> <span class="o">=</span> <span class="s2">&quot;dict&quot;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Subset</span><span class="p">]]]</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Subset</span><span class="p">]]]</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1092,7 +1092,7 @@ This will only affect the train set.</p>
     <tbody>
         <tr>
           <td>
-                <code><span title="typing.Tuple">Tuple</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>, <span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>, <span title="typing.Dict">Dict</span>[str, <a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>]]]</code>
+                <code>tuple[<a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>, <span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>, dict[str, <a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>]]]</code>
           </td>
           <td>
             <div class="doc-md-description">

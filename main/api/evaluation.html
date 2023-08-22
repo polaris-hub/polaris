@@ -19,7 +19,7 @@
         <link rel="next" href="utils.types.html">
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.19">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
     
     
       
@@ -612,22 +612,43 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#polaris.evaluate.Metric--todo-cwognum" class="md-nav__link">
+    TODO (cwognum):
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.Metric---add-support-for-more-metrics" class="md-nav__link">
+    - Add support for more metrics
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.Metric---any-preprocessing-needed-for-example-changing-the-shape-dtype-converting-from-torch-tensors-or-lists" class="md-nav__link">
+    - Any preprocessing needed? For example changing the shape / dtype? Converting from torch tensors or lists?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate._metric.Metric.fn" class="md-nav__link">
+    fn
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate._metric.Metric.is_multitask" class="md-nav__link">
+    is_multitask
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.evaluate._metric.Metric.score" class="md-nav__link">
     score()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#polaris.evaluate._metric.Metric.get_by_name" class="md-nav__link">
-    get_by_name()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#polaris.evaluate._metric.Metric.list_supported_metrics" class="md-nav__link">
-    list_supported_metrics()
   </a>
   
 </li>
@@ -792,22 +813,43 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#polaris.evaluate.Metric--todo-cwognum" class="md-nav__link">
+    TODO (cwognum):
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.Metric---add-support-for-more-metrics" class="md-nav__link">
+    - Add support for more metrics
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.Metric---any-preprocessing-needed-for-example-changing-the-shape-dtype-converting-from-torch-tensors-or-lists" class="md-nav__link">
+    - Any preprocessing needed? For example changing the shape / dtype? Converting from torch tensors or lists?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate._metric.Metric.fn" class="md-nav__link">
+    fn
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate._metric.Metric.is_multitask" class="md-nav__link">
+    is_multitask
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.evaluate._metric.Metric.score" class="md-nav__link">
     score()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#polaris.evaluate._metric.Metric.get_by_name" class="md-nav__link">
-    get_by_name()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#polaris.evaluate._metric.Metric.list_supported_metrics" class="md-nav__link">
-    list_supported_metrics()
   </a>
   
 </li>
@@ -879,7 +921,7 @@ to say something about which (type of) methods performs best <em>in general</em>
         <tr>
           <td><code>results</code></td>
           <td>
-                <code>dict</code>
+                <code><span title="polaris.evaluate._results.ResultsType">ResultsType</span></code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -912,7 +954,7 @@ to say something about which (type of) methods performs best <em>in general</em>
         <tr>
           <td><code>tags</code></td>
           <td>
-                <code>dict</code>
+                <code>list[str]</code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -923,7 +965,7 @@ to say something about which (type of) methods performs best <em>in general</em>
         <tr>
           <td><code>user_attributes</code></td>
           <td>
-                <code>dict</code>
+                <code>dict[str, str]</code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -1013,15 +1055,16 @@ If you want to share them, you can do so in your account. This might trigger a r
 
 
   <div class="doc doc-contents first">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="enum.Enum">Enum</span></code></p>
 
   
       <p>A Metric within the Polaris ecosystem.</p>
-<p>Each metric is uniquely identified by its name and per name there can only be one object (a singleton instance).</p>
+<p>Each metric is uniquely identified by its name.</p>
+<h4 id="polaris.evaluate.Metric--todo-cwognum">TODO (cwognum):</h4>
+<h4 id="polaris.evaluate.Metric---add-support-for-more-metrics">- Add support for more metrics</h4>
+<h4 id="polaris.evaluate.Metric---any-preprocessing-needed-for-example-changing-the-shape-dtype-converting-from-torch-tensors-or-lists">- Any preprocessing needed? For example changing the shape / dtype? Converting from torch tensors or lists?</h4>
 
-<details class="info" open>
-  <summary>Missing a metric?</summary>
-  <p>Implementing additional metrics is easy. See our tutorial for more information!</p>
-</details>
 
   
 
@@ -1032,6 +1075,52 @@ If you want to share them, you can do so in your account. This might trigger a r
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="polaris.evaluate._metric.Metric.fn" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">fn</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The callable that actually computes the metric</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="polaris.evaluate._metric.Metric.is_multitask" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">is_multitask</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">is_multitask</span><span class="p">:</span> <span class="nb">bool</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Whether the metric expects a single set of predictions or a dict of predictions.</p>
+  </div>
+
+</div>
 
 
 
@@ -1052,62 +1141,9 @@ If you want to share them, you can do so in your account. This might trigger a r
   
       <p>Endpoint for computing the metric.</p>
 <p>For convenience, calling a <code>Metric</code> will result in this method being called.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">metric</span> <span class="o">=</span> <span class="n">Metric</span><span class="o">.</span><span class="n">get_by_name</span><span class="p">(</span><span class="s2">&quot;mean_absolute_error&quot;</span><span class="p">)</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># The below two statements are equivalent.</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">metric</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">y_true</span><span class="o">=...</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=...</span><span class="p">)</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">metric</span><span class="p">(</span><span class="n">y_true</span><span class="o">=...</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=...</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">metric</span> <span class="o">=</span> <span class="n">Metric</span><span class="o">.</span><span class="n">mean_absolute_error</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">assert</span> <span class="n">metric</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">first</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">second</span><span class="p">)</span> <span class="o">=</span> <span class="n">metric</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">first</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">second</span><span class="p">)</span>
 </span></code></pre></div>
-
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<h4 id="polaris.evaluate._metric.Metric.get_by_name" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">get_by_name</span>
-
-  
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
-  </span>
-
-</h4>
-<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">get_by_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
-</span></code></pre></div>
-
-  <div class="doc doc-contents ">
-  
-      <p>Singleton access to an already registered metric</p>
-
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<h4 id="polaris.evaluate._metric.Metric.list_supported_metrics" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">list_supported_metrics</span>
-
-  
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
-  </span>
-
-</h4>
-<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">list_supported_metrics</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-</span></code></pre></div>
-
-  <div class="doc doc-contents ">
-  
-      <p>Get a list of all metrics that are supported in Polaris.</p>
 
   </div>
 
