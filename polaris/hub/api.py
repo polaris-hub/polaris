@@ -1,15 +1,22 @@
 from __future__ import annotations  # Will be the default in Python >=3.11, see PEP 563
 
 import webbrowser
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
+import pandas as pd
 from loguru import logger
 
+from polaris.benchmark import (
+    MultiTaskBenchmarkSpecification,
+    SingleTaskBenchmarkSpecification,
+)
 from polaris.dataset import Dataset
 from polaris.hub._client import PolarisHubClient
+from polaris.utils.errors import PolarisHubError
+from polaris.utils.types import HubOwner
 
 if TYPE_CHECKING:
-    # This prevents a ciruclar import, while allowing type checking
+    # This prevents a circular import, while allowing type checking
     from polaris.evaluate import BenchmarkResults
 
 
@@ -55,45 +62,93 @@ def login_to_hub(
         )
 
 
-def list_datasets(client_env_file: Optional[str] = None):
+def list_datasets(client_env_file: Optional[str] = None) -> list[str]:
+    """List all available datasets on the Polaris Hub."""
+
+    # TODO (cwognum): What to do with pagination, i.e. limit and offset?
     with PolarisHubClient(env_file=client_env_file) as client:
         response = client.get("/dataset")
         response.raise_for_status()
         response = response.json()
-    return response["data"]
+    dataset_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
+    return dataset_list
 
 
-def get_dataset(owner: str, name: str, client_env_file: Optional[str] = None):
+def get_dataset(owner: Union[str, HubOwner], name: str, client_env_file: Optional[str] = None) -> Dataset:
+    """Load a dataset from the Polaris Hub."""
+
     with PolarisHubClient(env_file=client_env_file) as client:
         response = client.get(f"/dataset/{owner}/{name}")
         response.raise_for_status()
         response = response.json()
+
+        storage_response = client.get(response["tableContent"]["url"])
+
+        # This should be a 307 redirect with the signed URL
+        if storage_response.status_code != 307:
+            raise PolarisHubError("Could not get signed URL from Polaris Hub.")
+        url = storage_response.json()["url"]
+
+        response["table"] = client.load_from_signed_url(url, pd.read_parquet)
+
     return Dataset(**response)
 
 
-def list_benchmarks(client_env_file: Optional[str] = None) -> List:
+def list_benchmarks(client_env_file: Optional[str] = None) -> list[str]:
+    """List all available benchmarks on the Polaris Hub."""
+
+    # TODO (cwognum): What to do with pagination, i.e. limit and offset?
+
     with PolarisHubClient(env_file=client_env_file) as client:
-        ...
-    return []
+        response = client.get("/benchmark")
+        response.raise_for_status()
+        response = response.json()
+    benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
+    return benchmarks_list
 
 
-def get_benchmark(client_env_file: Optional[str] = None):
+def get_benchmark(owner: Union[str, HubOwner], name: str, client_env_file: Optional[str] = None):
+    """Load an available benchmark from the Polaris Hub."""
+
     with PolarisHubClient(env_file=client_env_file) as client:
-        ...
+        response = client.get(f"/benchmark/{owner}/{name}")
+        response.raise_for_status()
+        response = response.json()
+
+        print(response)
+
+    # TODO (cwognum): Currently, the benchmark endpoints do not return the owner info for the underlying dataset.
+    #  In the current version of the API, the owner is not actually used, but this will break soon.
+    dataset_owner = "user_2R9qBGSZp0gANykfsNIjpx2WJib"
+    response["dataset"] = get_dataset(
+        dataset_owner, response["dataset"]["name"], client_env_file=client_env_file
+    )
+
+    # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
+    benchmark_cls = (
+        SingleTaskBenchmarkSpecification
+        if len(response["targetCols"]) == 1
+        else MultiTaskBenchmarkSpecification
+    )
+    return benchmark_cls(**response)
 
 
 def upload_results_to_hub(results: BenchmarkResults, client_env_file: Optional[str] = None):
+    """Upload the results to the Polaris Hub."""
+
+    if results.benchmark_name is None or results.benchmark_owner is None:
+        raise PolarisHubError("Benchmark name and owner must be set to upload results to the Polaris Hub.")
+
     with PolarisHubClient(env_file=client_env_file) as client:
-        ...
+        url = f"/benchmark/{results.benchmark_owner}/{results.benchmark_name}/result"
+        response = client.post(url, json=results.model_dump(by_alias=True))
+        response.raise_for_status()
 
+    response = response.json()
 
-if __name__ == "__main__":
-    with PolarisHubClient(env_file="/Users/cas.wognum/polaris.env") as client:
-        print(client.user_info)
-
-    # datasets = list_datasets(client_env_file="/Users/cas.wognum/polaris.env")
-
-    # ds = datasets[0]
-    # ds["table"] = ds["tableContent"]["url"]
-    # print(ds["tableContent"]["url"])
-    # print(Dataset(**ds))
+    # TODO (cwognum): Use actual URL once it's available
+    logger.success(
+        "Your result has been successfully uploaded to the Hub. "
+        f"View it here: https://polaris-hub/results/{response['id']}"
+    )
+    return response

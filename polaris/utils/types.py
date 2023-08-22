@@ -1,6 +1,7 @@
-from typing import Any, Dict, List, Literal, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 import numpy as np
+from pydantic import BaseModel, computed_field, model_validator
 from typing_extensions import TypeAlias
 
 SplitIndicesType: TypeAlias = List[int]
@@ -38,3 +39,34 @@ DataFormat: TypeAlias = Literal["dict", "tuple"]
 """
 The target formats that are supported by the `Subset` class. 
 """
+
+
+class HubOwner(BaseModel):
+    """An owner of an artifact on the Polaris Hub"""
+
+    organizationId: Optional[str] = None
+    userId: Optional[str] = None
+
+    @model_validator(mode="after")  # type: ignore
+    @classmethod
+    def _validate_model(cls, m: "HubOwner"):
+        if (m.organizationId is None and m.userId is None) or (
+            m.organizationId is not None and m.userId is not None
+        ):
+            raise ValueError("Either `organization` or `user` must be specified, but not both.")
+        return m
+
+    @computed_field
+    @property
+    def owner(self) -> str:
+        if isinstance(self.organizationId, str):
+            return self.organizationId
+        if isinstance(self.userId, str):
+            return self.userId
+        raise ValueError("Either `organization` or `user` must be specified, but not both.")
+
+    def __str__(self) -> str:
+        return self.owner
+
+    def __repr__(self) -> str:
+        return self.__str__()

@@ -19,6 +19,7 @@ from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 from polaris.utils.io import get_zarr_root, robust_copy
 from polaris.utils.misc import to_lower_camel
+from polaris.utils.types import HubOwner
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -49,6 +50,8 @@ class Dataset(BaseModel):
         source: The data source, e.g. a DOI, Github repo or URI.
         md5sum: The checksum is used to verify the version of the benchmark specification. If specified, it will
             raise an error if the specified checksum doesn't match the computed checksum.
+        user_attributes: A dict with additional, textual user attributes.
+        owner: If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
@@ -64,6 +67,7 @@ class Dataset(BaseModel):
     md5sum: Optional[str] = None
     cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.
     user_attributes: Dict[str, str] = Field(default_factory=dict)
+    owner: Optional[HubOwner] = None
 
     # Private attributes
     _path_to_hash: Dict[str, Dict[str, str]] = defaultdict(dict)

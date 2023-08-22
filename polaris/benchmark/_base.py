@@ -21,7 +21,7 @@ from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import PolarisChecksumError
 from polaris.utils.misc import listit, to_lower_camel
-from polaris.utils.types import DataFormat, PredictionsType, SplitType
+from polaris.utils.types import DataFormat, HubOwner, PredictionsType, SplitType
 
 
 class BenchmarkSpecification(BaseModel):
@@ -54,15 +54,20 @@ class BenchmarkSpecification(BaseModel):
         ```
 
     Attributes:
+        name: Human readable name to identify the benchmark by.
         dataset: The dataset the benchmark specification is based on.
         target_cols: The column(s) of the original dataset that should be used as target.
         input_cols: The column(s) of the original dataset that should be used as input.
         split: The predefined train-test split to use for evaluation.
         metrics: The metrics to use for evaluating performance
         main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
+        user_attributes: A dict with additional, textual user attributes.
+        owner: If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
+
     """
 
     # Public attributes
+    name: str
     dataset: Union[Dataset, str, Dict[str, Any]]
     target_cols: Union[List[str], str]
     input_cols: Union[List[str], str]
@@ -70,6 +75,7 @@ class BenchmarkSpecification(BaseModel):
     metrics: Union[Union[Metric, str], List[Union[Metric, str]]]
     main_metric: Optional[Union[str, Metric]] = None
     user_attributes: Dict[str, str] = Field(default_factory=dict)
+    owner: Optional[HubOwner] = None
 
     # The checksum is used to verify the version of the benchmark specification.
     md5sum: Optional[str] = None
@@ -347,7 +353,7 @@ class BenchmarkSpecification(BaseModel):
         if len(scores) == 1:
             scores = scores["test"]
 
-        return BenchmarkResults(results=scores, benchmark_id=self.md5sum)
+        return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)
 
     @classmethod
     def from_json(cls, path: str):

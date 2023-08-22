@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 from polaris.evaluate._metric import METRICS_REGISTRY
-from polaris.hub.api import upload_results_to_hub
 from polaris.utils.errors import InvalidResultError
+from polaris.utils.types import HubOwner
 
 
 class BenchmarkResults(BaseModel):
@@ -26,16 +26,19 @@ class BenchmarkResults(BaseModel):
         name: The name to identify the results by.
         tags: Tags to categorize the results by.
         user_attributes: User attributes allow for additional meta-data to be stored
+        owner: If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
         _user_name: The user associated with the results. Automatically set.
         _created_at: The time-stamp at which the results were created. Automatically set.
     """
 
     # Public attributes
     results: dict
-    benchmark_id: str
+    benchmark_name: str = Field(..., frozen=True)
+    benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
     name: Optional[str] = None
-    tags: dict = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
+    owner: Optional[HubOwner] = None
 
     # Private attributes
     _user_name: Optional[str] = PrivateAttr(default=None)
@@ -73,11 +76,3 @@ class BenchmarkResults(BaseModel):
                 self.name = str(self._created_at)
             else:
                 self.name = f"{self._user_name}_{str(self._created_at)}"
-
-    def upload_to_hub(self):
-        """Upload the results to the hub
-
-        This will upload the results to your account in the Polaris Hub. By default, these results are private.
-        If you want to share them, you can do so in your account. This might trigger a review process.
-        """
-        return upload_results_to_hub(self)

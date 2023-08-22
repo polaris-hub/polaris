@@ -1,7 +1,8 @@
 import json
 import os
 import ssl
-from typing import Optional, Union
+from io import BytesIO
+from typing import Callable, Optional, Union
 
 import fsspec
 import httpx
@@ -9,7 +10,7 @@ import platformdirs
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
-from loguru import logger
+from httpx._types import HeaderTypes, URLTypes
 
 from polaris.hub._settings import PolarisHubSettings
 from polaris.utils import fs
@@ -71,7 +72,6 @@ class PolarisHubClient(OAuth2Client):
 
         # We cache afterwards, because the token setter adds fields we need to save (i.e. expires_at).
         if self.cache_auth_token:
-            logger.info(f"Saving credentials to cache at {self.auth_token_cache_path}")
             with fsspec.open(self.auth_token_cache_path, "w") as fd:
                 json.dump(value, fd)  # type: ignore
 
@@ -130,3 +130,10 @@ class PolarisHubClient(OAuth2Client):
                 "You are not logged in to Polaris. Use the Polaris CLI to authenticate yourself."
             ) from error
         return response
+
+    def load_from_signed_url(self, url: URLTypes, load_fn: Callable, headers: Optional[HeaderTypes] = None):
+        """Utility function to load a file from a signed URL"""
+        response = self.get(url, auth=None, headers=headers)  # type: ignore
+        response.raise_for_status()
+        content = BytesIO(response.content)
+        return load_fn(content)
