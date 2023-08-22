@@ -1,25 +1,21 @@
 import json
-import fsspec
-
-import numpy as np
 from hashlib import md5
-from pydantic import (
-    BaseModel,
-    FieldValidationInfo,
-    field_validator,
-    model_validator,
-    field_serializer,
-)
-from typing import Union, List, Dict, Tuple, Optional, Any
+from typing import Any, Optional, Union
+
+import fsspec
+import numpy as np
+from pydantic import BaseModel, FieldValidationInfo, field_serializer, field_validator, model_validator
 
 from polaris.dataset import Dataset, Subset
-from polaris.evaluate import Metric, BenchmarkResults
+from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.utils import fs
 from polaris.utils.context import tmp_attribute_change
+from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import PolarisChecksumError
 from polaris.utils.misc import listit
-from polaris.utils.types import PredictionsType, SplitType, DataFormat
-from polaris.utils.dict2html import dict2html
+from polaris.utils.types import DataFormat, PredictionsType, SplitType
+
+ColumnsType = Union[str, list[str]]
 
 
 class BenchmarkSpecification(BaseModel):
@@ -61,11 +57,11 @@ class BenchmarkSpecification(BaseModel):
     """
 
     # Public attributes
-    dataset: Union[Dataset, str, Dict[str, Any]]
-    target_cols: Union[List[str], str]
-    input_cols: Union[List[str], str]
+    dataset: Union[Dataset, str, dict[str, Any]]
+    target_cols: ColumnsType
+    input_cols: ColumnsType
     split: SplitType
-    metrics: Union[Union[Metric, str], List[Union[Metric, str]]]
+    metrics: Union[str, Metric, list[Union[str, Metric]]]
     main_metric: Optional[Union[str, Metric]] = None
 
     # The checksum is used to verify the version of the benchmark specification.
@@ -89,7 +85,7 @@ class BenchmarkSpecification(BaseModel):
     @field_validator("target_cols", "input_cols")
     def _validate_cols(cls, v, info: FieldValidationInfo):
         """Verifies all columns are present in the dataset."""
-        if not isinstance(v, List):
+        if not isinstance(v, list):
             v = [v]
         if len(v) == 0:
             raise ValueError("Specify at least a single column")
@@ -107,12 +103,12 @@ class BenchmarkSpecification(BaseModel):
 
         If there are multiple test sets, it is assumed the same metrics are used across test sets.
         """
-        if not isinstance(v, List):
+        if not isinstance(v, list):
             v = [v]
 
-        v = [m if isinstance(m, Metric) else Metric.get_by_name(m) for m in v]
+        v = [m if isinstance(m, Metric) else Metric[m] for m in v]
 
-        if len(set(m.name for m in v)) != len(v):
+        if len(set(v)) != len(v):
             raise ValueError("The task specifies duplicate metrics")
 
         if len(v) == 0:
@@ -238,7 +234,7 @@ class BenchmarkSpecification(BaseModel):
 
     def get_train_test_split(
         self, input_format: DataFormat = "dict", target_format: DataFormat = "dict"
-    ) -> Tuple[Subset, Union["Subset", Dict[str, Subset]]]:
+    ) -> tuple[Subset, Union["Subset", dict[str, Subset]]]:
         """Construct the train and test sets, given the split in the benchmark specification.
 
         Returns [`Subset`][polaris.dataset.Subset] objects, which offer several ways of accessing the data
@@ -317,7 +313,7 @@ class BenchmarkSpecification(BaseModel):
                 f"Missing keys for at least one of the test sets. Expecting: {sorted(test.keys())}"
             )
 
-        scores = {}
+        scores: ResultsType = {}
 
         # For every test set...
         for test_label, y_true_subset in y_true.items():
@@ -327,7 +323,7 @@ class BenchmarkSpecification(BaseModel):
             for metric in self.metrics:
                 if metric.is_multitask or not isinstance(y_true_subset, dict):
                     # Either single-task or multi-task but with a metric across targets
-                    scores[test_label][metric.name] = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
+                    scores[test_label][metric] = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
                     continue
 
                 # Otherwise, for every target...
@@ -339,7 +335,7 @@ class BenchmarkSpecification(BaseModel):
                     # In such a setting, there can be NaN values, which we thus have to filter out.
                     mask = ~np.isnan(y_true_target)
                     score = metric(y_true=y_true_target[mask], y_pred=y_pred[test_label][target_label][mask])
-                    scores[test_label][target_label][metric.name] = score
+                    scores[test_label][target_label][metric] = score
 
         if len(scores) == 1:
             scores = scores["test"]

@@ -13,7 +13,7 @@ authors = [
     { name = "Cas Wognum", email = "cas@valencediscovery.com" },
 ]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -55,13 +55,14 @@ namespaces = false
 
 [tool.black]
 line-length = 110
-target-version = ['py310', 'py311']
+target-version = ['py39', 'py310', 'py311']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=75 --cov-report xml --cov-report term"
 testpaths = ["tests"]
+pythonpath = "."
 filterwarnings = ["ignore::DeprecationWarning:jupyter_client.connect.*:"]
 
 [tool.coverage.run]
@@ -80,7 +81,7 @@ ignore = [
     "E501", # Never enforce `E501` (line length violations).
 ]
 line-length = 110
-target-version = "py311"
+target-version = "py39"
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = [
