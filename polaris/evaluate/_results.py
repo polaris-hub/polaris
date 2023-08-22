@@ -1,12 +1,10 @@
 from datetime import datetime
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel, Field, PrivateAttr, field_validator
+from pydantic import BaseModel, Field, PrivateAttr
 
-from polaris.utils.errors import InvalidResultError
-from polaris.utils.types import HubOwner
 from polaris.evaluate._metric import Metric
-from polaris.hub import PolarisClient
+from polaris.utils.types import HubOwner
 
 # Define some helpful type aliases
 TestLabelType = str
@@ -15,6 +13,7 @@ MetricScoresType = dict[Metric, float]
 ResultsType = Union[
     MetricScoresType, dict[TestLabelType, Union[MetricScoresType, dict[TargetLabelType, MetricScoresType]]]
 ]
+
 
 class BenchmarkResults(BaseModel):
     """Class for saving benchmarking results
