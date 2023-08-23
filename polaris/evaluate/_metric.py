@@ -9,6 +9,10 @@ from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_er
 class MetricInfo(BaseModel):
     """
     Metric metadata
+
+    Attributes:
+        fn: The callable that actually computes the metric
+        is_multitask: Whether the metric expects a single set of predictions or a dict of predictions.
     """
 
     fn: Callable
@@ -16,14 +20,16 @@ class MetricInfo(BaseModel):
 
 
 class Metric(Enum):
-    """A Metric within the Polaris ecosystem.
+    """
+    A metric within the Polaris ecosystem is uniquely identified by its name
+    and is associated with additional metadata in a `MetricInfo` instance.
 
-    Each metric is uniquely identified by its name.
+    Implemented as an enum.
+    """
 
     # TODO (cwognum):
     #  - Add support for more metrics
     #  - Any preprocessing needed? For example changing the shape / dtype? Converting from torch tensors or lists?
-    """
 
     mean_absolute_error = MetricInfo(fn=mean_absolute_error)
     mean_squared_error = MetricInfo(fn=mean_squared_error)
@@ -46,7 +52,7 @@ class Metric(Enum):
 
         ```python
         metric = Metric.mean_absolute_error
-        assert metric.score(y_true=first, y_pred=second) = metric(y_true=first, y_pred=second)
+        assert metric.score(y_true=first, y_pred=second) == metric(y_true=first, y_pred=second)
         ```
         """
         return self.fn(y_true, y_pred)

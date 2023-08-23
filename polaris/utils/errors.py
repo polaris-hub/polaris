@@ -1,6 +1,3 @@
-from polaris.utils.constants import POLARIS_HUB_URL
-
-
 class InvalidDatasetError(ValueError):
     pass
 
@@ -24,7 +21,7 @@ class PolarisHubError(Exception):
 class PolarisUnauthorizedError(PolarisHubError):
     DEFAULT_ERROR_MSG = (
         "You are not logged in to the Polaris Hub. Please use the Polaris CLI to login. "
-        f"Use `polaris --help` or visit the {POLARIS_HUB_URL} for more information."
+        "Use `polaris --help` for more information."
     )
 
     def __init__(self, message: str = DEFAULT_ERROR_MSG):

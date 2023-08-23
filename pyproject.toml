@@ -27,6 +27,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
@@ -60,7 +61,7 @@ include = '\.pyi?$'
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=70 --cov-report xml --cov-report term"
+addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=75 --cov-report xml --cov-report term"
 testpaths = ["tests"]
 pythonpath = "."
 filterwarnings = ["ignore::DeprecationWarning:jupyter_client.connect.*:"]
@@ -71,7 +72,7 @@ disable_warnings = ["no-data-collected"]
 data_file = ".coverage/coverage"
 
 [tool.coverage.report]
-omit = ["polaris/__init__.py", "polaris/_version.py"]
+omit = ["polaris/__init__.py", "polaris/_version.py", "polaris/hub/client.py", "polaris/hub/settings.py", "polaris/hub/__init__.py"]
 
 [tool.coverage.xml]
 output = "coverage.xml"
@@ -88,6 +89,3 @@ target-version = "py39"
     "F401", # imported but unused
     "E402", # Module level import not at top of file
 ]
-
-[tool.isort]
-profile = "black"

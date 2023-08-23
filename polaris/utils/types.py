@@ -57,11 +57,7 @@ class HubOwner(BaseModel):
     @computed_field
     @property
     def owner(self) -> str:
-        if isinstance(self.organizationId, str):
-            return self.organizationId
-        if isinstance(self.userId, str):
-            return self.userId
-        raise ValueError("Either `organization` or `user` must be specified, but not both.")
+        return self.organizationId or self.userId  # type: ignore
 
     def __str__(self) -> str:
         return self.owner

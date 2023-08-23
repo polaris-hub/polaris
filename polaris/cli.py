@@ -2,7 +2,7 @@ from typing import Optional
 
 import typer
 
-from polaris.hub.api import login_to_hub
+from polaris.hub.client import PolarisHubClient
 
 app = typer.Typer(
     add_completion=False,
@@ -17,11 +17,8 @@ def login(
     overwrite: bool = False,
 ):
     """Uses the OAuth2 protocol to gain token-based access to the Polaris Hub API"""
-    login_to_hub(
-        client_env_file=client_env_file,
-        auto_open_browser=auto_open_browser,
-        overwrite=overwrite,
-    )
+    with PolarisHubClient(env_file=client_env_file) as client:
+        client.login(auto_open_browser=auto_open_browser, overwrite=overwrite)
 
 
 if __name__ == "__main__":
