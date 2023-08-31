@@ -1,32 +1,31 @@
 import json
 from hashlib import md5
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import fsspec
 import numpy as np
 from pydantic import (
-    BaseModel,
     ConfigDict,
-    Field,
     FieldValidationInfo,
     field_serializer,
     field_validator,
     model_validator,
 )
 
+from polaris._artifact import BaseArtifactModel
 from polaris.dataset import Dataset, Subset
 from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.utils import fs
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
-from polaris.utils.errors import PolarisChecksumError
+from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
 from polaris.utils.misc import listit, to_lower_camel
-from polaris.utils.types import DataFormat, HubOwner, PredictionsType, SplitType
+from polaris.utils.types import DataFormat, PredictionsType, SplitType
 
 ColumnsType = Union[str, list[str]]
 
 
-class BenchmarkSpecification(BaseModel):
+class BenchmarkSpecification(BaseArtifactModel):
     """This class wraps a [`Dataset`][polaris.dataset.Dataset] with additional data
      to specify the evaluation logic.
 
@@ -56,30 +55,31 @@ class BenchmarkSpecification(BaseModel):
         ```
 
     Attributes:
-        name: Human readable name to identify the benchmark by.
         dataset: The dataset the benchmark specification is based on.
         target_cols: The column(s) of the original dataset that should be used as target.
         input_cols: The column(s) of the original dataset that should be used as input.
         split: The predefined train-test split to use for evaluation.
         metrics: The metrics to use for evaluating performance
         main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
+        md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
+            raise an error if the specified checksum doesn't match the computed checksum.
+        name: A URL-compatible name for the dataset, can only use alpha-numeric characters, underscores and dashes).
+            Together with the owner, this is used by the Hub to uniquely identify the benchmark.
+        description: A beginner-friendly, short description of the dataset.
+        tags: A list of tags to categorize the benchmark by. This is used by the hub to search over benchmarks.
         user_attributes: A dict with additional, textual user attributes.
         owner: If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
+            Together with the name, this is used by the Hub to uniquely identify the benchmark.
 
     """
 
     # Public attributes
-    name: str
     dataset: Union[Dataset, str, dict[str, Any]]
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
     metrics: Union[str, Metric, list[Union[str, Metric]]]
     main_metric: Optional[Union[str, Metric]] = None
-    user_attributes: Dict[str, str] = Field(default_factory=dict)
-    owner: Optional[HubOwner] = None
-
-    # The checksum is used to verify the version of the benchmark specification.
     md5sum: Optional[str] = None
 
     # Pydantic config
@@ -105,11 +105,11 @@ class BenchmarkSpecification(BaseModel):
         if not isinstance(v, list):
             v = [v]
         if len(v) == 0:
-            raise ValueError("Specify at least a single column")
+            raise InvalidBenchmarkError("Specify at least a single column")
         if info.data.get("dataset") is not None and not all(
             c in info.data["dataset"].table.columns for c in v
         ):
-            raise ValueError("Not all specified target columns were found in the dataset.")
+            raise InvalidBenchmarkError("Not all specified target columns were found in the dataset.")
         return v
 
     @field_validator("metrics")
@@ -126,10 +126,10 @@ class BenchmarkSpecification(BaseModel):
         v = [m if isinstance(m, Metric) else Metric[m] for m in v]
 
         if len(set(v)) != len(v):
-            raise ValueError("The task specifies duplicate metrics")
+            raise InvalidBenchmarkError("The task specifies duplicate metrics")
 
         if len(v) == 0:
-            raise ValueError("Specify at least one metric")
+            raise InvalidBenchmarkError("Specify at least one metric")
 
         return v
 
@@ -149,25 +149,25 @@ class BenchmarkSpecification(BaseModel):
             or (isinstance(v[1], dict) and any(len(v) == 0 for v in v[1].values()))
             or (not isinstance(v[1], dict) and len(v[1]) == 0)
         ):
-            raise ValueError("The predefined split contains empty partitions")
+            raise InvalidBenchmarkError("The predefined split contains empty partitions")
 
         train_indices = v[0]
         test_indices = [i for part in v[1].values() for i in part] if isinstance(v[1], dict) else v[1]
 
         # The train and test indices do not overlap
         if any(i in train_indices for i in test_indices):
-            raise ValueError("The predefined split specifies overlapping train and test sets")
+            raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
 
         # Duplicate indices
         if len(set(train_indices)) != len(train_indices):
-            raise ValueError("The training set contains duplicate indices")
+            raise InvalidBenchmarkError("The training set contains duplicate indices")
         if len(set(test_indices)) != len(test_indices):
-            raise ValueError("The test set contains duplicate indices")
+            raise InvalidBenchmarkError("The test set contains duplicate indices")
 
         # All indices are valid given the dataset
         if info.data["dataset"] is not None:
             if any(i < 0 or i >= len(info.data["dataset"]) for i in train_indices + test_indices):
-                raise ValueError("The predefined split contains invalid indices")
+                raise InvalidBenchmarkError("The predefined split contains invalid indices")
         return v
 
     @model_validator(mode="after")

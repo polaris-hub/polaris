@@ -1,6 +1,5 @@
 import json
 import os.path
-import string
 from collections import defaultdict
 from hashlib import md5
 from typing import Dict, Literal, Optional, Tuple, Union
@@ -10,8 +9,9 @@ import numpy as np
 import pandas as pd
 import zarr
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
+from polaris._artifact import BaseArtifactModel
 from polaris.dataset._column import ColumnAnnotation
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
@@ -19,7 +19,6 @@ from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 from polaris.utils.io import get_zarr_root, robust_copy
 from polaris.utils.misc import to_lower_camel
-from polaris.utils.types import HubOwner
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -28,7 +27,7 @@ _INDEX_SEP = "#"
 _INDEX_FMT = f"{{path}}{_INDEX_SEP}{{index}}"
 
 
-class Dataset(BaseModel):
+class Dataset(BaseArtifactModel):
     """Basic data-model for a Polaris dataset, implemented as a [Pydantic](https://docs.pydantic.dev/latest/) model.
 
     At its core, a dataset in Polaris is a tabular data structure that stores data-points in a row-wise manner.
@@ -43,15 +42,18 @@ class Dataset(BaseModel):
     Attributes:
         table: The core data-structure, storing data-points in a row-wise manner. Can be specified as either a
             path to a `.parquet` file or a `pandas.DataFrame`.
-        annotations: Each column _can be_ annotated with a [`ColumnAnnotation`][polaris.dataset.ColumnAnnotation] object.
-            Importantly, this is used to annotate whether a column is a pointer column.
-        name: A URL-compatible name for the dataset, can only use alpha-numeric characters, underscores and dashes).
-        description: A beginner-friendly, short description of the dataset.
-        source: The data source, e.g. a DOI, Github repo or URI.
         md5sum: The checksum is used to verify the version of the benchmark specification. If specified, it will
             raise an error if the specified checksum doesn't match the computed checksum.
+        name: A URL-compatible name for the dataset, can only use alpha-numeric characters, underscores and dashes).
+            Together with the owner, this is used by the Hub to uniquely identify the dataset.
+        description: A beginner-friendly, short description of the dataset.
+        annotations: Each column _can be_ annotated with a [`ColumnAnnotation`][polaris.dataset.ColumnAnnotation] object.
+            Importantly, this is used to annotate whether a column is a pointer column.
+        source: The data source, e.g. a DOI, Github repo or URI.
+        tags: A list of tags to categorize the benchmark by.
         user_attributes: A dict with additional, textual user attributes.
         owner: If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
+            Together with the name, this is used by the Hub to uniquely identify the dataset.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
@@ -59,15 +61,16 @@ class Dataset(BaseModel):
     """
 
     # Public attributes
+    # Data
     table: Union[pd.DataFrame, str]
-    annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
-    name: Optional[str] = None
-    description: Optional[str] = None
-    source: Optional[str] = None
     md5sum: Optional[str] = None
+
+    # Additional meta-data
+    annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
+    source: Optional[str] = None
+
+    # Config
     cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.
-    user_attributes: Dict[str, str] = Field(default_factory=dict)
-    owner: Optional[HubOwner] = None
 
     # Private attributes
     _path_to_hash: Dict[str, Dict[str, str]] = defaultdict(dict)
@@ -86,18 +89,6 @@ class Dataset(BaseModel):
             if not fs.is_file(v) or fs.get_extension(v) not in _SUPPORTED_TABLE_EXTENSIONS:
                 raise InvalidDatasetError(f"{v} is not a valid DataFrame or .parquet path.")
             v = pd.read_parquet(v)
-        return v
-
-    @field_validator("name")
-    def _validate_name(cls, v):
-        """
-        Verify the name only contains valid characters which can be used in a file path.
-        """
-        if v is None:
-            return v
-        valid_characters = string.ascii_letters + string.digits + "_-"
-        if not all(c in valid_characters for c in v):
-            raise InvalidDatasetError(f"`name` can only contain alpha-numeric characters, - or _, found {v}")
         return v
 
     @model_validator(mode="after")
