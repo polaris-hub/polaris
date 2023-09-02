@@ -38,7 +38,7 @@ DataFormat: TypeAlias = Literal["dict", "tuple"]
 The target formats that are supported by the `Subset` class. 
 """
 
-SlugCompatibleStringType: TypeAlias = constr(pattern="^[a-z0-9_-]+$", min_length=3)
+SlugCompatibleStringType: TypeAlias = constr(pattern="^[A-Za-z0-9_-]+$", min_length=3)
 """
 A URL-compatible string to can serve as slug on the hub.
 
