@@ -1,12 +1,10 @@
-import string
 from datetime import datetime
 from typing import Any, Optional, Union
 
-from pydantic import ConfigDict, Field, PrivateAttr, field_validator
+from pydantic import ConfigDict, Field, HttpUrl, PrivateAttr
 
 from polaris._artifact import BaseArtifactModel
 from polaris.evaluate._metric import Metric
-from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import to_lower_camel
 from polaris.utils.types import HubOwner
 
@@ -37,29 +35,19 @@ class BenchmarkResults(BaseArtifactModel):
             Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.
         benchmark_owner: The owner of the benchmark for which these results were generated.
             Together with the benchmark name, this uniquely identifies the benchmark on the Hub.
-        name: A URL-compatible name for the dataset, can only use alpha-numeric characters, underscores and dashes).
-        description: A beginner-friendly, short description of the dataset.
-        tags: A list of tags to categorize the benchmark by. This is used by the hub to search over results.
+        name: A slug-compatible name for the result.
+            Together with the owner, this is used by the Hub to uniquely identify the result.
+        description: A beginner-friendly, short description of the result.
+        tags: A list of tags to categorize the result by. This is used by the hub to search over results.
         user_attributes: A dict with additional, textual user attributes.
-        owner: If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
+        owner: A slug-compatible name for the owner of the result.
+            If the result comes from the Polaris Hub, this is the associated owner (organization or user).
+            Together with the name, this is used by the Hub to uniquely identify the result.
         github_url: The URL to the GitHub repository of the code used to generate these results.
         paper_url: The URL to the paper describing the methodology used to generate these results.
         _user_name: The user associated with the results. Automatically set.
         _created_at: The time-stamp at which the results were created. Automatically set.
     """
-
-    # Public attributes
-    @field_validator("name")
-    def _validate_name(cls, v):
-        """
-        Verify the name only contains valid characters which can be used in a file path.
-        """
-        if v is None:
-            return v
-        valid_characters = string.ascii_letters + string.digits + "_-"
-        if not all(c in valid_characters for c in v):
-            raise InvalidResultError(f"`name` can only contain alpha-numeric characters, - or _, found {v}")
-        return v
 
     # Data
     results: ResultsType
@@ -67,8 +55,8 @@ class BenchmarkResults(BaseArtifactModel):
     benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
 
     # Additional meta-data
-    github_url: Optional[str] = None
-    paper_url: Optional[str] = None
+    github_url: Optional[HttpUrl] = None
+    paper_url: Optional[HttpUrl] = None
 
     # Private attributes
     _user_name: Optional[str] = PrivateAttr(default=None)

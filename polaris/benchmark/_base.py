@@ -63,12 +63,12 @@ class BenchmarkSpecification(BaseArtifactModel):
         main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
         md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
             raise an error if the specified checksum doesn't match the computed checksum.
-        name: A URL-compatible name for the dataset, can only use alpha-numeric characters, underscores and dashes).
+        name: A slug-compatible name for the benchmark.
             Together with the owner, this is used by the Hub to uniquely identify the benchmark.
-        description: A beginner-friendly, short description of the dataset.
+        description: A beginner-friendly, short description of the benchmark.
         tags: A list of tags to categorize the benchmark by. This is used by the hub to search over benchmarks.
         user_attributes: A dict with additional, textual user attributes.
-        owner: If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
+        owner: If the benchmark comes from the Polaris Hub, this is the associated owner (organization or user).
             Together with the name, this is used by the Hub to uniquely identify the benchmark.
 
     """

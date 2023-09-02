@@ -1,7 +1,7 @@
 from typing import Any, Literal, Optional, Union
 
 import numpy as np
-from pydantic import BaseModel, computed_field, model_validator
+from pydantic import BaseModel, computed_field, constr, model_validator
 from typing_extensions import TypeAlias
 
 SplitIndicesType: TypeAlias = list[int]
@@ -38,12 +38,20 @@ DataFormat: TypeAlias = Literal["dict", "tuple"]
 The target formats that are supported by the `Subset` class. 
 """
 
+SlugCompatibleStringType: TypeAlias = constr(pattern="^[a-z0-9_-]+$", min_length=3)
+"""
+A URL-compatible string to can serve as slug on the hub.
+
+Can only use alpha-numeric characters, underscores and dashes and cannot end with a dash or underscore.
+The string must be at least 3 characters long.
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub"""
 
-    organizationId: Optional[str] = None
-    userId: Optional[str] = None
+    organizationId: Optional[SlugCompatibleStringType] = None
+    userId: Optional[SlugCompatibleStringType] = None
 
     @model_validator(mode="after")  # type: ignore
     @classmethod

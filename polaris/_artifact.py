@@ -1,9 +1,8 @@
-import string
 from typing import Dict, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from polaris.utils.types import HubOwner
+from polaris.utils.types import HubOwner, SlugCompatibleStringType
 
 
 class BaseArtifactModel(BaseModel):
@@ -16,16 +15,17 @@ class BaseArtifactModel(BaseModel):
         Only when uploading to the Hub, some of the attributes are required.
 
     Attributes:
-        name: A URL-compatible name for the dataset, can only use alpha-numeric characters, underscores and dashes).
+        name: A slug-compatible name for the dataset.
             Together with the owner, this is used by the Hub to uniquely identify the benchmark.
         description: A beginner-friendly, short description of the dataset.
         tags: A list of tags to categorize the benchmark by. This is used by the hub to search over benchmarks.
         user_attributes: A dict with additional, textual user attributes.
-        owner: If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
+        owner: A slug-compatible name for the owner of the dataset.
+            If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
             Together with the name, this is used by the Hub to uniquely identify the benchmark.
     """
 
-    name: Optional[str] = None
+    name: Optional[SlugCompatibleStringType] = None
     description: Optional[str] = None
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
@@ -34,11 +34,11 @@ class BaseArtifactModel(BaseModel):
     @field_validator("name")
     def _validate_name(cls, v):
         """
-        Verify the name only contains valid characters which can be used in a file path or URL.
+        Since look-around does not work with Pydantic's constr regex,
+        this verifies that the name does not end with a dash or underscore.
         """
         if v is None:
             return v
-        valid_characters = string.ascii_letters + string.digits + "_-"
-        if not all(c in valid_characters for c in v):
-            raise ValueError(f"`name` can only contain alpha-numeric characters, - or _, found {v}")
+        if v.endswith("-") or v.endswith("_"):
+            raise ValueError("Name cannot end with a dash or underscore.")
         return v

@@ -42,17 +42,18 @@ class Dataset(BaseArtifactModel):
     Attributes:
         table: The core data-structure, storing data-points in a row-wise manner. Can be specified as either a
             path to a `.parquet` file or a `pandas.DataFrame`.
-        md5sum: The checksum is used to verify the version of the benchmark specification. If specified, it will
+        md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
             raise an error if the specified checksum doesn't match the computed checksum.
-        name: A URL-compatible name for the dataset, can only use alpha-numeric characters, underscores and dashes).
+        name: A slug-compatible name for the dataset.
             Together with the owner, this is used by the Hub to uniquely identify the dataset.
         description: A beginner-friendly, short description of the dataset.
         annotations: Each column _can be_ annotated with a [`ColumnAnnotation`][polaris.dataset.ColumnAnnotation] object.
             Importantly, this is used to annotate whether a column is a pointer column.
         source: The data source, e.g. a DOI, Github repo or URI.
-        tags: A list of tags to categorize the benchmark by.
+        tags: A list of tags to categorize the dataset by.
         user_attributes: A dict with additional, textual user attributes.
-        owner: If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
+        owner: A slug-compatible name for the owner of the dataset.
+            If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
             Together with the name, this is used by the Hub to uniquely identify the dataset.
 
     Raises:
