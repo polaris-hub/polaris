@@ -8,10 +8,10 @@ def test_slug_compatible_string_type():
     """Verifies that the artifact name is validated correctly."""
 
     # Fails if:
-    # - Ends in a dash or underscore
+    # - Starts with or ends in a dash or underscore
     # - Is too short (<3 characters)
     # - Contains non alpha-numeric characters
-    for name in ["invalid-", "invalid_", "", "x", "xx", "invalid@", "invalid!"]:
+    for name in ["-invalid", "_invalid", "invalid-", "invalid_", "", "x", "xx", "invalid@", "invalid!"]:
         with pytest.raises(ValueError):
             BaseArtifactModel(name=name)
         with pytest.raises(ValueError):

@@ -42,7 +42,8 @@ SlugCompatibleStringType: TypeAlias = constr(pattern="^[A-Za-z0-9_-]+$", min_len
 """
 A URL-compatible string that can serve as slug on the hub.
 
-Can only use alpha-numeric characters, underscores and dashes and cannot end with a dash or underscore.
+Can only use alpha-numeric characters, underscores and dashes. 
+Cannot end or start with a dash or underscore.
 The string must be at least 3 characters long.
 """
 
@@ -65,7 +66,7 @@ class HubOwner(BaseModel):
         """
         if v is None:
             return v
-        if v.endswith("-") or v.endswith("_"):
+        if v.endswith("-") or v.endswith("_") or v.startswith("-") or v.startswith("_"):
             raise ValueError("String cannot end with a dash or underscore.")
         return v
 

@@ -39,6 +39,6 @@ class BaseArtifactModel(BaseModel):
         """
         if v is None:
             return v
-        if v.endswith("-") or v.endswith("_"):
+        if v.endswith("-") or v.endswith("_") or v.startswith("-") or v.startswith("_"):
             raise ValueError("Name cannot end with a dash or underscore.")
         return v
