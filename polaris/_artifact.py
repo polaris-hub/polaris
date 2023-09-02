@@ -10,7 +10,7 @@ class BaseArtifactModel(BaseModel):
     Base class for all artifacts on the Hub. Specifies meta-data that is used by the Hub.
 
     Info: Optional
-        Despite all artifact basing this class, note that all attributes are optional.
+        Despite all artifacts basing this class, note that all attributes are optional.
         This ensures the library can be used without the Polaris Hub.
         Only when uploading to the Hub, some of the attributes are required.
 

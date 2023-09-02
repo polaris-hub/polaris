@@ -35,18 +35,11 @@ class BenchmarkResults(BaseArtifactModel):
             Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.
         benchmark_owner: The owner of the benchmark for which these results were generated.
             Together with the benchmark name, this uniquely identifies the benchmark on the Hub.
-        name: A slug-compatible name for the result.
-            Together with the owner, this is used by the Hub to uniquely identify the result.
-        description: A beginner-friendly, short description of the result.
-        tags: A list of tags to categorize the result by. This is used by the hub to search over results.
-        user_attributes: A dict with additional, textual user attributes.
-        owner: A slug-compatible name for the owner of the result.
-            If the result comes from the Polaris Hub, this is the associated owner (organization or user).
-            Together with the name, this is used by the Hub to uniquely identify the result.
         github_url: The URL to the GitHub repository of the code used to generate these results.
         paper_url: The URL to the paper describing the methodology used to generate these results.
         _user_name: The user associated with the results. Automatically set.
         _created_at: The time-stamp at which the results were created. Automatically set.
+    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
     """
 
     # Data

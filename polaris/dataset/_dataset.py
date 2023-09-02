@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import zarr
 from loguru import logger
-from pydantic import ConfigDict, Field, field_validator, model_validator
+from pydantic import ConfigDict, Field, HttpUrl, field_validator, model_validator
 
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._column import ColumnAnnotation
@@ -44,17 +44,10 @@ class Dataset(BaseArtifactModel):
             path to a `.parquet` file or a `pandas.DataFrame`.
         md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
             raise an error if the specified checksum doesn't match the computed checksum.
-        name: A slug-compatible name for the dataset.
-            Together with the owner, this is used by the Hub to uniquely identify the dataset.
-        description: A beginner-friendly, short description of the dataset.
         annotations: Each column _can be_ annotated with a [`ColumnAnnotation`][polaris.dataset.ColumnAnnotation] object.
             Importantly, this is used to annotate whether a column is a pointer column.
         source: The data source, e.g. a DOI, Github repo or URI.
-        tags: A list of tags to categorize the dataset by.
-        user_attributes: A dict with additional, textual user attributes.
-        owner: A slug-compatible name for the owner of the dataset.
-            If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
-            Together with the name, this is used by the Hub to uniquely identify the dataset.
+    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
@@ -68,7 +61,7 @@ class Dataset(BaseArtifactModel):
 
     # Additional meta-data
     annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
-    source: Optional[str] = None
+    source: Optional[HttpUrl] = None
 
     # Config
     cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.

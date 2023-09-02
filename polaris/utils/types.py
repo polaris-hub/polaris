@@ -1,7 +1,7 @@
 from typing import Any, Literal, Optional, Union
 
 import numpy as np
-from pydantic import BaseModel, computed_field, constr, model_validator
+from pydantic import BaseModel, computed_field, constr, field_validator, model_validator
 from typing_extensions import TypeAlias
 
 SplitIndicesType: TypeAlias = list[int]
@@ -40,7 +40,7 @@ The target formats that are supported by the `Subset` class.
 
 SlugCompatibleStringType: TypeAlias = constr(pattern="^[A-Za-z0-9_-]+$", min_length=3)
 """
-A URL-compatible string to can serve as slug on the hub.
+A URL-compatible string that can serve as slug on the hub.
 
 Can only use alpha-numeric characters, underscores and dashes and cannot end with a dash or underscore.
 The string must be at least 3 characters long.
@@ -48,10 +48,26 @@ The string must be at least 3 characters long.
 
 
 class HubOwner(BaseModel):
-    """An owner of an artifact on the Polaris Hub"""
+    """An owner of an artifact on the Polaris Hub
+
+    Either specifies an organization or a user, but not both.
+    Specified as a [`SlugCompatibleStringType`][polaris.utils.types.SlugCompatibleStringType].
+    """
 
     organizationId: Optional[SlugCompatibleStringType] = None
     userId: Optional[SlugCompatibleStringType] = None
+
+    @field_validator("organizationId", "userId")
+    def _validate_name(cls, v):
+        """
+        Since look-around does not work with Pydantic's constr regex,
+        this verifies that the string does not end with a dash or underscore.
+        """
+        if v is None:
+            return v
+        if v.endswith("-") or v.endswith("_"):
+            raise ValueError("String cannot end with a dash or underscore.")
+        return v
 
     @model_validator(mode="after")  # type: ignore
     @classmethod
