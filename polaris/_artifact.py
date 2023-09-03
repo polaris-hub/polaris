@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 from polaris.utils.types import HubOwner, SlugCompatibleStringType
 
@@ -30,15 +30,3 @@ class BaseArtifactModel(BaseModel):
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
-
-    @field_validator("name")
-    def _validate_name(cls, v):
-        """
-        Since look-around does not work with Pydantic's constr regex,
-        this verifies that the name does not end with a dash or underscore.
-        """
-        if v is None:
-            return v
-        if v.endswith("-") or v.endswith("_") or v.startswith("-") or v.startswith("_"):
-            raise ValueError("Name cannot end with a dash or underscore.")
-        return v

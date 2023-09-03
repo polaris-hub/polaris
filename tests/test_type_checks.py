@@ -8,17 +8,17 @@ def test_slug_compatible_string_type():
     """Verifies that the artifact name is validated correctly."""
 
     # Fails if:
-    # - Starts with or ends in a dash or underscore
-    # - Is too short (<3 characters)
+    # - Is too short (<4 characters)
+    # - Is too long (>64 characters)
     # - Contains non alpha-numeric characters
-    for name in ["-invalid", "_invalid", "invalid-", "invalid_", "", "x", "xx", "invalid@", "invalid!"]:
+    for name in ["", "x", "xx", "xxx", "x" * 65, "invalid@", "invalid!"]:
         with pytest.raises(ValueError):
             BaseArtifactModel(name=name)
         with pytest.raises(ValueError):
             HubOwner(userId=name)
 
     # Does not fail
-    for name in ["valid", "valid-name", "valid_name", "ValidName1"]:
+    for name in ["valid", "valid-name", "valid_name", "ValidName1", "Valid_", "Valid-", "x" * 64, "x" * 4]:
         BaseArtifactModel(name=name)
         HubOwner(userId=name)
 

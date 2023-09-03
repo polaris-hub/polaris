@@ -1,7 +1,7 @@
 from typing import Any, Literal, Optional, Union
 
 import numpy as np
-from pydantic import BaseModel, computed_field, constr, field_validator, model_validator
+from pydantic import BaseModel, computed_field, constr, model_validator
 from typing_extensions import TypeAlias
 
 SplitIndicesType: TypeAlias = list[int]
@@ -38,13 +38,12 @@ DataFormat: TypeAlias = Literal["dict", "tuple"]
 The target formats that are supported by the `Subset` class. 
 """
 
-SlugCompatibleStringType: TypeAlias = constr(pattern="^[A-Za-z0-9_-]+$", min_length=3)
+SlugCompatibleStringType: TypeAlias = constr(pattern="^[A-Za-z0-9_-]+$", min_length=4, max_length=64)
 """
 A URL-compatible string that can serve as slug on the hub.
 
 Can only use alpha-numeric characters, underscores and dashes. 
-Cannot end or start with a dash or underscore.
-The string must be at least 3 characters long.
+The string must be at least 4 and at most 64 characters long.
 """
 
 
@@ -52,23 +51,13 @@ class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
 
     Either specifies an organization or a user, but not both.
-    Specified as a [`SlugCompatibleStringType`][polaris.utils.types.SlugCompatibleStringType].
+    The username is specified as a [`SlugCompatibleStringType`][polaris.utils.types.SlugCompatibleStringType],
+    whereas the organization is specified as a string that can contain only alpha-numeric characters,
+    underscores and dashes. Contrary to the username, an organization name can currently be of arbitrary length.
     """
 
-    organizationId: Optional[SlugCompatibleStringType] = None
+    organizationId: Optional[constr(pattern="^[A-Za-z0-9_-]+$")] = None
     userId: Optional[SlugCompatibleStringType] = None
-
-    @field_validator("organizationId", "userId")
-    def _validate_name(cls, v):
-        """
-        Since look-around does not work with Pydantic's constr regex,
-        this verifies that the string does not end with a dash or underscore.
-        """
-        if v is None:
-            return v
-        if v.endswith("-") or v.endswith("_") or v.startswith("-") or v.startswith("_"):
-            raise ValueError("String cannot end with a dash or underscore.")
-        return v
 
     @model_validator(mode="after")  # type: ignore
     @classmethod
