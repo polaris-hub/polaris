@@ -19,6 +19,7 @@ from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 from polaris.utils.io import get_zarr_root, robust_copy
 from polaris.utils.misc import to_lower_camel
+from polaris.utils.types import License
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -62,6 +63,7 @@ class Dataset(BaseArtifactModel):
     # Additional meta-data
     annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
     source: Optional[HttpUrl] = None
+    license: Optional[License] = None
 
     # Config
     cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.

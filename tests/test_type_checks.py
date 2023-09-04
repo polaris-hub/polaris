@@ -1,7 +1,7 @@
 import pytest
 
 from polaris._artifact import BaseArtifactModel
-from polaris.utils.types import HubOwner
+from polaris.utils.types import HubOwner, License
 
 
 def test_slug_compatible_string_type():
@@ -34,3 +34,18 @@ def test_artifact_owner():
     # Valid - Only specifies one!
     assert HubOwner(organizationId="org").owner == "org"
     assert HubOwner(userId="user").owner == "user"
+
+
+def test_license():
+    for license in ["0BSD", "CC-BY-NC-4.0", "MIT"]:
+        # If a valid SPDX license, the reference is automatically set
+        assert License(id=license).reference is not None
+
+    # If not a valid SPDX license, you must specify a valid reference
+    with pytest.raises(ValueError):
+        License(id="invalid")
+    with pytest.raises(ValueError):
+        License(id="invalid", reference="invalid")
+
+    # If you specify a URL, we trust the user that this is a valid license
+    License(id="invalid", reference="https://example.com")
