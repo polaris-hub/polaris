@@ -50,6 +50,13 @@ The string must be at least 4 and at most 64 characters long.
 """
 
 
+HubUser: TypeAlias = SlugCompatibleStringType
+"""
+A user on the Polaris Hub is identified by a username, 
+which is a [`SlugCompatibleStringType`][polaris.utils.types.SlugCompatibleStringType].
+"""
+
+
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
 
@@ -60,7 +67,7 @@ class HubOwner(BaseModel):
     """
 
     organizationId: Optional[constr(pattern="^[A-Za-z0-9_-]+$")] = None
-    userId: Optional[SlugCompatibleStringType] = None
+    userId: Optional[HubUser] = None
 
     @model_validator(mode="after")  # type: ignore
     @classmethod

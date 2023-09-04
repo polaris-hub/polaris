@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 from pydantic import ConfigDict, Field, HttpUrl, PrivateAttr
 
 from polaris._artifact import BaseArtifactModel
 from polaris.evaluate._metric import Metric
 from polaris.utils.misc import to_lower_camel
-from polaris.utils.types import HubOwner
+from polaris.utils.types import HubOwner, HubUser
 
 # Define some helpful type aliases
 TestLabelType = str
@@ -37,7 +37,7 @@ class BenchmarkResults(BaseArtifactModel):
             Together with the benchmark name, this uniquely identifies the benchmark on the Hub.
         github_url: The URL to the GitHub repository of the code used to generate these results.
         paper_url: The URL to the paper describing the methodology used to generate these results.
-        _user_name: The user associated with the results. Automatically set.
+        contributors: The users that are credited for these results.
         _created_at: The time-stamp at which the results were created. Automatically set.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
     """
@@ -50,18 +50,9 @@ class BenchmarkResults(BaseArtifactModel):
     # Additional meta-data
     github_url: Optional[HttpUrl] = None
     paper_url: Optional[HttpUrl] = None
+    contributors: Optional[list[HubUser]] = None
 
     # Private attributes
-    _user_name: Optional[str] = PrivateAttr(default=None)
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
 
     model_config = ConfigDict(alias_generator=to_lower_camel, populate_by_name=True)
-
-    def __init__(self, **data: Any):
-        super().__init__(**data)
-
-        if self.name is None:
-            if self._user_name is None:
-                self.name = str(self._created_at)
-            else:
-                self.name = f"{self._user_name}_{str(self._created_at)}"
