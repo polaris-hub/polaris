@@ -271,17 +271,6 @@ class Dataset(BaseArtifactModel):
         table = pd.DataFrame(data)
         return cls(table=table, **attrs)
 
-    @classmethod
-    def from_json(cls, path: str) -> "Dataset":
-        """Loads a dataset from a JSON file.
-
-        Args:
-            path: The path to the JSON file.
-        """
-        with fsspec.open(path, "r") as fd:
-            data = json.load(fd)
-        return Dataset.model_validate(data)
-
     def to_zarr(
         self,
         destination: str,
