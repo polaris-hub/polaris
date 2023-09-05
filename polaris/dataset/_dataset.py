@@ -9,7 +9,14 @@ import numpy as np
 import pandas as pd
 import zarr
 from loguru import logger
-from pydantic import ConfigDict, Field, HttpUrl, field_validator, model_validator
+from pydantic import (
+    ConfigDict,
+    Field,
+    HttpUrl,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._column import ColumnAnnotation
@@ -123,6 +130,13 @@ class Dataset(BaseArtifactModel):
         fs.mkdir(m.cache_dir, exist_ok=True)
 
         return m
+
+    @field_serializer("source")
+    def _serialize_source(self, value: HttpUrl):
+        """Serialize the url to a string"""
+        if value is not None:
+            value = str(value)
+        return value
 
     @staticmethod
     def _compute_checksum(table):

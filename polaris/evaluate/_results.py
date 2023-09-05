@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, Union
 
-from pydantic import ConfigDict, Field, HttpUrl, PrivateAttr
+from pydantic import ConfigDict, Field, HttpUrl, PrivateAttr, field_serializer
 
 from polaris._artifact import BaseArtifactModel
 from polaris.evaluate._metric import Metric
@@ -11,7 +11,7 @@ from polaris.utils.types import HubOwner, HubUser
 # Define some helpful type aliases
 TestLabelType = str
 TargetLabelType = str
-MetricScoresType = dict[Metric, float]
+MetricScoresType = dict[Union[str, Metric], float]
 ResultsType = Union[
     MetricScoresType, dict[TestLabelType, Union[MetricScoresType, dict[TargetLabelType, MetricScoresType]]]
 ]
@@ -56,3 +56,21 @@ class BenchmarkResults(BaseArtifactModel):
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
 
     model_config = ConfigDict(alias_generator=to_lower_camel, populate_by_name=True)
+
+    @field_serializer("results")
+    def serialize_results(self, value: ResultsType):
+        """Change from the Metric enum to a string representation"""
+
+        def _recursive_enum_to_str(d: dict):
+            """Utility function to easily traverse the nested dictionary"""
+            if not isinstance(d, dict):
+                return d
+            return {k.name if isinstance(k, Metric) else k: _recursive_enum_to_str(v) for k, v in d.items()}
+
+        return _recursive_enum_to_str(value)
+
+    @field_serializer("github_url", "paper_url")
+    def serialize_urls(self, value: HttpUrl):
+        if value is not None:
+            value = str(value)
+        return value

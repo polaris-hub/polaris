@@ -4,7 +4,7 @@ from typing import Any, ClassVar, Literal, Optional, Union
 import fsspec
 import numpy as np
 from loguru import logger
-from pydantic import BaseModel, HttpUrl, computed_field, constr, model_validator
+from pydantic import BaseModel, HttpUrl, computed_field, constr, field_serializer, model_validator
 from typing_extensions import TypeAlias
 
 SplitIndicesType: TypeAlias = list[int]
@@ -105,6 +105,12 @@ class License(BaseModel):
 
     id: str
     reference: Optional[HttpUrl] = None
+
+    @field_serializer("reference")
+    def serialize_reference(self, value: HttpUrl):
+        if value is not None:
+            value = str(value)
+        return value
 
     @model_validator(mode="after")  # type: ignore
     @classmethod

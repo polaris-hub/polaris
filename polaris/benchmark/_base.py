@@ -352,17 +352,6 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)
 
-    @classmethod
-    def from_json(cls, path: str):
-        """Loads a benchmark from a JSON file.
-
-        Args:
-            path: Loads a benchmark specification from a JSON file.
-        """
-        with fsspec.open(path, "r") as f:
-            data = json.load(f)
-        return cls.model_validate(data)
-
     def to_json(self, destination: str) -> str:
         """Save the benchmark to a destination directory as a JSON file.
 

@@ -1,5 +1,7 @@
+import json
 from typing import Dict, Optional
 
+import fsspec
 from pydantic import BaseModel, Field
 
 from polaris.utils.types import HubOwner, SlugCompatibleStringType
@@ -30,3 +32,23 @@ class BaseArtifactModel(BaseModel):
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
+
+    @classmethod
+    def from_json(cls, path: str):
+        """Loads a benchmark from a JSON file.
+
+        Args:
+            path: Loads a benchmark specification from a JSON file.
+        """
+        with fsspec.open(path, "r") as f:
+            data = json.load(f)
+        return cls.model_validate(data)
+
+    def to_json(self, path: str):
+        """Saves the benchmark to a JSON file.
+
+        Args:
+            path: Saves the benchmark specification to a JSON file.
+        """
+        with fsspec.open(path, "w") as f:
+            json.dump(self.model_dump(), f)

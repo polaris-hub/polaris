@@ -3,6 +3,8 @@ from typing import Optional, Union
 from pydantic import FieldValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from polaris.utils import fs
+
 
 class PolarisHubSettings(BaseSettings):
     """Settings for the OAuth2 Polaris Hub API Client.
@@ -42,5 +44,5 @@ class PolarisHubSettings(BaseSettings):
     @field_validator("api_url")
     def validate_api_url(cls, v, info: FieldValidationInfo):
         if v is None:
-            v = info.data["hub_url"] + "api/v1/"
+            v = fs.join(info.data["hub_url"], "api", "v1")
         return v

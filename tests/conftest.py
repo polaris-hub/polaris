@@ -7,8 +7,9 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.dataset import Dataset
+from polaris.dataset import ColumnAnnotation, Dataset
 from polaris.utils import fs
+from polaris.utils.types import HubOwner, License
 
 
 def _get_zarr_archive(tmp_path, datapoint_per_array: bool):
@@ -36,7 +37,16 @@ def test_data():
 
 @pytest.fixture(scope="module")
 def test_dataset(test_data):
-    return Dataset(table=test_data)
+    return Dataset(
+        table=test_data,
+        name="test-dataset",
+        source="https://www.example.com",
+        annotations={"expt": ColumnAnnotation(is_pointer=False, user_attributes={"unit": "kcal/mol"})},
+        tags=["tagA", "tagB"],
+        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        owner=HubOwner(organizationId="test-organization"),
+        license=License(id="MIT"),
+    )
 
 
 @pytest.fixture(scope="function")
