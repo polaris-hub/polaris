@@ -230,10 +230,16 @@ class Dataset(BaseArtifactModel):
             path: The path to the root of the `.zarr` directory. Should be compatible with fsspec.
         """
 
+        logger.warning(
+            "We are still testing to save and load from .zarr files. " "This part of the API might change."
+        )
+
         root = zarr.open(path, "r")
 
         # Get the user attributes
         attrs = root.attrs.asdict()
+
+        # TODO (cwognum): This is outdated and needs to be updated.
         possible_user_attr = ["name", "description", "source", "annotations"]
         attrs = {k: v for k, v in attrs.items() if k in possible_user_attr}
 
@@ -292,6 +298,10 @@ class Dataset(BaseArtifactModel):
             The path to the root zarr file.
         """
 
+        logger.warning(
+            "We are still testing to save and load from .zarr files. " "This part of the API might change."
+        )
+
         if array_mode not in ["single", "multiple"]:
             raise ValueError(f"array_mode should be one of 'single' or 'multiple', not {array_mode}")
 
@@ -322,6 +332,7 @@ class Dataset(BaseArtifactModel):
                     group.array(row, self.get_data(row=row, col=col))
 
         # Save the meta-data
+        # TODO (cwognum): This is outdated and needs to be updated.
         root.user_attrs = {
             "name": self.name,
             "description": self.description,
