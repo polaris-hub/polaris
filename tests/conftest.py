@@ -67,6 +67,7 @@ def test_single_task_benchmark(test_dataset):
         name="single-task-benchmark",
         dataset=test_dataset,
         metrics=["mean_absolute_error", "mean_squared_error"],
+        main_metric="mean_absolute_error",
         split=(train_indices, test_indices),
         target_cols="expt",
         input_cols="smiles",
