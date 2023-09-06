@@ -2,7 +2,7 @@ import json
 from typing import Dict, Optional
 
 import fsspec
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 from polaris.utils.types import HubOwner, SlugCompatibleStringType
 
@@ -25,6 +25,7 @@ class BaseArtifactModel(BaseModel):
         owner: A slug-compatible name for the owner of the dataset.
             If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
             Together with the name, this is used by the Hub to uniquely identify the benchmark.
+        _verified: Whether the benchmark has been verified through the Polaris Hub.
     """
 
     name: Optional[SlugCompatibleStringType] = None
@@ -32,6 +33,7 @@ class BaseArtifactModel(BaseModel):
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
+    _verified: bool = PrivateAttr(False)
 
     @classmethod
     def from_json(cls, path: str):
