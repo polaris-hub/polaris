@@ -330,6 +330,20 @@ class Dataset(BaseArtifactModel):
         }
         return path
 
+    @classmethod
+    def from_json(cls, path: str):
+        """Loads a benchmark from a JSON file.
+        Overrides the method from the base class to remove the caching dir from the file to load from,
+        as that should be user dependent.
+
+        Args:
+            path: Loads a benchmark specification from a JSON file.
+        """
+        with fsspec.open(path, "r") as f:
+            data = json.load(f)
+        data.pop("cache_dir", None)
+        return cls.model_validate(data)
+
     def to_json(self, destination: str) -> str:
         """
         Save the dataset to a destination directory as a JSON file.
@@ -357,7 +371,7 @@ class Dataset(BaseArtifactModel):
         # Save additional data
         new_table = self._copy_and_update_pointers(pointer_dir, inplace=False)
 
-        serialized = self.model_dump()
+        serialized = self.model_dump(exclude={"cache_dir"})
         serialized["table"] = table_path
 
         # We need to recompute the checksum, as the pointer paths have changed
