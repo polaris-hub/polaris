@@ -226,12 +226,16 @@ class Dataset(BaseArtifactModel):
             To learn more about the zarr format, see the
             [tutorial](../tutorials/dataset_zarr.ipynb).
 
+        Warning: Beta functionality
+            This feature is still in beta and the API will likely change. Please report any issues you encounter.
+
         Args:
             path: The path to the root of the `.zarr` directory. Should be compatible with fsspec.
         """
 
         logger.warning(
-            "We are still testing to save and load from .zarr files. " "This part of the API might change."
+            "We are still testing to save and load from .zarr files. "
+            "This part of the API will likely change."
         )
 
         root = zarr.open(path, "r")
@@ -289,6 +293,9 @@ class Dataset(BaseArtifactModel):
             To learn more about the zarr format, see the
             [tutorial](../tutorials/dataset_zarr.ipynb).
 
+        Warning: Beta functionality
+            This feature is still in beta and the API will likely change. Please report any issues you encounter.
+
         Args:
             destination: The _directory_ to save the associated data to.
             array_mode: For each of the columns, whether to save all datapoints in a single array
@@ -299,7 +306,8 @@ class Dataset(BaseArtifactModel):
         """
 
         logger.warning(
-            "We are still testing to save and load from .zarr files. " "This part of the API might change."
+            "We are still testing to save and load from .zarr files. "
+            "This part of the API will likely change."
         )
 
         if array_mode not in ["single", "multiple"]:
