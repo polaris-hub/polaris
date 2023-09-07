@@ -100,13 +100,13 @@ class PolarisHubClient(OAuth2Client):
         super().__init__(
             # OAuth2Client
             client_id=settings.client_id,
-            redirect_uri=settings.callback_url,
+            redirect_uri=str(settings.callback_url),
             scope=settings.scopes,
             token=token,
-            token_endpoint=self.settings.token_fetch_url,
+            token_endpoint=str(self.settings.token_fetch_url),
             code_challenge_method="S256",
             # httpx.Client
-            base_url=settings.api_url,
+            base_url=str(settings.api_url),
             verify=verify,
             # Extra
             **kwargs,
@@ -152,13 +152,13 @@ class PolarisHubClient(OAuth2Client):
     def create_authorization_url(self, **kwargs) -> tuple[str, Optional[str]]:
         """Light wrapper to automatically pass in the right URL."""
         return super().create_authorization_url(
-            url=self.settings.authorize_url, code_verifier=self.code_verifier, **kwargs
+            url=str(self.settings.authorize_url), code_verifier=self.code_verifier, **kwargs
         )
 
     def fetch_token(self, **kwargs):
         """Light wrapper to automatically pass in the right URL"""
         return super().fetch_token(
-            url=self.settings.token_fetch_url, code_verifier=self.code_verifier, **kwargs
+            url=str(self.settings.token_fetch_url), code_verifier=self.code_verifier, **kwargs
         )
 
     def request(self, method, url, withhold_token=False, auth=httpx.USE_CLIENT_DEFAULT, **kwargs):
@@ -202,7 +202,7 @@ class PolarisHubClient(OAuth2Client):
 
         if self._user_info is None:
             user_info = self.get(
-                self.settings.user_info_url,
+                str(self.settings.user_info_url),
                 auth=None,  # type: ignore
                 headers={"authorization": f"Bearer {self.token['access_token']}"},
             )
@@ -263,7 +263,9 @@ class PolarisHubClient(OAuth2Client):
             A list of dataset names in the format `owner/dataset_name`.
         """
         response = self._base_request_to_hub(
-            url="/dataset", method="GET", json={"limit": limit, "offset": offset}
+            url="/dataset",
+            method="GET",
+            params={"limit": limit, "offset": offset}
         )
         dataset_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
         return dataset_list
@@ -307,7 +309,9 @@ class PolarisHubClient(OAuth2Client):
 
         # TODO (cwognum): What to do with pagination, i.e. limit and offset?
         response = self._base_request_to_hub(
-            url="/benchmark", method="GET", json={"limit": limit, "offset": offset}
+            url="/benchmark",
+            method="GET",
+            params={"limit": limit, "offset": offset}
         )
         benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
         return benchmarks_list
@@ -326,9 +330,8 @@ class PolarisHubClient(OAuth2Client):
         response = self._base_request_to_hub(url=f"/benchmark/{owner}/{name}", method="GET")
 
         # TODO (cwognum): Currently, the benchmark endpoints do not return the owner info for the underlying dataset.
-        #  In the current version of the API, the owner is not actually used, but this will break soon.
-        dataset_owner = "user_2R9qBGSZp0gANykfsNIjpx2WJib"
-        response["dataset"] = self.get_dataset(dataset_owner, response["dataset"]["name"])
+        # TODO (jstlaurent): Use the same owner for now, until the benchmark returns a better dataset entity
+        response["dataset"] = self.get_dataset(owner, response["dataset"]["name"])
 
         # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
         #  Maybe through structural pattern matching, introduced in Py3.10, or Pydantic's discriminated unions?
