@@ -23,9 +23,7 @@ def _log_response(response: Response) -> str:
 
     output.append("")
 
-    output.append(
-        f"{res_prefix} {response.status_code} {response.reason_phrase}"
-    )
+    output.append(f"{res_prefix} {response.status_code} {response.reason_phrase}")
 
     for name, value in response.headers.items():
         output.append(f"{res_prefix}{name}: {value}")

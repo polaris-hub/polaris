@@ -263,9 +263,7 @@ class PolarisHubClient(OAuth2Client):
             A list of dataset names in the format `owner/dataset_name`.
         """
         response = self._base_request_to_hub(
-            url="/dataset",
-            method="GET",
-            params={"limit": limit, "offset": offset}
+            url="/dataset", method="GET", params={"limit": limit, "offset": offset}
         )
         dataset_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
         return dataset_list
@@ -309,9 +307,7 @@ class PolarisHubClient(OAuth2Client):
 
         # TODO (cwognum): What to do with pagination, i.e. limit and offset?
         response = self._base_request_to_hub(
-            url="/benchmark",
-            method="GET",
-            params={"limit": limit, "offset": offset}
+            url="/benchmark", method="GET", params={"limit": limit, "offset": offset}
         )
         benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
         return benchmarks_list
