@@ -1,10 +1,18 @@
 import json
-from typing import Any, ClassVar, Literal, Optional, Union
+from typing import Annotated, Any, ClassVar, Literal, Optional, Union
 
 import fsspec
 import numpy as np
 from loguru import logger
-from pydantic import BaseModel, HttpUrl, computed_field, constr, field_serializer, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    HttpUrl,
+    computed_field,
+    constr,
+    field_serializer,
+    model_validator,
+)
 from typing_extensions import TypeAlias
 
 SplitIndicesType: TypeAlias = list[int]
@@ -56,6 +64,12 @@ A user on the Polaris Hub is identified by a username,
 which is a [`SlugCompatibleStringType`][polaris.utils.types.SlugCompatibleStringType].
 """
 
+HttpUrlString: TypeAlias = Annotated[HttpUrl, AfterValidator(str)]
+"""
+A validated URL that will be turned into a string.
+This is useful for interactions with httpx and authlib, who have their own URL types.
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
@@ -68,6 +82,7 @@ class HubOwner(BaseModel):
 
     organizationId: Optional[constr(pattern="^[A-Za-z0-9_-]+$")] = None
     userId: Optional[HubUser] = None
+    slug: constr(pattern="^[A-Za-z0-9_-]+$")
 
     @model_validator(mode="after")  # type: ignore
     @classmethod
@@ -84,7 +99,7 @@ class HubOwner(BaseModel):
         return self.organizationId or self.userId  # type: ignore
 
     def __str__(self) -> str:
-        return self.owner
+        return self.slug
 
     def __repr__(self) -> str:
         return self.__str__()

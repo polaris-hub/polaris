@@ -36,7 +36,17 @@ def test_data():
 
 
 @pytest.fixture(scope="module")
-def test_dataset(test_data):
+def test_org_owner():
+    return HubOwner(organizationId="test-organization", slug="test-organization")
+
+
+@pytest.fixture(scope="module")
+def test_user_owner():
+    return HubOwner(userId="test-user", slug="test-user")
+
+
+@pytest.fixture(scope="module")
+def test_dataset(test_data, test_org_owner):
     return Dataset(
         table=test_data,
         name="test-dataset",
@@ -44,7 +54,7 @@ def test_dataset(test_data):
         annotations={"expt": ColumnAnnotation(is_pointer=False, user_attributes={"unit": "kcal/mol"})},
         tags=["tagA", "tagB"],
         user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
-        owner=HubOwner(organizationId="test-organization"),
+        owner=test_org_owner,
         license=License(id="MIT"),
     )
 
