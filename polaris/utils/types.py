@@ -1,10 +1,18 @@
 import json
-from typing import Any, ClassVar, Literal, Optional, Union
+from typing import Annotated, Any, ClassVar, Literal, Optional, Union
 
 import fsspec
 import numpy as np
 from loguru import logger
-from pydantic import BaseModel, HttpUrl, computed_field, constr, field_serializer, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    HttpUrl,
+    computed_field,
+    constr,
+    field_serializer,
+    model_validator,
+)
 from typing_extensions import TypeAlias
 
 SplitIndicesType: TypeAlias = list[int]
@@ -54,6 +62,12 @@ HubUser: TypeAlias = SlugCompatibleStringType
 """
 A user on the Polaris Hub is identified by a username, 
 which is a [`SlugCompatibleStringType`][polaris.utils.types.SlugCompatibleStringType].
+"""
+
+HttpUrlString: TypeAlias = Annotated[HttpUrl, AfterValidator(str)]
+"""
+A validated URL that will be turned into a string.
+This is useful for interactions with httpx and authlib, who have their own URL types.
 """
 
 

@@ -1,8 +1,10 @@
 from typing import Optional
 from urllib.parse import urljoin
 
-from pydantic import FieldValidationInfo, HttpUrl, field_validator
+from pydantic import FieldValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from polaris.utils.types import HttpUrlString
 
 
 class PolarisHubSettings(BaseSettings):
@@ -26,12 +28,12 @@ class PolarisHubSettings(BaseSettings):
             Allows for custom SSL certificates to be used.
     """
 
-    hub_url: HttpUrl = "https://polaris-hub.vercel.app/"
-    api_url: Optional[HttpUrl] = None
-    authorize_url: HttpUrl = "https://pure-whippet-77.clerk.accounts.dev/oauth/authorize"
-    callback_url: HttpUrl = "https://polaris-hub.vercel.app/oauth2/callback"
-    token_fetch_url: HttpUrl = "https://pure-whippet-77.clerk.accounts.dev/oauth/token"
-    user_info_url: HttpUrl = "https://pure-whippet-77.clerk.accounts.dev/oauth/userinfo"
+    hub_url: HttpUrlString = "https://polaris-hub.vercel.app/"
+    api_url: Optional[HttpUrlString] = None
+    authorize_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/authorize"
+    callback_url: HttpUrlString = "https://polaris-hub.vercel.app/oauth2/callback"
+    token_fetch_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/token"
+    user_info_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/userinfo"
     scopes: str = "profile email"
     client_id: str = "QJg8zadGwjnr6nbN"
     requests_ca_bundle: Optional[str] = None

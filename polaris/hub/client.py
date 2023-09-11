@@ -100,13 +100,13 @@ class PolarisHubClient(OAuth2Client):
         super().__init__(
             # OAuth2Client
             client_id=settings.client_id,
-            redirect_uri=str(settings.callback_url),
+            redirect_uri=settings.callback_url,
             scope=settings.scopes,
             token=token,
-            token_endpoint=str(self.settings.token_fetch_url),
+            token_endpoint=self.settings.token_fetch_url,
             code_challenge_method="S256",
             # httpx.Client
-            base_url=str(settings.api_url),
+            base_url=settings.api_url,
             verify=verify,
             # Extra
             **kwargs,
@@ -152,13 +152,13 @@ class PolarisHubClient(OAuth2Client):
     def create_authorization_url(self, **kwargs) -> tuple[str, Optional[str]]:
         """Light wrapper to automatically pass in the right URL."""
         return super().create_authorization_url(
-            url=str(self.settings.authorize_url), code_verifier=self.code_verifier, **kwargs
+            url=self.settings.authorize_url, code_verifier=self.code_verifier, **kwargs
         )
 
     def fetch_token(self, **kwargs):
         """Light wrapper to automatically pass in the right URL"""
         return super().fetch_token(
-            url=str(self.settings.token_fetch_url), code_verifier=self.code_verifier, **kwargs
+            url=self.settings.token_fetch_url, code_verifier=self.code_verifier, **kwargs
         )
 
     def request(self, method, url, withhold_token=False, auth=httpx.USE_CLIENT_DEFAULT, **kwargs):
@@ -202,7 +202,7 @@ class PolarisHubClient(OAuth2Client):
 
         if self._user_info is None:
             user_info = self.get(
-                str(self.settings.user_info_url),
+                self.settings.user_info_url,
                 auth=None,  # type: ignore
                 headers={"authorization": f"Bearer {self.token['access_token']}"},
             )
