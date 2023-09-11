@@ -15,12 +15,12 @@ def test_slug_compatible_string_type():
         with pytest.raises(ValueError):
             BaseArtifactModel(name=name)
         with pytest.raises(ValueError):
-            HubOwner(userId=name)
+            HubOwner(userId=name, slug=name)
 
     # Does not fail
     for name in ["valid", "valid-name", "valid_name", "ValidName1", "Valid_", "Valid-", "x" * 64, "x" * 4]:
         BaseArtifactModel(name=name)
-        HubOwner(userId=name)
+        HubOwner(userId=name, slug=name)
 
 
 def test_artifact_owner():
@@ -29,11 +29,11 @@ def test_artifact_owner():
         HubOwner()
     with pytest.raises(ValueError):
         # Conflicting owner specified
-        HubOwner(organizationId="org", userId="user")
+        HubOwner(organizationId="org", userId="user", slug="test")
 
     # Valid - Only specifies one!
-    assert HubOwner(organizationId="org").owner == "org"
-    assert HubOwner(userId="user").owner == "user"
+    assert HubOwner(organizationId="org", slug="org").owner == "org"
+    assert HubOwner(userId="user", slug="user").owner == "user"
 
 
 def test_license():
