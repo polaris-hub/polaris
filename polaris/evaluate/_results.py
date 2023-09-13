@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Optional, Union
 
-from pydantic import ConfigDict, Field, HttpUrl, PrivateAttr, field_serializer
+from pydantic import ConfigDict, Field, PrivateAttr, field_serializer
 
 from polaris._artifact import BaseArtifactModel
 from polaris.evaluate._metric import Metric
 from polaris.utils.misc import to_lower_camel
-from polaris.utils.types import HubOwner, HubUser
+from polaris.utils.types import HttpUrlString, HubOwner, HubUser
 
 # Define some helpful type aliases
 TestLabelType = str
@@ -48,8 +48,8 @@ class BenchmarkResults(BaseArtifactModel):
     benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
 
     # Additional meta-data
-    github_url: Optional[HttpUrl] = None
-    paper_url: Optional[HttpUrl] = None
+    github_url: Optional[HttpUrlString] = None
+    paper_url: Optional[HttpUrlString] = None
     contributors: Optional[list[HubUser]] = None
 
     # Private attributes
@@ -68,9 +68,3 @@ class BenchmarkResults(BaseArtifactModel):
             return {k.name if isinstance(k, Metric) else k: _recursive_enum_to_str(v) for k, v in d.items()}
 
         return _recursive_enum_to_str(value)
-
-    @field_serializer("github_url", "paper_url")
-    def serialize_urls(self, value: HttpUrl):
-        if value is not None:
-            value = str(value)
-        return value
