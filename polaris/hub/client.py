@@ -5,6 +5,7 @@ import webbrowser
 from io import BytesIO
 from typing import Callable, Optional, Union
 
+import certifi
 import fsspec
 import httpx
 import pandas as pd
@@ -91,7 +92,7 @@ class PolarisHubClient(OAuth2Client):
             with fsspec.open(self._auth_token_cache_path, "r") as fd:
                 token = json.load(fd)  # type: ignore
 
-        verify = self.settings.requests_ca_bundle
+        verify = self.settings.ca_bundle
         if verify is None:
             verify = True
 
@@ -171,10 +172,11 @@ class PolarisHubClient(OAuth2Client):
             if _HTTPX_SSL_ERROR_CODE in str(error):
                 raise ssl.SSLCertVerificationError(
                     "We could not verify the SSL certificate. "
-                    "Please ensure the latest version of the `certifi` package is installed. "
-                    "If you require the usage of a custom CA bundle, you can set the REQUESTS_CA_BUNDLE "
-                    "environment variable to the path of your CA bundle."
-                )
+                    f"Please ensure the installed version ({certifi.__version__}) of the `certifi` package is the latest. "
+                    "If you require the usage of a custom CA bundle, you can set the POLARIS_CA_BUNDLE "
+                    "environment variable to the path of your CA bundle. For debugging, you can temporarily disable "
+                    "SSL verification by setting the POLARIS_CA_BUNDLE environment variable to `false`."
+                ) from error
             raise error
         except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError) as error:
             if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:

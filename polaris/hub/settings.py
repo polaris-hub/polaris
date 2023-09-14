@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 from urllib.parse import urljoin
 
 from pydantic import FieldValidationInfo, field_validator
@@ -24,7 +24,7 @@ class PolarisHubSettings(BaseSettings):
         user_info_url: The URL of the OAuth2 user info endpoint.
         scopes: The OAuth2 scopes that are requested.
         client_id: The OAuth2 client ID.
-        requests_ca_bundle: The path to a CA bundle file for requests.
+        ca_bundle: The path to a CA bundle file for requests.
             Allows for custom SSL certificates to be used.
     """
 
@@ -36,7 +36,7 @@ class PolarisHubSettings(BaseSettings):
     user_info_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/userinfo"
     scopes: str = "profile email"
     client_id: str = "QJg8zadGwjnr6nbN"
-    requests_ca_bundle: Optional[str] = None
+    ca_bundle: Optional[Union[str, bool]] = None
 
     # Configuration of the pydantic model
     model_config = SettingsConfigDict(env_prefix="POLARIS_")
