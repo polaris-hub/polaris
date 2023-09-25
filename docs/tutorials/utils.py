@@ -2,8 +2,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy import stats
 import datamol as dm
-import warnings 
-warnings.filterwarnings('ignore')
+import warnings
+
+warnings.filterwarnings("ignore")
+
 
 def visulize_distribution(data_cols, dataset):
     for col in data_cols:
@@ -22,6 +24,7 @@ def visulize_distribution(data_cols, dataset):
     plt.close()
     return fig
 
+
 def verify_stereoisomers(data_cols, dataset):
     cliff_cols = [f"CLASS_{col}_stereo_cliff" for col in data_cols]
     for col in data_cols:
@@ -29,9 +32,9 @@ def verify_stereoisomers(data_cols, dataset):
         cliff_col = f"CLASS_{col}_stereo_cliff"
         cliff = dataset[cliff_col].notna()
         if cliff.sum() > 0:
-            to_plot = df_full.loc[cliff, ['smiles',
-     'num_undefined_stereo_center',
-     'num_defined_stereo_center', col, cliff_col]]
+            to_plot = df_full.loc[
+                cliff, ["smiles", "num_undefined_stereo_center", "num_defined_stereo_center", col, cliff_col]
+            ]
             display(to_plot)
             display(dm.to_image([dm.to_mol(s) for s in to_plot.smiles]))
         else:
@@ -39,10 +42,15 @@ def verify_stereoisomers(data_cols, dataset):
 
 
 def check_undefined_stereocenters(data_cols, dataset):
-    to_plot = dataset[dataset[['num_undefined_stereo_center', 'num_defined_stereo_center' ]].notna().any(axis=1)]
-    legends = to_plot[['num_undefined_stereo_center', 'num_defined_stereo_center' ]].apply(lambda x: f"num_undefined_stereo_center:{x['num_undefined_stereo_center']}\n num_defined_stereo_center{x['num_defined_stereo_center']}", axis=1).tolist()
+    to_plot = dataset[
+        dataset[["num_undefined_stereo_center", "num_defined_stereo_center"]].notna().any(axis=1)
+    ]
+    legends = (
+        to_plot[["num_undefined_stereo_center", "num_defined_stereo_center"]]
+        .apply(
+            lambda x: f"num_undefined_stereo_center:{x['num_undefined_stereo_center']}\n num_defined_stereo_center{x['num_defined_stereo_center']}",
+            axis=1,
+        )
+        .tolist()
+    )
     return dm.to_image(to_plot.mol.tolist(), legends=legends)
-
-
-
-    
