@@ -12,8 +12,6 @@ from loguru import logger
 from pydantic import (
     ConfigDict,
     Field,
-    HttpUrl,
-    field_serializer,
     field_validator,
     model_validator,
 )
@@ -26,7 +24,7 @@ from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 from polaris.utils.io import get_zarr_root, robust_copy
 from polaris.utils.misc import to_lower_camel
-from polaris.utils.types import License
+from polaris.utils.types import HttpUrlString, License
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -69,7 +67,7 @@ class Dataset(BaseArtifactModel):
 
     # Additional meta-data
     annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
-    source: Optional[HttpUrl] = None
+    source: Optional[HttpUrlString] = None
     license: Optional[License] = None
 
     # Config
@@ -130,13 +128,6 @@ class Dataset(BaseArtifactModel):
         fs.mkdir(m.cache_dir, exist_ok=True)
 
         return m
-
-    @field_serializer("source")
-    def _serialize_source(self, value: HttpUrl):
-        """Serialize the url to a string"""
-        if value is not None:
-            value = str(value)
-        return value
 
     @staticmethod
     def _compute_checksum(table):

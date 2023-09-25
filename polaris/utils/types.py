@@ -10,7 +10,6 @@ from pydantic import (
     HttpUrl,
     computed_field,
     constr,
-    field_serializer,
     model_validator,
 )
 from typing_extensions import TypeAlias
@@ -119,13 +118,7 @@ class License(BaseModel):
     ] = "https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json"
 
     id: str
-    reference: Optional[HttpUrl] = None
-
-    @field_serializer("reference")
-    def serialize_reference(self, value: HttpUrl):
-        if value is not None:
-            value = str(value)
-        return value
+    reference: Optional[HttpUrlString] = None
 
     @model_validator(mode="after")  # type: ignore
     @classmethod
