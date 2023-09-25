@@ -1,7 +1,8 @@
 # class to perform data curation for both chemistry and endpoint measured values
-from typing import Optional, List
+from typing import List, Optional
 
 from pydantic import BaseModel
+
 from ._chemistry_curator import run_chemistry_curation
 from ._data_curator import run_data_curation
 from .utils import PandasDataFrame

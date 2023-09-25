@@ -14,8 +14,18 @@ class PolarisChecksumError(ValueError):
     pass
 
 
-class PolarisUnauthorizedError(Exception):
+class PolarisHubError(Exception):
     pass
+
+
+class PolarisUnauthorizedError(PolarisHubError):
+    DEFAULT_ERROR_MSG = (
+        "You are not logged in to the Polaris Hub. Please use the Polaris CLI to login. "
+        "Use `polaris --help` for more information."
+    )
+
+    def __init__(self, message: str = DEFAULT_ERROR_MSG):
+        super().__init__(message)
 
 
 class TestAccessError(Exception):

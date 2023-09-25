@@ -25,7 +25,10 @@ nav:
         - Benchmark: api/benchmark.md
         - Subset: api/subset.md
         - Evaluation: api/evaluation.md
+      - Hub: 
+        - Client: api/hub.client.md
       - Additional:
+          - Base classes: api/base.md
           - Types: api/utils.types.md
   - Community: community/community.md
   - Polaris Hub: https://polaris-hub.vercel.app/

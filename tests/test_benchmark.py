@@ -2,7 +2,10 @@ import pytest
 from pydantic import ValidationError
 
 from polaris import load_benchmark
-from polaris.benchmark import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification
+from polaris.benchmark import (
+    MultiTaskBenchmarkSpecification,
+    SingleTaskBenchmarkSpecification,
+)
 from polaris.utils.errors import PolarisChecksumError
 
 
@@ -19,6 +22,7 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
         "target_cols": obj.target_cols,
         "input_cols": obj.input_cols,
         "metrics": obj.metrics,
+        "name": obj.name,
     }
 
     train_split = obj.split[0]
@@ -66,6 +70,7 @@ def test_benchmark_column_verification(test_single_task_benchmark, test_multi_ta
         "dataset": base.dataset,
         "metrics": base.metrics,
         "split": base.split,
+        "name": base.name,
     }
 
     x_cols = base.input_cols
@@ -96,6 +101,7 @@ def test_benchmark_metrics_verification(test_single_task_benchmark, test_multi_t
         "target_cols": base.target_cols,
         "input_cols": base.input_cols,
         "split": base.split,
+        "name": base.name,
     }
 
     # Invalid metric

@@ -1,11 +1,14 @@
 import fsspec
 import yaml
 
-from polaris.dataset import Dataset
-from polaris.benchmark import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification
-from polaris.hub import PolarisClient
-from polaris.utils.errors import InvalidDatasetError, InvalidBenchmarkError
+from polaris.benchmark._definitions import (
+    MultiTaskBenchmarkSpecification,
+    SingleTaskBenchmarkSpecification,
+)
+from polaris.dataset._dataset import Dataset
+from polaris.hub.client import PolarisHubClient
 from polaris.utils import fs
+from polaris.utils.errors import InvalidBenchmarkError, InvalidDatasetError
 
 
 def load_dataset(path: str):
@@ -18,11 +21,11 @@ def load_dataset(path: str):
 
     if not is_file:
         # Load from the Hub
-        client = PolarisClient.get_client()
+        client = PolarisHubClient()
         options = client.list_datasets()
         if path not in options:
             raise InvalidDatasetError(f"{path} is not a valid dataset.")
-        return client.load_dataset(path)
+        return client.get_dataset(*path.split("/"))
 
     if extension == "zarr":
         return Dataset.from_zarr(path)
@@ -41,14 +44,14 @@ def load_benchmark(path: str):
 
     if not is_file:
         # Load from the Hub
-        client = PolarisClient.get_client()
+        client = PolarisHubClient()
         options = client.list_benchmarks()
         if path not in options:
-            raise InvalidBenchmarkError(f"{path} is not a valid task. Make sure it exists!")
-        return client.load_benchmark(path)
+            raise InvalidBenchmarkError(f"{path} is not a valid benchmark. Make sure it exists!")
+        return client.get_benchmark(*path.split("/"))
 
-    with fsspec.open(path, "r") as f:
-        data = yaml.safe_load(f)
+    with fsspec.open(path, "r") as fd:
+        data = yaml.safe_load(fd)  # type: ignore
 
     # TODO (cwognum): As this gets more complex, how do we effectivly choose which class we should use?
     #  e.g. we might end up with a single class per benchmark.

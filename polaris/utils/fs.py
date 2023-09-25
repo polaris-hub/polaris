@@ -2,18 +2,14 @@
 The `fs` module makes it easier to work with all type of path (the ones supported by `fsspec`).
 """
 
-from typing import Union
-from typing import Optional
-from typing import List
-
-import os
-import io
 import hashlib
+import io
+import os
 import pathlib
+from typing import List, Optional, Union
 
 import fsspec
 import fsspec.utils
-
 from datamol.utils import parallelized
 
 

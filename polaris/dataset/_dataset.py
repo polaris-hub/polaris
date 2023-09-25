@@ -1,26 +1,30 @@
-import os.path
-import string
-
-import zarr
-import fsspec
 import json
+import os.path
+from collections import defaultdict
+from hashlib import md5
+from typing import Dict, Literal, Optional, Tuple, Union
 
+import fsspec
 import numpy as np
 import pandas as pd
-
-from hashlib import md5
-from collections import defaultdict
-from typing import Dict, Optional, Union, Tuple, Literal
-from pydantic import BaseModel, field_validator, model_validator
+import zarr
 from loguru import logger
+from pydantic import (
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
-from polaris.utils import fs
+from polaris._artifact import BaseArtifactModel
 from polaris.dataset._column import ColumnAnnotation
+from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
-from polaris.utils.io import robust_copy, get_zarr_root
-from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 from polaris.utils.dict2html import dict2html
-
+from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
+from polaris.utils.io import get_zarr_root, robust_copy
+from polaris.utils.misc import to_lower_camel
+from polaris.utils.types import HttpUrlString, License
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -29,7 +33,7 @@ _INDEX_SEP = "#"
 _INDEX_FMT = f"{{path}}{_INDEX_SEP}{{index}}"
 
 
-class Dataset(BaseModel):
+class Dataset(BaseArtifactModel):
     """Basic data-model for a Polaris dataset, implemented as a [Pydantic](https://docs.pydantic.dev/latest/) model.
 
     At its core, a dataset in Polaris is a tabular data structure that stores data-points in a row-wise manner.
@@ -44,13 +48,12 @@ class Dataset(BaseModel):
     Attributes:
         table: The core data-structure, storing data-points in a row-wise manner. Can be specified as either a
             path to a `.parquet` file or a `pandas.DataFrame`.
+        md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
+            raise an error if the specified checksum doesn't match the computed checksum.
         annotations: Each column _can be_ annotated with a [`ColumnAnnotation`][polaris.dataset.ColumnAnnotation] object.
             Importantly, this is used to annotate whether a column is a pointer column.
-        name: A URL-compatible name for the dataset, can only use alpha-numeric characters, underscores and dashes).
-        description: A beginner-friendly, short description of the dataset.
         source: The data source, e.g. a DOI, Github repo or URI.
-        md5sum: The checksum is used to verify the version of the benchmark specification. If specified, it will
-            raise an error if the specified checksum doesn't match the computed checksum.
+    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
@@ -58,12 +61,16 @@ class Dataset(BaseModel):
     """
 
     # Public attributes
+    # Data
     table: Union[pd.DataFrame, str]
-    annotations: Dict[str, ColumnAnnotation] = {}
-    name: Optional[str] = None
-    description: Optional[str] = None
-    source: Optional[str] = None
     md5sum: Optional[str] = None
+
+    # Additional meta-data
+    annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
+    source: Optional[HttpUrlString] = None
+    license: Optional[License] = None
+
+    # Config
     cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.
 
     # Private attributes
@@ -72,7 +79,9 @@ class Dataset(BaseModel):
     _has_been_cached: bool = False
 
     # Pydantic config
-    model_config = {"arbitrary_types_allowed": True}
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, alias_generator=to_lower_camel, populate_by_name=True
+    )
 
     @field_validator("table")
     def _validate_table(cls, v):
@@ -81,18 +90,6 @@ class Dataset(BaseModel):
             if not fs.is_file(v) or fs.get_extension(v) not in _SUPPORTED_TABLE_EXTENSIONS:
                 raise InvalidDatasetError(f"{v} is not a valid DataFrame or .parquet path.")
             v = pd.read_parquet(v)
-        return v
-
-    @field_validator("name")
-    def _validate_name(cls, v):
-        """
-        Verify the name only contains valid characters which can be used in a file path.
-        """
-        if v is None:
-            return v
-        valid_characters = string.ascii_letters + string.digits + "_-"
-        if not all(c in valid_characters for c in v):
-            raise InvalidDatasetError(f"`name` can only contain alpha-numeric characters, - or _, found {v}")
         return v
 
     @model_validator(mode="after")
@@ -220,14 +217,24 @@ class Dataset(BaseModel):
             To learn more about the zarr format, see the
             [tutorial](../tutorials/dataset_zarr.ipynb).
 
+        Warning: Beta functionality
+            This feature is still in beta and the API will likely change. Please report any issues you encounter.
+
         Args:
             path: The path to the root of the `.zarr` directory. Should be compatible with fsspec.
         """
+
+        logger.warning(
+            "We are still testing to save and load from .zarr files. "
+            "This part of the API will likely change."
+        )
 
         root = zarr.open(path, "r")
 
         # Get the user attributes
         attrs = root.attrs.asdict()
+
+        # TODO (cwognum): This is outdated and needs to be updated.
         possible_user_attr = ["name", "description", "source", "annotations"]
         attrs = {k: v for k, v in attrs.items() if k in possible_user_attr}
 
@@ -265,17 +272,6 @@ class Dataset(BaseModel):
         table = pd.DataFrame(data)
         return cls(table=table, **attrs)
 
-    @classmethod
-    def from_json(cls, path: str) -> "Dataset":
-        """Loads a dataset from a JSON file.
-
-        Args:
-            path: The path to the JSON file.
-        """
-        with fsspec.open(path, "r") as fd:
-            data = json.load(fd)
-        return Dataset.model_validate(data)
-
     def to_zarr(
         self,
         destination: str,
@@ -288,6 +284,9 @@ class Dataset(BaseModel):
             To learn more about the zarr format, see the
             [tutorial](../tutorials/dataset_zarr.ipynb).
 
+        Warning: Beta functionality
+            This feature is still in beta and the API will likely change. Please report any issues you encounter.
+
         Args:
             destination: The _directory_ to save the associated data to.
             array_mode: For each of the columns, whether to save all datapoints in a single array
@@ -296,6 +295,11 @@ class Dataset(BaseModel):
         Returns:
             The path to the root zarr file.
         """
+
+        logger.warning(
+            "We are still testing to save and load from .zarr files. "
+            "This part of the API will likely change."
+        )
 
         if array_mode not in ["single", "multiple"]:
             raise ValueError(f"array_mode should be one of 'single' or 'multiple', not {array_mode}")
@@ -327,6 +331,7 @@ class Dataset(BaseModel):
                     group.array(row, self.get_data(row=row, col=col))
 
         # Save the meta-data
+        # TODO (cwognum): This is outdated and needs to be updated.
         root.user_attrs = {
             "name": self.name,
             "description": self.description,
@@ -334,6 +339,20 @@ class Dataset(BaseModel):
             "annotations": {k: v.model_dump() for k, v in self.annotations.items()},
         }
         return path
+
+    @classmethod
+    def from_json(cls, path: str):
+        """Loads a benchmark from a JSON file.
+        Overrides the method from the base class to remove the caching dir from the file to load from,
+        as that should be user dependent.
+
+        Args:
+            path: Loads a benchmark specification from a JSON file.
+        """
+        with fsspec.open(path, "r") as f:
+            data = json.load(f)
+        data.pop("cache_dir", None)
+        return cls.model_validate(data)
 
     def to_json(self, destination: str) -> str:
         """
@@ -362,7 +381,7 @@ class Dataset(BaseModel):
         # Save additional data
         new_table = self._copy_and_update_pointers(pointer_dir, inplace=False)
 
-        serialized = self.model_dump()
+        serialized = self.model_dump(exclude={"cache_dir"})
         serialized["table"] = table_path
 
         # We need to recompute the checksum, as the pointer paths have changed

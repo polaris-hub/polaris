@@ -132,3 +132,6 @@ dmypy.json
 .idea/
 # Rever
 rever/
+
+# VS Code
+.vscode/

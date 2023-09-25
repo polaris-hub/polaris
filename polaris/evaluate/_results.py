@@ -1,21 +1,23 @@
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
-from pydantic import BaseModel, Field, PrivateAttr
+from pydantic import ConfigDict, Field, PrivateAttr, field_serializer
 
+from polaris._artifact import BaseArtifactModel
 from polaris.evaluate._metric import Metric
-from polaris.hub import PolarisClient
+from polaris.utils.misc import to_lower_camel
+from polaris.utils.types import HttpUrlString, HubOwner, HubUser
 
 # Define some helpful type aliases
 TestLabelType = str
 TargetLabelType = str
-MetricScoresType = dict[Metric, float]
+MetricScoresType = dict[Union[str, Metric], float]
 ResultsType = Union[
     MetricScoresType, dict[TestLabelType, Union[MetricScoresType, dict[TargetLabelType, MetricScoresType]]]
 ]
 
 
-class BenchmarkResults(BaseModel):
+class BenchmarkResults(BaseArtifactModel):
     """Class for saving benchmarking results
 
     This object is returned by [`BenchmarkSpecification.evaluate`][polaris.benchmark.BenchmarkSpecification.evaluate].
@@ -29,38 +31,40 @@ class BenchmarkResults(BaseModel):
 
     Attributes:
         results: Benchmark results are stored as a dictionary
-        benchmark_id: The benchmark these results were generated for
-        name: The name to identify the results by.
-        tags: Tags to categorize the results by.
-        user_attributes: User attributes allow for additional meta-data to be stored
-        _user_name: The user associated with the results. Automatically set.
+        benchmark_name: The name of the benchmark for which these results were generated.
+            Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.
+        benchmark_owner: The owner of the benchmark for which these results were generated.
+            Together with the benchmark name, this uniquely identifies the benchmark on the Hub.
+        github_url: The URL to the GitHub repository of the code used to generate these results.
+        paper_url: The URL to the paper describing the methodology used to generate these results.
+        contributors: The users that are credited for these results.
         _created_at: The time-stamp at which the results were created. Automatically set.
+    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
     """
 
-    # Public attributes
+    # Data
     results: ResultsType
-    benchmark_id: str
-    name: Optional[str] = None
-    tags: list[str] = Field(default_factory=list)
-    user_attributes: dict[str, str] = Field(default_factory=dict)
+    benchmark_name: str = Field(..., frozen=True)
+    benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
+
+    # Additional meta-data
+    github_url: Optional[HttpUrlString] = None
+    paper_url: Optional[HttpUrlString] = None
+    contributors: Optional[list[HubUser]] = None
 
     # Private attributes
-    _user_name: Optional[str] = PrivateAttr(default_factory=PolarisClient.get_client().get_active_user)
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
 
-    def __init__(self, **data: Any):
-        super().__init__(**data)
+    model_config = ConfigDict(alias_generator=to_lower_camel, populate_by_name=True)
 
-        if self.name is None:
-            if self._user_name is None:
-                self.name = str(self._created_at)
-            else:
-                self.name = f"{self._user_name}_{str(self._created_at)}"
+    @field_serializer("results")
+    def serialize_results(self, value: ResultsType):
+        """Change from the Metric enum to a string representation"""
 
-    def upload_to_hub(self):
-        """Upload the results to the hub
+        def _recursive_enum_to_str(d: dict):
+            """Utility function to easily traverse the nested dictionary"""
+            if not isinstance(d, dict):
+                return d
+            return {k.name if isinstance(k, Metric) else k: _recursive_enum_to_str(v) for k, v in d.items()}
 
-        This will upload the results to your account in the Polaris Hub. By default, these results are private.
-        If you want to share them, you can do so in your account. This might trigger a review process.
-        """
-        return PolarisClient.get_client().upload_results_to_hub(self)
+        return _recursive_enum_to_str(value)

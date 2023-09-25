@@ -1,9 +1,11 @@
+from typing import List, Literal, Optional, Sequence, Union
+
 import numpy as np
-from typing import Union, List, Sequence, Literal, Optional
+
 from polaris.dataset import Dataset
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import TestAccessError
-from polaris.utils.types import DatapointType, DataFormat
+from polaris.utils.types import DataFormat, DatapointType
 
 
 class Subset:

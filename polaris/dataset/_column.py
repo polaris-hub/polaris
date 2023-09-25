@@ -1,6 +1,9 @@
 import enum
-from typing import Optional, Union
-from pydantic import BaseModel, field_validator, field_serializer
+from typing import Dict, Optional, Union
+
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
+
+from polaris.utils.misc import to_lower_camel
 
 
 class Modality(enum.Enum):
@@ -24,16 +27,18 @@ class ColumnAnnotation(BaseModel):
             but rather contains references to blobs of data from which the data is loaded.
         modality: The data modality describes the data type and is used to categorize datasets on the hub
             and while it does not affect logic in this library, it does affect the logic of the hub.
-        protocol: The protocol describes how the data was generated.
+        description: Describes how the data was generated.
         user_attributes: Any additional meta-data can be stored in the user attributes.
     """
 
     is_pointer: bool = False
     modality: Union[str, Modality] = Modality.UNKNOWN
-    protocol: Optional[str] = None
-    user_attributes: dict = {}
+    description: Optional[str] = None
+    user_attributes: Dict[str, str] = Field(default_factory=dict)
 
-    model_config = {"arbitrary_types_allowed": True}
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, alias_generator=to_lower_camel, populate_by_name=True
+    )
 
     @field_validator("modality")
     def _validate_modality(cls, v):

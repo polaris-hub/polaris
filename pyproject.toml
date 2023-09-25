@@ -27,6 +27,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
@@ -71,7 +72,7 @@ disable_warnings = ["no-data-collected"]
 data_file = ".coverage/coverage"
 
 [tool.coverage.report]
-omit = ["polaris/__init__.py", "polaris/_version.py"]
+omit = ["polaris/__init__.py", "polaris/_version.py", "polaris/hub/client.py", "polaris/hub/settings.py", "polaris/hub/__init__.py"]
 
 [tool.coverage.xml]
 output = "coverage.xml"

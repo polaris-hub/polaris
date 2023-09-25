@@ -1,14 +1,13 @@
 import os.path
 import uuid
-import fsspec
-import filelock
-
 from typing import Optional
-from loguru import logger
 
+import filelock
+import fsspec
+from loguru import logger
 from tenacity import Retrying
-from tenacity.wait import wait_fixed
 from tenacity.stop import stop_after_attempt
+from tenacity.wait import wait_fixed
 
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR

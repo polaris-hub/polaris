@@ -3,8 +3,12 @@
 
 ---
 
+::: polaris.evaluate.MetricInfo
+
+---
+
 ::: polaris.evaluate.Metric
     options: 
-        filters: ["!^_"]
+        filters: ["!^_", "!fn", "!is_multitask"]
 
 ---

@@ -1,7 +1,7 @@
-import zarr
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
+import zarr
 from pydantic import ValidationError
 
 from polaris.dataset import Dataset
@@ -70,7 +70,7 @@ def test_dataset_checksum(test_dataset):
     # With unimportant changes, same hash
     kwargs["name"] = "changed"
     kwargs["description"] = "changed"
-    kwargs["source"] = "changed"
+    kwargs["source"] = "https://changed.com"
     Dataset(**kwargs)
 
     # Check sensitivity to the row and column ordering

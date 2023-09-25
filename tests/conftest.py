@@ -1,11 +1,15 @@
+import datamol as dm
 import numpy as np
 import pytest
-import datamol as dm
 import zarr
 
-from polaris.dataset import Dataset
-from polaris.benchmark import MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
+from polaris.benchmark import (
+    MultiTaskBenchmarkSpecification,
+    SingleTaskBenchmarkSpecification,
+)
+from polaris.dataset import ColumnAnnotation, Dataset
 from polaris.utils import fs
+from polaris.utils.types import HubOwner, License
 
 
 def _get_zarr_archive(tmp_path, datapoint_per_array: bool):
@@ -32,8 +36,27 @@ def test_data():
 
 
 @pytest.fixture(scope="module")
-def test_dataset(test_data):
-    return Dataset(table=test_data)
+def test_org_owner():
+    return HubOwner(organizationId="test-organization", slug="test-organization")
+
+
+@pytest.fixture(scope="module")
+def test_user_owner():
+    return HubOwner(userId="test-user", slug="test-user")
+
+
+@pytest.fixture(scope="module")
+def test_dataset(test_data, test_org_owner):
+    return Dataset(
+        table=test_data,
+        name="test-dataset",
+        source="https://www.example.com",
+        annotations={"expt": ColumnAnnotation(is_pointer=False, user_attributes={"unit": "kcal/mol"})},
+        tags=["tagA", "tagB"],
+        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        owner=test_org_owner,
+        license=License(id="MIT"),
+    )
 
 
 @pytest.fixture(scope="function")
@@ -51,8 +74,10 @@ def test_single_task_benchmark(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     return SingleTaskBenchmarkSpecification(
+        name="single-task-benchmark",
         dataset=test_dataset,
         metrics=["mean_absolute_error", "mean_squared_error"],
+        main_metric="mean_absolute_error",
         split=(train_indices, test_indices),
         target_cols="expt",
         input_cols="smiles",
@@ -64,6 +89,7 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
     train_indices = list(range(90))
     test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
     return SingleTaskBenchmarkSpecification(
+        name="single-task-benchmark",
         dataset=test_dataset,
         metrics=["mean_absolute_error", "mean_squared_error"],
         split=(train_indices, test_indices),
@@ -78,6 +104,7 @@ def test_multi_task_benchmark(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     return MultiTaskBenchmarkSpecification(
+        name="multi-task-benchmark",
         dataset=test_dataset,
         metrics=["mean_absolute_error"],
         split=(train_indices, test_indices),
