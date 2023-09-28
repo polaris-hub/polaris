@@ -1,8 +1,8 @@
 site_name: "Polaris"
 site_description: "Polaris: Foster the development of impactful AI models in drug discovery."
-site_url: "https://github.com/valence-labs/polaris"
-repo_url: "https://github.com/valence-labs/polaris"
-repo_name: "valence-labs/polaris"
+site_url: "https://github.com/polaris-hub/polaris"
+repo_url: "https://github.com/polaris-hub/polaris"
+repo_name: "polaris-hub/polaris"
 copyright: Copyright 2020 - 2023 datamol.io
 
 remote_branch: "gh-pages"
