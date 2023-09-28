@@ -1,9 +1,9 @@
 # Polaris
 
-[![test](https://github.com/valence-labs/polaris/actions/workflows/test.yml/badge.svg)](https://github.com/valence-labs/polaris/actions/workflows/test.yml)
-[![release](https://github.com/valence-labs/polaris/actions/workflows/release.yml/badge.svg)](https://github.com/valence-labs/polaris/actions/workflows/release.yml)
-[![code-check](https://github.com/valence-labs/polaris/actions/workflows/code-check.yml/badge.svg)](https://github.com/valence-labs/polaris/actions/workflows/code-check.yml)
-[![doc](https://github.com/valence-labs/polaris/actions/workflows/doc.yml/badge.svg)](https://github.com/valence-labs/polaris/actions/workflows/doc.yml)
+[![test](https://github.com/polaris-hub/polaris/actions/workflows/test.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/test.yml)
+[![release](https://github.com/polaris-hub/polaris/actions/workflows/release.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/release.yml)
+[![code-check](https://github.com/polaris-hub/polaris/actions/workflows/code-check.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/code-check.yml)
+[![doc](https://github.com/polaris-hub/polaris/actions/workflows/doc.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/doc.yml)
 
 _So many stars in the sky, yet one is enough to guide you home._
 
