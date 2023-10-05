@@ -351,7 +351,7 @@ class PolarisHubClient(OAuth2Client):
             `benchmark.evaluate(...)`, this is done automatically.
 
         Args:
-            response: The results to upload.
+            results: The results to upload.
 
         """
 
@@ -378,7 +378,7 @@ class PolarisHubClient(OAuth2Client):
 
         Info: dataset name and owner.
         Args:
-            response: The dataset to upload.
+            dataset: The dataset to upload.
 
         """
 
@@ -428,7 +428,7 @@ class PolarisHubClient(OAuth2Client):
 
         Info: benchmark name and owner.
         Args:
-            results: The benchmark to upload.
+            benchmark: The benchmark to upload.
 
         """
 

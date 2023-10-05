@@ -1,4 +1,3 @@
-import sys
 import json
 import os.path
 from collections import defaultdict

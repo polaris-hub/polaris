@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 import datamol as dm
 import warnings
+from IPython.display import display
 
 warnings.filterwarnings("ignore")
 
@@ -12,7 +13,7 @@ def visulize_distribution(data_cols, dataset):
         fig, axes = plt.subplots(ncols=2, nrows=1, figsize=(16, 4))
         to_plot = dataset.sort_values(by=col).reset_index()
         to_plot["order"] = range(to_plot.shape[0])
-        scatter = sns.scatterplot(
+        sns.scatterplot(
             to_plot,
             x="order",
             y=col,
@@ -26,13 +27,12 @@ def visulize_distribution(data_cols, dataset):
 
 
 def verify_stereoisomers(data_cols, dataset):
-    cliff_cols = [f"CLASS_{col}_stereo_cliff" for col in data_cols]
     for col in data_cols:
         print(f"Verify the stereo ismomers for readout `{col}`")
         cliff_col = f"CLASS_{col}_stereo_cliff"
         cliff = dataset[cliff_col].notna()
         if cliff.sum() > 0:
-            to_plot = df_full.loc[
+            to_plot = dataset.loc[
                 cliff, ["smiles", "num_undefined_stereo_center", "num_defined_stereo_center", col, cliff_col]
             ]
             display(to_plot)
