@@ -125,9 +125,9 @@ class PolarisHubClient(OAuth2Client):
     def _base_request_to_hub(self, url: str, method: str, **kwargs):
         """Utility function since most API methods follow the same pattern"""
         response = self.request(url=url, method=method, **kwargs)
-        print(response.__dict__)
         response.raise_for_status()
-        response = response.json()
+        if response.text:
+            response = response.json()
         return response
 
     # =========================
@@ -333,7 +333,7 @@ class PolarisHubClient(OAuth2Client):
         # TODO (cwognum): Currently, the benchmark endpoints do not return the owner info for the underlying dataset.
         # TODO (jstlaurent): Use the same owner for now, until the benchmark returns a better dataset entity
         response["dataset"] = self.get_dataset(owner, response["dataset"]["name"])
-
+        print(response)
         # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
         #  Maybe through structural pattern matching, introduced in Py3.10, or Pydantic's discriminated unions?
         benchmark_cls = (
@@ -362,15 +362,9 @@ class PolarisHubClient(OAuth2Client):
             )
 
         url = f"/benchmark/{results.benchmark_owner}/{results.benchmark_name}/result"
-        # url = f"/result"
 
-        result_json = NullNone2String(results.model_dump(by_alias=True))
-
-        # Lu:
-        # result_json["benchmarkOwner"]["owner"] = results.benchmark_owner.slug
-        result_json["benchmarkOwner"]["owner"] = "jstl"
-        result_json["benchmark_id"] = "8QYr1MxBDQV4jr6fUGl2v"
-        print(result_json)
+        # Lu: Avoid serilizing and sending None to hub app.
+        result_json = results.model_dump(by_alias=True, exclude_none=True)
         response = self._base_request_to_hub(url=url, method="POST", json=result_json)
 
         # TODO (cwognum): Use actual URL once it's available
@@ -396,18 +390,16 @@ class PolarisHubClient(OAuth2Client):
         if dataset.name is None or dataset.owner is None:
             raise PolarisHubError("Dataset name and owner must be set to upload dataset to the Polaris Hub.")
 
+        # lu: use to_json, to also get the dataset parquet path
         temp_dir = tempfile.TemporaryDirectory().name
         json_path = dataset.to_json(temp_dir)
         with open(json_path) as f:
             dataset_json = json.load(f)
-        dataset_json = NullNone2String(dataset_json)
-
-        # lu: maybe move to client?
         dataset_json["tableContent"] = {
             "size": sys.getsizeof(dataset.table),
             "fileType": "parquet",
             "md5sum": dataset_json["md5sum"],
-            "url": f"https://polaris-hub.vercel.app/storage/dataset/{dataset.name}/table.parquet",
+            "url": f"https://polaris-hub.vercel.app/storage/dataset/{dataset.owner.slug}/{dataset.name}/table.parquet",
         }
 
         url = f"/dataset/{dataset.owner}/{dataset.name}"
@@ -419,12 +411,16 @@ class PolarisHubClient(OAuth2Client):
             f"View it here: {self.settings.hub_url}/datasets/{response['id']}"
         )
 
-        # lu: temporary
-        # upload the parquet file
+        # lu: temporary solution
+        # currently upload the parquet file sperately
         headers = {"Content-type": "application/vnd.apache.parquet"}
         parquet_url = dataset_json["tableContent"]["url"]
         response = self._base_request_to_hub(
-            url=parquet_url, method="PUT", headers=headers, data=f"{temp_dir}/table.parquet"
+            url=parquet_url,
+            method="PUT",
+            headers=headers,
+            content=open(f"{temp_dir}/table.parquet", "rb"),
+            follow_redirects=True,
         )
         logger.success(
             "Your dataset parquet file has been successfully uploaded to the Hub. "
