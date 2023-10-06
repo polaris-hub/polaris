@@ -385,16 +385,14 @@ class PolarisHubClient(OAuth2Client):
         if dataset.name is None or dataset.owner is None:
             raise PolarisHubError("Dataset name and owner must be set to upload dataset to the Polaris Hub.")
 
-        # lu: use to_json, to also get the dataset parquet path
-        temp_dir = tempfile.TemporaryDirectory().name
-        json_path = dataset.to_json(temp_dir)
-        with open(json_path) as f:
-            dataset_json = json.load(f)
+        # TODO: Mechinism to withdraw the dataset meta info from hub if the parquet uploading fails
+        # step 1: upload dataset meta data to the hub
+        dataset_json = dataset.model_dump(exclude={"cache_dir", "table"}, exclude_none=True)
         dataset_json["tableContent"] = {
             "size": sys.getsizeof(dataset.table),
             "fileType": "parquet",
-            "md5sum": dataset_json["md5sum"],
-            "url": f"https://polaris-hub.vercel.app/storage/dataset/{dataset.owner.slug}/{dataset.name}/table.parquet",
+            "md5sum": dataset._compute_checksum(dataset.table),
+            "url": f"{self.settings.hub_url}/storage/dataset/{dataset.owner.slug}/{dataset.name}/table.parquet",
         }
 
         url = f"/dataset/{dataset.owner}/{dataset.name}"
@@ -406,15 +404,17 @@ class PolarisHubClient(OAuth2Client):
             f"View it here: {self.settings.hub_url}/datasets/{response['id']}"
         )
 
-        # lu: temporary solution
-        # currently upload the parquet file sperately
+        # step2: Upload the parquet to the hub
         headers = {"Content-type": "application/vnd.apache.parquet"}
         parquet_url = dataset_json["tableContent"]["url"]
+        # table parquet content to BytesIO object
+        buffer = BytesIO()
+        dataset.table.to_parquet(buffer, engine="auto")
         response = self._base_request_to_hub(
             url=parquet_url,
             method="PUT",
             headers=headers,
-            content=open(f"{temp_dir}/table.parquet", "rb"),
+            content=buffer.getvalue(),
             follow_redirects=True,
         )
         logger.success(
