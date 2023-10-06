@@ -9,7 +9,6 @@ import certifi
 import fsspec
 import httpx
 import pandas as pd
-import tempfile
 import sys
 from authlib.common.security import generate_token
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
