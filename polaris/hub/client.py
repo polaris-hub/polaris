@@ -125,6 +125,7 @@ class PolarisHubClient(OAuth2Client):
         """Utility function since most API methods follow the same pattern"""
         response = self.request(url=url, method=method, **kwargs)
         response.raise_for_status()
+        # Convert the reponse to json format if reponse contains 'text' body
         if response.text:
             response = response.json()
         return response
