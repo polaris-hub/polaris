@@ -405,7 +405,7 @@ class PolarisHubClient(OAuth2Client):
         # table parquet content to BytesIO object
         buffer = BytesIO()
         dataset.table.to_parquet(buffer, engine="auto")
-        response = self._base_request_to_hub(
+        self._base_request_to_hub(
             url=parquet_url,
             method="PUT",
             headers=headers,
@@ -415,7 +415,7 @@ class PolarisHubClient(OAuth2Client):
 
         logger.success(
             "Your dataset has been successfully uploaded to the Hub. "
-            f"View it here: {self.settings.hub_url}/datasets/{response['id']}"
+            f"View it here: {self.settings.hub_url}/datasets/{dataset.owner}/{dataset.name}"
         )
 
         return response
@@ -452,6 +452,6 @@ class PolarisHubClient(OAuth2Client):
 
         logger.success(
             "Your benchmark has been successfully uploaded to the Hub. "
-            f"View it here: {self.settings.hub_url}/benchmarks/{response['id']}"
+            f"View it here: {self.settings.hub_url}/benchmarks/{benchmark.owner}/{benchmark.name}"
         )
         return response
