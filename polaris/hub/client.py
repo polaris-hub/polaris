@@ -387,7 +387,8 @@ class PolarisHubClient(OAuth2Client):
 
         # TODO: Mechinism to withdraw the dataset meta info from hub if the parquet uploading fails
         # step 1: upload dataset meta data to the hub
-        dataset_json = dataset.model_dump(exclude={"cache_dir", "table"}, exclude_none=True)
+        dataset_json = dataset.model_dump(exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True)
+        # Add tableContent for PUT request
         dataset_json["tableContent"] = {
             "size": sys.getsizeof(dataset.table),
             "fileType": "parquet",
@@ -397,12 +398,6 @@ class PolarisHubClient(OAuth2Client):
 
         url = f"/dataset/{dataset.owner}/{dataset.name}"
         response = self._base_request_to_hub(url=url, method="PUT", json=dataset_json)
-
-        # TODO (cwognum): Use actual URL once it's available
-        logger.success(
-            "Your dataset has been successfully uploaded to the Hub. "
-            f"View it here: {self.settings.hub_url}/datasets/{response['id']}"
-        )
 
         # step2: Upload the parquet to the hub
         headers = {"Content-type": "application/vnd.apache.parquet"}
@@ -417,10 +412,12 @@ class PolarisHubClient(OAuth2Client):
             content=buffer.getvalue(),
             follow_redirects=True,
         )
+
         logger.success(
-            "Your dataset parquet file has been successfully uploaded to the Hub. "
-            f"View it here: {parquet_url}"
+            "Your dataset has been successfully uploaded to the Hub. "
+            f"View it here: {self.settings.hub_url}/datasets/{response['id']}"
         )
+
         return response
 
     def upload_benchmark(self, benchmark: BenchmarkSpecification):
@@ -437,16 +434,22 @@ class PolarisHubClient(OAuth2Client):
                 "Benchmark name and owner must be set to upload benchmark to the Polaris Hub."
             )
         # lu: we don't need dataset here for the uploading
-        benchmark_json = benchmark.model_dump(exclude=["dataset"], exclude_none=True)
+        benchmark_json = benchmark.model_dump(exclude=["dataset"], exclude_none=True, by_alias=True)
 
-        benchmark_json["targetCols"] = benchmark.target_cols
-        benchmark_json["inputCols"] = benchmark.input_cols
-        benchmark_json["datasetName"] = f"{benchmark.dataset.owner.slug}/{benchmark.dataset.name}"
+        # check if dataset exist in the hub
+        data_name = benchmark.dataset.name
+        data_owner = benchmark.dataset.owner
+        if not self.get_dataset(name=benchmark.dataset.name, owner=benchmark.dataset.owner):
+            raise ValueError(
+                f"Dataset {data_owner}/{data_name} doesn't exit on the hub. \
+                             Please upload the dataset by running `client.upload_dataset(name={data_name}, owner={data_owner})`"
+            )
+
+        benchmark_json["datasetName"] = f"{data_owner}/{data_name}"
 
         url = f"/benchmark/{benchmark.owner}/{benchmark.name}"
         response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
-        # TODO (cwognum): Use actual URL once it's available
         logger.success(
             "Your benchmark has been successfully uploaded to the Hub. "
             f"View it here: {self.settings.hub_url}/benchmarks/{response['id']}"
