@@ -5,6 +5,11 @@ from loguru import logger
 import numpy as np
 from pydantic import BaseModel, Field
 from scipy import stats
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+import datamol as dm
+
 from sklearn.base import (
     BaseEstimator,
     OneToOneFeatureMixin,
@@ -18,18 +23,11 @@ from sklearn.svm import OneClassSVM
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-import seaborn as sns
-import matplotlib.pyplot as plt
-from scipy import stats
-import datamol as dm
-from IPython.display import display
+
 from ._chemistry_curator import NUM_UNDEF_STEREO_CENTER, NUM_DEF_STEREO_CENTER
 
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
 NumpyNDArray = TypeVar("numpy.ndarray")
-
-NUM_UNDEF_STEREO_CENTER = "num_undefined_stereo_center"
-NUM_DEF_STEREO_CENTER = "num_defined_stereo_center"
 
 
 class LabelOrder(Enum):
@@ -302,6 +300,7 @@ def verify_stereoisomers(data_cols: List[str], dataset: PandasDataFrame):
         dataset: Dataframe which includes stereo chemistry information of the molcules.
 
     """
+    figs = []
     for col in data_cols:
         logger.info(f"Verify the stereo ismomers for readout `{col}`")
         cliff_col = f"CLASS_{col}_stereo_cliff"
@@ -315,8 +314,8 @@ def verify_stereoisomers(data_cols: List[str], dataset: PandasDataFrame):
             to_plot = dataset.loc[
                 cliff, ["smiles", NUM_UNDEF_STEREO_CENTER, NUM_DEF_STEREO_CENTER, col, cliff_col]
             ]
-            display(to_plot)  # display the rows of dataframe
-            display(dm.to_image([dm.to_mol(s) for s in to_plot.smiles]))  # display the molecules
+            fig = dm.to_image([dm.to_mol(s) for s in to_plot.smiles])
+            figs.append(fig)
         else:
             logger.info("No activity cliffs found in stereosimoers.")
 
