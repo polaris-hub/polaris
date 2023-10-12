@@ -16,7 +16,7 @@ Welcome to the Polaris documentation!
 Polaris is a suite of tools to implement, host and run benchmarks in computational drug discovery. Existing benchmarks leave several key challenges - related to the characteristics of datasets in drug discovery - unaddressed. This can lead to a situation in which newly proposed models do not perform as well _as advertised_ in real drug discovery programs, ultimately risking misalignment between the scientists developing the models and downstream users. With Polaris, we aim to further close that gap. 
 
 ### Polaris Hub
-A quick word on the [Polaris Hub](https://polaris-hub.vercel.app/). The hub hosts a variety of high-quality benchmarks and datasets. While the hub is built to easily integrate with the Polaris library, you can use them independently.
+A quick word on the [Polaris Hub](https://polarishub.io/). The hub hosts a variety of high-quality benchmarks and datasets. While the hub is built to easily integrate with the Polaris library, you can use them independently.
 
 ## Where to next?
 
