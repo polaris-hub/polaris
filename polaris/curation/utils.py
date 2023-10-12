@@ -288,7 +288,6 @@ def visulize_distribution(data_cols: List[str], dataset: PandasDataFrame):
         )
         stats.probplot(to_plot[col].values, dist="norm", plot=axes[1])
         figs.append(fig)
-    plt.close()
     return figs
 
 
@@ -304,7 +303,7 @@ def verify_stereoisomers(data_cols: List[str], dataset: PandasDataFrame):
     for col in data_cols:
         logger.info(f"Verify the stereo ismomers for readout `{col}`")
         cliff_col = f"CLASS_{col}_stereo_cliff"
-        if cliff_col not in data_cols:
+        if cliff_col not in dataset:
             raise ValueError(
                 "The stereo chemistry information is unavailable. \
                              Please run the <polaris.curation.run_chemistry_curation> first."
