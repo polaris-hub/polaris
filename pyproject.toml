@@ -38,8 +38,8 @@ polaris = "polaris.cli:app"
 
 [project.urls]
 Website = "https://polaris.datamol.io/"
-"Source Code" = "https://github.com/valence-labs/polaris"
-"Bug Tracker" = "https://github.com/valence-labs/polaris/issues"
+"Source Code" = "https://github.com/polaris-hub/polaris"
+"Bug Tracker" = "https://github.com/polaris-hub/polaris/issues"
 Documentation = "https://polaris-docs.datamol.io/"
 
 [tool.setuptools]

@@ -14,7 +14,7 @@ mamba install -c conda-forge polaris
 
 ## Benchmarking API
 At its core, Polaris is a benchmarking library. It provides a simple API to run benchmarks. While it can be used
-independently, it is built to easily integrate with the [Polaris Hub](https://polaris-hub.vercel.app/). The hub hosts
+independently, it is built to easily integrate with the [Polaris Hub](https://polarishub.io/). The hub hosts
 a variety of high-quality datasets, benchmarks and associated results. 
 
 

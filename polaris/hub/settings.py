@@ -28,10 +28,10 @@ class PolarisHubSettings(BaseSettings):
             Allows for custom SSL certificates to be used.
     """
 
-    hub_url: HttpUrlString = "https://polaris-hub.vercel.app"
+    hub_url: HttpUrlString = "https://polarishub.io/"
     api_url: Optional[HttpUrlString] = None
     authorize_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/authorize"
-    callback_url: HttpUrlString = "https://polaris-hub.vercel.app/oauth2/callback"
+    callback_url: HttpUrlString = "https://polarishub.io/oauth2/callback"
     token_fetch_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/token"
     user_info_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/userinfo"
     scopes: str = "profile email"

@@ -18,7 +18,7 @@ def _equality_test(dataset_1, dataset_2):
     but currently the dataset checksum is used for equality and with pointer columns,
     the checksum uses the file path, not the file content (which thus changes when saving).
 
-    See also: https://github.com/valence-labs/polaris/issues/16
+    See also: https://github.com/polaris-hub/polaris/issues/16
     """
     if dataset_1 == dataset_2:
         return True

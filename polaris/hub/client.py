@@ -36,7 +36,7 @@ _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 class PolarisHubClient(OAuth2Client):
     """
     A client for the Polaris Hub API. The Polaris Hub is a central repository of datasets, benchmarks and results.
-    Visit it here: [https://polaris-hub.vercel.app/](https://polaris-hub.vercel.app/).
+    Visit it here: [https://polarishub.io/](https://polarishub.io/).
 
     Bases the [`authlib` client](https://docs.authlib.org/en/latest/client/api.html#authlib.integrations.httpx_client.OAuth2Client),
     which in turns bases the [`httpx` client](https://www.python-httpx.org/advanced/#client-instances).
@@ -221,7 +221,7 @@ class PolarisHubClient(OAuth2Client):
 
         Warning: Headless authentication
             It is currently not possible to login to the Polaris Hub without a browser.
-            See [this Github issue](https://github.com/valence-labs/polaris/issues/30) for more info.
+            See [this Github issue](https://github.com/polaris-hub/polaris/issues/30) for more info.
 
         Args:
             overwrite: Whether to overwrite the current token if the user is already logged in.
