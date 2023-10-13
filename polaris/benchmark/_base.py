@@ -63,10 +63,14 @@ class BenchmarkSpecification(BaseArtifactModel):
         main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
         md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
             raise an error if the specified checksum doesn't match the computed checksum.
+        readme: Markdown text that can be used to provide a formatted description of the benchmark.
+            If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
+            as it provides a rich text editor for writing markdown.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
     """
 
     # Public attributes
+    # Data
     dataset: Union[Dataset, str, dict[str, Any]]
     target_cols: ColumnsType
     input_cols: ColumnsType
@@ -74,6 +78,9 @@ class BenchmarkSpecification(BaseArtifactModel):
     metrics: Union[str, Metric, list[Union[str, Metric]]]
     main_metric: Optional[Union[str, Metric]] = None
     md5sum: Optional[str] = None
+
+    # Additional meta-data
+    readme: str = ""
 
     # Pydantic config
     model_config = ConfigDict(
