@@ -226,7 +226,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../tutorials/custom_dataset_benchmark.html" class="md-tabs__link">
+        <a href="../tutorials/basics.html" class="md-tabs__link">
           
   
   Tutorials
@@ -470,6 +470,46 @@
             Tutorials
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/basics.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    The Basics
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/data_curation.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset curation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -838,6 +878,20 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#polaris.hub.client.PolarisHubClient.upload_dataset" class="md-nav__link">
+    upload_dataset()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.hub.client.PolarisHubClient.upload_benchmark" class="md-nav__link">
+    upload_benchmark()
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1076,6 +1130,20 @@
           <li class="md-nav__item">
   <a href="#polaris.hub.client.PolarisHubClient.upload_results" class="md-nav__link">
     upload_results()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.hub.client.PolarisHubClient.upload_dataset" class="md-nav__link">
+    upload_dataset()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.hub.client.PolarisHubClient.upload_benchmark" class="md-nav__link">
+    upload_benchmark()
   </a>
   
 </li>
@@ -1905,6 +1973,110 @@ and match an existing benchmark on the Polaris Hub. If these results were genera
           <td>
             <div class="doc-md-description">
               <p>The results to upload.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h4 id="polaris.hub.client.PolarisHubClient.upload_dataset" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">upload_dataset</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">)</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Upload the dataset to the Polaris Hub.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>dataset</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="polaris.dataset.Dataset" href="dataset.html#polaris.dataset.Dataset">Dataset</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The dataset to upload.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h4 id="polaris.hub.client.PolarisHubClient.upload_benchmark" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">upload_benchmark</span>
+
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_benchmark</span><span class="p">(</span><span class="n">benchmark</span><span class="p">:</span> <span class="n">BenchmarkSpecification</span><span class="p">)</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Upload the benchmark to the Polaris Hub.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>benchmark</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="polaris.benchmark.BenchmarkSpecification" href="benchmark.html#polaris.benchmark.BenchmarkSpecification">BenchmarkSpecification</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The benchmark to upload.</p>
             </div>
           </td>
           <td>

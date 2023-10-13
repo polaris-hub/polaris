@@ -51,7 +51,17 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://github.com/polaris-hub/polaris/main/tutorials/basics.html</loc>
+         <lastmod>2023-10-13</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://github.com/polaris-hub/polaris/main/tutorials/custom_dataset_benchmark.html</loc>
+         <lastmod>2023-10-13</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://github.com/polaris-hub/polaris/main/tutorials/data_curation.html</loc>
          <lastmod>2023-10-13</lastmod>
          <changefreq>daily</changefreq>
     </url>

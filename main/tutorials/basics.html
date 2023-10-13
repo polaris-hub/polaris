@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/tutorials/dataset_zarr.html">
+        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/tutorials/basics.html">
       
       
-        <link rel="prev" href="custom_dataset_benchmark.html">
+        <link rel="prev" href="../quickstart.html">
       
       
-        <link rel="next" href="../api/dataset.html">
+        <link rel="next" href="data_curation.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Creating datasets with zarr - Polaris</title>
+        <title>The Basics - Polaris</title>
       
     
     
@@ -89,7 +89,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#creating-datasets-with-zarr" class="md-skip">
+        <a href="#the-basics" class="md-skip">
           Skip to content
         </a>
       
@@ -126,7 +126,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Creating datasets with zarr
+              The Basics
             
           </span>
         </div>
@@ -475,9 +475,29 @@
                 
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="basics.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    The Basics
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="basics.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -486,6 +506,54 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#login" class="md-nav__link">
+    Login
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#load-from-the-hub" class="md-nav__link">
+    Load from the Hub
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-the-benchmark" class="md-nav__link">
+    Use the benchmark
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#partake-in-the-benchmark" class="md-nav__link">
+    Partake in the benchmark
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -535,29 +603,9 @@
                 
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Creating datasets with zarr
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="dataset_zarr.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="dataset_zarr.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -566,87 +614,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#pointer-columns" class="md-nav__link">
-    Pointer columns
-  </a>
-  
-    <nav class="md-nav" aria-label="Pointer columns">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#dummy-example" class="md-nav__link">
-    Dummy example
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#creating-datasets-from-zarr-arrays" class="md-nav__link">
-    Creating datasets from .zarr arrays
-  </a>
-  
-    <nav class="md-nav" aria-label="Creating datasets from .zarr arrays">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#a-single-array-per-data-point" class="md-nav__link">
-    A single array per data point
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#a-single-array-for-all-datapoints" class="md-nav__link">
-    A single array for all datapoints
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#saving-the-dataset" class="md-nav__link">
-    Saving the dataset
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#load-the-dataset" class="md-nav__link">
-    Load the dataset
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1051,62 +1018,29 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pointer-columns" class="md-nav__link">
-    Pointer columns
-  </a>
-  
-    <nav class="md-nav" aria-label="Pointer columns">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#dummy-example" class="md-nav__link">
-    Dummy example
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#creating-datasets-from-zarr-arrays" class="md-nav__link">
-    Creating datasets from .zarr arrays
-  </a>
-  
-    <nav class="md-nav" aria-label="Creating datasets from .zarr arrays">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#a-single-array-per-data-point" class="md-nav__link">
-    A single array per data point
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#a-single-array-for-all-datapoints" class="md-nav__link">
-    A single array for all datapoints
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#saving-the-dataset" class="md-nav__link">
-    Saving the dataset
+  <a href="#login" class="md-nav__link">
+    Login
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#load-the-dataset" class="md-nav__link">
-    Load the dataset
+  <a href="#load-from-the-hub" class="md-nav__link">
+    Load from the Hub
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-the-benchmark" class="md-nav__link">
+    Use the benchmark
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#partake-in-the-benchmark" class="md-nav__link">
+    Partake in the benchmark
   </a>
   
 </li>
@@ -1530,35 +1464,28 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=39b58e71">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=40f99374-b47e-4f84-bdb9-148a11f9c07d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="creating-datasets-with-zarr">Creating datasets with zarr<a class="anchor-link" href="#creating-datasets-with-zarr">¶</a></h1><h2 id="pointer-columns">Pointer columns<a class="anchor-link" href="#pointer-columns">¶</a></h2><p>Not all data might fit the tabular format, e.g. images or conformers. In that case, we have <em>pointer</em> columns. Pointer columns do not contain the data itself, but rather store a reference to an external file from which the content can be loaded.</p>
-<p>For now, we only support <code>.zarr</code> files as references. To learn more about <code>.zarr</code>, visit their documentation. Their <a href="https://zarr.readthedocs.io/en/stable/tutorial.html">tutorial</a> is a specifically good read to better understand the main features.</p>
+<h1 id="the-basics">The Basics<a class="anchor-link" href="#the-basics">¶</a></h1><div class="admonition abstract highlight">
+<p class="admonition-title">In short</p>
+<p>This tutorial walks you through the basic usage of Polaris. We will first login to the hub and will then see how easy it is to load a dataset or benchmark from it. Finally, we will train a simple baseline to submit a first set of results!</p>
 </div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e154bb54">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="dummy-example">Dummy example<a class="anchor-link" href="#dummy-example">¶</a></h3><p>For the sake of simplicity, let's assume we have just two datapoints. We will use this to demonstrate the idea behind pointer columns.</p>
+<p>Polaris is designed to standardize the process of constructing datasets, specifying benchmarks and evaluating novel machine learning techniques within the realms of biology, chemistry, and drug discovery.</p>
+<p>While the Polaris library can be used independently from the <a href="https://polarishub.io/">Polaris Hub</a>, the two were designed to seamlessly work together. The hub provides various pre-made, high quality datasets and benchmarks to develop and evaluate novel ML methods. In this tutorial, we will see how easy it is to load and use these datasets and benchmarks.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5e201379">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=9b465ea4-7c71-443b-9908-3f9e567ee4c4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-1">
@@ -1571,35 +1498,34 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">zarr</span>
-<span class="kn">import</span> <span class="nn">platformdirs</span>
-
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-
-<span class="n">SAVE_DIR</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">platformdirs</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span><span class="n">appname</span><span class="o">=</span><span class="s2">"polaris-tutorials"</span><span class="p">),</span> <span class="s2">"002"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">polaris</span> <span class="k">as</span> <span class="nn">po</span>
+<span class="kn">from</span> <span class="nn">polaris.hub.client</span> <span class="kn">import</span> <span class="n">PolarisHubClient</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import zarr
-import platformdirs
-
-import numpy as np
-import datamol as dm
-import pandas as pd
-
-SAVE_DIR = dm.fs.join(platformdirs.user_cache_dir(appname="polaris-tutorials"), "002")</div>
+<div class="clipboard-copy-txt" id="cell-1">import polaris as po
+from polaris.hub.client import PolarisHubClient</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=07442028">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=168c7f21-f9ec-43e2-b123-2bdcba2e8a71">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="login">Login<a class="anchor-link" href="#login">¶</a></h3><p>To be able to complete this step, you will require a Polaris Hub account. Go to <a href="https://polarishub.io/">https://polarishub.io/</a> to create one. You only have to log in once at the start or when you haven't used your account in a while.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=de8bf4bf-4dbd-42eb-8f74-bf8aa0339469">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-2">
@@ -1612,35 +1538,60 @@ SAVE_DIR = dm.fs.join(platformdirs.user_cache_dir(appname="polaris-tutorials"), 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Create a single image and save it to a .zarr directory</span>
-<span class="n">images</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-
-<span class="n">train_path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"single_train.zarr"</span><span class="p">)</span>
-<span class="n">zarr</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-<span class="n">test_path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"single_test.zarr"</span><span class="p">)</span>
-<span class="n">zarr</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">test_path</span><span class="p">,</span> <span class="n">images</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">PolarisHubClient</span><span class="p">()</span>
+<span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2"># Create a single image and save it to a .zarr directory
-images = np.random.random((2, 64, 64, 3))
-
-train_path = dm.fs.join(SAVE_DIR, "single_train.zarr")
-zarr.save(train_path, images[0])
-
-test_path = dm.fs.join(SAVE_DIR, "single_test.zarr")
-zarr.save(test_path, images[1])</div>
+<div class="clipboard-copy-txt" id="cell-2">client = PolarisHubClient()
+client.login()</div>
 </div>
 </div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre><span class="ansi-green-fg">2023-10-13 15:55:59.062</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris.hub.client</span>:<span class="ansi-cyan-fg">login</span>:<span class="ansi-cyan-fg">234</span> - <span class="ansi-bold">You are already logged in to the Polaris Hub as cwognum (cas@valencediscovery.com). Set `overwrite=True` to force re-authentication.</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0ea6d6c0">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Instead of through the Python API, you could also use the Polaris CLI. See:</p>
+<div class="highlight"><pre><span></span>polaris<span class="w"> </span>login<span class="w"> </span>--help
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5edee39f-ce29-4ae6-91ce-453d9190541b">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="load-from-the-hub">Load from the Hub<a class="anchor-link" href="#load-from-the-hub">¶</a></h3><p>Both datasets and benchmarks are identified by a <code>owner/name</code> id. You can easily find and copy these through the Hub. Once you have the id, loading a dataset or benchmark is incredibly easy.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=16543db7">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=4e004589-6c48-4232-b353-b1700536dde6">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-3">
@@ -1653,31 +1604,38 @@ zarr.save(test_path, images[1])</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-    <span class="p">{</span>
-        <span class="s2">"images"</span><span class="p">:</span> <span class="p">[</span><span class="n">train_path</span><span class="p">,</span> <span class="n">test_path</span><span class="p">],</span>  <span class="c1"># Instead of the content, we specify paths</span>
-        <span class="s2">"target"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
-    <span class="p">}</span>
-<span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">"polaristest/rdkit_solublity_tutorial"</span><span class="p">)</span>
+<span class="n">benchmark</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_benchmark</span><span class="p">(</span><span class="s2">"polaristest/rdkit-solubility-benchmark-test"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">table = pd.DataFrame(
-    {
-        "images": [train_path, test_path],  # Instead of the content, we specify paths
-        "target": np.random.random(2),
-    }
-)</div>
+<div class="clipboard-copy-txt" id="cell-3">dataset = po.load_dataset("polaristest/rdkit_solublity_tutorial")
+benchmark = po.load_benchmark("polaristest/rdkit-solubility-benchmark-test")</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1ce8e0e5-88c8-4d3b-9292-e75c97315833">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="use-the-benchmark">Use the benchmark<a class="anchor-link" href="#use-the-benchmark">¶</a></h3><p>The polaris library is designed to make it easy to participate in a benchmark. In just a few lines of code, we can get the train and test partition, access the associated data in various ways and evaluate our predictions. There's two main API endpoints.</p>
+<ul>
+<li><code>get_train_test_split()</code>: For creating objects through which we can access the different dataset partitions.</li>
+<li><code>evaluate()</code>: For evaluating a set of predictions in accordance with the benchmark protocol.</li>
+</ul>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=a257b09d">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=b55195cd-84da-4cd9-951b-c148265b303c">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-4">
@@ -1690,46 +1648,37 @@ zarr.save(test_path, images[1])</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">ColumnAnnotation</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span>
-    <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span>
-    <span class="c1"># To indicate that we are dealing with a pointer column here,</span>
-    <span class="c1"># we need to annotate the column.</span>
-    <span class="n">annotations</span><span class="o">=</span><span class="p">{</span><span class="s2">"images"</span><span class="p">:</span> <span class="n">ColumnAnnotation</span><span class="p">(</span><span class="n">is_pointer</span><span class="o">=</span><span class="kc">True</span><span class="p">)},</span>
-<span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">from polaris.dataset import Dataset, ColumnAnnotation
-
-dataset = Dataset(
-    table=table,
-    # To indicate that we are dealing with a pointer column here,
-    # we need to annotate the column.
-    annotations={"images": ColumnAnnotation(is_pointer=True)},
-)</div>
+<div class="clipboard-copy-txt" id="cell-4">train, test = benchmark.get_train_test_split()</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2524c795">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c14e189c">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Note how the table does not contain the image data, but rather stores a path.</p>
+<p>The created objects support various flavours to access the data.</p>
+<ul>
+<li>The objects are iterable;</li>
+<li>The objects can be indexed;</li>
+<li>The objects have properties to access all data at once.</li>
+</ul>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=19a39fab">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=43cbe460">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-5">
@@ -1742,44 +1691,23 @@ dataset = Dataset(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"images"</span><span class="p">]</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">train</span><span class="p">:</span>
+    <span class="k">pass</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">dataset.table.loc[0, "images"]</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>'/home/cas/.cache/polaris-tutorials/002/single_train.zarr'</pre>
+<div class="clipboard-copy-txt" id="cell-5">for x, y in train:
+    pass</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5c051877">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>To load the data that is being pointed to, you can simply use the <code>Dataset.get_data()</code> utility method.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=8189f312">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=2f317c10">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-6">
@@ -1792,44 +1720,23 @@ dataset = Dataset(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="s2">"images"</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">)):</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">dataset.get_data(col="images", row=0).shape</div>
+<div class="clipboard-copy-txt" id="cell-6">for i in range(len(train)):
+    x, y = train[i]</div>
 </div>
 </div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>(64, 64, 3)</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=17aaff10">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Creating a benchmark and the associated <code>Subset</code> objects will automatically do so!</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6f1c8766">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=08ce24c7-992a-40a7-b8ef-c862fab99e6e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-7">
@@ -1842,37 +1749,34 @@ dataset = Dataset(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.benchmark</span> <span class="kn">import</span> <span class="n">SingleTaskBenchmarkSpecification</span>
-
-<span class="n">benchmark</span> <span class="o">=</span> <span class="n">SingleTaskBenchmarkSpecification</span><span class="p">(</span>
-    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
-    <span class="n">input_cols</span><span class="o">=</span><span class="s2">"images"</span><span class="p">,</span>
-    <span class="n">target_cols</span><span class="o">=</span><span class="s2">"target"</span><span class="p">,</span>
-    <span class="n">metrics</span><span class="o">=</span><span class="s2">"mean_absolute_error"</span><span class="p">,</span>
-    <span class="n">split</span><span class="o">=</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
-<span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">inputs</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">targets</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">from polaris.benchmark import SingleTaskBenchmarkSpecification
-
-benchmark = SingleTaskBenchmarkSpecification(
-    dataset=dataset,
-    input_cols="images",
-    target_cols="target",
-    metrics="mean_absolute_error",
-    split=([0], [1]),
-)</div>
+<div class="clipboard-copy-txt" id="cell-7">x = train.inputs
+y = train.targets</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9a0c635c">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d5fa35c5-e2d0-4d75-a2cb-75b4749d91ef">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>To avoid accidental access to the test targets, the test object does not expose the labels and will throw an error if you try access them explicitly.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=8c33b7d4-fa82-4994-a7ab-5d0821ad5fd4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-8">
@@ -1885,100 +1789,23 @@ benchmark = SingleTaskBenchmarkSpecification(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">()</span>
-
-<span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">train</span><span class="p">:</span>
-    <span class="c1"># At this point, the content is loaded from the path specified in the table</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">test</span><span class="p">:</span>
+    <span class="k">pass</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">train, test = benchmark.get_train_test_split()
-
-for x, y in train:
-    # At this point, the content is loaded from the path specified in the table
-    print(x.shape)</div>
+<div class="clipboard-copy-txt" id="cell-8">for x in test:
+    pass</div>
 </div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>(64, 64, 3)
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=67d2e77d">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="creating-datasets-from-zarr-arrays">Creating datasets from <code>.zarr</code> arrays<a class="anchor-link" href="#creating-datasets-from-zarr-arrays">¶</a></h2><p>While the above example works, creating the table with all paths from scratch is time-consuming when datasets get large. Instead, you can also automatically parse a <code>.zarr</code> hierarchy into the expected tabular data structure.</p>
-<p>A little more about zarr: A <code>.zarr</code> file can contain groups and arrays, where each group can again contain groups and arrays. Each array can be saved as one or multiple chunks. Additional user attributes (for any array or group) are saved as JSON files.</p>
-<p>Within Polaris:</p>
-<ol>
-<li>Each subgroup of the root group corresponds to a single column.</li>
-<li>Each subgroup can contain:<ul>
-<li>A single array with all datapoints.</li>
-<li>A single array per datapoint.</li>
-</ul>
-</li>
-<li>Additional meta-data is saved to the user attributes of the root group.</li>
-<li>The indices are required to be integers.</li>
-</ol>
-<p>To better explain what this works, let's look at two examples corresponding to the two cases in point 2 above.</p>
-<h3 id="a-single-array-per-data-point">A single array <em>per</em> data point<a class="anchor-link" href="#a-single-array-per-data-point">¶</a></h3><p>In this first example we will create a zarr array <em>per</em> data point. The structure of the zarr will look like:</p>
-<pre><code>/
-  column_a/
-      array_1
-      array_2
-      ...
-      array_N
-</code></pre>
-<p>and as we will see, this will get parsed into</p>
-<table>
-<thead>
-<tr>
-<th>column_a</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>/path/to/root.zarr/column_a/array_1</td>
-</tr>
-<tr>
-<td>/path/to/root.zarr/column_a/array_2</td>
-</tr>
-<tr>
-<td>...</td>
-</tr>
-<tr>
-<td>/path/to/root.zarr/column_a/array_N</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition info highlight">
-<p class="admonition-title">Note</p>
-<p>Notice dataset now no longer stores the content of the array itself, but rather a reference to the array.</p>
 </div>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=04f47190">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=8b4ac073">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-9">
@@ -1991,34 +1818,24 @@ for x, y in train:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Let's first create some dummy dataset with 1000 64x64 "images"</span>
-<span class="n">images</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">test</span><span class="p">)):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">test</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-9"># Let's first create some dummy dataset with 1000 64x64 "images"
-images = np.random.random((1000, 64, 64, 3))</div>
+<div class="clipboard-copy-txt" id="cell-9">
+for i in range(len(test)):
+    x = test[i]</div>
 </div>
 </div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d55e55f3">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>To be able to use these images in Polaris, we need to save them in the zarr hierarchy.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=e4d4d32e">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5664eb87">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-10">
@@ -2031,55 +1848,38 @@ images = np.random.random((1000, 64, 64, 3))</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"zarr"</span><span class="p">,</span> <span class="s2">"archive_multi.zarr"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">inputs</span>
 
-<span class="k">with</span> <span class="n">zarr</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">root</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">root</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">"images"</span><span class="p">)</span> <span class="k">as</span> <span class="n">group</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">images</span><span class="p">):</span>
-            <span class="c1"># If you're saving an array per datapoint,</span>
-            <span class="c1"># the name of the array needs to be an integer</span>
-            <span class="n">group</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
-
-    <span class="c1"># he root directory can furthermore contain all additional meta-data in its user attributes.</span>
-    <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"dummy_image_dataset"</span>
-    <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"description"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Randomly generated 64x64 images"</span>
-    <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"source"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"https://doi.org/xx.xxxx"</span>
-
-    <span class="c1"># To ensure proper processing, it is important that we annotate the column.</span>
-    <span class="c1"># As this has to be JSON serializable, we create a dict instead of the object.</span>
-    <span class="c1"># Due to using Pydantic, this will work seamlessly.</span>
-    <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"annotations"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"images"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"is_pointer"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
+<span class="c1"># NOTE: The below will throw an error!</span>
+<span class="c1"># y = test.targets</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10">path = dm.fs.join(SAVE_DIR, "zarr", "archive_multi.zarr")
+<div class="clipboard-copy-txt" id="cell-10">x = test.inputs
 
-with zarr.open(path, "w") as root:
-    with root.create_group("images") as group:
-        for i, arr in enumerate(images):
-            # If you're saving an array per datapoint,
-            # the name of the array needs to be an integer
-            group.array(i, arr)
-
-    # he root directory can furthermore contain all additional meta-data in its user attributes.
-    root.attrs["name"] = "dummy_image_dataset"
-    root.attrs["description"] = "Randomly generated 64x64 images"
-    root.attrs["source"] = "https://doi.org/xx.xxxx"
-
-    # To ensure proper processing, it is important that we annotate the column.
-    # As this has to be JSON serializable, we create a dict instead of the object.
-    # Due to using Pydantic, this will work seamlessly.
-    root.attrs["annotations"] = {"images": {"is_pointer": True}}</div>
+# NOTE: The below will throw an error!
+# y = test.targets</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=f0885513">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=955ad9db-3468-4f34-b303-18e6d642be56">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="partake-in-the-benchmark">Partake in the benchmark<a class="anchor-link" href="#partake-in-the-benchmark">¶</a></h3><p>To complete our example, let's participate in the benchmark. We will train a simple random forest model on the ECFP representation through scikit-learn and datamol.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=748dd278-0fd0-4c5b-ac6a-8d974143c3b9">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-11">
@@ -2092,21 +1892,60 @@ with zarr.open(path, "w") as root:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_zarr</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+
+<span class="c1"># Convert smiles to ECFP fingerprints</span>
+<span class="n">train_fps</span> <span class="o">=</span> <span class="p">[</span><span class="n">dm</span><span class="o">.</span><span class="n">to_fp</span><span class="p">(</span><span class="n">smi</span><span class="p">)</span> <span class="k">for</span> <span class="n">smi</span> <span class="ow">in</span> <span class="n">train</span><span class="o">.</span><span class="n">inputs</span><span class="p">]</span>
+
+<span class="c1"># Define a model and train</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_fps</span><span class="p">,</span> <span class="n">train</span><span class="o">.</span><span class="n">targets</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-11">dataset = Dataset.from_zarr(path)</div>
+<div class="clipboard-copy-txt" id="cell-11">import datamol as dm
+from sklearn.ensemble import RandomForestRegressor
+
+# Convert smiles to ECFP fingerprints
+train_fps = [dm.to_fp(smi) for smi in train.inputs]
+
+# Define a model and train
+model = RandomForestRegressor(max_depth=2, random_state=0)
+model.fit(train_fps, train.targets)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<style>#sk-container-id-1 {color: black;}#sk-container-id-1 pre{padding: 0;}#sk-container-id-1 div.sk-toggleable {background-color: white;}#sk-container-id-1 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-1 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-1 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-1 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-1 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-1 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-1 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-1 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-1 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-1 div.sk-item {position: relative;z-index: 1;}#sk-container-id-1 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-1 div.sk-item::before, #sk-container-id-1 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-1 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-1 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-1 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-1 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-1 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-1 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-1 div.sk-label-container {text-align: center;}#sk-container-id-1 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-1 div.sk-text-repr-fallback {display: none;}</style><div class="sk-top-container" id="sk-container-id-1"><div class="sk-text-repr-fallback"><pre>RandomForestRegressor(max_depth=2, random_state=0)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br/>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item"><div class="sk-estimator sk-toggleable"><input checked="" class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox"/><label class="sk-toggleable__label sk-toggleable__label-arrow" for="sk-estimator-id-1">RandomForestRegressor</label><div class="sk-toggleable__content"><pre>RandomForestRegressor(max_depth=2, random_state=0)</pre></div></div></div></div></div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=2a7809e1">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a75a9f01">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>To evaluate a model within Polaris, you should use the <code>evaluate()</code> endpoint. This requires you to just provide the predictions. The targets of the test set are automatically extracted so that the chance of the user accessing the test labels is minimal</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6633ec79-a6ff-4ce0-bc7d-cdb9e1042462">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-12">
@@ -2119,75 +1958,23 @@ with zarr.open(path, "w") as root:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="s2">"images"</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">test_fps</span> <span class="o">=</span> <span class="p">[</span><span class="n">dm</span><span class="o">.</span><span class="n">to_fp</span><span class="p">(</span><span class="n">smi</span><span class="p">)</span> <span class="k">for</span> <span class="n">smi</span> <span class="ow">in</span> <span class="n">test</span><span class="o">.</span><span class="n">inputs</span><span class="p">]</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_fps</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-12">dataset.get_data(col="images", row=0).shape</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>(64, 64, 3)</pre>
+<div class="clipboard-copy-txt" id="cell-12">test_fps = [dm.to_fp(smi) for smi in test.inputs]
+predictions = model.predict(test_fps)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d6977165">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="a-single-array-for-all-datapoints">A single array for <em>all</em> datapoints<a class="anchor-link" href="#a-single-array-for-all-datapoints">¶</a></h3><p>Instead of having an array per datapoint, you might also batch all arrays in a single array. This could for example speed up compression.</p>
-<p>In this case, our zarr hierarchy will look like this:</p>
-<pre><code>/
-  column_a/
-      array
-</code></pre>
-<p>Which will get parsed into a table like:</p>
-<table>
-<thead>
-<tr>
-<th>column_a</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>/path/to/root.zarr/column_a/array#1</td>
-</tr>
-<tr>
-<td>/path/to/root.zarr/column_a/array#2</td>
-</tr>
-<tr>
-<td>...</td>
-</tr>
-<tr>
-<td>/path/to/root.zarr/column_a/array#N</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition info highlight">
-<p class="admonition-title">Note</p>
-<p>Notice the # suffix in the path, which indicates the index at which the data-point is stored within the big array. </p>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=12a06b89">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=79c072cf-683e-4257-b31e-59fdbcf5e979">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-13">
@@ -2200,29 +1987,46 @@ with zarr.open(path, "w") as root:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"zarr"</span><span class="p">,</span> <span class="s2">"archive_single.zarr"</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="n">zarr</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">root</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">root</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">"images"</span><span class="p">)</span> <span class="k">as</span> <span class="n">group</span><span class="p">:</span>
-        <span class="n">group</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="n">images</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
+<span class="n">results</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-13">path = dm.fs.join(SAVE_DIR, "zarr", "archive_single.zarr")
-
-with zarr.open(path, "w") as root:
-    with root.create_group("images") as group:
-        group.array("data", images)</div>
+<div class="clipboard-copy-txt" id="cell-13">results = benchmark.evaluate(predictions)
+results</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<table border="1"><tr><th>name</th><td>None</td></tr><tr><th>description</th><td>None</td></tr><tr><th>tags</th><td></td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>owner</th><td>None</td></tr><tr><th>results</th><td><table border="1"><tr><th>mean_squared_error</th><td>2.687513982094899</td></tr><tr><th>mean_absolute_error</th><td>1.2735690161081497</td></tr></table></td></tr><tr><th>benchmark_name</th><td>rdkit-solubility-benchmark-test</td></tr><tr><th>benchmark_owner</th><td><table border="1"><tr><th>organizationId</th><td>org_2VuFFDUgVqc7MI80w5LtujZBxSQ</td></tr><tr><th>userId</th><td>None</td></tr><tr><th>slug</th><td>polaristest</td></tr><tr><th>owner</th><td>org_2VuFFDUgVqc7MI80w5LtujZBxSQ</td></tr></table></td></tr><tr><th>github_url</th><td>None</td></tr><tr><th>paper_url</th><td>None</td></tr><tr><th>contributors</th><td>None</td></tr></table>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=3c7c11ac">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=90114c20-4c01-432b-9f4d-b31863881cc6">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Before uploading the results to the Hub, you can provide some additional information about the results that will be displayed on the Polaris Hub.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=a601f415-c563-4efe-94c3-0d44f3fd6576">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-14">
@@ -2235,39 +2039,38 @@ with zarr.open(path, "w") as root:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_zarr</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
-<span class="c1"># The path refers to the original zarr directory we created in the above code block</span>
-<span class="n">dataset</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"images"</span><span class="p">]</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">results</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"tutorial"</span>
+<span class="n">results</span><span class="o">.</span><span class="n">github_url</span> <span class="o">=</span> <span class="s2">"https://github.com/polaris-hub/polaris-hub"</span>
+<span class="n">results</span><span class="o">.</span><span class="n">paper_url</span> <span class="o">=</span> <span class="s2">"https://polaris-hub.vercel.app"</span>
+<span class="n">results</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">"Hello, World!"</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-14">dataset = Dataset.from_zarr(path)
-
-# The path refers to the original zarr directory we created in the above code block
-dataset.table.iloc[0]["images"]</div>
+<div class="clipboard-copy-txt" id="cell-14">results.name = f"tutorial"
+results.github_url = "https://github.com/polaris-hub/polaris-hub"
+results.paper_url = "https://polaris-hub.vercel.app"
+results.description = "Hello, World!"</div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>'/home/cas/.cache/polaris-tutorials/002/zarr/archive_single.zarr//images/data#0'</pre>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4e7cc06d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Finally, let's upload the results to the Hub! The result will be private, but visiting the link in the logs you can decide to make it public through the Hub.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=f8d1b42d">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=60cbf4b9-8514-480d-beda-8a50e5f7c9a6">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-15">
@@ -2280,9 +2083,11 @@ dataset.table.iloc[0]["images"]</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="s2">"images"</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">client</span><span class="o">.</span><span class="n">upload_results</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+<span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-15">dataset.get_data(col="images", row=0).shape</div>
+<div class="clipboard-copy-txt" id="cell-15">client.upload_results(results)
+client.close()</div>
 </div>
 </div>
 </div>
@@ -2291,215 +2096,30 @@ dataset.table.iloc[0]["images"]</div>
 <div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[15]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>(64, 64, 3)</pre>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>/Users/cas.wognum/micromamba/envs/polaris/lib/python3.11/site-packages/pydantic/main.py:309: UserWarning: Pydantic serializer warnings:
+  Expected `url` but got `str` - serialized value may not be as expected
+  Expected `url` but got `str` - serialized value may not be as expected
+  return self.__pydantic_serializer__.to_python(
+<span class="ansi-green-fg">2023-10-13 15:56:05.380</span> | <span class="ansi-green-intense-fg ansi-bold">SUCCESS </span> | <span class="ansi-cyan-fg">polaris.hub.client</span>:<span class="ansi-cyan-fg">upload_results</span>:<span class="ansi-cyan-fg">369</span> - <span class="ansi-green-intense-fg ansi-bold">Your result has been successfully uploaded to the Hub. View it here: https://polarishub.io//benchmarks/polaristest/rdkit-solubility-benchmark-test/tZ7Nk3MKtTx42gvSYHPSE</span>
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=51493c81">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=78fe8d63">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="saving-the-dataset">Saving the dataset<a class="anchor-link" href="#saving-the-dataset">¶</a></h2><p>We can still easily save the dataset. All the pointer columns will be automatically updated.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1cd94077">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-16">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">savedir</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"json"</span><span class="p">)</span>
-<span class="n">json_path</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">savedir</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-16">savedir = dm.fs.join(SAVE_DIR, "json")
-json_path = dataset.to_json(savedir)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c5147684">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-17">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">fs</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">get_mapper</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">fs</span>
-<span class="n">fs</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-17">fs = dm.fs.get_mapper(path).fs
-fs.ls(SAVE_DIR)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>['/home/cas/.cache/polaris-tutorials/002/benchmark.json',
- '/home/cas/.cache/polaris-tutorials/002/single_train.zarr',
- '/home/cas/.cache/polaris-tutorials/002/dataset.json',
- '/home/cas/.cache/polaris-tutorials/002/table.parquet',
- '/home/cas/.cache/polaris-tutorials/002/zarr',
- '/home/cas/.cache/polaris-tutorials/002/single_test.zarr',
- '/home/cas/.cache/polaris-tutorials/002/json']</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b9bf6c19">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Besides the <code>table.parquet</code> and <code>dataset.yaml</code>, we can now also see a <code>data</code> folder which stores the content for the additional content from the pointer columns. Instead, we might want to rather save as a single <code>.zarr</code> file. With the <code>array_mode</code> argument, we can choose between the two structures we outlined in this repository.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=40e210fc">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-18">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">savedir</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"zarr"</span><span class="p">)</span>
-<span class="n">zarr_path</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="n">savedir</span><span class="p">,</span> <span class="n">array_mode</span><span class="o">=</span><span class="s2">"single"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-18">savedir = dm.fs.join(SAVE_DIR, "zarr")
-zarr_path = dataset.to_zarr(savedir, array_mode="single")</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3801c96f">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="load-the-dataset">Load the dataset<a class="anchor-link" href="#load-the-dataset">¶</a></h2>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=33c25a55">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-19">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">json_path</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-19">Dataset.from_json(json_path)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6f7de196">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-20">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_zarr</span><span class="p">(</span><span class="n">zarr_path</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-20">Dataset.from_zarr(zarr_path)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=72767ef2">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>That's it! Just like that you have partaken in your first Polaris benchmark. In next tutorials, we will consider more advanced use cases of Polaris, such as creating and uploading your own datasets and benchmarks.</p>
 <p>The End.</p>
+<hr/>
 </div>
 </div>
 </div>
@@ -2580,7 +2200,7 @@ zarr_path = dataset.to_zarr(savedir, array_mode="single")</div>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="custom_dataset_benchmark.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Custom datasets and benchmarks">
+          <a href="../quickstart.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Quickstart">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -2590,20 +2210,20 @@ zarr_path = dataset.to_zarr(savedir, array_mode="single")</div>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Custom datasets and benchmarks
+                Quickstart
               </div>
             </div>
           </a>
         
         
           
-          <a href="../api/dataset.html" class="md-footer__link md-footer__link--next" aria-label="Next: Dataset">
+          <a href="data_curation.html" class="md-footer__link md-footer__link--next" aria-label="Next: Dataset curation">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Dataset
+                Dataset curation
               </div>
             </div>
             <div class="md-footer__button md-icon">
