@@ -17,10 +17,10 @@ nav:
     - Polaris: index.md
     - Quickstart: quickstart.md
   - Tutorials:
-    - Basic usage: tutorials/basics.ipynb
-    - Data curation: tutorials/data_curation.ipynb
-    - Custom dataset and benchmarks: tutorials/custom_dataset_benchmark.ipynb
-    - Creating datasets with zarr: tutorials/dataset_zarr.ipynb
+    - The Basics: tutorials/basics.ipynb
+    - Data Curation: tutorials/data_curation.ipynb
+    - Custom Datasets and Benchmarks: tutorials/custom_dataset_benchmark.ipynb
+    - Creating Datasets with zarr: tutorials/dataset_zarr.ipynb
   - API Reference:
       - Core:
         - Dataset: api/dataset.md
@@ -108,6 +108,10 @@ plugins:
             line_length: 80
   - mkdocs-jupyter:
       execute: False
+      remove_tag_config:
+        remove_cell_tags: [remove_cell]
+        remove_all_outputs_tags: [remove_output]
+        remove_input_tags: [remove_input]
 
   - mike:
       version_selector: true

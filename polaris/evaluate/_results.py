@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import Optional, Union
 
@@ -5,6 +6,7 @@ from pydantic import ConfigDict, Field, PrivateAttr, field_serializer
 
 from polaris._artifact import BaseArtifactModel
 from polaris.evaluate._metric import Metric
+from polaris.utils.dict2html import dict2html
 from polaris.utils.misc import to_lower_camel
 from polaris.utils.types import HttpUrlString, HubOwner, HubUser
 
@@ -68,3 +70,18 @@ class BenchmarkResults(BaseArtifactModel):
             return {k.name if isinstance(k, Metric) else k: _recursive_enum_to_str(v) for k, v in d.items()}
 
         return _recursive_enum_to_str(value)
+
+    def _repr_dict_(self) -> dict:
+        """Utility function for pretty-printing to the command line and jupyter notebooks"""
+        repr_dict = self.model_dump()
+        return repr_dict
+
+    def _repr_html_(self):
+        """For pretty-printing in Jupyter Notebooks"""
+        return dict2html(self._repr_dict_())
+
+    def __len__(self):
+        return len(self.table)
+
+    def __repr__(self):
+        return json.dumps(self._repr_dict_(), indent=2)

@@ -1,6 +1,7 @@
 import json
 import os
 import ssl
+import sys
 import webbrowser
 from io import BytesIO
 from typing import Callable, Optional, Union
@@ -9,7 +10,6 @@ import certifi
 import fsspec
 import httpx
 import pandas as pd
-import sys
 from authlib.common.security import generate_token
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client
@@ -352,7 +352,6 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             results: The results to upload.
-
         """
 
         if results.benchmark_name is None or results.benchmark_owner is None:
@@ -365,21 +364,18 @@ class PolarisHubClient(OAuth2Client):
         # Lu: Avoid serilizing and sending None to hub app.
         result_json = results.model_dump(by_alias=True, exclude_none=True)
         response = self._base_request_to_hub(url=url, method="POST", json=result_json)
+        result_url = f"{self.settings.hub_url}/benchmarks/{results.benchmark_owner}/{results.benchmark_name}/{response['id']}"
 
-        # TODO (cwognum): Use actual URL once it's available
         logger.success(
-            "Your result has been successfully uploaded to the Hub. "
-            f"View it here: {self.settings.hub_url}/results/{response['id']}"
+            "Your result has been successfully uploaded to the Hub. " f"View it here: {result_url}"
         )
         return response
 
     def upload_dataset(self, dataset: Dataset):
         """Upload the dataset to the Polaris Hub.
 
-        Info: dataset name and owner.
         Args:
             dataset: The dataset to upload.
-
         """
 
         if dataset.name is None or dataset.owner is None:
@@ -423,7 +419,6 @@ class PolarisHubClient(OAuth2Client):
     def upload_benchmark(self, benchmark: BenchmarkSpecification):
         """Upload the benchmark to the Polaris Hub.
 
-        Info: benchmark name and owner.
         Args:
             benchmark: The benchmark to upload.
 
