@@ -72,7 +72,7 @@ disable_warnings = ["no-data-collected"]
 data_file = ".coverage/coverage"
 
 [tool.coverage.report]
-omit = ["polaris/__init__.py", "polaris/_version.py", "polaris/hub/client.py", "polaris/hub/settings.py", "polaris/hub/__init__.py"]
+omit = ["polaris/__init__.py", "polaris/_version.py", "polaris/hub/client.py", "polaris/hub/settings.py", "polaris/hub/__init__.py", "polaris/curation/viz_utils.py"]
 
 [tool.coverage.xml]
 output = "coverage.xml"

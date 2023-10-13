@@ -136,7 +136,8 @@ class BenchmarkSpecification(BaseArtifactModel):
     @field_validator("main_metric")
     def _validate_main_metric(cls, v):
         """Converts the main metric to a Metric object if it is a string."""
-        if not isinstance(v, Metric):
+        # lu: v can be None.
+        if v and not isinstance(v, Metric):
             v = Metric[v]
         return v
 

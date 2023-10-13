@@ -385,7 +385,8 @@ class Dataset(BaseArtifactModel):
         # Save additional data
         new_table = self._copy_and_update_pointers(pointer_dir, inplace=False)
 
-        serialized = self.model_dump(exclude={"cache_dir"})
+        # Lu: Avoid serilizing and sending None to hub app.
+        serialized = self.model_dump(exclude={"cache_dir"}, exclude_none=True)
         serialized["table"] = table_path
 
         # We need to recompute the checksum, as the pointer paths have changed

@@ -21,5 +21,14 @@ def login(
         client.login(auto_open_browser=auto_open_browser, overwrite=overwrite)
 
 
+@app.command(hidden=True)
+def secret():
+    # NOTE (cwognum): Empty, hidden command to force Typer to not collapse the subcommand.
+    # Added because I anticipate we will want to add more subcommands later on. This will keep
+    # the API consistent in the meantime. Once there are other subcommands, it can be removed.
+    # See also: https://github.com/tiangolo/typer/issues/315
+    raise NotImplementedError()
+
+
 if __name__ == "__main__":
     app()

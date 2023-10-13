@@ -7,12 +7,15 @@ from loguru import logger
 from pydantic import (
     AfterValidator,
     BaseModel,
+    ConfigDict,
     HttpUrl,
     computed_field,
     constr,
     model_validator,
 )
 from typing_extensions import TypeAlias
+
+from polaris.utils.misc import to_lower_camel
 
 SplitIndicesType: TypeAlias = list[int]
 """
@@ -79,23 +82,26 @@ class HubOwner(BaseModel):
     underscores and dashes. Contrary to the username, an organization name can currently be of arbitrary length.
     """
 
-    organizationId: Optional[constr(pattern="^[A-Za-z0-9_-]+$")] = None
-    userId: Optional[HubUser] = None
+    organization_id: Optional[constr(pattern="^[A-Za-z0-9_-]+$")] = None
+    user_id: Optional[HubUser] = None
     slug: constr(pattern="^[A-Za-z0-9_-]+$")
+
+    # Pydantic config
+    model_config = ConfigDict(alias_generator=to_lower_camel, populate_by_name=True)
 
     @model_validator(mode="after")  # type: ignore
     @classmethod
     def _validate_model(cls, m: "HubOwner"):
-        if (m.organizationId is None and m.userId is None) or (
-            m.organizationId is not None and m.userId is not None
+        if (m.organization_id is None and m.user_id is None) or (
+            m.organization_id is not None and m.user_id is not None
         ):
-            raise ValueError("Either `organization` or `user` must be specified, but not both.")
+            raise ValueError("Either `organization_id` or `user_id` must be specified, but not both.")
         return m
 
     @computed_field
     @property
     def owner(self) -> str:
-        return self.organizationId or self.userId  # type: ignore
+        return self.organization_id or self.user_id  # type: ignore
 
     def __str__(self) -> str:
         return self.slug
@@ -134,7 +140,7 @@ class License(BaseModel):
         data = {license["licenseId"]: license for license in data["licenses"]}
 
         if m.id in data:
-            if m.reference != data[m.id]["reference"]:
+            if m.reference is not None and m.reference != data[m.id]["reference"]:
                 logger.warning(f"Found license ID {m.id} in SPDX, using the associated reference.")
             m.reference = data[m.id]["reference"]
 

@@ -1,9 +1,9 @@
 from enum import Enum
 from typing import List, TypeVar, Union
-
 import numpy as np
 from pydantic import BaseModel, Field
 from scipy import stats
+
 from sklearn.base import (
     BaseEstimator,
     OneToOneFeatureMixin,
@@ -16,6 +16,7 @@ from sklearn.neighbors import LocalOutlierFactor
 from sklearn.svm import OneClassSVM
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+
 
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
 NumpyNDArray = TypeVar("numpy.ndarray")
