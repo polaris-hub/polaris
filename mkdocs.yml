@@ -17,10 +17,10 @@ nav:
     - Polaris: index.md
     - Quickstart: quickstart.md
   - Tutorials:
-    - Basic usage: tutorials/Basic.ipynb
-    - Data curation: tutorials/Data_curation.ipynb
-    - Custom dataset and benchmarks: tutorials/Custom_dataset_benchmark.ipynb
-    - Creating datasets with zarr: tutorials/Dataset_zarr.ipynb
+    - Basic usage: tutorials/basics.ipynb
+    - Data curation: tutorials/data_curation.ipynb
+    - Custom dataset and benchmarks: tutorials/custom_dataset_benchmark.ipynb
+    - Creating datasets with zarr: tutorials/dataset_zarr.ipynb
   - API Reference:
       - Core:
         - Dataset: api/dataset.md
