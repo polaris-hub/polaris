@@ -50,6 +50,9 @@ class Dataset(BaseArtifactModel):
             path to a `.parquet` file or a `pandas.DataFrame`.
         md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
             raise an error if the specified checksum doesn't match the computed checksum.
+        readme: Markdown text that can be used to provide a formatted description of the dataset.
+            If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
+            as it provides a rich text editor for writing markdown.
         annotations: Each column _can be_ annotated with a [`ColumnAnnotation`][polaris.dataset.ColumnAnnotation] object.
             Importantly, this is used to annotate whether a column is a pointer column.
         source: The data source, e.g. a DOI, Github repo or URI.
@@ -66,6 +69,7 @@ class Dataset(BaseArtifactModel):
     md5sum: Optional[str] = None
 
     # Additional meta-data
+    readme: str = ""
     annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
     source: Optional[HttpUrlString] = None
     license: Optional[License] = None
