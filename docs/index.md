@@ -35,7 +35,7 @@ If you are entirely new to Polaris, this is the place to start! Learn about the 
 
 Dive deeper into the Polaris code and learn about advanced concepts to create your own benchmarks and datasets. 
 
-[:material-arrow-right: Let's get started](./quickstart.md)
+[:material-arrow-right: Let's get started](./tutorials/basics.ipynb)
 
 ---
 
@@ -51,7 +51,7 @@ This is where you will find the technical documentation of the code itself. Lear
 
 Whether you are a first-time contributor or open-source veteran, we welcome any contribution to Polaris. Learn more about our community initiatives.
 
-[:material-arrow-right: Let's get started](./quickstart.md)
+[:material-arrow-right: Let's get started](https://portal.valencelabs.com/)
 
 ---
 

@@ -76,15 +76,17 @@ This is useful for interactions with httpx and authlib, who have their own URL t
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
 
-    Either specifies an organization or a user, but not both.
+    The slug is most important as it is the user-facing part of this data model. The organization
+    and user id are added to be consistent with the Polaris Hub.
+
     The username is specified as a [`SlugCompatibleStringType`][polaris.utils.types.SlugCompatibleStringType],
     whereas the organization is specified as a string that can contain only alpha-numeric characters,
     underscores and dashes. Contrary to the username, an organization name can currently be of arbitrary length.
     """
 
+    slug: constr(pattern="^[A-Za-z0-9_-]+$")
     organization_id: Optional[constr(pattern="^[A-Za-z0-9_-]+$")] = None
     user_id: Optional[HubUser] = None
-    slug: constr(pattern="^[A-Za-z0-9_-]+$")
 
     # Pydantic config
     model_config = ConfigDict(alias_generator=to_lower_camel, populate_by_name=True)
@@ -92,10 +94,8 @@ class HubOwner(BaseModel):
     @model_validator(mode="after")  # type: ignore
     @classmethod
     def _validate_model(cls, m: "HubOwner"):
-        if (m.organization_id is None and m.user_id is None) or (
-            m.organization_id is not None and m.user_id is not None
-        ):
-            raise ValueError("Either `organization_id` or `user_id` must be specified, but not both.")
+        if m.organization_id is not None and m.user_id is not None:
+            raise ValueError("An owner cannot both have an `organization_id` and a `user_id`")
         return m
 
     @computed_field
