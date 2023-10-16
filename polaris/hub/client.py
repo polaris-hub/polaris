@@ -5,6 +5,7 @@ import sys
 import webbrowser
 from io import BytesIO
 from typing import Callable, Optional, Union
+from urllib.parse import urljoin
 
 import certifi
 import fsspec
@@ -12,8 +13,9 @@ import httpx
 import pandas as pd
 from authlib.common.security import generate_token
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
-from authlib.integrations.httpx_client import OAuth2Client
+from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
+from httpx import HTTPStatusError
 from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
 
@@ -124,10 +126,29 @@ class PolarisHubClient(OAuth2Client):
     def _base_request_to_hub(self, url: str, method: str, **kwargs):
         """Utility function since most API methods follow the same pattern"""
         response = self.request(url=url, method=method, **kwargs)
-        response.raise_for_status()
-        # Convert the reponse to json format if reponse contains 'text' body
-        if response.text:
+
+        try:
+            response.raise_for_status()
+
+        except HTTPStatusError as error:
+            # With an internal server error, we are not sure the custom error-handling code on the hub is reached.
+            if response.status_code == 500:
+                raise
+
+            # If not an internal server error, the hub should always return a JSON response
+            # with additional information about the error.
             response = response.json()
+            response = json.dumps(response, indent=2, sort_keys=True)
+            raise PolarisHubError(
+                f"The request to the Polaris Hub failed. See the error message below for more details:\n{response}"
+            ) from error
+
+        # Convert the reponse to json format if the reponse contains a 'text' body
+        try:
+            response = response.json()
+        except json.JSONDecodeError:
+            pass
+
         return response
 
     # =========================
@@ -181,11 +202,12 @@ class PolarisHubClient(OAuth2Client):
                     "SSL verification by setting the POLARIS_CA_BUNDLE environment variable to `false`."
                 ) from error
             raise error
-        except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError) as error:
+        except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError, OAuthError) as error:
             if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:
                 raise
             raise PolarisUnauthorizedError(
-                "You are not logged in to Polaris. Use the Polaris CLI to authenticate yourself."
+                "You are not logged in to Polaris or your login has expired. "
+                "You can use the Polaris CLI to easily authenticate yourself again, see `polaris login --help`."
             ) from error
         return response
 
@@ -215,6 +237,11 @@ class PolarisHubClient(OAuth2Client):
             self._user_info = user_info.json()
 
         return self._user_info
+
+    @property
+    def user_as_owner(self) -> HubOwner:
+        """Easily get the currently logged-in user a `HubOwner` instance."""
+        return HubOwner(user_id=self.user_info["user_id"], slug=self.user_info["username"])
 
     def login(self, overwrite: bool = False, auto_open_browser: bool = True):
         """Login to the Polaris Hub using the OAuth2 protocol.
@@ -333,6 +360,7 @@ class PolarisHubClient(OAuth2Client):
         # TODO (cwognum): Currently, the benchmark endpoints do not return the owner info for the underlying dataset.
         # TODO (jstlaurent): Use the same owner for now, until the benchmark returns a better dataset entity
         response["dataset"] = self.get_dataset(owner, response["dataset"]["name"])
+
         # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
         #  Maybe through structural pattern matching, introduced in Py3.10, or Pydantic's discriminated unions?
         benchmark_cls = (
@@ -345,7 +373,18 @@ class PolarisHubClient(OAuth2Client):
     def upload_results(self, results: BenchmarkResults):
         """Upload the results to the Polaris Hub.
 
-        Info: Benchmark name and owner
+        Info: Owner
+            The owner of the results will automatically be inferred by the hub from the user making the request.
+            Contrary to other artifact types, an organization cannot own a set of results.
+            However, you can specify the `BenchmarkResults.contributors` field to share credit with other hub users.
+
+        Note: Required meta-data
+            The Polaris client and hub maintain different requirements as to which meta-data is required.
+            The requirements by the hub are stricter, so when uploading to the hub you might
+            get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
+            before uploading.
+
+        Note: Benchmark name and owner
             Importantly, `results.benchmark_name` and `results.benchmark_owner` must be specified
             and match an existing benchmark on the Polaris Hub. If these results were generated by
             `benchmark.evaluate(...)`, this is done automatically.
@@ -354,64 +393,74 @@ class PolarisHubClient(OAuth2Client):
             results: The results to upload.
         """
 
-        if results.benchmark_name is None or results.benchmark_owner is None:
-            raise PolarisHubError(
-                "Benchmark name and owner must be set to upload results to the Polaris Hub."
-            )
-
-        url = f"/benchmark/{results.benchmark_owner}/{results.benchmark_name}/result"
-
-        # Lu: Avoid serilizing and sending None to hub app.
+        # Get the serialized model data-structure
         result_json = results.model_dump(by_alias=True, exclude_none=True)
-        response = self._base_request_to_hub(url=url, method="POST", json=result_json)
-        result_url = f"{self.settings.hub_url}/benchmarks/{results.benchmark_owner}/{results.benchmark_name}/{response['id']}"
 
-        logger.success(
-            "Your result has been successfully uploaded to the Hub. " f"View it here: {result_url}"
+        # Make a request to the hub
+        url = f"/benchmark/{results.benchmark_owner}/{results.benchmark_name}/result"
+        response = self._base_request_to_hub(url=url, method="POST", json=result_json)
+
+        # Inform the user about where to find their newly created artifact.
+        result_url = urljoin(
+            self.settings.hub_url,
+            f"benchmarks/{results.benchmark_owner}/{results.benchmark_name}/{response['id']}",
         )
+        logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
         return response
 
     def upload_dataset(self, dataset: Dataset):
         """Upload the dataset to the Polaris Hub.
 
+        Info: Owner
+            You have to manually specify the owner in the dataset data model. Because the owner could
+            be a user or an organization, we cannot automatically infer this from just the logged-in user.
+
+        Note: Required meta-data
+            The Polaris client and hub maintain different requirements as to which meta-data is required.
+            The requirements by the hub are stricter, so when uploading to the hub you might
+            get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
+            before uploading.
+
         Args:
             dataset: The dataset to upload.
         """
 
-        if dataset.name is None or dataset.owner is None:
-            raise PolarisHubError("Dataset name and owner must be set to upload dataset to the Polaris Hub.")
-
-        # TODO: Mechinism to withdraw the dataset meta info from hub if the parquet uploading fails
-        # step 1: upload dataset meta data to the hub
+        # Get the serialized data-model
+        # We exclude the table as it handled separately and the cache_dir as it is user-specific
         dataset_json = dataset.model_dump(exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True)
-        # Add tableContent for PUT request
+
+        # Uploading a dataset is a two-step process.
+        # 1. Upload the dataset meta data to the hub and prepare the hub to receive the parquet file
+        # 2. Upload the parquet file to the hub
+        # TODO: Revert step 1 in case step 2 fails - Is this needed? Or should this be taken care of by the hub?
+
+        # Step 1: Upload meta-data
+        # Instead of directly uploading the table, we announce to the hub that we intend to upload one.
         dataset_json["tableContent"] = {
             "size": sys.getsizeof(dataset.table),
             "fileType": "parquet",
             "md5sum": dataset._compute_checksum(dataset.table),
-            "url": f"{self.settings.hub_url}/storage/dataset/{dataset.owner.slug}/{dataset.name}/table.parquet",
+            "url": f"{self.settings.hub_url}/storage/dataset/{dataset.owner}/{dataset.name}/table.parquet",
         }
-
         url = f"/dataset/{dataset.owner}/{dataset.name}"
         response = self._base_request_to_hub(url=url, method="PUT", json=dataset_json)
 
-        # step2: Upload the parquet to the hub
-        headers = {"Content-type": "application/vnd.apache.parquet"}
-        parquet_url = dataset_json["tableContent"]["url"]
-        # table parquet content to BytesIO object
+        # Step 2: Upload the parquet file
+        # Write the parquet file directly to a buffer
         buffer = BytesIO()
         dataset.table.to_parquet(buffer, engine="auto")
+
         self._base_request_to_hub(
-            url=parquet_url,
+            url=dataset_json["tableContent"]["url"],
             method="PUT",
-            headers=headers,
+            headers={"Content-type": "application/vnd.apache.parquet"},
             content=buffer.getvalue(),
             follow_redirects=True,
         )
 
         logger.success(
             "Your dataset has been successfully uploaded to the Hub. "
-            f"View it here: {self.settings.hub_url}/datasets/{dataset.owner}/{dataset.name}"
+            f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
         )
 
         return response
@@ -419,34 +468,34 @@ class PolarisHubClient(OAuth2Client):
     def upload_benchmark(self, benchmark: BenchmarkSpecification):
         """Upload the benchmark to the Polaris Hub.
 
+        Info: Owner
+            You have to manually specify the owner in the benchmark data model. Because the owner could
+            be a user or an organization, we cannot automatically infer this from the logged-in user.
+
+        Note: Required meta-data
+            The Polaris client and hub maintain different requirements as to which meta-data is required.
+            The requirements by the hub are stricter, so when uploading to the hub you might
+            get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
+            before uploading.
+
+        Note: Non-existent datasets
+            The client will _not_ upload the associated dataset to the hub if it does not yet exist.
+            Make sure to specify an existing dataset or upload the dataset first.
+
         Args:
             benchmark: The benchmark to upload.
-
         """
 
-        if benchmark.name is None or benchmark.owner is None:
-            raise PolarisHubError(
-                "Benchmark name and owner must be set to upload benchmark to the Polaris Hub."
-            )
-        # lu: we don't need dataset here for the uploading
+        # Get the serialized data-model
+        # We exclude the dataset as we expect it to exist on the hub already.
         benchmark_json = benchmark.model_dump(exclude=["dataset"], exclude_none=True, by_alias=True)
-
-        # check if dataset exist in the hub
-        data_name = benchmark.dataset.name
-        data_owner = benchmark.dataset.owner
-        if not self.get_dataset(name=benchmark.dataset.name, owner=benchmark.dataset.owner):
-            raise ValueError(
-                f"Dataset {data_owner}/{data_name} doesn't exit on the hub. \
-                             Please upload the dataset by running `client.upload_dataset(name={data_name}, owner={data_owner})`"
-            )
-
-        benchmark_json["datasetName"] = f"{data_owner}/{data_name}"
+        benchmark_json["datasetName"] = f"{benchmark.dataset.owner}/{benchmark.dataset.name}"
 
         url = f"/benchmark/{benchmark.owner}/{benchmark.name}"
         response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
         logger.success(
             "Your benchmark has been successfully uploaded to the Hub. "
-            f"View it here: {self.settings.hub_url}/benchmarks/{benchmark.owner}/{benchmark.name}"
+            f"View it here: {urljoin(self.settings.hub_url, f'benchmarks/{benchmark.owner}/{benchmark.name}')}"
         )
         return response
