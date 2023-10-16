@@ -76,6 +76,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           toTag: "main"
+          configuration: "changelog_config.json"
 
       - name: Configure git
         run: |

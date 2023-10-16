@@ -129,20 +129,25 @@ class PolarisHubClient(OAuth2Client):
 
         try:
             response.raise_for_status()
+
         except HTTPStatusError as error:
+            # With an internal server error, we are not sure the custom error-handling code on the hub is reached.
             if response.status_code == 500:
                 raise
 
-            # If not a 500 error, the hub always returns a JSON response with an error message
+            # If not an internal server error, the hub should always return a JSON response
+            # with additional information about the error.
             response = response.json()
             response = json.dumps(response, indent=2, sort_keys=True)
             raise PolarisHubError(
-                f"The request to the Polaris Hub failed. See the error message below:\n{response}"
+                f"The request to the Polaris Hub failed. See the error message below for more details:\n{response}"
             ) from error
 
         # Convert the reponse to json format if the reponse contains a 'text' body
-        if response.text:
+        try:
             response = response.json()
+        except json.JSONDecodeError:
+            pass
 
         return response
 
@@ -427,7 +432,7 @@ class PolarisHubClient(OAuth2Client):
         # Uploading a dataset is a two-step process.
         # 1. Upload the dataset meta data to the hub and prepare the hub to receive the parquet file
         # 2. Upload the parquet file to the hub
-        # TODO: Revert step 1 in case step 2 fails - Is this needed?
+        # TODO: Revert step 1 in case step 2 fails - Is this needed? Or should this be taken care of by the hub?
 
         # Step 1: Upload meta-data
         # Instead of directly uploading the table, we announce to the hub that we intend to upload one.
