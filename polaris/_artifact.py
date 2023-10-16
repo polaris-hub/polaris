@@ -29,7 +29,7 @@ class BaseArtifactModel(BaseModel):
     """
 
     name: Optional[SlugCompatibleStringType] = None
-    description: Optional[str] = None
+    description: str = ""
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
