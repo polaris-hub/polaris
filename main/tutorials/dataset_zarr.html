@@ -1536,7 +1536,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="creating-datasets-with-zarr">Creating datasets with zarr<a class="anchor-link" href="#creating-datasets-with-zarr">¶</a></h1><h2 id="pointer-columns">Pointer columns<a class="anchor-link" href="#pointer-columns">¶</a></h2><p>Not all data might fit the tabular format, e.g. images or conformers. In that case, we have <em>pointer</em> columns. Pointer columns do not contain the data itself, but rather store a reference to an external file from which the content can be loaded.</p>
+<h1 id="creating-datasets-with-zarr">Creating datasets with zarr<a class="anchor-link" href="#creating-datasets-with-zarr">¶</a></h1><div class="admonition abstract highlight">
+<p class="admonition-title">In short</p>
+<p>This tutorial shows how to create datasets with more advanced data-modalities through the .zarr format.</p>
+</div>
+<h2 id="pointer-columns">Pointer columns<a class="anchor-link" href="#pointer-columns">¶</a></h2><p>Not all data might fit the tabular format, e.g. images or conformers. In that case, we have <em>pointer</em> columns. Pointer columns do not contain the data itself, but rather store a reference to an external file from which the content can be loaded.</p>
 <p>For now, we only support <code>.zarr</code> files as references. To learn more about <code>.zarr</code>, visit their documentation. Their <a href="https://zarr.readthedocs.io/en/stable/tutorial.html">tutorial</a> is a specifically good read to better understand the main features.</p>
 </div>
 </div>
