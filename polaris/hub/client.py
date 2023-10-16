@@ -130,10 +130,15 @@ class PolarisHubClient(OAuth2Client):
         try:
             response.raise_for_status()
         except HTTPStatusError as error:
-            # The hub always returns a JSON response in case of an error
+            if response.status_code == 500:
+                raise
+
+            # If not a 500 error, the hub always returns a JSON response with an error message
             response = response.json()
             response = json.dumps(response, indent=2, sort_keys=True)
-            raise PolarisHubError(f"The Polaris Hub failed:\n{response}") from error
+            raise PolarisHubError(
+                f"The request to the Polaris Hub failed. See the error message below:\n{response}"
+            ) from error
 
         # Convert the reponse to json format if the reponse contains a 'text' body
         if response.text:
