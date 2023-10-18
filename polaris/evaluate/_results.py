@@ -112,7 +112,7 @@ class BenchmarkResults(BaseArtifactModel):
         self.results["Metric"] = self.results["Metric"].apply(
             lambda x: x.name if isinstance(x, Metric) else x
         )
-        return json.loads(value.to_json(orient="split"))
+        return json.loads(value.to_json(orient="split", index=False))
 
     def upload_to_hub(
         self,
