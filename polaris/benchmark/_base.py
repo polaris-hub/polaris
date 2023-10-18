@@ -1,9 +1,11 @@
 import json
+import os
 from hashlib import md5
 from typing import Any, Optional, Union
 
 import fsspec
 import numpy as np
+import pandas as pd
 from pydantic import (
     ConfigDict,
     FieldValidationInfo,
@@ -15,6 +17,7 @@ from pydantic import (
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset import Dataset, Subset
 from polaris.evaluate import BenchmarkResults, Metric, ResultsType
+from polaris.hub.settings import PolarisHubSettings
 from polaris.utils import fs
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
@@ -333,39 +336,58 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         if not isinstance(y_pred, dict) or all(k in self.target_cols for k in y_pred):
             y_pred = {"test": y_pred}
+
         if any(k not in y_pred for k in test.keys()):
             raise KeyError(
                 f"Missing keys for at least one of the test sets. Expecting: {sorted(test.keys())}"
             )
 
-        scores: ResultsType = {}
+        # Results are saved in a tabular format. For more info, see the BenchmarkResults docs.
+        scores: ResultsType = pd.DataFrame(columns=BenchmarkResults.RESULTS_COLUMNS)
 
         # For every test set...
         for test_label, y_true_subset in y_true.items():
-            scores[test_label] = {}
-
             # For every metric...
             for metric in self.metrics:
-                if metric.is_multitask or not isinstance(y_true_subset, dict):
-                    # Either single-task or multi-task but with a metric across targets
-                    scores[test_label][metric] = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
+                if metric.is_multitask:
+                    # Multi-task but with a metric across targets
+                    score = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
+                    scores.loc[len(scores)] = (test_label, "all", metric, score)
+                    continue
+
+                if not isinstance(y_true_subset, dict):
+                    # Single task
+                    score = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
+                    scores.loc[len(scores)] = (test_label, self.target_cols[0], metric, score)
                     continue
 
                 # Otherwise, for every target...
                 for target_label, y_true_target in y_true_subset.items():
-                    if target_label not in scores[test_label]:
-                        scores[test_label][target_label] = {}
-
                     # Single-task metrics for a multi-task benchmark
                     # In such a setting, there can be NaN values, which we thus have to filter out.
                     mask = ~np.isnan(y_true_target)
                     score = metric(y_true=y_true_target[mask], y_pred=y_pred[test_label][target_label][mask])
-                    scores[test_label][target_label][metric] = score
-
-        if len(scores) == 1:
-            scores = scores["test"]
+                    scores.loc[len(scores)] = (test_label, target_label, metric, score)
 
         return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)
+
+    def upload_to_hub(
+        self,
+        env_file: Optional[Union[str, os.PathLike]] = None,
+        settings: Optional[PolarisHubSettings] = None,
+        cache_auth_token: bool = True,
+        **kwargs: dict,
+    ):
+        """
+        Very light, convenient wrapper around the
+        [`PolarisHubClient.upload_benchmark`][polaris.hub.client.PolarisHubClient.upload_benchmark] method.
+        """
+        from polaris.hub.client import PolarisHubClient
+
+        with PolarisHubClient(
+            env_file=env_file, settings=settings, cache_auth_token=cache_auth_token, **kwargs
+        ) as client:
+            return client.upload_benchmark(self)
 
     def to_json(self, destination: str) -> str:
         """Save the benchmark to a destination directory as a JSON file.

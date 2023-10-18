@@ -18,6 +18,7 @@ from pydantic import (
 
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._column import ColumnAnnotation
+from polaris.hub.settings import PolarisHubSettings
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
@@ -200,6 +201,24 @@ class Dataset(BaseArtifactModel):
             )
             self._has_been_warned = True
         return _load(value, index)
+
+    def upload_to_hub(
+        self,
+        env_file: Optional[Union[str, os.PathLike]] = None,
+        settings: Optional[PolarisHubSettings] = None,
+        cache_auth_token: bool = True,
+        **kwargs: dict,
+    ):
+        """
+        Very light, convenient wrapper around the
+        [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
+        """
+        from polaris.hub.client import PolarisHubClient
+
+        with PolarisHubClient(
+            env_file=env_file, settings=settings, cache_auth_token=cache_auth_token, **kwargs
+        ) as client:
+            return client.upload_dataset(self)
 
     @classmethod
     def from_zarr(cls, path: str) -> "Dataset":
