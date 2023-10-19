@@ -756,8 +756,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#polaris.evaluate.BenchmarkResults.serialize_results" class="md-nav__link">
-    serialize_results()
+  <a href="#polaris.evaluate.BenchmarkResults.upload_to_hub" class="md-nav__link">
+    upload_to_hub()
   </a>
   
 </li>
@@ -1043,8 +1043,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#polaris.evaluate.BenchmarkResults.serialize_results" class="md-nav__link">
-    serialize_results()
+  <a href="#polaris.evaluate.BenchmarkResults.upload_to_hub" class="md-nav__link">
+    upload_to_hub()
   </a>
   
 </li>
@@ -1122,6 +1122,43 @@
 <p>This object is returned by <a class="autorefs autorefs-internal" href="benchmark.html#polaris.benchmark.BenchmarkSpecification.evaluate"><code>BenchmarkSpecification.evaluate</code></a>.
 In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
 the results with the Polaris Hub.</p>
+<p>The actual results are saved in the <code>results</code> field using the following tabular format:</p>
+<table>
+<thead>
+<tr>
+<th>Test set</th>
+<th>Target label</th>
+<th>Metric</th>
+<th>Score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>test_iid</td>
+<td>EGFR_WT</td>
+<td>AUC</td>
+<td>0.9</td>
+</tr>
+<tr>
+<td>test_ood</td>
+<td>EGFR_WT</td>
+<td>AUC</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr>
+<td>test_ood</td>
+<td>EGFR_L858R</td>
+<td>AUC</td>
+<td>0.79</td>
+</tr>
+</tbody>
+</table>
 
 <details class="question" open>
   <summary>Categorizing methods</summary>
@@ -1148,7 +1185,8 @@ to say something about which (type of) methods performs best <em>in general</em>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>Benchmark results are stored as a dictionary</p>
+              <p>Benchmark results are stored directly in a dataframe or in a serialized, JSON compatible dict
+with the split orientation that can be decoded into the associated tabular format.</p>
             </div>
           </td>
         </tr>
@@ -1243,17 +1281,23 @@ Together with the benchmark name, this uniquely identifies the benchmark on the 
 
 
 
-<h4 id="polaris.evaluate.BenchmarkResults.serialize_results" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">serialize_results</span>
+<h4 id="polaris.evaluate.BenchmarkResults.upload_to_hub" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">upload_to_hub</span>
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">serialize_results</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">ResultsType</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_to_hub</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">env_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PolarisHubSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
   
-      <p>Change from the Metric enum to a string representation</p>
+      <p>Very light, convenient wrapper around the
+<a class="autorefs autorefs-internal" href="hub.client.html#polaris.hub.client.PolarisHubClient.upload_results"><code>PolarisHubClient.upload_results</code></a> method.</p>
 
   </div>
 
