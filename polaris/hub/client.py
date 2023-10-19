@@ -205,10 +205,7 @@ class PolarisHubClient(OAuth2Client):
         except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError, OAuthError) as error:
             if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:
                 raise
-            raise PolarisUnauthorizedError(
-                "You are not logged in to Polaris or your login has expired. "
-                "You can use the Polaris CLI to easily authenticate yourself again, see `polaris login --help`."
-            ) from error
+            raise PolarisUnauthorizedError from error
         return response
 
     # =========================
@@ -224,7 +221,10 @@ class PolarisHubClient(OAuth2Client):
         #  Because of this, we also have to copy some code from the base `request` method to
         #  make auto-refresh a token if needed. For more info, see: https://stackoverflow.com/a/62687390
 
-        if self.token is None or not self.ensure_active_token(self.token):
+        try:
+            if self.token is None or not self.ensure_active_token(self.token):
+                raise PolarisUnauthorizedError
+        except OAuthError:
             raise PolarisUnauthorizedError
 
         if self._user_info is None:
@@ -257,12 +257,15 @@ class PolarisHubClient(OAuth2Client):
 
         # Check if the user is already logged in
         if self.token is not None and not overwrite:
-            info = self.user_info
-            logger.info(
-                f"You are already logged in to the Polaris Hub as {info['username']} ({info['email']}). "
-                "Set `overwrite=True` to force re-authentication."
-            )
-            return
+            try:
+                info = self.user_info
+                logger.info(
+                    f"You are already logged in to the Polaris Hub as {info['username']} ({info['email']}). "
+                    "Set `overwrite=True` to force re-authentication."
+                )
+                return
+            except PolarisUnauthorizedError:
+                pass
 
         # Step 1: Redirect user to the authorization URL
         authorization_url, _ = self.create_authorization_url()

@@ -1,22 +1,23 @@
 import json
+import os
 from datetime import datetime
-from typing import Optional, Union
+from typing import ClassVar, Optional, Union
 
-from pydantic import ConfigDict, Field, PrivateAttr, field_serializer
+import pandas as pd
+from pydantic import ConfigDict, Field, PrivateAttr, field_serializer, field_validator
 
 from polaris._artifact import BaseArtifactModel
-from polaris.evaluate._metric import Metric
+from polaris.evaluate import Metric
+from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
+from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import to_lower_camel
 from polaris.utils.types import HttpUrlString, HubOwner, HubUser
 
 # Define some helpful type aliases
 TestLabelType = str
 TargetLabelType = str
-MetricScoresType = dict[Union[str, Metric], float]
-ResultsType = Union[
-    MetricScoresType, dict[TestLabelType, Union[MetricScoresType, dict[TargetLabelType, MetricScoresType]]]
-]
+ResultsType = Union[pd.DataFrame, dict]
 
 
 class BenchmarkResults(BaseArtifactModel):
@@ -26,13 +27,23 @@ class BenchmarkResults(BaseArtifactModel):
     In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
     the results with the Polaris Hub.
 
+    The actual results are saved in the `results` field using the following tabular format:
+
+    | Test set | Target label | Metric | Score |
+    | -------- | ------------ | ------ | ----- |
+    | test_iid | EGFR_WT      | AUC    | 0.9   |
+    | test_ood | EGFR_WT      | AUC    | 0.75  |
+    |    ...   |      ...     |  ...   |  ...  |
+    | test_ood | EGFR_L858R   | AUC    | 0.79  |
+
     question: Categorizing methods
         An open question is how to best categorize a methodology (e.g. a model).
         This is needed since we would like to be able to aggregate results across benchmarks too,
         to say something about which (type of) methods performs best _in general_.
 
     Attributes:
-        results: Benchmark results are stored as a dictionary
+        results: Benchmark results are stored directly in a dataframe or in a serialized, JSON compatible dict
+            with the split orientation that can be decoded into the associated tabular format.
         benchmark_name: The name of the benchmark for which these results were generated.
             Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.
         benchmark_owner: The owner of the benchmark for which these results were generated.
@@ -43,6 +54,9 @@ class BenchmarkResults(BaseArtifactModel):
         _created_at: The time-stamp at which the results were created. Automatically set.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
     """
+
+    # Define the columns of the results table
+    RESULTS_COLUMNS: ClassVar[list[str]] = ["Test set", "Target label", "Metric", "Score"]
 
     # Data
     results: ResultsType
@@ -57,23 +71,75 @@ class BenchmarkResults(BaseArtifactModel):
     # Private attributes
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
 
-    model_config = ConfigDict(alias_generator=to_lower_camel, populate_by_name=True)
+    # Model config
+    model_config = ConfigDict(
+        alias_generator=to_lower_camel, populate_by_name=True, arbitrary_types_allowed=True
+    )
+
+    @field_validator("results")
+    def _validate_results(cls, v):
+        """Ensure the results are a valid dataframe and have the expected columns"""
+
+        # If not a dataframe, assume it is a JSON-serialized, split-oriented export of a dataframe.
+        if not isinstance(v, pd.DataFrame):
+            try:
+                v = pd.read_json(json.dumps(v), orient="split")
+            except (ValueError, UnicodeDecodeError) as error:
+                print(error)
+                raise InvalidResultError(
+                    "The provided dictionary is not a valid, split-oriented JSON export of a Pandas dataframe"
+                ) from error
+
+        # Check if the dataframe contains _only_ the expected columns
+        if set(v.columns) != set(cls.RESULTS_COLUMNS):
+            raise InvalidResultError(
+                f"The results dataframe should have the following columns: {cls.RESULTS_COLUMNS}"
+            )
+
+        # Check if the results are not empty
+        if v.empty:
+            raise InvalidResultError("The results dataframe is empty")
+
+        # NOTE (cwognum): Since we have a reference to the benchmark, I considered validating the values in the
+        #  columns as well (e.g. are all metrics, targets and test sets actually part of the benchmark).
+        #  However, to keep this class light-weight, I did not want to add a strict dependency on the full benchmark class.
+        #  Especially because validation will happen on the Hub as well before it is shown there.
+        return v
 
     @field_serializer("results")
-    def serialize_results(self, value: ResultsType):
+    def _serialize_results(self, value: ResultsType):
         """Change from the Metric enum to a string representation"""
+        self.results["Metric"] = self.results["Metric"].apply(
+            lambda x: x.name if isinstance(x, Metric) else x
+        )
+        return json.loads(value.to_json(orient="split", index=False))
 
-        def _recursive_enum_to_str(d: dict):
-            """Utility function to easily traverse the nested dictionary"""
-            if not isinstance(d, dict):
-                return d
-            return {k.name if isinstance(k, Metric) else k: _recursive_enum_to_str(v) for k, v in d.items()}
+    def upload_to_hub(
+        self,
+        env_file: Optional[Union[str, os.PathLike]] = None,
+        settings: Optional[PolarisHubSettings] = None,
+        cache_auth_token: bool = True,
+        **kwargs: dict,
+    ):
+        """
+        Very light, convenient wrapper around the
+        [`PolarisHubClient.upload_results`][polaris.hub.client.PolarisHubClient.upload_results] method.
+        """
+        from polaris.hub.client import PolarisHubClient
 
-        return _recursive_enum_to_str(value)
+        with PolarisHubClient(
+            env_file=env_file, settings=settings, cache_auth_token=cache_auth_token, **kwargs
+        ) as client:
+            return client.upload_results(self)
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump()
+        repr_dict = self.model_dump(exclude=["results"])
+
+        df = self.results.copy(deep=True)
+        df["Metric"] = df["Metric"].apply(lambda x: x.name if isinstance(x, Metric) else x)
+        repr_dict["results"] = json.loads(df.to_json(orient="records"))
+
         return repr_dict
 
     def _repr_html_(self):

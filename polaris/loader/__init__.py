@@ -22,9 +22,6 @@ def load_dataset(path: str):
     if not is_file:
         # Load from the Hub
         client = PolarisHubClient()
-        options = client.list_datasets()
-        if path not in options:
-            raise InvalidDatasetError(f"{path} is not a valid dataset.")
         return client.get_dataset(*path.split("/"))
 
     if extension == "zarr":
@@ -45,9 +42,6 @@ def load_benchmark(path: str):
     if not is_file:
         # Load from the Hub
         client = PolarisHubClient()
-        options = client.list_benchmarks()
-        if path not in options:
-            raise InvalidBenchmarkError(f"{path} is not a valid benchmark. Make sure it exists!")
         return client.get_benchmark(*path.split("/"))
 
     with fsspec.open(path, "r") as fd:

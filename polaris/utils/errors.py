@@ -20,8 +20,8 @@ class PolarisHubError(Exception):
 
 class PolarisUnauthorizedError(PolarisHubError):
     DEFAULT_ERROR_MSG = (
-        "You are not logged in to the Polaris Hub. Please use the Polaris CLI to login. "
-        "Use `polaris --help` for more information."
+        "You are not logged in to Polaris or your login has expired. "
+        "You can use the Polaris CLI to easily authenticate yourself again, see `polaris login --help`."
     )
 
     def __init__(self, message: str = DEFAULT_ERROR_MSG):
