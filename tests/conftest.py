@@ -32,7 +32,11 @@ def _get_zarr_archive(tmp_path, datapoint_per_array: bool):
 
 @pytest.fixture(scope="module")
 def test_data():
-    return dm.data.freesolv()[:100]
+    data = dm.data.freesolv()[:100]
+    # set an abitrary threshold for testing purpose.
+    data["CLASS_expt"] = data["expt"].gt(0).astype(int).values
+    data["CLASS_calc"] = data["calc"].gt(0).astype(int).values
+    return data
 
 
 @pytest.fixture(scope="module")
@@ -70,16 +74,38 @@ def test_zarr_archive_single_array(tmp_path):
 
 
 @pytest.fixture(scope="module")
-def test_single_task_benchmark(test_dataset):
+def test_single_task_benchmark_reg(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     return SingleTaskBenchmarkSpecification(
         name="single-task-benchmark",
         dataset=test_dataset,
-        metrics=["mean_absolute_error", "mean_squared_error"],
+        metrics=[
+            "mean_absolute_error",
+            "mean_squared_error",
+            "r2_score",
+            "spearman",
+            "pearsonr",
+            "explained_var",
+        ],
         main_metric="mean_absolute_error",
         split=(train_indices, test_indices),
         target_cols="expt",
+        input_cols="smiles",
+    )
+
+
+@pytest.fixture(scope="module")
+def test_single_task_benchmark_clf(test_dataset):
+    train_indices = list(range(90))
+    test_indices = list(range(90, 100))
+    return SingleTaskBenchmarkSpecification(
+        name="single-task-benchmark",
+        dataset=test_dataset,
+        main_metric="accuracy",
+        metrics=["accuracy", "f1_score_binary", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
+        split=(train_indices, test_indices),
+        target_cols="CLASS_expt",
         input_cols="smiles",
     )
 
@@ -99,15 +125,39 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
 
 
 @pytest.fixture(scope="module")
-def test_multi_task_benchmark(test_dataset):
+def test_multi_task_benchmark_reg(test_dataset):
     # For the sake of simplicity, just use a small set of indices
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     return MultiTaskBenchmarkSpecification(
         name="multi-task-benchmark",
         dataset=test_dataset,
-        metrics=["mean_absolute_error"],
+        main_metric="mean_absolute_error",
+        metrics=[
+            "mean_absolute_error",
+            "mean_squared_error",
+            "r2_score",
+            "spearman",
+            "pearsonr",
+            "explained_var",
+        ],
         split=(train_indices, test_indices),
         target_cols=["expt", "calc"],
+        input_cols="smiles",
+    )
+
+
+@pytest.fixture(scope="module")
+def test_multi_task_benchmark_clf(test_dataset):
+    # For the sake of simplicity, just use a small set of indices
+    train_indices = list(range(90))
+    test_indices = list(range(90, 100))
+    return MultiTaskBenchmarkSpecification(
+        name="multi-task-benchmark",
+        dataset=test_dataset,
+        main_metric="accuracy",
+        metrics=["accuracy", "f1_score_binary", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
+        split=(train_indices, test_indices),
+        target_cols=["CLASS_expt", "CLASS_calc"],
         input_cols="smiles",
     )

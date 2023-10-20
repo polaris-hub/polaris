@@ -3,7 +3,18 @@ from typing import Callable
 
 import numpy as np
 from pydantic import BaseModel
-from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error
+from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error, r2_score, explained_variance_score
+from sklearn.metrics import f1_score, matthews_corrcoef, roc_auc_score, average_precision_score, cohen_kappa_score
+from scipy import stats
+
+def pearsonr(y_true: np.ndarray, y_pred: np.ndarray):
+    """Calculate a pearson r correlation"""
+    return stats.pearsonr(y_true, y_pred).statistic
+
+
+def spearman(y_true: np.ndarray, y_pred: np.ndarray):
+    """Calculate a Spearman correlation"""
+    return stats.spearmanr(y_true, y_pred).statistic
 
 
 class MetricInfo(BaseModel):
@@ -17,6 +28,7 @@ class MetricInfo(BaseModel):
 
     fn: Callable
     is_multitask: bool = False
+    average: str = None
 
 
 class Metric(Enum):
@@ -33,7 +45,20 @@ class Metric(Enum):
 
     mean_absolute_error = MetricInfo(fn=mean_absolute_error)
     mean_squared_error = MetricInfo(fn=mean_squared_error)
+    r2_score = MetricInfo(fn=r2_score)
+    pearsonr = MetricInfo(fn=pearsonr)
+    spearman = MetricInfo(fn=spearman)
+    explained_var = MetricInfo(fn=explained_variance_score)
+
     accuracy = MetricInfo(fn=accuracy_score)
+    f1_score_macro = MetricInfo(fn=f1_score, average="marco")
+    f1_score_binary = MetricInfo(fn=f1_score, average="binary")
+    f1_score_micro = MetricInfo(fn=f1_score, average="micro")
+    roc_auc = MetricInfo(fn=roc_auc_score)
+    pr_auc = MetricInfo(fn=average_precision_score)
+    mcc = MetricInfo(fn=matthews_corrcoef)
+    cohen_kappa = MetricInfo(fn=cohen_kappa_score)
+
 
     @property
     def fn(self) -> Callable:
