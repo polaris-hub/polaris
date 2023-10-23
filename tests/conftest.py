@@ -74,7 +74,7 @@ def test_zarr_archive_single_array(tmp_path):
 
 
 @pytest.fixture(scope="module")
-def test_single_task_benchmark_reg(test_dataset):
+def test_single_task_benchmark(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     return SingleTaskBenchmarkSpecification(
@@ -83,7 +83,7 @@ def test_single_task_benchmark_reg(test_dataset):
         metrics=[
             "mean_absolute_error",
             "mean_squared_error",
-            "r2_score",
+            "r2",
             "spearman",
             "pearsonr",
             "explained_var",
@@ -103,7 +103,7 @@ def test_single_task_benchmark_clf(test_dataset):
         name="single-task-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
-        metrics=["accuracy", "f1_score_binary", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
+        metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
         split=(train_indices, test_indices),
         target_cols="CLASS_expt",
         input_cols="smiles",
@@ -117,7 +117,15 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
     return SingleTaskBenchmarkSpecification(
         name="single-task-benchmark",
         dataset=test_dataset,
-        metrics=["mean_absolute_error", "mean_squared_error"],
+        metrics=[
+            "mean_absolute_error",
+            "mean_squared_error",
+            "r2",
+            "spearman",
+            "pearsonr",
+            "explained_var",
+        ],
+        main_metric="r2",
         split=(train_indices, test_indices),
         target_cols="expt",
         input_cols="smiles",
@@ -125,7 +133,7 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
 
 
 @pytest.fixture(scope="module")
-def test_multi_task_benchmark_reg(test_dataset):
+def test_multi_task_benchmark(test_dataset):
     # For the sake of simplicity, just use a small set of indices
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
@@ -136,7 +144,7 @@ def test_multi_task_benchmark_reg(test_dataset):
         metrics=[
             "mean_absolute_error",
             "mean_squared_error",
-            "r2_score",
+            "r2",
             "spearman",
             "pearsonr",
             "explained_var",
@@ -156,7 +164,7 @@ def test_multi_task_benchmark_clf(test_dataset):
         name="multi-task-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
-        metrics=["accuracy", "f1_score_binary", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
+        metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
         split=(train_indices, test_indices),
         target_cols=["CLASS_expt", "CLASS_calc"],
         input_cols="smiles",
