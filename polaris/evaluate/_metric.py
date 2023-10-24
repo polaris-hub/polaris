@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import Callable, Literal
+from typing import Callable
 
 import numpy as np
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sklearn.metrics import (
     accuracy_score,
     mean_absolute_error,
@@ -18,6 +18,8 @@ from sklearn.metrics import (
     cohen_kappa_score,
 )
 from scipy import stats
+
+from utils.types import DirectionType
 
 
 def pearsonr(y_true: np.ndarray, y_pred: np.ndarray):
@@ -43,8 +45,8 @@ class MetricInfo(BaseModel):
 
     fn: Callable
     is_multitask: bool = False
-    args: dict = dict()
-    direction: Literal["min", "max"]
+    args: dict = Field(..., default_factory=dict())
+    direction: DirectionType
 
 
 class Metric(Enum):

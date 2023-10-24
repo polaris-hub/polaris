@@ -4,7 +4,7 @@ import ssl
 import sys
 import webbrowser
 from io import BytesIO
-from typing import Callable, Optional, Union, Literal
+from typing import Callable, Optional, Union
 from urllib.parse import urljoin
 
 import certifi
@@ -30,7 +30,7 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
-from polaris.utils.types import HubOwner
+from polaris.utils.types import HubOwner, AccessType
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -373,7 +373,7 @@ class PolarisHubClient(OAuth2Client):
         )
         return benchmark_cls(**response)
 
-    def upload_results(self, results: BenchmarkResults, access: Literal["public", "private"] = "private"):
+    def upload_results(self, results: BenchmarkResults, access: AccessType = "private"):
         """Upload the results to the Polaris Hub.
 
         Info: Owner
@@ -413,7 +413,7 @@ class PolarisHubClient(OAuth2Client):
         logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
         return response
 
-    def upload_dataset(self, dataset: Dataset, access: Literal["public", "private"] = "private"):
+    def upload_dataset(self, dataset: Dataset, access: AccessType = "private"):
         """Upload the dataset to the Polaris Hub.
 
         Info: Owner
@@ -472,9 +472,7 @@ class PolarisHubClient(OAuth2Client):
 
         return response
 
-    def upload_benchmark(
-        self, benchmark: BenchmarkSpecification, access: Literal["public", "private"] = "private"
-    ):
+    def upload_benchmark(self, benchmark: BenchmarkSpecification, access: AccessType = "private"):
         """Upload the benchmark to the Polaris Hub.
 
         Info: Owner

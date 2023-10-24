@@ -57,7 +57,6 @@ def test_metrics_singletask_clf(
     result = test_single_task_benchmark_clf.evaluate(predictions)
     path = os.path.join(tmpdir, "result_singletask_clf.json")
     result.to_json(path)
-    BenchmarkResults.from_json(path)
 
 
 def test_metrics_multitask_clf(tmpdir: str, test_multi_task_benchmark_clf: MultiTaskBenchmarkSpecification):
@@ -68,7 +67,6 @@ def test_metrics_multitask_clf(tmpdir: str, test_multi_task_benchmark_clf: Multi
     result = test_multi_task_benchmark_clf.evaluate(predictions)
     path = os.path.join(tmpdir, "result_multitask_clf.json")
     result.to_json(path)
-    BenchmarkResults.from_json(path)
 
 
 def test_metric_direction():

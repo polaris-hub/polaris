@@ -72,6 +72,17 @@ A validated URL that will be turned into a string.
 This is useful for interactions with httpx and authlib, who have their own URL types.
 """
 
+DirectionType: TypeAlias = Literal["min", "max"]
+"""
+The direction of any variable to be sorted.
+This can be used to sort the metric score, indicate the optmization direction of endpoint.
+"""
+
+AccessType: TypeAlias = Literal["public", "private"]
+"""
+Type for granitng access to 'Dataset', 'Benchmark', 'Result' in the Hub.
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub

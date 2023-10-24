@@ -23,7 +23,7 @@ from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
 from polaris.utils.misc import listit, to_lower_camel
-from polaris.utils.types import DataFormat, PredictionsType, SplitType
+from polaris.utils.types import DataFormat, PredictionsType, SplitType, AccessType
 
 ColumnsType = Union[str, list[str]]
 
@@ -376,6 +376,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         env_file: Optional[Union[str, os.PathLike]] = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
+        access: Optional[AccessType] = "private",
         **kwargs: dict,
     ):
         """
@@ -387,7 +388,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         with PolarisHubClient(
             env_file=env_file, settings=settings, cache_auth_token=cache_auth_token, **kwargs
         ) as client:
-            return client.upload_benchmark(self)
+            return client.upload_benchmark(self, access)
 
     def to_json(self, destination: str) -> str:
         """Save the benchmark to a destination directory as a JSON file.
