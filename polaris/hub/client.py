@@ -394,12 +394,13 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             results: The results to upload.
+            public: Whether grant public access to result
         """
 
         # Get the serialized model data-structure
         result_json = results.model_dump(by_alias=True, exclude_none=True)
-        if public:
-            result_json["access"] = "public"
+        result_json["access"] = "public" if public else "private"
+
         # Make a request to the hub
         url = f"/benchmark/{results.benchmark_owner}/{results.benchmark_name}/result"
         response = self._base_request_to_hub(url=url, method="POST", json=result_json)
@@ -427,6 +428,7 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             dataset: The dataset to upload.
+            public: Whether grant public access to dataset
         """
 
         # Get the serialized data-model
@@ -446,8 +448,7 @@ class PolarisHubClient(OAuth2Client):
             "md5sum": dataset._compute_checksum(dataset.table),
             "url": f"{self.settings.hub_url}/storage/dataset/{dataset.owner}/{dataset.name}/table.parquet",
         }
-        if public:
-            dataset_json["access"] = "public"
+        dataset_json["access"] = "public" if public else "private"
         url = f"/dataset/{dataset.owner}/{dataset.name}"
         response = self._base_request_to_hub(url=url, method="PUT", json=dataset_json)
 
@@ -490,14 +491,15 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             benchmark: The benchmark to upload.
+            public: Whether grant public access to benchmark
         """
 
         # Get the serialized data-model
         # We exclude the dataset as we expect it to exist on the hub already.
         benchmark_json = benchmark.model_dump(exclude=["dataset"], exclude_none=True, by_alias=True)
         benchmark_json["datasetName"] = f"{benchmark.dataset.owner}/{benchmark.dataset.name}"
-        if public:
-            benchmark_json["access"] = "public"
+        benchmark_json["access"] = "public" if public else "private"
+
         url = f"/benchmark/{benchmark.owner}/{benchmark.name}"
         response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
