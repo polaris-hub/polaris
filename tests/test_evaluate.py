@@ -30,43 +30,41 @@ def test_result_to_json(tmpdir: str, test_user_owner: HubOwner):
 
 
 def test_metrics_singletask_reg(tmpdir: str, test_single_task_benchmark: SingleTaskBenchmarkSpecification):
-    train, test = test_single_task_benchmark.get_train_test_split()
+    _, test = test_single_task_benchmark.get_train_test_split()
     predictions = np.random.random(size=test.inputs.shape[0])
     result = test_single_task_benchmark.evaluate(predictions)
-    path = os.path.join(tmpdir, "result_singletask_reg.json")
-    result.to_json(path)
-    BenchmarkResults.from_json(path)
+    for metric in test_single_task_benchmark.metrics:
+        assert metric in result.results.Metric.tolist()
 
 
 def test_metrics_multitask_reg(tmpdir: str, test_multi_task_benchmark: MultiTaskBenchmarkSpecification):
-    train, test = test_multi_task_benchmark.get_train_test_split()
+    _, test = test_multi_task_benchmark.get_train_test_split()
     predictions = {
         target_col: np.random.random(size=test.inputs.shape[0]) for target_col in train.target_cols
     }
     result = test_multi_task_benchmark.evaluate(predictions)
-    path = os.path.join(tmpdir, "result_multitask_reg.json")
-    result.to_json(path)
-    BenchmarkResults.from_json(path)
+    for metric in test_multi_task_benchmark.metrics:
+        assert metric in result.results.Metric.tolist()
 
 
 def test_metrics_singletask_clf(
     tmpdir: str, test_single_task_benchmark_clf: SingleTaskBenchmarkSpecification
 ):
-    train, test = test_single_task_benchmark_clf.get_train_test_split()
+    _, test = test_single_task_benchmark_clf.get_train_test_split()
     predictions = np.random.randint(2, size=test.inputs.shape[0])
     result = test_single_task_benchmark_clf.evaluate(predictions)
-    path = os.path.join(tmpdir, "result_singletask_clf.json")
-    result.to_json(path)
+    for metric in test_single_task_benchmark_clf.metrics:
+        assert metric in result.results.Metric.tolist()
 
 
 def test_metrics_multitask_clf(tmpdir: str, test_multi_task_benchmark_clf: MultiTaskBenchmarkSpecification):
-    train, test = test_multi_task_benchmark_clf.get_train_test_split()
+    _, test = test_multi_task_benchmark_clf.get_train_test_split()
     predictions = {
         target_col: np.random.randint(2, size=test.inputs.shape[0]) for target_col in train.target_cols
     }
     result = test_multi_task_benchmark_clf.evaluate(predictions)
-    path = os.path.join(tmpdir, "result_multitask_clf.json")
-    result.to_json(path)
+    for metric in test_multi_task_benchmark_clf.metrics:
+        assert metric in result.results.Metric.tolist()
 
 
 def test_metric_direction():
