@@ -16,7 +16,7 @@ from authlib.integrations.base_client.errors import InvalidTokenError, MissingTo
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from httpx import HTTPStatusError
-from httpx._types import HeaderTypes, URLTypes
+from httpx._types import HeaderTypes, URLTypes, TimeoutTypes
 from loguru import logger
 
 from polaris.benchmark import (
@@ -411,7 +411,7 @@ class PolarisHubClient(OAuth2Client):
         logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
         return response
 
-    def upload_dataset(self, dataset: Dataset):
+    def upload_dataset(self, dataset: Dataset, timeout: TimeoutTypes = (10, 200)):
         """Upload the dataset to the Polaris Hub.
 
         Info: Owner
@@ -426,6 +426,7 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             dataset: The dataset to upload.
+            timeout: Request timeout values. User can modify the value when uploading large dataset as needed.
         """
 
         # Get the serialized data-model
@@ -472,7 +473,7 @@ class PolarisHubClient(OAuth2Client):
                 headers={"Content-type": "application/vnd.apache.parquet", **hub_response_body["headers"]},
                 content=buffer.getvalue(),
                 auth=None,
-                timeout=(10, 200),  # required for large size dataset
+                timeout=timeout,  # required for large size dataset
             )
             bucket_response.raise_for_status()
 
