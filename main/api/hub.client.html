@@ -2048,7 +2048,7 @@ and match an existing benchmark on the Polaris Hub. If these results were genera
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeoutTypes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -2092,6 +2092,20 @@ before uploading.</p>
           </td>
           <td>
               <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>timeout</code></td>
+          <td>
+                <code><span title="httpx._types.TimeoutTypes">TimeoutTypes</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Request timeout values. User can modify the value when uploading large dataset as needed.</p>
+            </div>
+          </td>
+          <td>
+                <code>(10, 200)</code>
           </td>
         </tr>
     </tbody>
