@@ -1977,7 +1977,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_results</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="n">BenchmarkResults</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_results</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="n">BenchmarkResults</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">)</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -2030,6 +2030,20 @@ and match an existing benchmark on the Polaris Hub. If these results were genera
               <em>required</em>
           </td>
         </tr>
+        <tr>
+          <td><code>access</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Grant public or private access to result</p>
+            </div>
+          </td>
+          <td>
+                <code>&#39;private&#39;</code>
+          </td>
+        </tr>
     </tbody>
   </table>
 
@@ -2048,7 +2062,11 @@ and match an existing benchmark on the Polaris Hub. If these results were genera
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeoutTypes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_dataset</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s2">&quot;private&quot;</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeoutTypes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -2095,6 +2113,20 @@ before uploading.</p>
           </td>
         </tr>
         <tr>
+          <td><code>access</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Grant public or private access to result</p>
+            </div>
+          </td>
+          <td>
+                <code>&#39;private&#39;</code>
+          </td>
+        </tr>
+        <tr>
           <td><code>timeout</code></td>
           <td>
                 <code><span title="httpx._types.TimeoutTypes">TimeoutTypes</span></code>
@@ -2126,7 +2158,9 @@ before uploading.</p>
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_benchmark</span><span class="p">(</span><span class="n">benchmark</span><span class="p">:</span> <span class="n">BenchmarkSpecification</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_benchmark</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">benchmark</span><span class="p">:</span> <span class="n">BenchmarkSpecification</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s2">&quot;private&quot;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -2175,6 +2209,20 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
           </td>
           <td>
               <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>access</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Grant public or private access to result</p>
+            </div>
+          </td>
+          <td>
+                <code>&#39;private&#39;</code>
           </td>
         </tr>
     </tbody>

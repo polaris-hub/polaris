@@ -1290,8 +1290,9 @@ Together with the benchmark name, this uniquely identifies the benchmark on the 
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">env_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PolarisHubSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">access</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AccessType</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;private&quot;</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1350,7 +1351,7 @@ Together with the benchmark name, this uniquely identifies the benchmark on the 
           </td>
           <td>
             <div class="doc-md-description">
-              <p>The callable that actually computes the metric</p>
+              <p>The callable that actually computes the metric.</p>
             </div>
           </td>
         </tr>
@@ -1362,6 +1363,28 @@ Together with the benchmark name, this uniquely identifies the benchmark on the 
           <td>
             <div class="doc-md-description">
               <p>Whether the metric expects a single set of predictions or a dict of predictions.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><code>kwargs</code></td>
+          <td>
+                <code>dict</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Additional parameters required for the metric.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><code>direction</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.DirectionType" href="utils.types.html#polaris.utils.types.DirectionType">DirectionType</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The direction for ranking of the metric,  "max" for maximization and "min" for minimization.</p>
             </div>
           </td>
         </tr>
