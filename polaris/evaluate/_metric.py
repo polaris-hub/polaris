@@ -19,7 +19,7 @@ from sklearn.metrics import (
 )
 from scipy import stats
 
-from utils.types import DirectionType
+from polaris.utils.types import DirectionType
 
 
 def pearsonr(y_true: np.ndarray, y_pred: np.ndarray):
@@ -45,7 +45,7 @@ class MetricInfo(BaseModel):
 
     fn: Callable
     is_multitask: bool = False
-    args: dict = Field(..., default_factory=dict())
+    kwargs: dict = Field(default_factory=dict)
     direction: DirectionType
 
 
@@ -70,9 +70,9 @@ class Metric(Enum):
 
     # classification
     accuracy = MetricInfo(fn=accuracy_score, direction="max")
-    f1 = MetricInfo(fn=f1_score, args={"average": "binary"}, direction="max")
-    f1_macro = MetricInfo(fn=f1_score, args={"average": "marco"}, direction="max")
-    f1_micro = MetricInfo(fn=f1_score, args={"average": "micro"}, direction="max")
+    f1 = MetricInfo(fn=f1_score, kwargs={"average": "binary"}, direction="max")
+    f1_macro = MetricInfo(fn=f1_score, kwargs={"average": "marco"}, direction="max")
+    f1_micro = MetricInfo(fn=f1_score, kwargs={"average": "micro"}, direction="max")
     roc_auc = MetricInfo(fn=roc_auc_score, direction="max")
     pr_auc = MetricInfo(fn=average_precision_score, direction="max")
     mcc = MetricInfo(fn=matthews_corrcoef, direction="max")
@@ -99,7 +99,7 @@ class Metric(Enum):
         assert metric.score(y_true=first, y_pred=second) == metric(y_true=first, y_pred=second)
         ```
         """
-        return self.fn(y_true, y_pred, **self.value.args)
+        return self.fn(y_true, y_pred, **self.value.kwargs)
 
     def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         """For convenience, make metrics callable"""
