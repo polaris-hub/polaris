@@ -80,7 +80,7 @@ This can be used to sort the metric score, indicate the optmization direction of
 
 AccessType: TypeAlias = Literal["public", "private"]
 """
-Type for granitng access to 'Dataset', 'Benchmark', 'Result' in the Hub.
+Type to specify access to a dataset, benchmark or result in the Hub.
 """
 
 
