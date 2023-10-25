@@ -39,7 +39,7 @@ class MetricInfo(BaseModel):
     Attributes:
         fn: The callable that actually computes the metric.
         is_multitask: Whether the metric expects a single set of predictions or a dict of predictions.
-        args: Additional parameters required for the metric.
+        kwargs: Additional parameters required for the metric.
         direction:  The direction for ranking of the metric,  "max" for maximization and "min" for minimization.
     """
 
