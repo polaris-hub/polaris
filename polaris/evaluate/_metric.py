@@ -64,8 +64,8 @@ class Metric(Enum):
     mean_absolute_error = MetricInfo(fn=mean_absolute_error, direction="min")
     mean_squared_error = MetricInfo(fn=mean_squared_error, direction="min")
     r2 = MetricInfo(fn=r2_score, direction="max")
-    pearson = MetricInfo(fn=pearsonr, direction="max")
-    spearman = MetricInfo(fn=spearman, direction="max")
+    pearsonr = MetricInfo(fn=pearsonr, direction="max")
+    spearmanr = MetricInfo(fn=spearman, direction="max")
     explained_var = MetricInfo(fn=explained_variance_score, direction="max")
 
     # classification
