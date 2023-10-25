@@ -30,7 +30,7 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
-from polaris.utils.types import HubOwner
+from polaris.utils.types import HubOwner, AccessType
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -373,7 +373,7 @@ class PolarisHubClient(OAuth2Client):
         )
         return benchmark_cls(**response)
 
-    def upload_results(self, results: BenchmarkResults):
+    def upload_results(self, results: BenchmarkResults, access: AccessType = "private"):
         """Upload the results to the Polaris Hub.
 
         Info: Owner
@@ -394,10 +394,12 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             results: The results to upload.
+            access: Grant public or private access to result
         """
 
         # Get the serialized model data-structure
         result_json = results.model_dump(by_alias=True, exclude_none=True)
+        result_json["access"] = access
 
         # Make a request to the hub
         url = f"/benchmark/{results.benchmark_owner}/{results.benchmark_name}/result"
@@ -411,7 +413,9 @@ class PolarisHubClient(OAuth2Client):
         logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
         return response
 
-    def upload_dataset(self, dataset: Dataset, timeout: TimeoutTypes = (10, 200)):
+    def upload_dataset(
+        self, dataset: Dataset, access: AccessType = "private", timeout: TimeoutTypes = (10, 200)
+    ):
         """Upload the dataset to the Polaris Hub.
 
         Info: Owner
@@ -426,6 +430,7 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             dataset: The dataset to upload.
+            access: Grant public or private access to result
             timeout: Request timeout values. User can modify the value when uploading large dataset as needed.
         """
 
@@ -448,6 +453,7 @@ class PolarisHubClient(OAuth2Client):
                 self.settings.hub_url, f"/storage/dataset/{dataset.owner}/{dataset.name}/table.parquet"
             ),
         }
+        dataset_json["access"] = access
         url = f"/dataset/{dataset.owner}/{dataset.name}"
         response = self._base_request_to_hub(url=url, method="PUT", json=dataset_json)
 
@@ -487,7 +493,7 @@ class PolarisHubClient(OAuth2Client):
 
         return response
 
-    def upload_benchmark(self, benchmark: BenchmarkSpecification):
+    def upload_benchmark(self, benchmark: BenchmarkSpecification, access: AccessType = "private"):
         """Upload the benchmark to the Polaris Hub.
 
         Info: Owner
@@ -506,12 +512,14 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             benchmark: The benchmark to upload.
+            access: Grant public or private access to result
         """
 
         # Get the serialized data-model
         # We exclude the dataset as we expect it to exist on the hub already.
         benchmark_json = benchmark.model_dump(exclude=["dataset"], exclude_none=True, by_alias=True)
-        benchmark_json["datasetName"] = f"{benchmark.dataset.owner}/{benchmark.dataset.name}"
+        benchmark_json["datasetArtifactId"] = f"{benchmark.dataset.owner}/{benchmark.dataset.name}"
+        benchmark_json["access"] = access
 
         url = f"/benchmark/{benchmark.owner}/{benchmark.name}"
         response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)

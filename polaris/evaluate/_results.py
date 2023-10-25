@@ -12,7 +12,7 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import to_lower_camel
-from polaris.utils.types import HttpUrlString, HubOwner, HubUser
+from polaris.utils.types import HttpUrlString, HubOwner, HubUser, AccessType
 
 # Define some helpful type aliases
 TestLabelType = str
@@ -119,6 +119,7 @@ class BenchmarkResults(BaseArtifactModel):
         env_file: Optional[Union[str, os.PathLike]] = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
+        access: Optional[AccessType] = "private",
         **kwargs: dict,
     ):
         """
@@ -130,7 +131,7 @@ class BenchmarkResults(BaseArtifactModel):
         with PolarisHubClient(
             env_file=env_file, settings=settings, cache_auth_token=cache_auth_token, **kwargs
         ) as client:
-            return client.upload_results(self)
+            return client.upload_results(self, access)
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
