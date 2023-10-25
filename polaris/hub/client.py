@@ -413,7 +413,9 @@ class PolarisHubClient(OAuth2Client):
         logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
         return response
 
-    def upload_dataset(self, dataset: Dataset, access: AccessType = "private", timeout: TimeoutTypes = (10, 200)):
+    def upload_dataset(
+        self, dataset: Dataset, access: AccessType = "private", timeout: TimeoutTypes = (10, 200)
+    ):
         """Upload the dataset to the Polaris Hub.
 
         Info: Owner
