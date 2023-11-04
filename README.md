@@ -1,5 +1,5 @@
 <h1 align="center">Polaris</h1>
-<p align="center">_So many stars in the sky, yet one is enough to guide you home._</p>
+<p align="center"><i>So many stars in the sky, yet one is enough to guide you home.</i></p>
 
 </br>
 <div align="center">
