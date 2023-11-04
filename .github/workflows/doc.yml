@@ -26,7 +26,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: env.yml
-          environment-name: polaris
+          environment-name: my_env
           cache-environment: true
           cache-downloads: true
 

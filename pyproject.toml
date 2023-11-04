@@ -3,8 +3,10 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "polaris"
-description = "Foster the development of impactful AI models in drug discovery."
+# NOTE(hadim): unfortunately, we cannot use `polaris` on pypi.
+# See https://github.com/pypi/support/issues/2908
+name = "polaris-py"
+description = "Client for the Polaris Hub."
 dynamic = ["version"]
 authors = [
     { name = "Lu Zhu", email = "lu@valencediscovery.com" },
@@ -30,17 +32,37 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
-dependencies = []
+dependencies = [
+    "tqdm",
+    "loguru",
+    "typer",
+    "pyyaml",
+    "pydantic >=2",
+    "pydantic-settings >=2",
+    "authlib",
+    "httpx",
+    "tenacity",
+    "filelock",
+    "numpy",
+    "pandas",
+    "scipy",
+    "scikit-learn",
+    "seaborn",
+    "datamol >=0.12",
+    "zarr",
+    "pyarrow",
+]
 
 [project.scripts]
 polaris = "polaris.cli:app"
 
 [project.urls]
-Website = "https://polaris.datamol.io/"
+Website = "https://polarishub.io/"
 "Source Code" = "https://github.com/polaris-hub/polaris"
 "Bug Tracker" = "https://github.com/polaris-hub/polaris/issues"
-Documentation = "https://polaris-docs.datamol.io/"
+Documentation = "https://polaris-hub.github.io/polaris/"
 
 [tool.setuptools]
 include-package-data = true
@@ -56,7 +78,7 @@ namespaces = false
 
 [tool.black]
 line-length = 110
-target-version = ['py39', 'py310', 'py311']
+target-version = ['py310', 'py311']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]
@@ -72,7 +94,14 @@ disable_warnings = ["no-data-collected"]
 data_file = ".coverage/coverage"
 
 [tool.coverage.report]
-omit = ["polaris/__init__.py", "polaris/_version.py", "polaris/hub/client.py", "polaris/hub/settings.py", "polaris/hub/__init__.py", "polaris/curation/viz_utils.py"]
+omit = [
+    "polaris/__init__.py",
+    "polaris/_version.py",
+    "polaris/hub/client.py",
+    "polaris/hub/settings.py",
+    "polaris/hub/__init__.py",
+    "polaris/curation/viz_utils.py",
+]
 
 [tool.coverage.xml]
 output = "coverage.xml"
@@ -82,7 +111,7 @@ ignore = [
     "E501", # Never enforce `E501` (line length violations).
 ]
 line-length = 110
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = [
