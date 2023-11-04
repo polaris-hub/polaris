@@ -1,5 +1,5 @@
 <h1 align="center">Polaris</h1>
-<h4 align="center">Polaris establishes a novel, industry‑certified standard to foster the development of impactful methods in AI-based drug discovery.</h4>
+_So many stars in the sky, yet one is enough to guide you home._
 
 </br>
 <div align="center">
@@ -32,7 +32,7 @@
 [![code-check](https://github.com/polaris-hub/polaris/actions/workflows/code-check.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/code-check.yml)
 [![doc](https://github.com/polaris-hub/polaris/actions/workflows/doc.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/doc.yml)
 
-_So many stars in the sky, yet one is enough to guide you home._
+Polaris establishes a novel, industry‑certified standard to foster the development of impactful methods in AI-based drug discovery.
 
 This library is a Python client to interact with the [Polaris Hub](https://polarishub.io/). It allows to:
 
