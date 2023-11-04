@@ -69,7 +69,7 @@ Please refer to the [documentation](https://polaris-hub.github.io/polaris/), whi
 
 _**Important:** Since Polaris is not yet public, you must clone this repository before installing the `polaris` client._
 
-With conda/mamba/micromamba:
+With **micromamba** (or conda/mamba):
 
 ```bash
 # Clone the repo
@@ -85,7 +85,7 @@ micromamba run -n polaris pip install --no-deps polaris/
 micromamba run -n polaris polaris --help
 ```
 
-With pip:
+With **pip**:
 
 ```bash
 # Clone the repo
