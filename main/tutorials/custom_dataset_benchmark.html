@@ -1494,13 +1494,17 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="n">PATH</span> <span class="o">=</span> <span class="s2">"https://raw.githubusercontent.com/molecularinformatics/Computational-ADME/main/ADME_public_set_3521.csv"</span>
+<span class="n">PATH</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"https://raw.githubusercontent.com/molecularinformatics/Computational-ADME/main/ADME_public_set_3521.csv"</span>
+<span class="p">)</span>
 <span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PATH</span><span class="p">)</span>
 <span class="n">table</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">import pandas as pd
 
-PATH = "https://raw.githubusercontent.com/molecularinformatics/Computational-ADME/main/ADME_public_set_3521.csv"
+PATH = (
+    "https://raw.githubusercontent.com/molecularinformatics/Computational-ADME/main/ADME_public_set_3521.csv"
+)
 table = pd.read_csv(PATH)
 table.head(5)</div>
 </div>
@@ -1654,7 +1658,7 @@ table.head(5)</div>
 <span class="c1"># Of course, for a real dataset we should annotate all columns.</span>
 <span class="n">annotations</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">"LOG HLM_CLint (mL/min/kg)"</span><span class="p">:</span> <span class="n">ColumnAnnotation</span><span class="p">(</span>
-        <span class="n">desription</span><span class="o">=</span><span class="s2">"Microsomal stability"</span><span class="p">,</span> 
+        <span class="n">desription</span><span class="o">=</span><span class="s2">"Microsomal stability"</span><span class="p">,</span>
         <span class="n">user_attributes</span><span class="o">=</span><span class="p">{</span><span class="s2">"unit"</span><span class="p">:</span> <span class="s2">"mL/min/kg"</span><span class="p">},</span>
     <span class="p">),</span>
     <span class="s2">"SMILES"</span><span class="p">:</span> <span class="n">ColumnAnnotation</span><span class="p">(</span><span class="n">desription</span><span class="o">=</span><span class="s2">"Molecule SMILES string"</span><span class="p">,</span> <span class="n">modality</span><span class="o">=</span><span class="s2">"molecule"</span><span class="p">),</span>
@@ -1666,7 +1670,7 @@ table.head(5)</div>
 # Of course, for a real dataset we should annotate all columns.
 annotations = {
     "LOG HLM_CLint (mL/min/kg)": ColumnAnnotation(
-        desription="Microsomal stability", 
+        desription="Microsomal stability",
         user_attributes={"unit": "mL/min/kg"},
     ),
     "SMILES": ColumnAnnotation(desription="Molecule SMILES string", modality="molecule"),
@@ -1701,7 +1705,6 @@ annotations = {
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span>
     <span class="c1"># The table is the core data-structure required to construct a dataset</span>
     <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span>
-
     <span class="c1"># Additional meta-data on the dataset level.</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">"Fang_2023_DMPK"</span><span class="p">,</span>
     <span class="n">description</span><span class="o">=</span><span class="s2">"120 prospective data sets, collected over 20 months across six ADME in vitro endpoints"</span><span class="p">,</span>
@@ -1719,7 +1722,6 @@ from polaris.utils.types import HubOwner, License
 dataset = Dataset(
     # The table is the core data-structure required to construct a dataset
     table=table,
-
     # Additional meta-data on the dataset level.
     name="Fang_2023_DMPK",
     description="120 prospective data sets, collected over 20 months across six ADME in vitro endpoints",
@@ -1766,9 +1768,11 @@ dataset = Dataset(
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">tempfile</span>
+
 <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span><span class="o">.</span><span class="n">name</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4">import tempfile
+
 temp_dir = tempfile.TemporaryDirectory().name</div>
 </div>
 </div>
@@ -1795,9 +1799,11 @@ temp_dir = tempfile.TemporaryDirectory().name</div>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
+
 <span class="n">save_dir</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="s2">"dataset"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-5">import datamol as dm
+
 save_dir = dm.fs.join(temp_dir, "dataset")</div>
 </div>
 </div>
@@ -1825,8 +1831,7 @@ save_dir = dm.fs.join(temp_dir, "dataset")</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">path = dataset.to_json(save_dir)
-</div>
+<div class="clipboard-copy-txt" id="cell-6">path = dataset.to_json(save_dir)</div>
 </div>
 </div>
 </div>
@@ -2014,10 +2019,7 @@ dataset = po.load_dataset(path)</div>
 <span class="kn">from</span> <span class="nn">polaris.benchmark</span> <span class="kn">import</span> <span class="n">SingleTaskBenchmarkSpecification</span>
 
 <span class="c1"># For the sake of simplicity, we use a very simple, ordered split</span>
-<span class="n">split</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="c1"># train</span>
-    <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">521</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>  <span class="c1"># test</span>
-<span class="p">)</span>
+<span class="n">split</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">521</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>  <span class="c1"># train  # test</span>
 
 <span class="n">benchmark</span> <span class="o">=</span> <span class="n">SingleTaskBenchmarkSpecification</span><span class="p">(</span>
     <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
@@ -2031,10 +2033,7 @@ dataset = po.load_dataset(path)</div>
 from polaris.benchmark import SingleTaskBenchmarkSpecification
 
 # For the sake of simplicity, we use a very simple, ordered split
-split = (
-    np.arange(3000).tolist(), # train
-    (np.arange(521) + 3000).tolist()  # test
-)
+split = (np.arange(3000).tolist(), (np.arange(521) + 3000).tolist())  # train  # test
 
 benchmark = SingleTaskBenchmarkSpecification(
     dataset=dataset,
@@ -2080,9 +2079,11 @@ For more information, see the <code>Metric</code> class.</p>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.evaluate</span> <span class="kn">import</span> <span class="n">Metric</span>
+
 <span class="nb">list</span><span class="p">(</span><span class="n">Metric</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-11">from polaris.evaluate import Metric
+
 list(Metric)</div>
 </div>
 </div>
