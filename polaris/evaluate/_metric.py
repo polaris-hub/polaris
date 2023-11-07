@@ -71,7 +71,7 @@ class Metric(Enum):
     # classification
     accuracy = MetricInfo(fn=accuracy_score, direction="max")
     f1 = MetricInfo(fn=f1_score, kwargs={"average": "binary"}, direction="max")
-    f1_macro = MetricInfo(fn=f1_score, kwargs={"average": "marco"}, direction="max")
+    f1_macro = MetricInfo(fn=f1_score, kwargs={"average": "macro"}, direction="max")
     f1_micro = MetricInfo(fn=f1_score, kwargs={"average": "micro"}, direction="max")
     roc_auc = MetricInfo(fn=roc_auc_score, direction="max")
     pr_auc = MetricInfo(fn=average_precision_score, direction="max")
