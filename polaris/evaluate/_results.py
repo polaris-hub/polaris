@@ -85,7 +85,7 @@ class BenchmarkResults(BaseArtifactModel):
             try:
                 df = pd.DataFrame(columns=cls.RESULTS_COLUMNS)
                 for record in v:
-                    for metric, score in record["Score"].items():
+                    for metric, score in record["Scores"].items():
                         df.loc[len(df)] = {
                             "Test set": record["Test set"],
                             "Target label": record["Target label"],
@@ -125,7 +125,7 @@ class BenchmarkResults(BaseArtifactModel):
         grouped = self.results.groupby(["Test set", "Target label"])
         for (test_set, target_label), group in grouped:
             metrics = {row["Metric"]: row["Score"] for _, row in group.iterrows()}
-            serialized.append({"Test set": test_set, "Target label": target_label, "Score": metrics})
+            serialized.append({"Test set": test_set, "Target label": target_label, "Scores": metrics})
         return serialized
 
     def upload_to_hub(
