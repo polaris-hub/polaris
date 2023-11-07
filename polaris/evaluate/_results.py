@@ -43,7 +43,7 @@ class BenchmarkResults(BaseArtifactModel):
 
     Attributes:
         results: Benchmark results are stored directly in a dataframe or in a serialized, JSON compatible dict
-            with the split orientation that can be decoded into the associated tabular format.
+            that can be decoded into the associated tabular format.
         benchmark_name: The name of the benchmark for which these results were generated.
             Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.
         benchmark_owner: The owner of the benchmark for which these results were generated.
