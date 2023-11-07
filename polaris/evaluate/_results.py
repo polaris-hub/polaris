@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import ClassVar, Optional, Union
 
 import pandas as pd
-from pydantic import ConfigDict, Field, PrivateAttr, field_serializer, field_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_serializer, field_validator
 
 from polaris._artifact import BaseArtifactModel
 from polaris.evaluate import Metric
@@ -17,7 +17,40 @@ from polaris.utils.types import AccessType, HttpUrlString, HubOwner, HubUser
 # Define some helpful type aliases
 TestLabelType = str
 TargetLabelType = str
-ResultsType = Union[pd.DataFrame, list[dict]]
+
+
+class ResultRecords(BaseModel):
+    """
+    A grouped, tabular data-structure to save the actual data of the benchmark results.
+    The grouping by test set and target label is done to make it easier to build leaderboards.
+    """
+
+    test_set: TestLabelType
+    target_label: TargetLabelType
+    scores: dict[Union[Metric, str], float]
+
+    # Model config
+    model_config = ConfigDict(alias_generator=to_lower_camel, populate_by_name=True)
+
+    @field_validator("scores")
+    def validate_scores(cls, v):
+        validated = {}
+        for metric, score in v.items():
+            if not isinstance(metric, Metric):
+                try:
+                    metric = Metric[metric]
+                except KeyError as error:
+                    raise ValueError("Invalid metric name") from error
+            validated[metric] = score
+        return validated
+
+    @field_serializer("scores")
+    def serialize_scores(self, value: dict):
+        """Change from the Metric enum to a string representation"""
+        return {metric.name: score for metric, score in value.items()}
+
+
+ResultsType = Union[pd.DataFrame, list[Union[ResultRecords, dict]]]
 
 
 class BenchmarkResults(BaseArtifactModel):
@@ -85,14 +118,18 @@ class BenchmarkResults(BaseArtifactModel):
             try:
                 df = pd.DataFrame(columns=cls.RESULTS_COLUMNS)
                 for record in v:
-                    for metric, score in record["scores"].items():
+                    if isinstance(record, dict):
+                        record = ResultRecords(**record)
+
+                    for metric, score in record.scores.items():
                         df.loc[len(df)] = {
-                            "Test set": record["testSet"],
-                            "Target label": record["targetLabel"],
+                            "Test set": record.test_set,
+                            "Target label": record.target_label,
                             "Metric": metric,
                             "Score": score,
                         }
                 v = df
+
             except (ValueError, UnicodeDecodeError) as error:
                 raise InvalidResultError(
                     f"The provided dictionary cannot be parsed into a {cls.__name__} instance."
@@ -125,7 +162,9 @@ class BenchmarkResults(BaseArtifactModel):
         grouped = self.results.groupby(["Test set", "Target label"])
         for (test_set, target_label), group in grouped:
             metrics = {row["Metric"]: row["Score"] for _, row in group.iterrows()}
-            serialized.append({"testSet": test_set, "targetLabel": target_label, "scores": metrics})
+            record = ResultRecords(test_set=test_set, target_label=target_label, scores=metrics)
+            serialized.append(record.model_dump(by_alias=True))
+
         return serialized
 
     def upload_to_hub(

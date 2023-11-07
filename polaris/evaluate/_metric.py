@@ -3,21 +3,19 @@ from typing import Callable
 
 import numpy as np
 from pydantic import BaseModel, Field
+from scipy import stats
 from sklearn.metrics import (
     accuracy_score,
+    average_precision_score,
+    cohen_kappa_score,
+    explained_variance_score,
+    f1_score,
+    matthews_corrcoef,
     mean_absolute_error,
     mean_squared_error,
     r2_score,
-    explained_variance_score,
-)
-from sklearn.metrics import (
-    f1_score,
-    matthews_corrcoef,
     roc_auc_score,
-    average_precision_score,
-    cohen_kappa_score,
 )
-from scipy import stats
 
 from polaris.utils.types import DirectionType
 

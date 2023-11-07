@@ -14,7 +14,7 @@ def test_result_to_json(tmpdir: str, test_user_owner: HubOwner):
         {
             "Test set": ["A", "A", "A", "A", "B", "B", "B", "B"],
             "Target label": ["C", "C", "D", "D", "C", "C", "D", "D"],
-            "Metric": ["E", "F"] * 4,
+            "Metric": ["mean_absolute_error", "accuracy"] * 4,
             "Score": [0.1] * 8,
         }
     )
