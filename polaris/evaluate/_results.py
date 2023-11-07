@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import ClassVar, Optional, Union
 
 import pandas as pd
-from pydantic import ConfigDict, Field, PrivateAttr, field_serializer, field_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_serializer, field_validator
 
 from polaris._artifact import BaseArtifactModel
 from polaris.evaluate import Metric
@@ -12,12 +12,45 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import to_lower_camel
-from polaris.utils.types import HttpUrlString, HubOwner, HubUser, AccessType
+from polaris.utils.types import AccessType, HttpUrlString, HubOwner, HubUser
 
 # Define some helpful type aliases
 TestLabelType = str
 TargetLabelType = str
-ResultsType = Union[pd.DataFrame, dict]
+
+
+class ResultRecords(BaseModel):
+    """
+    A grouped, tabular data-structure to save the actual data of the benchmark results.
+    The grouping by test set and target label is done to make it easier to build leaderboards.
+    """
+
+    test_set: TestLabelType
+    target_label: TargetLabelType
+    scores: dict[Union[Metric, str], float]
+
+    # Model config
+    model_config = ConfigDict(alias_generator=to_lower_camel, populate_by_name=True)
+
+    @field_validator("scores")
+    def validate_scores(cls, v):
+        validated = {}
+        for metric, score in v.items():
+            if not isinstance(metric, Metric):
+                try:
+                    metric = Metric[metric]
+                except KeyError as error:
+                    raise ValueError("Invalid metric name") from error
+            validated[metric] = score
+        return validated
+
+    @field_serializer("scores")
+    def serialize_scores(self, value: dict):
+        """Change from the Metric enum to a string representation"""
+        return {metric.name: score for metric, score in value.items()}
+
+
+ResultsType = Union[pd.DataFrame, list[Union[ResultRecords, dict]]]
 
 
 class BenchmarkResults(BaseArtifactModel):
@@ -43,7 +76,7 @@ class BenchmarkResults(BaseArtifactModel):
 
     Attributes:
         results: Benchmark results are stored directly in a dataframe or in a serialized, JSON compatible dict
-            with the split orientation that can be decoded into the associated tabular format.
+            that can be decoded into the associated tabular format.
         benchmark_name: The name of the benchmark for which these results were generated.
             Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.
         benchmark_owner: The owner of the benchmark for which these results were generated.
@@ -80,14 +113,26 @@ class BenchmarkResults(BaseArtifactModel):
     def _validate_results(cls, v):
         """Ensure the results are a valid dataframe and have the expected columns"""
 
-        # If not a dataframe, assume it is a JSON-serialized, split-oriented export of a dataframe.
+        # If not a dataframe, assume it is a JSON-serialized export of a dataframe.
         if not isinstance(v, pd.DataFrame):
             try:
-                v = pd.read_json(json.dumps(v), orient="split")
+                df = pd.DataFrame(columns=cls.RESULTS_COLUMNS)
+                for record in v:
+                    if isinstance(record, dict):
+                        record = ResultRecords(**record)
+
+                    for metric, score in record.scores.items():
+                        df.loc[len(df)] = {
+                            "Test set": record.test_set,
+                            "Target label": record.target_label,
+                            "Metric": metric,
+                            "Score": score,
+                        }
+                v = df
+
             except (ValueError, UnicodeDecodeError) as error:
-                print(error)
                 raise InvalidResultError(
-                    "The provided dictionary is not a valid, split-oriented JSON export of a Pandas dataframe"
+                    f"The provided dictionary cannot be parsed into a {cls.__name__} instance."
                 ) from error
 
         # Check if the dataframe contains _only_ the expected columns
@@ -112,7 +157,15 @@ class BenchmarkResults(BaseArtifactModel):
         self.results["Metric"] = self.results["Metric"].apply(
             lambda x: x.name if isinstance(x, Metric) else x
         )
-        return json.loads(value.to_json(orient="split", index=False))
+
+        serialized = []
+        grouped = self.results.groupby(["Test set", "Target label"])
+        for (test_set, target_label), group in grouped:
+            metrics = {row["Metric"]: row["Score"] for _, row in group.iterrows()}
+            record = ResultRecords(test_set=test_set, target_label=target_label, scores=metrics)
+            serialized.append(record.model_dump(by_alias=True))
+
+        return serialized
 
     def upload_to_hub(
         self,

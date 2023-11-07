@@ -3,21 +3,19 @@ from typing import Callable
 
 import numpy as np
 from pydantic import BaseModel, Field
+from scipy import stats
 from sklearn.metrics import (
     accuracy_score,
+    average_precision_score,
+    cohen_kappa_score,
+    explained_variance_score,
+    f1_score,
+    matthews_corrcoef,
     mean_absolute_error,
     mean_squared_error,
     r2_score,
-    explained_variance_score,
-)
-from sklearn.metrics import (
-    f1_score,
-    matthews_corrcoef,
     roc_auc_score,
-    average_precision_score,
-    cohen_kappa_score,
 )
-from scipy import stats
 
 from polaris.utils.types import DirectionType
 
@@ -71,7 +69,7 @@ class Metric(Enum):
     # classification
     accuracy = MetricInfo(fn=accuracy_score, direction="max")
     f1 = MetricInfo(fn=f1_score, kwargs={"average": "binary"}, direction="max")
-    f1_macro = MetricInfo(fn=f1_score, kwargs={"average": "marco"}, direction="max")
+    f1_macro = MetricInfo(fn=f1_score, kwargs={"average": "macro"}, direction="max")
     f1_micro = MetricInfo(fn=f1_score, kwargs={"average": "micro"}, direction="max")
     roc_auc = MetricInfo(fn=roc_auc_score, direction="max")
     pr_auc = MetricInfo(fn=average_precision_score, direction="max")
