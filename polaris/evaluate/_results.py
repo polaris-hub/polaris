@@ -85,7 +85,6 @@ class BenchmarkResults(BaseArtifactModel):
             try:
                 df = pd.DataFrame(columns=cls.RESULTS_COLUMNS)
                 for record in v:
-                    print(record)
                     for metric, score in record["Score"].items():
                         df.loc[len(df)] = {
                             "Test set": record["Test set"],
