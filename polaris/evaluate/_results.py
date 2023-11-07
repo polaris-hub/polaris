@@ -12,12 +12,12 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import to_lower_camel
-from polaris.utils.types import HttpUrlString, HubOwner, HubUser, AccessType
+from polaris.utils.types import AccessType, HttpUrlString, HubOwner, HubUser
 
 # Define some helpful type aliases
 TestLabelType = str
 TargetLabelType = str
-ResultsType = Union[pd.DataFrame, dict]
+ResultsType = Union[pd.DataFrame, list[dict]]
 
 
 class BenchmarkResults(BaseArtifactModel):
@@ -80,14 +80,23 @@ class BenchmarkResults(BaseArtifactModel):
     def _validate_results(cls, v):
         """Ensure the results are a valid dataframe and have the expected columns"""
 
-        # If not a dataframe, assume it is a JSON-serialized, split-oriented export of a dataframe.
+        # If not a dataframe, assume it is a JSON-serialized export of a dataframe.
         if not isinstance(v, pd.DataFrame):
             try:
-                v = pd.read_json(json.dumps(v), orient="split")
+                df = pd.DataFrame(columns=cls.RESULTS_COLUMNS)
+                for record in v:
+                    print(record)
+                    for metric, score in record["Score"].items():
+                        df.loc[len(df)] = {
+                            "Test set": record["Test set"],
+                            "Target label": record["Target label"],
+                            "Metric": metric,
+                            "Score": score,
+                        }
+                v = df
             except (ValueError, UnicodeDecodeError) as error:
-                print(error)
                 raise InvalidResultError(
-                    "The provided dictionary is not a valid, split-oriented JSON export of a Pandas dataframe"
+                    f"The provided dictionary cannot be parsed into a {cls.__name__} instance."
                 ) from error
 
         # Check if the dataframe contains _only_ the expected columns
@@ -112,7 +121,13 @@ class BenchmarkResults(BaseArtifactModel):
         self.results["Metric"] = self.results["Metric"].apply(
             lambda x: x.name if isinstance(x, Metric) else x
         )
-        return json.loads(value.to_json(orient="split", index=False))
+
+        serialized = []
+        grouped = self.results.groupby(["Test set", "Target label"])
+        for (test_set, target_label), group in grouped:
+            metrics = {row["Metric"]: row["Score"] for _, row in group.iterrows()}
+            serialized.append({"Test set": test_set, "Target label": target_label, "Score": metrics})
+        return serialized
 
     def upload_to_hub(
         self,

@@ -1,14 +1,23 @@
 import os
+
 import numpy as np
 import pandas as pd
-from polaris.benchmark import SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification
+
+from polaris.benchmark import MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
+from polaris.evaluate._metric import Metric
 from polaris.evaluate._results import BenchmarkResults
 from polaris.utils.types import HubOwner
-from polaris.evaluate._metric import Metric
 
 
 def test_result_to_json(tmpdir: str, test_user_owner: HubOwner):
-    scores = pd.DataFrame({"Test set": ["A"], "Target label": "B", "Metric": "C", "Score": 0.1})
+    scores = pd.DataFrame(
+        {
+            "Test set": ["A", "A", "A", "A", "B", "B", "B", "B"],
+            "Target label": ["C", "C", "D", "D", "C", "C", "D", "D"],
+            "Metric": ["E", "F"] * 4,
+            "Score": [0.1] * 8,
+        }
+    )
 
     result = BenchmarkResults(
         name="test",
