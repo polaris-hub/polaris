@@ -34,7 +34,7 @@
 
 Polaris establishes a novel, industry‑certified standard to foster the development of impactful methods in AI-based drug discovery.
 
-This library is a Python client to interact with the [Polaris Hub](https://polarishub.io/). It allows to:
+This library is a Python client to interact with the [Polaris Hub](https://polarishub.io/). It allows you to:
 
 - Download Polaris datasets and benchmarks.
 - Evaluate a custom method against a Polaris benchmark.
@@ -98,7 +98,7 @@ pip install polaris/
 polaris --help
 ```
 
-## Installation - Note Yet Working
+## Installation - Not Yet Working
 
 You can install `polaris` using conda/mamba/micromamba:
 
