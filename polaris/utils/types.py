@@ -90,12 +90,8 @@ Type to specify access to a dataset, benchmark or result in the Hub.
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
 
-    The slug is most important as it is the user-facing part of this data model. The organization
-    and user id are added to be consistent with the Polaris Hub.
-
-    The username is specified as a [`SlugCompatibleStringType`][polaris.utils.types.SlugCompatibleStringType],
-    whereas the organization is specified as a string that can contain only alpha-numeric characters,
-    underscores and dashes. Contrary to the username, an organization name can currently be of arbitrary length.
+    The slug is most important as it is the user-facing part of this data model.
+    The externalId and type are added to be consistent with the model returned by the Polaris Hub .
     """
 
     slug: SlugStringType
