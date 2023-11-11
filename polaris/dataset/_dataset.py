@@ -10,7 +10,6 @@ import pandas as pd
 import zarr
 from loguru import logger
 from pydantic import (
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
@@ -24,8 +23,7 @@ from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 from polaris.utils.io import get_zarr_root, robust_copy
-from polaris.utils.misc import to_lower_camel
-from polaris.utils.types import HttpUrlString, License, AccessType
+from polaris.utils.types import AccessType, HttpUrlString, License
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -82,11 +80,6 @@ class Dataset(BaseArtifactModel):
     _path_to_hash: Dict[str, Dict[str, str]] = defaultdict(dict)
     _has_been_warned: bool = False
     _has_been_cached: bool = False
-
-    # Pydantic config
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True, alias_generator=to_lower_camel, populate_by_name=True
-    )
 
     @field_validator("table")
     def _validate_table(cls, v):

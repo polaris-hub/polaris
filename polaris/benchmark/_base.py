@@ -7,7 +7,6 @@ import fsspec
 import numpy as np
 import pandas as pd
 from pydantic import (
-    ConfigDict,
     FieldValidationInfo,
     field_serializer,
     field_validator,
@@ -22,8 +21,8 @@ from polaris.utils import fs
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
-from polaris.utils.misc import listit, to_lower_camel
-from polaris.utils.types import DataFormat, PredictionsType, SplitType, AccessType
+from polaris.utils.misc import listit
+from polaris.utils.types import AccessType, DataFormat, PredictionsType, SplitType
 
 ColumnsType = Union[str, list[str]]
 
@@ -84,11 +83,6 @@ class BenchmarkSpecification(BaseArtifactModel):
 
     # Additional meta-data
     readme: str = ""
-
-    # Pydantic config
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True, alias_generator=to_lower_camel, populate_by_name=True
-    )
 
     @field_validator("dataset")
     def _validate_dataset(cls, v):

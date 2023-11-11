@@ -4,14 +4,22 @@ from datetime import datetime
 from typing import ClassVar, Optional, Union
 
 import pandas as pd
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_serializer, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PrivateAttr,
+    computed_field,
+    field_serializer,
+    field_validator,
+)
+from pydantic.alias_generators import to_camel
 
 from polaris._artifact import BaseArtifactModel
 from polaris.evaluate import Metric
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
-from polaris.utils.misc import to_lower_camel
 from polaris.utils.types import AccessType, HttpUrlString, HubOwner, HubUser
 
 # Define some helpful type aliases
@@ -30,7 +38,7 @@ class ResultRecords(BaseModel):
     scores: dict[Union[Metric, str], float]
 
     # Model config
-    model_config = ConfigDict(alias_generator=to_lower_camel, populate_by_name=True)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     @field_validator("scores")
     def validate_scores(cls, v):
@@ -104,10 +112,10 @@ class BenchmarkResults(BaseArtifactModel):
     # Private attributes
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
 
-    # Model config
-    model_config = ConfigDict(
-        alias_generator=to_lower_camel, populate_by_name=True, arbitrary_types_allowed=True
-    )
+    @computed_field
+    @property
+    def benchmark_artifact_id(self) -> str:
+        return f"{self.benchmark_owner}/{self.benchmark_name}"
 
     @field_validator("results")
     def _validate_results(cls, v):

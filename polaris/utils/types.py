@@ -9,13 +9,11 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     HttpUrl,
-    computed_field,
     constr,
     model_validator,
 )
+from pydantic.alias_generators import to_camel
 from typing_extensions import TypeAlias
-
-from polaris.utils.misc import to_lower_camel
 
 SplitIndicesType: TypeAlias = list[int]
 """
@@ -51,9 +49,14 @@ DataFormat: TypeAlias = Literal["dict", "tuple"]
 The target formats that are supported by the `Subset` class. 
 """
 
-SlugCompatibleStringType: TypeAlias = constr(pattern="^[A-Za-z0-9_-]+$", min_length=4, max_length=64)
+SlugStringType: TypeAlias = constr(pattern="^[a-z0-9-]+$", min_length=4, max_length=64)
 """
 A URL-compatible string that can serve as slug on the hub.
+"""
+
+SlugCompatibleStringType: TypeAlias = constr(pattern="^[A-Za-z0-9_-]+$", min_length=4, max_length=64)
+"""
+A URL-compatible string that can be turned into a slug by the hub.
 
 Can only use alpha-numeric characters, underscores and dashes. 
 The string must be at least 4 and at most 64 characters long.
@@ -95,30 +98,12 @@ class HubOwner(BaseModel):
     underscores and dashes. Contrary to the username, an organization name can currently be of arbitrary length.
     """
 
-    slug: constr(pattern="^[A-Za-z0-9_-]+$")
-    organization_id: Optional[constr(pattern="^[A-Za-z0-9_-]+$")] = None
-    user_id: Optional[HubUser] = None
+    slug: SlugStringType
+    external_id: Optional[str] = None
+    type: Optional[Literal["user", "organization"]] = None
 
     # Pydantic config
-    model_config = ConfigDict(alias_generator=to_lower_camel, populate_by_name=True)
-
-    @model_validator(mode="after")  # type: ignore
-    @classmethod
-    def _validate_model(cls, m: "HubOwner"):
-        if m.organization_id is not None and m.user_id is not None:
-            raise ValueError("An owner cannot both have an `organization_id` and a `user_id`")
-        return m
-
-    @computed_field
-    @property
-    def owner(self) -> str:
-        return self.organization_id or self.user_id  # type: ignore
-
-    def __str__(self) -> str:
-        return self.slug
-
-    def __repr__(self) -> str:
-        return self.__str__()
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 
 class License(BaseModel):
