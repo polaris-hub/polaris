@@ -1,9 +1,8 @@
 import json
 import os
 import ssl
-import sys
 import webbrowser
-from hashlib import md5, sha256
+from hashlib import md5
 from io import BytesIO
 from typing import Callable, Optional, Union
 from urllib.parse import urljoin
@@ -301,7 +300,7 @@ class PolarisHubClient(OAuth2Client):
         response = self._base_request_to_hub(
             url="/dataset", method="GET", params={"limit": limit, "offset": offset}
         )
-        dataset_list = [bm['artifactId'] for bm in response["data"]]
+        dataset_list = [bm["artifactId"] for bm in response["data"]]
         return dataset_list
 
     def get_dataset(self, owner: Union[str, HubOwner], name: str) -> Dataset:
@@ -453,15 +452,19 @@ class PolarisHubClient(OAuth2Client):
         # Step 1: Upload meta-data
         # Instead of directly uploading the table, we announce to the hub that we intend to upload one.
         url = f"/dataset/{dataset.artifact_id}"
-        response = self._base_request_to_hub(url=url, method="PUT", json={
-            "tableContent": {
-                "size": parquet_size,
-                "fileType": "parquet",
-                "md5sum": parquet_md5,
+        response = self._base_request_to_hub(
+            url=url,
+            method="PUT",
+            json={
+                "tableContent": {
+                    "size": parquet_size,
+                    "fileType": "parquet",
+                    "md5sum": parquet_md5,
+                },
+                "access": access,
+                **dataset_json,
             },
-            "access": access,
-            **dataset_json,
-        })
+        )
 
         # Step 2: Upload the parquet file
         # create an empty PUT request to get the table content URL from cloudflare
