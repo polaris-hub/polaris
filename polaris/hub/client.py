@@ -3,6 +3,7 @@ import os
 import ssl
 import sys
 import webbrowser
+from hashlib import md5, sha256
 from io import BytesIO
 from typing import Callable, Optional, Union
 from urllib.parse import urljoin
@@ -143,7 +144,7 @@ class PolarisHubClient(OAuth2Client):
                 f"The request to the Polaris Hub failed. See the error message below for more details:\n{response}"
             ) from error
 
-        # Convert the reponse to json format if the reponse contains a 'text' body
+        # Convert the response to json format if the response contains a 'text' body
         try:
             response = response.json()
         except json.JSONDecodeError:
@@ -300,7 +301,7 @@ class PolarisHubClient(OAuth2Client):
         response = self._base_request_to_hub(
             url="/dataset", method="GET", params={"limit": limit, "offset": offset}
         )
-        dataset_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
+        dataset_list = [bm['artifactId'] for bm in response["data"]]
         return dataset_list
 
     def get_dataset(self, owner: Union[str, HubOwner], name: str) -> Dataset:
@@ -443,30 +444,33 @@ class PolarisHubClient(OAuth2Client):
         # 2. Upload the parquet file to the hub
         # TODO: Revert step 1 in case step 2 fails - Is this needed? Or should this be taken care of by the hub?
 
-        # Step 1: Upload meta-data
-        # Instead of directly uploading the table, we announce to the hub that we intend to upload one.
-        dataset_json["tableContent"] = {
-            "size": sys.getsizeof(dataset.table),
-            "fileType": "parquet",
-            "md5sum": dataset._compute_checksum(dataset.table),
-            "url": urljoin(
-                self.settings.hub_url, f"/storage/dataset/{dataset.owner}/{dataset.name}/table.parquet"
-            ),
-        }
-        dataset_json["access"] = access
-        url = f"/dataset/{dataset.owner}/{dataset.name}"
-        response = self._base_request_to_hub(url=url, method="PUT", json=dataset_json)
-
-        # Step 2: Upload the parquet file
         # Write the parquet file directly to a buffer
         buffer = BytesIO()
         dataset.table.to_parquet(buffer, engine="auto")
+        parquet_size = len(buffer.getbuffer())
+        parquet_md5 = md5(buffer.getbuffer()).hexdigest()
 
+        # Step 1: Upload meta-data
+        # Instead of directly uploading the table, we announce to the hub that we intend to upload one.
+        url = f"/dataset/{dataset.artifact_id}"
+        response = self._base_request_to_hub(url=url, method="PUT", json={
+            "tableContent": {
+                "size": parquet_size,
+                "fileType": "parquet",
+                "md5sum": parquet_md5,
+            },
+            "access": access,
+            **dataset_json,
+        })
+
+        # Step 2: Upload the parquet file
         # create an empty PUT request to get the table content URL from cloudflare
         hub_response = self.request(
-            url=dataset_json["tableContent"]["url"],
+            url=response["tableContent"]["url"],
             method="PUT",
-            headers={"Content-type": "application/vnd.apache.parquet"},
+            headers={
+                "Content-type": "application/vnd.apache.parquet",
+            },
         )
 
         if hub_response.status_code == 307:
@@ -517,7 +521,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Get the serialized data-model
         # We exclude the dataset as we expect it to exist on the hub already.
-        benchmark_json = benchmark.model_dump(exclude=["dataset"], exclude_none=True, by_alias=True)
+        benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
         benchmark_json["datasetArtifactId"] = f"{benchmark.dataset.owner}/{benchmark.dataset.name}"
         benchmark_json["access"] = access
 

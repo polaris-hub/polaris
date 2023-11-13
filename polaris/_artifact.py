@@ -2,7 +2,7 @@ import json
 from typing import Dict, Optional, Union
 
 import fsspec
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_serializer, field_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, computed_field, field_serializer, field_validator
 from pydantic.alias_generators import to_camel
 
 from polaris.utils.types import HubOwner, SlugCompatibleStringType
@@ -37,6 +37,11 @@ class BaseArtifactModel(BaseModel):
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
     _verified: bool = PrivateAttr(False)
+
+    @computed_field
+    @property
+    def artifact_id(self) -> Optional[str]:
+        return f"{self.owner.slug}/{self.name}" if self.owner and self.name else None
 
     @field_serializer("owner")
     def _serialize_owner(self, value: HubOwner) -> Union[str, None]:
