@@ -917,6 +917,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#polaris.utils.types.SlugStringType" class="md-nav__link">
+    SlugStringType
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#polaris.utils.types.SlugCompatibleStringType" class="md-nav__link">
     SlugCompatibleStringType
   </a>
@@ -1082,6 +1089,13 @@
         <li class="md-nav__item">
   <a href="#polaris.utils.types.DataFormat" class="md-nav__link">
     DataFormat
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.utils.types.SlugStringType" class="md-nav__link">
+    SlugStringType
   </a>
   
 </li>
@@ -1311,6 +1325,32 @@ The second item can either be a single test set or a dictionary with multiple, n
 
 
 
+<h3 id="polaris.utils.types.SlugStringType" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">SlugStringType</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">SlugStringType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">constr</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">pattern</span><span class="o">=</span><span class="s2">&quot;^[a-z0-9-]+$&quot;</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">64</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>A URL-compatible string that can serve as slug on the hub.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+
 <h3 id="polaris.utils.types.SlugCompatibleStringType" class="doc doc-heading">
           <span class="doc doc-object-name doc-attribute-name">SlugCompatibleStringType</span>
 
@@ -1327,7 +1367,7 @@ The second item can either be a single test set or a dictionary with multiple, n
 
   <div class="doc doc-contents ">
   
-      <p>A URL-compatible string that can serve as slug on the hub.</p>
+      <p>A URL-compatible string that can be turned into a slug by the hub.</p>
 <p>Can only use alpha-numeric characters, underscores and dashes. 
 The string must be at least 4 and at most 64 characters long.</p>
   </div>
@@ -1452,11 +1492,8 @@ This can be used to sort the metric score, indicate the optmization direction of
 
   
       <p>An owner of an artifact on the Polaris Hub</p>
-<p>The slug is most important as it is the user-facing part of this data model. The organization
-and user id are added to be consistent with the Polaris Hub.</p>
-<p>The username is specified as a <a class="autorefs autorefs-internal" href="#polaris.utils.types.SlugCompatibleStringType"><code>SlugCompatibleStringType</code></a>,
-whereas the organization is specified as a string that can contain only alpha-numeric characters,
-underscores and dashes. Contrary to the username, an organization name can currently be of arbitrary length.</p>
+<p>The slug is most important as it is the user-facing part of this data model.
+The externalId and type are added to be consistent with the model returned by the Polaris Hub .</p>
 
 
   
