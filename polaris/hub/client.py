@@ -16,7 +16,7 @@ from authlib.integrations.base_client.errors import InvalidTokenError, MissingTo
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from httpx import HTTPStatusError
-from httpx._types import HeaderTypes, URLTypes, TimeoutTypes
+from httpx._types import HeaderTypes, TimeoutTypes, URLTypes
 from loguru import logger
 
 from polaris.benchmark import (
@@ -30,7 +30,7 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
-from polaris.utils.types import HubOwner, AccessType
+from polaris.utils.types import AccessType, HubOwner
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -399,11 +399,11 @@ class PolarisHubClient(OAuth2Client):
 
         # Get the serialized model data-structure
         result_json = results.model_dump(by_alias=True, exclude_none=True)
-        result_json["access"] = access
 
         # Make a request to the hub
-        url = f"/benchmark/{results.benchmark_owner}/{results.benchmark_name}/result"
-        response = self._base_request_to_hub(url=url, method="POST", json=result_json)
+        response = self._base_request_to_hub(
+            url="/result", method="POST", json={"access": access, **result_json}
+        )
 
         # Inform the user about where to find their newly created artifact.
         result_url = urljoin(

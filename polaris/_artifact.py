@@ -1,8 +1,9 @@
 import json
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import fsspec
-from pydantic import BaseModel, Field, PrivateAttr
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_serializer, field_validator
+from pydantic.alias_generators import to_camel
 
 from polaris.utils.types import HubOwner, SlugCompatibleStringType
 
@@ -28,12 +29,25 @@ class BaseArtifactModel(BaseModel):
         _verified: Whether the benchmark has been verified through the Polaris Hub.
     """
 
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, arbitrary_types_allowed=True)
+
     name: Optional[SlugCompatibleStringType] = None
     description: str = ""
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
     _verified: bool = PrivateAttr(False)
+
+    @field_serializer("owner")
+    def _serialize_owner(self, value: HubOwner) -> Union[str, None]:
+        return self.owner.slug if self.owner else None
+
+    @field_validator("owner", mode="before")
+    @classmethod
+    def _validate_owner(cls, value: Union[str, HubOwner, None]):
+        if isinstance(value, str):
+            return HubOwner(slug=value)
+        return value
 
     @classmethod
     def from_json(cls, path: str):
