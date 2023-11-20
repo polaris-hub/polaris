@@ -150,24 +150,28 @@ def test_merge_duplicates():
 def test_num_undefined_stereo_centers():
     # mol with no stereo centers
     mol = dm.to_mol("CCCC")
-    num_defined, num_undefined = _num_stereo_centers(mol)
-    assert num_defined is None
-    assert num_undefined is None
+    num_all, num_defined, num_undefined = _num_stereo_centers(mol)
+    assert num_all == 0
+    assert num_defined == 0
+    assert num_undefined == 0
 
     # mol with all defined centers
     mol = dm.to_mol("C1C[C@H](C)[C@H](C)[C@H](C)C1")
-    num_defined, num_undefined = _num_stereo_centers(mol)
+    num_all, num_defined, num_undefined = _num_stereo_centers(mol)
+    assert num_all == 3
     assert num_defined == 3
     assert num_undefined == 0
 
     # mol with partial defined centers
     mol = dm.to_mol("C[C@H](F)C(F)(Cl)Br")
-    num_defined, num_undefined = _num_stereo_centers(mol)
+    num_all, num_defined, num_undefined = _num_stereo_centers(mol)
+    assert num_all == 2
     assert num_defined == 1
     assert num_undefined == 1
 
     # mol with no defined centers
     mol = dm.to_mol("CC(F)C(F)(Cl)Br")
-    num_defined, num_undefined = _num_stereo_centers(mol)
+    num_all, num_defined, num_undefined = _num_stereo_centers(mol)
+    assert num_all == 2
     assert num_defined == 0
     assert num_undefined == 2
