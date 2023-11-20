@@ -22,7 +22,7 @@ UNDEF_EZ = "undefined_E/Z"  # E/Z diastereomer
 UNDEF_ED = "undefined_E_D"  # enantiomers and diastereomer
 
 
-def _num_stereo_centers(mol: Mol) -> Tuple[Optional[int]]:
+def _num_stereo_centers(mol: Mol) -> Tuple[int]:
     """Get the number of defined and undefined stereo centers of a given molecule
         by accessing the all and only defined stereo centers.
         It's to facilitate the analysis of the stereo isomers.
