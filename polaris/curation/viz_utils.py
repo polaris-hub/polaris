@@ -9,7 +9,7 @@ from .utils import PandasDataFrame
 from ._chemistry_curator import NUM_UNDEF_STEREO_CENTER, NUM_DEF_STEREO_CENTER
 
 
-def visulize_distribution(data_cols: List[str], dataset: PandasDataFrame):
+def visualize_distribution(data_cols: List[str], dataset: PandasDataFrame):
     """Visualize the distribution of the data and highlight the potential outliers.
 
     Args:

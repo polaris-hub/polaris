@@ -1,10 +1,13 @@
 import functools
-from typing import Any, List, Union
+from typing import Any, List, Union, Tuple
+
+import pandas as pd
+
+from rdkit.Chem import FindMolChiralCenters
 
 import datamol as dm
-import pandas as pd
 from datamol.mol import Mol
-from rdkit.Chem import FindMolChiralCenters
+from datamol.isomers._enumerate import count_stereoisomers
 
 UNIQUE_ID = "molhash_id"
 NO_STEREO_UNIQUE_ID = "molhash_id_no_stereo"
@@ -12,9 +15,14 @@ SMILES_COL = "smiles"
 STEREO_DEF = "stereo_defined"
 NUM_UNDEF_STEREO_CENTER = "num_undefined_stereo_center"
 NUM_DEF_STEREO_CENTER = "num_defined_stereo_center"
+NUM_STEREO_CENTER = "num_stereo_center"
+NUM_STEREOISOMERS = "num_stereoisomers"
+NUM_UNDEF_STEREOISOMERS = "num_undefined_stereoisomers"
+UNDEF_EZ = "undefined_E/Z"  # E/Z diastereomer
+UNDEF_ED = "undefined_E_D"  # enantiomers and diastereomer
 
 
-def _num_stereo_centers(mol: Mol) -> List[int]:
+def _num_stereo_centers(mol: Mol) -> Tuple[int]:
     """Get the number of defined and undefined stereo centers of a given molecule
         by accessing the all and only defined stereo centers.
         It's to facilitate the analysis of the stereo isomers.
@@ -34,9 +42,9 @@ def _num_stereo_centers(mol: Mol) -> List[int]:
     num_all_centers = len(FindMolChiralCenters(mol, force=True, includeUnassigned=True))
     num_defined_centers = len(FindMolChiralCenters(mol, force=True, includeUnassigned=False))
     if num_all_centers == 0:
-        return None, None
+        return 0, 0, 0
     nun_undefined_centers = num_all_centers - num_defined_centers
-    return num_defined_centers, nun_undefined_centers
+    return num_all_centers, num_defined_centers, nun_undefined_centers
 
 
 def _curate_mol(
@@ -93,14 +101,32 @@ def _curate_mol(
             stereo=not remove_stereo,
         )
 
-        num_defined_centers, num_undefined_centers = _num_stereo_centers(mol)
+        # number of possible stereoisomers
+        num_stereoisomers = count_stereoisomers(
+            mol=mol, undefined_only=False, rationalise=True, clean_it=True
+        )
+
+        # number of undefined stereoisomers
+        num_undefined_stereoisomers = count_stereoisomers(
+            mol=mol, undefined_only=True, rationalise=True, clean_it=True
+        )
+
+        # number of stereocenters
+        num_all_centers, num_defined_centers, num_undefined_centers = _num_stereo_centers(mol)
 
         mol_dict = {
             SMILES_COL: dm.to_smiles(mol, canonical=True),
             UNIQUE_ID: dm.hash_mol(mol),
             NO_STEREO_UNIQUE_ID: dm.hash_mol(mol, hash_scheme="no_stereo"),
+            NUM_STEREO_CENTER: num_all_centers,
             NUM_UNDEF_STEREO_CENTER: num_undefined_centers,
             NUM_DEF_STEREO_CENTER: num_defined_centers,
+            NUM_STEREOISOMERS: num_stereoisomers,
+            NUM_UNDEF_STEREOISOMERS: num_undefined_stereoisomers,
+            # None of the stereochemistry is defined in the molecule
+            UNDEF_ED: num_defined_centers == 0 and num_all_centers > 0,
+            # Undefined EZ stereochemistry which has no stereocenter.
+            UNDEF_EZ: num_all_centers == 0 and num_undefined_stereoisomers > 0,
         }
         return mol_dict
 

@@ -4,7 +4,7 @@ import pandas as pd
 from loguru import logger
 from sklearn.utils.multiclass import type_of_target
 
-from ._chemistry_curator import NO_STEREO_UNIQUE_ID, NUM_DEF_STEREO_CENTER, UNIQUE_ID
+from ._chemistry_curator import NO_STEREO_UNIQUE_ID, UNDEF_EZ, UNDEF_ED, UNIQUE_ID
 from .utils import discretizer, modified_zscore, outlier_detection
 
 CATEGORIES = ["binary", "multiclass"]
@@ -76,7 +76,7 @@ def _process_stereoisomer_with_activity_cliff(
         mol_with_cliff = _identify_stereoisomers_with_activity_cliff(data=data, data_col=data_col, **kwargs)
         data.loc[data[NO_STEREO_UNIQUE_ID].isin(mol_with_cliff), f"{data_col}_stereo_cliff"] = True
         if len(mol_with_cliff) > 0 and mask_stereo_undefined_mols:
-            mol_ids = data.query(f"`{data_col}_stereo_cliff`==True & {NUM_DEF_STEREO_CENTER}==0")[
+            mol_ids = data.query(f"`{data_col}_stereo_cliff`==True & (`{UNDEF_ED}` | `{UNDEF_EZ}`) ")[
                 UNIQUE_ID
             ].values
             data.loc[data[UNIQUE_ID].isin(mol_ids), data_col_mask] = None
