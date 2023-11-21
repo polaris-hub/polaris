@@ -1,5 +1,5 @@
 import functools
-from typing import Any, List, Union, Tuple, Optional
+from typing import Any, List, Union, Tuple
 
 import pandas as pd
 
