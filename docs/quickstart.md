@@ -11,7 +11,7 @@ mamba install -c conda-forge polaris
 ```
 
 ??? info "Other installation options"
-You can replace `mamba` by `conda`. The package is also pip installable if you need it: `pip install polaris-py`.
+You can replace `mamba` by `conda`. The package is also pip installable if you need it: `pip install polaris-lib`.
 
 ## Benchmarking API
 
