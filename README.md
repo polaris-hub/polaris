@@ -80,7 +80,7 @@ conda install -c conda-forge polaris
 You can also use pip:
 
 ```bash
-pip install polaris-py
+pip install polaris-lib
 ```
 
 ## Development lifecycle
