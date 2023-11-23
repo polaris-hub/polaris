@@ -525,7 +525,7 @@ class PolarisHubClient(OAuth2Client):
         # Get the serialized data-model
         # We exclude the dataset as we expect it to exist on the hub already.
         benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
-        benchmark_json["datasetArtifactId"] = f"{benchmark.dataset.owner}/{benchmark.dataset.name}"
+        benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
         benchmark_json["access"] = access
 
         url = f"/benchmark/{benchmark.owner}/{benchmark.name}"

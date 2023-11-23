@@ -49,7 +49,7 @@ class BaseArtifactModel(BaseModel):
     @computed_field
     @property
     def artifact_id(self) -> Optional[str]:
-        return f"{self.owner.slug}/{self.name}" if self.owner and self.name else None
+        return f"{self.owner.slug}/{self.name.lower()}" if self.owner and self.name else None
 
     @field_serializer("owner")
     def _serialize_owner(self, value: HubOwner) -> Union[str, None]:
