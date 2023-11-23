@@ -18,14 +18,14 @@
 
 ---
 
-<!-- [![PyPI](https://img.shields.io/pypi/v/polaris-py)](https://pypi.org/project/polaris-py/)
+[![PyPI](https://img.shields.io/pypi/v/polaris-lib)](https://pypi.org/project/polaris-lib/)
 [![Conda](https://img.shields.io/conda/v/conda-forge/polaris?label=conda&color=success)](https://anaconda.org/conda-forge/polaris)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/polaris-py)](https://pypi.org/project/polaris-py/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/polaris-lib)](https://pypi.org/project/polaris-lib/)
 [![Conda](https://img.shields.io/conda/dn/conda-forge/polaris)](https://anaconda.org/conda-forge/polaris)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/polaris-py)](https://pypi.org/project/polaris-py/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/polaris-lib)](https://pypi.org/project/polaris-lib/)
 [![Code license](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/polaris-hub/polaris/blob/main/LICENSE)
 [![GitHub Repo stars](https://img.shields.io/github/stars/polaris-hub/polaris)](https://github.com/polaris-hub/polaris/stargazers)
-[![GitHub Repo stars](https://img.shields.io/github/forks/polaris-hub/polaris)](https://github.com/polaris-hub/polaris/network/members) -->
+[![GitHub Repo stars](https://img.shields.io/github/forks/polaris-hub/polaris)](https://github.com/polaris-hub/polaris/network/members)
 
 [![test](https://github.com/polaris-hub/polaris/actions/workflows/test.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/test.yml)
 [![release](https://github.com/polaris-hub/polaris/actions/workflows/release.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/release.yml)
@@ -39,6 +39,10 @@ This library is a Python client to interact with the [Polaris Hub](https://polar
 - Download Polaris datasets and benchmarks.
 - Evaluate a custom method against a Polaris benchmark.
 - Create and upload new datasets and benchmarks.
+
+> [!WARNING]
+> The Polaris Hub is currently released as a closed, private beta. We hope to officially release it early 2024.
+
 
 ## Quick API Tour
 
