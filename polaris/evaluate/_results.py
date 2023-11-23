@@ -20,7 +20,8 @@ from polaris.evaluate import Metric
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
-from polaris.utils.types import AccessType, HttpUrlString, HubOwner, HubUser
+from polaris.utils.misc import sluggify
+from polaris.utils.types import AccessType, HttpUrlString, HubOwner, HubUser, SlugCompatibleStringType
 
 # Define some helpful type aliases
 TestLabelType = str
@@ -101,7 +102,7 @@ class BenchmarkResults(BaseArtifactModel):
 
     # Data
     results: ResultsType
-    benchmark_name: str = Field(..., frozen=True)
+    benchmark_name: SlugCompatibleStringType = Field(..., frozen=True)
     benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
 
     # Additional meta-data
@@ -115,7 +116,7 @@ class BenchmarkResults(BaseArtifactModel):
     @computed_field
     @property
     def benchmark_artifact_id(self) -> str:
-        return f"{self.benchmark_owner}/{self.benchmark_name}"
+        return f"{self.benchmark_owner}/{sluggify(self.benchmark_name)}"
 
     @field_validator("results")
     def _validate_results(cls, v):

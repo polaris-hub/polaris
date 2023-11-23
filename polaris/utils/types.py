@@ -101,6 +101,9 @@ class HubOwner(BaseModel):
     # Pydantic config
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
+    def __str__(self):
+        return self.slug
+
 
 class License(BaseModel):
     """An artifact license.
