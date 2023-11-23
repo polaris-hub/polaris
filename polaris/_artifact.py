@@ -13,6 +13,7 @@ from pydantic import (
 )
 from pydantic.alias_generators import to_camel
 
+from polaris.utils.misc import sluggify
 from polaris.utils.types import HubOwner, SlugCompatibleStringType
 
 
@@ -49,7 +50,7 @@ class BaseArtifactModel(BaseModel):
     @computed_field
     @property
     def artifact_id(self) -> Optional[str]:
-        return f"{self.owner.slug}/{self.name.lower()}" if self.owner and self.name else None
+        return f"{self.owner}/{sluggify(self.name)}" if self.owner and self.name else None
 
     @field_serializer("owner")
     def _serialize_owner(self, value: HubOwner) -> Union[str, None]:
