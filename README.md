@@ -65,45 +65,12 @@ results.upload_to_hub()
 
 Please refer to the [documentation](https://polaris-hub.github.io/polaris/), which contains tutorials for getting started with `polaris` and detailed descriptions of the functions provided.
 
-## Installation - Private MVP
-
-_**Important:** Since Polaris is not yet public, you must clone this repository before installing the `polaris` client._
-
-With **conda** (or mamba/micromamba):
-
-```bash
-# Clone the repo
-git clone https://github.com/polaris-hub/polaris.git
-
-# Install the deps in a new conda env
-conda env create -n polaris -f polaris/env.yml
-
-# Install the polaris client
-conda run -n polaris pip install --no-deps polaris/
-
-# Test it works
-conda run -n polaris polaris --help
-```
-
-With **pip**:
-
-```bash
-# Clone the repo
-git clone https://github.com/polaris-hub/polaris.git
-
-# Install the polaris client
-pip install polaris/
-
-# Test it works
-polaris --help
-```
-
-## Installation - Not Yet Working
+## Installation
 
 You can install `polaris` using conda/mamba/micromamba:
 
 ```bash
-mamba install -c conda-forge polaris
+conda install -c conda-forge polaris
 ```
 
 You can also use pip:
@@ -117,8 +84,8 @@ pip install polaris-py
 ### Setup dev environment
 
 ```bash
-micromamba create -n polaris -f env.yml
-micromamba activate polaris
+conda env create -n polaris -f env.yml
+conda activate polaris
 
 pip install --no-deps -e .
 ```
