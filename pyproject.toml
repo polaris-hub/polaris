@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 # NOTE(hadim): unfortunately, we cannot use `polaris` on pypi.
 # See https://github.com/pypi/support/issues/2908
-name = "polaris-py"
+name = "polaris-lib"
 description = "Client for the Polaris Hub."
 dynamic = ["version"]
 authors = [
