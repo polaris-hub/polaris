@@ -53,8 +53,13 @@ import polaris as po
 benchmark = po.load_benchmark("polaris/hello_world_benchmark")
 
 # Get the train and test data-loaders
-# The data loaders are 'polaris.dataset.Subset' objects
 train, test = benchmark.get_train_test_split()
+
+# Use the training data to train your model
+# Get the input as an array with 'train.inputs' and 'train.targets'  
+# Or simply iterate over the train object.
+for x, y in train:
+    ...
 
 # Work your magic to accurately predict the test set
 predictions = [0.0 for x in test]
