@@ -182,6 +182,7 @@ class BenchmarkResults(BaseArtifactModel):
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         access: Optional[AccessType] = "private",
+        owner: Optional[Union[HubOwner, str]] = None,
         **kwargs: dict,
     ):
         """
@@ -193,7 +194,7 @@ class BenchmarkResults(BaseArtifactModel):
         with PolarisHubClient(
             env_file=env_file, settings=settings, cache_auth_token=cache_auth_token, **kwargs
         ) as client:
-            return client.upload_results(self, access)
+            return client.upload_results(self, access=access, owner=owner)
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""

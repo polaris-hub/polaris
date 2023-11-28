@@ -24,13 +24,26 @@ If all you care about is to partake in a benchmark that is hosted on the hub, it
 ```python
 import polaris as po
 
-benchmark = po.load_benchmark("org_or_user/name")
+# Load the benchmark from the Hub
+benchmark = po.load_benchmark("polaris/hello_world_benchmark")
+
+# Get the train and test data-loaders
 train, test = benchmark.get_train_test_split()
 
-y_pred = ...  # Work your magic!
+# Use the training data to train your model
+# Get the input as an array with 'train.inputs' and 'train.targets'  
+# Or simply iterate over the train object.
+for x, y in train:
+    ...
 
-results = benchmark.evaluate(y_pred)
-results.upload_to_hub()
+# Work your magic to accurately predict the test set
+predictions = [0.0 for x in test]
+
+# Evaluate your predictions
+results = benchmark.evaluate(predictions)
+
+# Submit your results
+results.upload_to_hub(owner="dummy-user")
 ```
 
 That's all there is to it to partake in a benchmark. No complicated, custom data-loaders or evaluation protocol. With just a few lines of code, you can feel confident that you are properly evaluating your model and focus on what you do best: Solving the hard problems in our domain!

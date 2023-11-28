@@ -23,7 +23,7 @@ from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 from polaris.utils.io import get_zarr_root, robust_copy
-from polaris.utils.types import AccessType, HttpUrlString, License
+from polaris.utils.types import AccessType, HttpUrlString, HubOwner, License
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -201,6 +201,7 @@ class Dataset(BaseArtifactModel):
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         access: Optional[AccessType] = "private",
+        owner: Optional[Union[HubOwner, str]] = None,
         **kwargs: dict,
     ):
         """
@@ -212,7 +213,7 @@ class Dataset(BaseArtifactModel):
         with PolarisHubClient(
             env_file=env_file, settings=settings, cache_auth_token=cache_auth_token, **kwargs
         ) as client:
-            return client.upload_dataset(self, access)
+            return client.upload_dataset(self, access=access, owner=owner)
 
     @classmethod
     def from_zarr(cls, path: str) -> "Dataset":

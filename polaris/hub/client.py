@@ -373,7 +373,12 @@ class PolarisHubClient(OAuth2Client):
         )
         return benchmark_cls(**response)
 
-    def upload_results(self, results: BenchmarkResults, access: AccessType = "private"):
+    def upload_results(
+        self,
+        results: BenchmarkResults,
+        access: AccessType = "private",
+        owner: Optional[Union[HubOwner, str]] = None,
+    ):
         """Upload the results to the Polaris Hub.
 
         Info: Owner
@@ -395,9 +400,19 @@ class PolarisHubClient(OAuth2Client):
         Args:
             results: The results to upload.
             access: Grant public or private access to result
+            owner: Which Hub user or organization owns the artifact.
+                Optional if and only if the `benchmark.owner` attribute is set.
         """
 
         # Get the serialized model data-structure
+
+        if results.owner is None:
+            if owner is None:
+                raise ValueError(
+                    "The `owner` argument must be specified if the `results.owner` attribute is not set."
+                )
+            results.owner = owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
+
         result_json = results.model_dump(by_alias=True, exclude_none=True)
 
         # Make a request to the hub
@@ -414,7 +429,11 @@ class PolarisHubClient(OAuth2Client):
         return response
 
     def upload_dataset(
-        self, dataset: Dataset, access: AccessType = "private", timeout: TimeoutTypes = (10, 200)
+        self,
+        dataset: Dataset,
+        access: AccessType = "private",
+        timeout: TimeoutTypes = (10, 200),
+        owner: Optional[Union[HubOwner, str]] = None,
     ):
         """Upload the dataset to the Polaris Hub.
 
@@ -432,7 +451,20 @@ class PolarisHubClient(OAuth2Client):
             dataset: The dataset to upload.
             access: Grant public or private access to result
             timeout: Request timeout values. User can modify the value when uploading large dataset as needed.
+                This can be a single value with the timeout in seconds for all IO operations, or a more granular
+                tuple with (connect_timeout, write_timeout). The type of the the timout parameter comes from `httpx`.
+                Since datasets can get large, it might be needed to increase the write timeout for larger datasets.
+                See also: https://www.python-httpx.org/advanced/#timeout-configuration
+            owner: Which Hub user or organization owns the artifact.
+                Optional if and only if the `benchmark.owner` attribute is set.
         """
+
+        if dataset.owner is None:
+            if owner is None:
+                raise ValueError(
+                    "The `owner` argument must be specified if the `dataset.owner` attribute is not set."
+                )
+            dataset.owner = owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
 
         # Get the serialized data-model
         # We exclude the table as it handled separately and the cache_dir as it is user-specific
@@ -500,7 +532,12 @@ class PolarisHubClient(OAuth2Client):
 
         return response
 
-    def upload_benchmark(self, benchmark: BenchmarkSpecification, access: AccessType = "private"):
+    def upload_benchmark(
+        self,
+        benchmark: BenchmarkSpecification,
+        access: AccessType = "private",
+        owner: Optional[Union[HubOwner, str]] = None,
+    ):
         """Upload the benchmark to the Polaris Hub.
 
         Info: Owner
@@ -520,7 +557,15 @@ class PolarisHubClient(OAuth2Client):
         Args:
             benchmark: The benchmark to upload.
             access: Grant public or private access to result
+            owner: Which Hub user or organization owns the artifact.
+                Optional if and only if the `benchmark.owner` attribute is set.
         """
+        if benchmark.owner is None:
+            if owner is None:
+                raise ValueError(
+                    "The `owner` argument must be specified if the `benchmark.owner` attribute is not set."
+                )
+            benchmark.owner = owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
 
         # Get the serialized data-model
         # We exclude the dataset as we expect it to exist on the hub already.

@@ -49,20 +49,26 @@ This library is a Python client to interact with the [Polaris Hub](https://polar
 ```python
 import polaris as po
 
-# Download a benchmark (the associated dataset will be transparently downloaded)
-benchmark = po.load_benchmark("org_or_user/name")
+# Load the benchmark from the Hub
+benchmark = po.load_benchmark("polaris/hello_world_benchmark")
 
-# Retrieve the splits
+# Get the train and test data-loaders
 train, test = benchmark.get_train_test_split()
 
-# Work your magic!
-y_pred = ...
+# Use the training data to train your model
+# Get the input as an array with 'train.inputs' and 'train.targets'  
+# Or simply iterate over the train object.
+for x, y in train:
+    ...
 
-# Run the evaluation procedure
-results = benchmark.evaluate(y_pred)
+# Work your magic to accurately predict the test set
+predictions = [0.0 for x in test]
 
-# Upload your results to the hub
-results.upload_to_hub()
+# Evaluate your predictions
+results = benchmark.evaluate(predictions)
+
+# Submit your results
+results.upload_to_hub(owner="dummy-user")
 ```
 
 ## Documentation
