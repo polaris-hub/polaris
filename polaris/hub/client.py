@@ -451,6 +451,8 @@ class PolarisHubClient(OAuth2Client):
             dataset: The dataset to upload.
             access: Grant public or private access to result
             timeout: Request timeout values. User can modify the value when uploading large dataset as needed.
+                The type of the the timout parameter comes from `httpx`. See also:
+                https://www.python-httpx.org/advanced/#timeout-configuration
             owner: Which Hub user or organization owns the artifact.
                 Optional if and only if the `benchmark.owner` attribute is set.
         """
