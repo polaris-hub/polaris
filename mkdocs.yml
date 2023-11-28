@@ -22,6 +22,7 @@ nav:
       - Custom Datasets and Benchmarks: tutorials/custom_dataset_benchmark.ipynb
       # - Creating Datasets with zarr: tutorials/dataset_zarr.ipynb
   - API Reference:
+      - Load: api/load.md
       - Core:
           - Dataset: api/dataset.md
           - Benchmark: api/benchmark.md
