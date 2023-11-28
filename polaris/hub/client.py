@@ -432,7 +432,7 @@ class PolarisHubClient(OAuth2Client):
         self,
         dataset: Dataset,
         access: AccessType = "private",
-        timeout: TimeoutTypes = TimeoutTypes(connect=10, write=200),
+        timeout: TimeoutTypes = (10, 200),
         owner: Optional[Union[HubOwner, str]] = None,
     ):
         """Upload the dataset to the Polaris Hub.
@@ -452,7 +452,7 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             timeout: Request timeout values. User can modify the value when uploading large dataset as needed.
                 This can be a single value with the timeout in seconds for all IO operations, or a more granular
-                tuple with values for the different IO operations. The type of the the timout parameter comes from `httpx`.
+                tuple with (connect_timeout, write_timeout). The type of the the timout parameter comes from `httpx`.
                 Since datasets can get large, it might be needed to increase the write timeout for larger datasets.
                 See also: https://www.python-httpx.org/advanced/#timeout-configuration
             owner: Which Hub user or organization owns the artifact.
