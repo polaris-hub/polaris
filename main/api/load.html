@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/api/subset.html">
+        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/api/load.html">
       
       
-        <link rel="prev" href="benchmark.html">
+        <link rel="prev" href="../tutorials/custom_dataset_benchmark.html">
       
       
-        <link rel="next" href="evaluation.html">
+        <link rel="next" href="dataset.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Subset - Polaris</title>
+        <title>Load - Polaris</title>
       
     
     
@@ -89,7 +89,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#polaris.dataset.Subset" class="md-skip">
+        <a href="#polaris.load_dataset" class="md-skip">
           Skip to content
         </a>
       
@@ -126,7 +126,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Subset
+              Load
             
           </span>
         </div>
@@ -580,10 +580,28 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="load.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Load
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="load.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -592,6 +610,42 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.load_dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_dataset()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.load_benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_benchmark()
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -601,8 +655,6 @@
                 
   
   
-    
-  
   
   
     
@@ -613,12 +665,12 @@
       
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
         
           
           <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="">
@@ -632,7 +684,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_2">
             <span class="md-nav__icon md-icon"></span>
             Core
@@ -685,28 +737,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Subset
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="subset.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="subset.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -715,33 +749,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#polaris.dataset.Subset" class="md-nav__link">
-    <span class="md-ellipsis">
-      Subset
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1007,9 +1014,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#polaris.dataset.Subset" class="md-nav__link">
+  <a href="#polaris.load_dataset" class="md-nav__link">
     <span class="md-ellipsis">
-      Subset
+      load_dataset()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.load_benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_benchmark()
     </span>
   </a>
   
@@ -1033,95 +1049,78 @@
   
 
 
-  <h1>Subset</h1>
+  <h1>Load</h1>
 
-<div class="doc doc-object doc-class">
-
-
+<div class="doc doc-object doc-function">
 
 
-<h3 id="polaris.dataset.Subset" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.dataset.Subset</span>
+
+
+<h3 id="polaris.load_dataset" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">polaris.load_dataset</span>
 
 
 </h3>
-
-
-  <div class="doc doc-contents first">
-
-  
-      <p>The <code>Subset</code> class provides easy access to a single partition of a split dataset.</p>
-<p>This should be the starting point for any framework-specific (e.g. PyTorch, Tensorflow) data-loader implementation.
-How the data is loaded in Polaris can be non-trivial, so this class is provided to abstract away the details.
-To easily build framework-specific data-loaders, a <code>Subset</code> supports various styles of accessing the data:</p>
-<ol>
-<li><strong>In memory</strong>: Loads the entire dataset in memory and returns a single array with all datapoints,
-    this style is accessible through the <code>subset.targets</code> and <code>subset.inputs</code> properties.</li>
-<li><strong>List</strong>: Index the subset like a list, this style is accessible through the <code>subset[idx]</code> syntax.</li>
-<li><strong>Iterator</strong>: Iterate over the subset, this style is accessible through the <code>iter(subset)</code> syntax.</li>
-</ol>
-
-
-
-<p><strong>Examples:</strong></p>
-    <p>The different styles of accessing the data:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">polaris</span> <span class="k">as</span> <span class="nn">po</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">benchmark</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_benchmark</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">()</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># Load the entire dataset in memory, useful for e.g. scikit-learn.</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">X</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">inputs</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">targets</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Access a single datapoint as with a list, useful for e.g. PyTorch.</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="c1"># Iterate over the dataset, useful for very large datasets.</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">train</span><span class="p">:</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="o">...</span>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">load_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
 </span></code></pre></div>
 
-
-
-  <p><strong>Raises:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td>
-                <code><span title="polaris.utils.errors.TestAccessError">TestAccessError</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>When trying to access the targets of the test set (specified by the <code>hide_targets</code> attribute).</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-
+  <div class="doc doc-contents first">
   
+      <p>Loads a Polaris dataset.</p>
+<p>In Polaris, a dataset is a tabular data structure that stores data-points in a row-wise manner.
+A dataset can have multiple modalities or targets, can be sparse
+and can be part of <em>one or multiple benchmarks</em>.</p>
+<p>The Polaris dataset can be loaded from the Hub or from a local or remote directory.</p>
+<ul>
+<li><strong>Hub</strong> (recommended): When loading the dataset from the Hub, you can simply
+    provide the <code>owner/name</code> slug. This can be easily copied from the relevant dataset
+    page on the Hub.</li>
+<li><strong>Directory</strong>: When loading the dataset from a directory, you should provide the path
+    as returned by <a class="autorefs autorefs-internal" href="dataset.html#polaris.dataset.Dataset.to_json"><code>Dataset.to_json</code></a> or
+    <a class="autorefs autorefs-internal" href="dataset.html#polaris.dataset.Dataset.to_zarr"><code>Dataset.to_zarr</code></a>. The path can be local or remote.</li>
+</ul>
 
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
+<details class="warning" open>
+  <summary>Loading from <code>.zarr</code></summary>
+  <p>Loading and saving datasets from and to <code>.zarr</code> is still experimental and currently not
+supported by the Hub.</p>
+</details>
   </div>
+
+</div><hr />
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h3 id="polaris.load_benchmark" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">polaris.load_benchmark</span>
+
+
+</h3>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">load_benchmark</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents first">
+  
+      <p>Loads a Polaris benchmark.</p>
+<p>In Polaris, a benchmark wraps a dataset with additional meta-data to specify the evaluation logic.</p>
+<p>The Polaris benchmark can be loaded from the Hub or from a local or remote directory.</p>
+
+<details class="note" open>
+  <summary>Dataset is automatically loaded</summary>
+  <p>The dataset underlying the benchmark is automatically loaded when loading the benchmark.</p>
+</details>      <ul>
+<li><strong>Hub</strong> (recommended): When loading the benchmark from the Hub, you can simply
+    provide the <code>owner/name</code> slug. This can be easily copied from the relevant benchmark
+    page on the Hub.</li>
+<li><strong>Directory</strong>: When loading the benchmark from a directory, you should provide the path
+    as returned by <a class="autorefs autorefs-internal" href="benchmark.html#polaris.benchmark.BenchmarkSpecification.to_json"><code>BenchmarkSpecification.to_json</code></a>.
+    The path can be local or remote.</li>
+</ul>
 
   </div>
 
@@ -1195,7 +1194,7 @@ To easily build framework-specific data-loaders, a <code>Subset</code> supports 
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="benchmark.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Benchmark">
+          <a href="../tutorials/custom_dataset_benchmark.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Custom datasets and benchmarks">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -1205,20 +1204,20 @@ To easily build framework-specific data-loaders, a <code>Subset</code> supports 
                 Previous
               </span>
               <div class="md-ellipsis">
-                Benchmark
+                Custom datasets and benchmarks
               </div>
             </div>
           </a>
         
         
           
-          <a href="evaluation.html" class="md-footer__link md-footer__link--next" aria-label="Next: Evaluation">
+          <a href="dataset.html" class="md-footer__link md-footer__link--next" aria-label="Next: Dataset">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Evaluation
+                Dataset
               </div>
             </div>
             <div class="md-footer__button md-icon">
