@@ -159,13 +159,13 @@ class Dataset(BaseArtifactModel):
 
     @computed_field
     @property
-    def no_rows(self) -> int:
+    def n_rows(self) -> int:
         """The number of datapoints in the dataset."""
         return len(self.rows)
 
     @computed_field
     @property
-    def no_columns(self) -> int:
+    def n_columns(self) -> int:
         """The number of columns in the dataset."""
         return len(self.columns)
 
@@ -480,7 +480,7 @@ class Dataset(BaseArtifactModel):
         return self._path_to_hash[column][value]
 
     def size(self):
-        return self.no_datapoints, self.no_columns
+        return self.n_datapoints, self.n_columns
 
     def _split_index_from_path(self, path: str) -> Tuple[str, Optional[int]]:
         """
@@ -532,13 +532,13 @@ class Dataset(BaseArtifactModel):
         if isinstance(ret, pd.Series):
             # Load the data from the pointer columns
 
-            if len(ret) == self.no_columns:
+            if len(ret) == self.n_columns:
                 # Returning a row
                 ret = ret.to_dict()
                 for k in ret.keys():
                     ret[k] = self.get_data(item, k)
 
-            if len(ret) == self.no_rows:
+            if len(ret) == self.n_rows:
                 # Returnin a column
                 if self.annotations[ret.name].is_pointer:
                     ret = [self.get_data(item, ret.name) for item in ret.index]
