@@ -160,7 +160,7 @@ class Dataset(BaseArtifactModel):
     @computed_field
     @property
     def n_rows(self) -> int:
-        """The number of datapoints in the dataset."""
+        """The number of rows in the dataset."""
         return len(self.rows)
 
     @computed_field
@@ -480,7 +480,7 @@ class Dataset(BaseArtifactModel):
         return self._path_to_hash[column][value]
 
     def size(self):
-        return self.n_datapoints, self.n_columns
+        return self.rows, self.n_columns
 
     def _split_index_from_path(self, path: str) -> Tuple[str, Optional[int]]:
         """
@@ -539,10 +539,17 @@ class Dataset(BaseArtifactModel):
                     ret[k] = self.get_data(item, k)
 
             if len(ret) == self.n_rows:
-                # Returnin a column
+                # Returning a column
                 if self.annotations[ret.name].is_pointer:
                     ret = [self.get_data(item, ret.name) for item in ret.index]
                 return np.array(ret)
+
+        # Returning a dataframe
+        if isinstance(ret, pd.DataFrame):
+            for c in ret.columns:
+                if self.annotations[c].is_pointer:
+                    ret[c] = [self.get_data(item, c) for item in ret.index]
+            return ret
 
         return ret
 
@@ -557,7 +564,7 @@ class Dataset(BaseArtifactModel):
         return dict2html(self._repr_dict_())
 
     def __len__(self):
-        return len(self.table)
+        return self.n_rows
 
     def __repr__(self):
         return json.dumps(self._repr_dict_(), indent=2)
