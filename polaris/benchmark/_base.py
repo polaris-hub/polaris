@@ -311,37 +311,37 @@ class BenchmarkSpecification(BaseArtifactModel):
 
     @computed_field
     @property
-    def no_train_datapoints(self) -> int:
+    def n_train_datapoints(self) -> int:
         """The size of the train set."""
         return len(self.split[0])
 
     @computed_field
     @property
-    def no_test_sets(self) -> int:
+    def n_test_sets(self) -> int:
         """The number of test sets"""
         return len(self.split[1]) if isinstance(self.split[1], dict) else 1
 
     @computed_field
     @property
-    def no_test_datapoints(self) -> dict[str, int]:
+    def n_test_datapoints(self) -> dict[str, int]:
         """The size of (each of) the test set(s)."""
-        if self.no_test_sets == 1:
+        if self.n_test_sets == 1:
             return {"test": len(self.split[1])}
         else:
             return {k: len(v) for k, v in self.split[1].items()}
 
     @computed_field
     @property
-    def no_classes(self) -> dict[str, int]:
+    def n_classes(self) -> dict[str, int]:
         """The number of classes for each of the target columns."""
-        no_classes = {}
+        n_classes = {}
         for target in self.target_cols:
             target_type = self.target_types[target]
             if target_type is None or target_type == TargetType.REGRESSION:
-                no_classes[target] = None
+                n_classes[target] = None
             else:
-                no_classes[target] = self.dataset.loc[:, target].nunique()
-        return no_classes
+                n_classes[target] = self.dataset.loc[:, target].nunique()
+        return n_classes
 
     @computed_field
     @property
