@@ -7,11 +7,14 @@ import fsspec
 import numpy as np
 import pandas as pd
 from pydantic import (
+    Field,
     FieldValidationInfo,
+    computed_field,
     field_serializer,
     field_validator,
     model_validator,
 )
+from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset import Dataset, Subset
@@ -22,7 +25,15 @@ from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
 from polaris.utils.misc import listit
-from polaris.utils.types import AccessType, DataFormat, HubOwner, PredictionsType, SplitType
+from polaris.utils.types import (
+    AccessType,
+    DataFormat,
+    HubOwner,
+    PredictionsType,
+    SplitType,
+    TargetType,
+    TaskType,
+)
 
 ColumnsType = Union[str, list[str]]
 
@@ -47,13 +58,26 @@ class BenchmarkSpecification(BaseArtifactModel):
         ```python
         import polaris as po
 
-        benchmark = po.load_benchmark("/path/to/benchmark")
+        # Load the benchmark from the Hub
+        benchmark = po.load_benchmark("polaris/hello_world_benchmark")
+
+        # Get the train and test data-loaders
         train, test = benchmark.get_train_test_split()
 
-        # Work your magic
-        predictions = ...
+        # Use the training data to train your model
+        # Get the input as an array with 'train.inputs' and 'train.targets'
+        # Or simply iterate over the train object.
+        for x, y in train:
+            ...
 
-        benchmark.evaluate(predictions)
+        # Work your magic to accurately predict the test set
+        predictions = [0.0 for x in test]
+
+        # Evaluate your predictions
+        results = benchmark.evaluate(predictions)
+
+        # Submit your results
+        results.upload_to_hub(owner="dummy-user")
         ```
 
     Attributes:
@@ -68,6 +92,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
+        target_types: A dictionary that maps target columns to their type. If not specified, this is automatically inferred.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
     """
 
@@ -83,6 +108,9 @@ class BenchmarkSpecification(BaseArtifactModel):
 
     # Additional meta-data
     readme: str = ""
+    target_types: dict[str, Optional[Union[TargetType, str]]] = Field(
+        default_factory=dict, validate_default=True
+    )
 
     @field_validator("dataset")
     def _validate_dataset(cls, v):
@@ -175,9 +203,31 @@ class BenchmarkSpecification(BaseArtifactModel):
                 raise InvalidBenchmarkError("The predefined split contains invalid indices")
         return v
 
+    @field_validator("target_types")
+    def _validate_target_types(cls, v, info: FieldValidationInfo):
+        """Try to automatically infer the target types if not already set"""
+
+        dataset = info.data.get("dataset")
+        target_cols = info.data.get("target_cols")
+        if dataset is None or target_cols is None:
+            return v
+
+        for target in target_cols:
+            if target not in v:
+                target_type = type_of_target(dataset[:, target])
+                if target_type == "continuous":
+                    v[target] = TargetType.REGRESSION
+                elif target_type in ["binary", "multiclass"]:
+                    v[target] = TargetType.CLASSIFICATION
+                else:
+                    v[target] = None
+            elif not isinstance(v, TargetType):
+                v[target] = TargetType(v[target])
+        return v
+
     @model_validator(mode="after")
     @classmethod
-    def _validate_checksum(cls, m: "BenchmarkSpecification"):
+    def _validate_model(cls, m: "BenchmarkSpecification"):
         """
         If a checksum is provided, verify it matches what the checksum should be.
         If no checksum is provided, make sure it is set.
@@ -221,6 +271,11 @@ class BenchmarkSpecification(BaseArtifactModel):
         """Convert any tuple to list to make sure it's serializable"""
         return listit(v)
 
+    @field_serializer("target_types")
+    def _serialize_target_types(self, v):
+        """Convert from enum to string to make sure it's serializable"""
+        return {k: v.value for k, v in self.target_types.items()}
+
     @staticmethod
     def _compute_checksum(dataset, target_cols, input_cols, split, metrics):
         """
@@ -253,6 +308,47 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         checksum = hash_fn.hexdigest()
         return checksum
+
+    @computed_field
+    @property
+    def no_train_datapoints(self) -> int:
+        """The size of the train set."""
+        return len(self.split[0])
+
+    @computed_field
+    @property
+    def no_test_sets(self) -> int:
+        """The number of test sets"""
+        return len(self.split[1]) if isinstance(self.split[1], dict) else 1
+
+    @computed_field
+    @property
+    def no_test_datapoints(self) -> dict[str, int]:
+        """The size of (each of) the test set(s)."""
+        if self.no_test_sets == 1:
+            return {"test": len(self.split[1])}
+        else:
+            return {k: len(v) for k, v in self.split[1].items()}
+
+    @computed_field
+    @property
+    def no_classes(self) -> dict[str, int]:
+        """The number of classes for each of the target columns."""
+        no_classes = {}
+        for target in self.target_cols:
+            target_type = self.target_types[target]
+            if target_type is None or target_type == TargetType.REGRESSION:
+                no_classes[target] = None
+            else:
+                no_classes[target] = self.dataset.loc[:, target].nunique()
+        return no_classes
+
+    @computed_field
+    @property
+    def task_type(self) -> TaskType:
+        """The high-level task type of the benchmark."""
+        v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
+        return v.value
 
     def get_train_test_split(
         self, input_format: DataFormat = "dict", target_format: DataFormat = "dict"
@@ -417,8 +513,6 @@ class BenchmarkSpecification(BaseArtifactModel):
         repr_dict.pop("dataset")
         repr_dict.pop("split")
         repr_dict["dataset_name"] = self.dataset.name
-        repr_dict["n_input_cols"] = len(self.input_cols)
-        repr_dict["n_target_cols"] = len(self.target_cols)
         return repr_dict
 
     def _repr_html_(self):

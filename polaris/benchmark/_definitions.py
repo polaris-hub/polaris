@@ -1,6 +1,7 @@
-from pydantic import field_validator
+from pydantic import computed_field, field_validator
 
 from polaris.benchmark._base import BenchmarkSpecification
+from polaris.utils.types import TaskType
 
 
 class SingleTaskBenchmarkSpecification(BenchmarkSpecification):
@@ -16,6 +17,12 @@ class SingleTaskBenchmarkSpecification(BenchmarkSpecification):
             raise ValueError("A single-task benchmark should specify a single target column")
         return v
 
+    @computed_field
+    @property
+    def task_type(self) -> TaskType:
+        """The high-level task type of the benchmark."""
+        return TaskType.SINGLE_TASK.value
+
 
 class MultiTaskBenchmarkSpecification(BenchmarkSpecification):
     """Subclass for any multi-task benchmark specification
@@ -29,3 +36,9 @@ class MultiTaskBenchmarkSpecification(BenchmarkSpecification):
         if not len(v) > 1:
             raise ValueError("A multi-task benchmark should specify at least two target columns")
         return v
+
+    @computed_field
+    @property
+    def task_type(self) -> TaskType:
+        """The high-level task type of the benchmark."""
+        return TaskType.MULTI_TASK.value

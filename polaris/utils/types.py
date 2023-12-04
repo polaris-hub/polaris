@@ -1,4 +1,5 @@
 import json
+from enum import Enum
 from typing import Annotated, Any, ClassVar, Literal, Optional, Union
 
 import fsspec
@@ -145,3 +146,17 @@ class License(BaseModel):
                 "It is required to then also specify the name and reference."
             )
         return m
+
+
+class TargetType(Enum):
+    """The high-level classification of different targets."""
+
+    REGRESSION = "regression"
+    CLASSIFICATION = "classification"
+
+
+class TaskType(Enum):
+    """The high-level classification of different tasks."""
+
+    MULTI_TASK = "multi_task"
+    SINGLE_TASK = "single_task"
