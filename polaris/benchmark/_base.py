@@ -338,9 +338,8 @@ class BenchmarkSpecification(BaseArtifactModel):
         for target in self.target_cols:
             target_type = self.target_types[target]
             if target_type is None or target_type == TargetType.REGRESSION:
-                n_classes[target] = None
-            else:
-                n_classes[target] = self.dataset.loc[:, target].nunique()
+                continue
+            n_classes[target] = self.dataset.loc[:, target].nunique()
         return n_classes
 
     @computed_field
