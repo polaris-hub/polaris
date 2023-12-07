@@ -11,6 +11,7 @@ import zarr
 from loguru import logger
 from pydantic import (
     Field,
+    computed_field,
     field_validator,
     model_validator,
 )
@@ -55,6 +56,8 @@ class Dataset(BaseArtifactModel):
         annotations: Each column _can be_ annotated with a [`ColumnAnnotation`][polaris.dataset.ColumnAnnotation] object.
             Importantly, this is used to annotate whether a column is a pointer column.
         source: The data source, e.g. a DOI, Github repo or URI.
+        license: The dataset license
+        curation_reference: A reference to the curation process, e.g. a DOI, Github repo or URI.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
 
     Raises:
@@ -72,6 +75,7 @@ class Dataset(BaseArtifactModel):
     annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
     source: Optional[HttpUrlString] = None
     license: Optional[License] = None
+    curation_reference: Optional[HttpUrlString] = None
 
     # Config
     cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.
@@ -106,6 +110,7 @@ class Dataset(BaseArtifactModel):
         for c in m.table.columns:
             if c not in m.annotations:
                 m.annotations[c] = ColumnAnnotation()
+            m.annotations[c].dtype = m.table[c].dtype
 
         # Verify the checksum
         # NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
@@ -151,6 +156,28 @@ class Dataset(BaseArtifactModel):
 
         checksum = hash_fn.hexdigest()
         return checksum
+
+    @computed_field
+    @property
+    def n_rows(self) -> int:
+        """The number of rows in the dataset."""
+        return len(self.rows)
+
+    @computed_field
+    @property
+    def n_columns(self) -> int:
+        """The number of columns in the dataset."""
+        return len(self.columns)
+
+    @property
+    def rows(self) -> list:
+        """Return all row indices for the dataset"""
+        return self.table.index.tolist()
+
+    @property
+    def columns(self) -> list:
+        """Return all columns for the dataset"""
+        return self.table.columns.tolist()
 
     def get_data(self, row: Union[str, int], col: str) -> np.ndarray:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
@@ -453,7 +480,7 @@ class Dataset(BaseArtifactModel):
         return self._path_to_hash[column][value]
 
     def size(self):
-        return len(self), len(self.table.columns)
+        return self.rows, self.n_columns
 
     def _split_index_from_path(self, path: str) -> Tuple[str, Optional[int]]:
         """
@@ -499,6 +526,33 @@ class Dataset(BaseArtifactModel):
                 table[c] = table[c].apply(fn)
         return table
 
+    def __getitem__(self, item):
+        """Allows for indexing the dataset directly"""
+        ret = self.table.loc[item]
+        if isinstance(ret, pd.Series):
+            # Load the data from the pointer columns
+
+            if len(ret) == self.n_columns:
+                # Returning a row
+                ret = ret.to_dict()
+                for k in ret.keys():
+                    ret[k] = self.get_data(item, k)
+
+            if len(ret) == self.n_rows:
+                # Returning a column
+                if self.annotations[ret.name].is_pointer:
+                    ret = [self.get_data(item, ret.name) for item in ret.index]
+                return np.array(ret)
+
+        # Returning a dataframe
+        if isinstance(ret, pd.DataFrame):
+            for c in ret.columns:
+                if self.annotations[c].is_pointer:
+                    ret[c] = [self.get_data(item, c) for item in ret.index]
+            return ret
+
+        return ret
+
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
         repr_dict = self.model_dump()
@@ -510,7 +564,7 @@ class Dataset(BaseArtifactModel):
         return dict2html(self._repr_dict_())
 
     def __len__(self):
-        return len(self.table)
+        return self.n_rows
 
     def __repr__(self):
         return json.dumps(self._repr_dict_(), indent=2)

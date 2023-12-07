@@ -319,7 +319,10 @@ class PolarisHubClient(OAuth2Client):
 
         # This should be a 307 redirect with the signed URL
         if storage_response.status_code != 307:
-            raise PolarisHubError("Could not get signed URL from Polaris Hub.")
+            try:
+                storage_response.raise_for_status()
+            except HTTPStatusError as error:
+                raise PolarisHubError("Could not get signed URL from Polaris Hub.") from error
 
         storage_response = storage_response.json()
         url = storage_response["url"]

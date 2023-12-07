@@ -53,8 +53,23 @@ Similarly, you can easily access a dataset.
 ```python
 import polaris as po
 
-dataset = po.load_dataset("org_or_user/name")
-dataset.get_data(col=..., row=...)
+# Load the dataset from the hub
+dataset = po.load_dataset("polaris/hello-world-dataset")
+
+# Get information on the dataset size
+dataset.size()
+
+# Load a datapoint in memory
+dataset.get_data(
+    row=dataset.rows[0],
+    col=dataset.columns[0],
+)
+
+# Or, similarly:
+dataset[dataset.rows[0], dataset.columns[0]]
+
+# Get the first 10 rows in memory
+dataset[:10]
 ```
 
 ## Core concepts

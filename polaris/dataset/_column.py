@@ -1,6 +1,8 @@
 import enum
 from typing import Dict, Optional, Union
 
+import numpy as np
+from numpy.typing import DTypeLike
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 from pydantic.alias_generators import to_camel
 
@@ -34,6 +36,7 @@ class ColumnAnnotation(BaseModel):
     modality: Union[str, Modality] = Modality.UNKNOWN
     description: Optional[str] = None
     user_attributes: Dict[str, str] = Field(default_factory=dict)
+    dtype: Optional[Union[np.dtype, str]] = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_camel, populate_by_name=True)
 
@@ -44,7 +47,21 @@ class ColumnAnnotation(BaseModel):
             v = Modality[v.upper()]
         return v
 
+    @field_validator("dtype")
+    def _validate_dtype(cls, v):
+        """Tries to convert a string to the Enum"""
+        if isinstance(v, str):
+            v = np.dtype(v)
+        return v
+
     @field_serializer("modality")
     def _serialize_modality(self, v: Modality):
         """Return the modality as a string, keeping it serializable"""
         return v.name
+
+    @field_serializer("dtype")
+    def _serialize_dtype(self, v: Optional[DTypeLike]):
+        """Return the modality as a string, keeping it serializable"""
+        if v is not None:
+            v = v.name
+        return v

@@ -60,6 +60,7 @@ def test_dataset(test_data, test_org_owner):
         user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
         owner=test_org_owner,
         license=License(id="MIT"),
+        curation_reference="https://www.example.com",
     )
 
 
@@ -152,6 +153,7 @@ def test_multi_task_benchmark(test_dataset):
         split=(train_indices, test_indices),
         target_cols=["expt", "calc"],
         input_cols="smiles",
+        target_types={"expt": "regression"},
     )
 
 
