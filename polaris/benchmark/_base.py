@@ -209,12 +209,16 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         dataset = info.data.get("dataset")
         target_cols = info.data.get("target_cols")
+        splits = np.concatenate(info.data["split"])
+
         if dataset is None or target_cols is None:
             return v
 
         for target in target_cols:
             if target not in v:
-                target_type = type_of_target(dataset[:, target])
+                val = dataset[splits, target]
+                # remove the nans for mutiple task dataset when the table is sparse
+                target_type = type_of_target(val[~np.isnan(val)])
                 if target_type == "continuous":
                     v[target] = TargetType.REGRESSION
                 elif target_type in ["binary", "multiclass"]:
