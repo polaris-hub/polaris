@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.11">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.14">
     
     
       
@@ -340,6 +340,7 @@
   
   
   
+  
     
     
     
@@ -379,6 +380,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../index.html" class="md-nav__link">
         
@@ -396,6 +398,7 @@
             
               
                 
+  
   
   
   
@@ -423,6 +426,7 @@
     
       
       
+  
   
   
   
@@ -465,6 +469,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../tutorials/basics.html" class="md-nav__link">
         
@@ -485,6 +490,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../tutorials/data_curation.html" class="md-nav__link">
         
@@ -502,6 +508,7 @@
             
               
                 
+  
   
   
   
@@ -532,6 +539,7 @@
   
   
     
+  
   
   
     
@@ -573,6 +581,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="load.html" class="md-nav__link">
         
@@ -593,6 +602,7 @@
   
   
     
+  
   
   
     
@@ -634,6 +644,7 @@
   
   
     
+  
   
   
     <li class="md-nav__item md-nav__item--active">
@@ -685,6 +696,42 @@
   
     <nav class="md-nav" aria-label="Dataset">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.n_rows" class="md-nav__link">
+    <span class="md-ellipsis">
+      n_rows
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.n_columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      n_columns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.rows" class="md-nav__link">
+    <span class="md-ellipsis">
+      rows
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      columns
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.get_data" class="md-nav__link">
@@ -777,6 +824,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="benchmark.html" class="md-nav__link">
         
@@ -797,6 +845,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="subset.html" class="md-nav__link">
         
@@ -814,6 +863,7 @@
             
               
                 
+  
   
   
   
@@ -842,6 +892,7 @@
             
               
                 
+  
   
   
   
@@ -884,6 +935,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="hub.client.html" class="md-nav__link">
         
@@ -909,6 +961,7 @@
             
               
                 
+  
   
   
   
@@ -951,6 +1004,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="base.html" class="md-nav__link">
         
@@ -968,6 +1022,7 @@
             
               
                 
+  
   
   
   
@@ -1006,6 +1061,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../community/community.html" class="md-nav__link">
         
@@ -1022,6 +1078,7 @@
     
       
       
+  
   
   
   
@@ -1072,6 +1129,42 @@
   
     <nav class="md-nav" aria-label="Dataset">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.n_rows" class="md-nav__link">
+    <span class="md-ellipsis">
+      n_rows
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.n_columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      n_columns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.rows" class="md-nav__link">
+    <span class="md-ellipsis">
+      rows
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      columns
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.get_data" class="md-nav__link">
@@ -1270,6 +1363,28 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
             </div>
           </td>
         </tr>
+        <tr>
+          <td><code>license</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.License" href="utils.types.html#polaris.utils.types.License">License</a>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The dataset license</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><code>curation_reference</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>A reference to the curation process, e.g. a DOI, Github repo or URI.</p>
+            </div>
+          </td>
+        </tr>
     </tbody>
   </table>
       <p>For additional meta-data attributes, see the <a class="autorefs autorefs-internal" href="base.html#polaris._artifact.BaseArtifactModel"><code>BaseArtifactModel</code></a> class.</p>
@@ -1318,6 +1433,102 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+
+<h4 id="polaris.dataset.Dataset.n_rows" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">n_rows</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">n_rows</span><span class="p">:</span> <span class="nb">int</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The number of rows in the dataset.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+
+<h4 id="polaris.dataset.Dataset.n_columns" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">n_columns</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">n_columns</span><span class="p">:</span> <span class="nb">int</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The number of columns in the dataset.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+
+<h4 id="polaris.dataset.Dataset.rows" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">rows</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">rows</span><span class="p">:</span> <span class="nb">list</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Return all row indices for the dataset</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+
+<h4 id="polaris.dataset.Dataset.columns" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">columns</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">columns</span><span class="p">:</span> <span class="nb">list</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Return all columns for the dataset</p>
+  </div>
+
+</div>
 
 
 
@@ -2164,7 +2375,7 @@ and while it does not affect logic in this library, it does affect the logic of 
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.6c14ae12.min.js"></script>
+      <script src="../assets/javascripts/bundle.cd18aaf1.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
