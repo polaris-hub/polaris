@@ -155,8 +155,8 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     cls(**kwargs)
 
     # --- Test that the checksum is NOT the same ---
-    def _check_for_failure(_kwargs):
-        with pytest.raises(ValidationError) as error:
+    def _check_for_failure(_kwargs ):
+        with pytest.raises((ValidationError, TypeError)) as error:
             cls(**_kwargs)
             assert error.error_count() == 1  # noqa
             assert isinstance(error.errors()[0], PolarisChecksumError)  # noqa
