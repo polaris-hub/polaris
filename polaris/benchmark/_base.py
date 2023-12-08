@@ -209,12 +209,15 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         dataset = info.data.get("dataset")
         target_cols = info.data.get("target_cols")
+
         if dataset is None or target_cols is None:
             return v
 
         for target in target_cols:
             if target not in v:
-                target_type = type_of_target(dataset[:, target])
+                val = dataset[:, target]
+                # remove the nans for mutiple task dataset when the table is sparse
+                target_type = type_of_target(val[~np.isnan(val)])
                 if target_type == "continuous":
                     v[target] = TargetType.REGRESSION
                 elif target_type in ["binary", "multiclass"]:
@@ -339,7 +342,7 @@ class BenchmarkSpecification(BaseArtifactModel):
             target_type = self.target_types[target]
             if target_type is None or target_type == TargetType.REGRESSION:
                 continue
-            n_classes[target] = self.dataset.loc[:, target].nunique()
+            n_classes[target] = self.dataset.table.loc[:, target].nunique()
         return n_classes
 
     @computed_field
