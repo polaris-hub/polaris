@@ -1458,7 +1458,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <p>This tutorial shows how to create datasets with more advanced data-modalities through the .zarr format.</p>
 </div>
 <h2 id="pointer-columns">Pointer columns<a class="anchor-link" href="#pointer-columns">¶</a></h2><p>Not all data might fit the tabular format, e.g. images or conformers. In that case, we have <em>pointer</em> columns. Pointer columns do not contain the data itself, but rather store a reference to an external file from which the content can be loaded.</p>
-<p>For now, we only support <code>.zarr</code> files as references. To learn more about <code>.zarr</code>, visit their documentation. Their <a href="https://zarr.readthedocs.io/en/stable/tutorial.html">tutorial</a> is a specifically good read to better understand the main features.</p>
+<p>For now, we only support <code>.zarr</code> files as references. To learn more about <code>.zarr</code>, visit their documentation. Their <a href="https://zarr.readthedocs.io/en/stable/tutorial.html">tutorial</a> specifically is a good read to better understand the main features.</p>
 </div>
 </div>
 </div>
@@ -1855,7 +1855,7 @@ for x, y in train:
 <li>Additional meta-data is saved to the user attributes of the root group.</li>
 <li>The indices are required to be integers.</li>
 </ol>
-<p>To better explain what this works, let's look at two examples corresponding to the two cases in point 2 above.</p>
+<p>To better explain how this works, let's look at two examples corresponding to the two cases in point 2 above.</p>
 <h3 id="a-single-array-per-data-point">A single array <em>per</em> data point<a class="anchor-link" href="#a-single-array-per-data-point">¶</a></h3><p>In this first example we will create a zarr array <em>per</em> data point. The structure of the zarr will look like:</p>
 <pre><code>/
   column_a/
@@ -1888,7 +1888,7 @@ for x, y in train:
 </table>
 <div class="admonition info highlight">
 <p class="admonition-title">Note</p>
-<p>Notice dataset now no longer stores the content of the array itself, but rather a reference to the array.</p>
+<p>Notice that the dataset now no longer stores the content of the array itself, but rather a reference to the array.</p>
 </div>
 </div>
 </div>
@@ -1961,7 +1961,7 @@ images = np.random.random((1000, 64, 64, 3))</div>
             <span class="c1"># the name of the array needs to be an integer</span>
             <span class="n">group</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
 
-    <span class="c1"># he root directory can furthermore contain all additional meta-data in its user attributes.</span>
+    <span class="c1"># The root directory can furthermore contain all additional meta-data in its user attributes.</span>
     <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"dummy_image_dataset"</span>
     <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"description"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Randomly generated 64x64 images"</span>
     <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"source"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"https://doi.org/xx.xxxx"</span>
@@ -1980,7 +1980,7 @@ with zarr.open(path, "w") as root:
             # the name of the array needs to be an integer
             group.array(i, arr)
 
-    # he root directory can furthermore contain all additional meta-data in its user attributes.
+    # The root directory can furthermore contain all additional meta-data in its user attributes.
     root.attrs["name"] = "dummy_image_dataset"
     root.attrs["description"] = "Randomly generated 64x64 images"
     root.attrs["source"] = "https://doi.org/xx.xxxx"

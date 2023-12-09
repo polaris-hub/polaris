@@ -1500,7 +1500,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="custom-datasets-and-benchmarks">Custom datasets and benchmarks<a class="anchor-link" href="#custom-datasets-and-benchmarks">¶</a></h1><div class="admonition abstract highlight">
 <p class="admonition-title">In short</p>
-<p>This tutorial walks you through the dataset and benchmark data-structures. After creating our own, custom dataset and benchmark, we will learn how to upload it to the Hub!</p>
+<p>This tutorial walks you through the dataset and benchmark data-structures. After creating our own custom dataset and benchmark, we will learn how to upload it to the Hub!</p>
 </div>
 <p>We have already seen how easy it is to load a benchmark or dataset from the Polaris Hub. Let's now see how you could create your own!</p>
 </div>
@@ -1513,7 +1513,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="create-the-dataset">Create the dataset<a class="anchor-link" href="#create-the-dataset">¶</a></h2><p>A dataset in Polaris is at its core a tabular data-structure in which each row stores a single datapoint. For this example, we will process a multi-task DMPK dataset from <a href="https://doi.org/10.1021/acs.jcim.3c00160">Fang et al.</a>. For the sake of simplicity, we don't do any curation and download the dataset as is from their Github.</p>
+<h2 id="create-the-dataset">Create the dataset<a class="anchor-link" href="#create-the-dataset">¶</a></h2><p>A dataset in Polaris is at its core a tabular data-structure in which each row stores a single datapoint. For this example, we will process a multi-task DMPK dataset from <a href="https://doi.org/10.1021/acs.jcim.3c00160">Fang et al.</a>. For the sake of simplicity, we don't do any curation and will just download the dataset as-is from their Github.</p>
 <div class="admonition warning highlight">
 <p class="admonition-title">The importance of curation</p>
 <p>While we do not address it in this tutorial, data curation is essential to an impactful benchmark. Because of this, we have not just made several high-quality benchmarks readily available on the Polaris Hub, but also open-sourced some of the tools we've built to curate these datasets.</p>
@@ -2034,7 +2034,7 @@ dataset = po.load_dataset(path)</div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="create-the-benchmark-specification">Create the benchmark specification<a class="anchor-link" href="#create-the-benchmark-specification">¶</a></h2><p>A benchmark is represented by the <code>BenchmarkSpecification</code>, which wraps a <code>Dataset</code> with additional data to produce a benchmark.</p>
-<p>Specifically, it specifies:</p>
+<p>It specifies:</p>
 <ol>
 <li>Which dataset to use (see Dataset);</li>
 <li>Which columns are used as input and which columns are used as target;</li>
@@ -2102,8 +2102,8 @@ benchmark = SingleTaskBenchmarkSpecification(
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Metrics should be supported in the polaris framework
-For more information, see the <code>Metric</code> class.</p>
+<p>Metrics should be supported in the polaris framework.</p>
+<p>For more information, see the <code>Metric</code> class.</p>
 </div>
 </div>
 </div>
@@ -2159,7 +2159,7 @@ list(Metric)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>To support the vast flexibility in specifying a benchmark, we have different classes that correspond to different types of benchmarks. Each of these subclasses make the data-model or logic more specific to a particular case. For example, trying to create a multitask benchmark with the same arguments will throw an error as there is just a single target column specified.</p>
+<p>To support the vast flexibility in specifying a benchmark, we have different classes that correspond to different types of benchmarks. Each of these subclasses makes the data-model or logic more specific to a particular case. For example, trying to create a multitask benchmark with the same arguments as we used above will throw an error as there is just a single target column specified.</p>
 </div>
 </div>
 </div>

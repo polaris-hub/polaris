@@ -1497,7 +1497,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 
 <span class="kn">from</span> <span class="nn">polaris</span> <span class="kn">import</span> <span class="n">curation</span>
 <span class="kn">from</span> <span class="nn">polaris.curation.viz_utils</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">visulize_distribution</span><span class="p">,</span>
+    <span class="n">visualize_distribution</span><span class="p">,</span>
     <span class="n">verify_stereoisomers</span><span class="p">,</span>
     <span class="n">check_undefined_stereocenters</span><span class="p">,</span>
 <span class="p">)</span>
@@ -1507,7 +1507,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 
 from polaris import curation
 from polaris.curation.viz_utils import (
-    visulize_distribution,
+    visualize_distribution,
     verify_stereoisomers,
     check_undefined_stereocenters,
 )
@@ -1527,7 +1527,7 @@ from polaris.dataset import Dataset, ColumnAnnotation</div>
 <h3 id="curating-the-dataset">Curating the dataset<a class="anchor-link" href="#curating-the-dataset">¶</a></h3><p>Let's start by loading our dataset from Datamol.</p>
 <div class="admonition note highlight">
 <p class="admonition-title">The solubility dataset</p>
-<p>For the sake of simplicity, we will use the <a href="https://docs.datamol.io/stable/api/datamol.data.html#datamol.data.solubility">solubility dataset from Datamol</a>. It is worth noting that this dataset is only meant to be used as a toy dataset for pedagogic and testing purposes. It is <b>not a dataset for benchmarking, analysis or model training</b>. Curation can only take us so far. For impactful benchmark, we rely on high-quality data sources to begin with.</p>
+<p>For the sake of simplicity, we will use the <a href="https://docs.datamol.io/stable/api/datamol.data.html#datamol.data.solubility">solubility dataset from Datamol</a>. It is worth noting that this dataset is only meant to be used as a toy dataset for pedagogic and testing purposes. It is <b>not a dataset for benchmarking, analysis or model training</b>. Curation can only take us so far. For impactful benchmarks, we rely on high-quality data sources to begin with.</p>
 
 </div>
 </div>
@@ -1941,9 +1941,9 @@ df_curated.head()</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">visulize_distribution</span><span class="p">([</span><span class="s2">"SOL"</span><span class="p">],</span> <span class="n">df_curated</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">visualize_distribution</span><span class="p">([</span><span class="s2">"SOL"</span><span class="p">],</span> <span class="n">df_curated</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">figs = visulize_distribution(["SOL"], df_curated)</div>
+<div class="clipboard-copy-txt" id="cell-5">figs = visualize_distribution(["SOL"], df_curated)</div>
 </div>
 </div>
 </div>
@@ -2073,7 +2073,7 @@ check_undefined_stereocenters(df_curated)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Even thought there are molecules with undefined stereocenters, in this dataset we find little evidence that shows the impact of stereochemisty on the solubility. However, there are publications that demonstrated a significant difference in solubility between stereoisomers. This again shows that high-quality curation is situation-dependent and relies on domain expertise.</p>
+<p>Even though there are molecules with undefined stereocenters, in this dataset we find little evidence that shows the impact of stereochemisty on the solubility. However, there are publications that have demonstrated a significant difference in solubility between stereoisomers. This again shows that high-quality curation is situation-dependent and relies on domain expertise.</p>
 <hr/>
 <p>This notebook only scratched the surface. There's many other things one could do to curate a dataset, such as:</p>
 <ul>
@@ -2081,7 +2081,7 @@ check_undefined_stereocenters(df_curated)</div>
 <li>Analyzing the distribution of the target and input space.</li>
 <li>Training baseline models to evaluate the difficulty of the dataset.</li>
 </ul>
-<p>The <a href="https://www.polarishub.io">Polaris Hub</a> hosts additional documentation and resources to learn more about the intrincacies of dataset curation.</p>
+<p>The <a href="https://www.polarishub.io">Polaris Hub</a> hosts additional documentation and resources to learn more about the intricacies of dataset curation.</p>
 <p>In a next tutorial, we will see how we can add our datasets and benchmarks to the Polaris Hub.</p>
 <p>The End.</p>
 <hr/>
