@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Annotated, Optional
 
 import typer
 
@@ -10,13 +10,22 @@ app = typer.Typer(
 )
 
 
-@app.command("login", help="Log in to the Polaris Hub")
+@app.command("login")
 def login(
-    client_env_file: Optional[str] = None,
-    auto_open_browser: bool = True,
-    overwrite: bool = False,
+    client_env_file: Annotated[
+        Optional[str], typer.Option(help="Environment file to overwrite the default environment variables")
+    ] = None,
+    auto_open_browser: Annotated[
+        bool, typer.Option(help="Whether to automatically open the link in a browser to retrieve the token")
+    ] = True,
+    overwrite: Annotated[
+        bool, typer.Option(help="Whether to overwrite the access token if you are already logged in")
+    ] = False,
 ):
-    """Uses the OAuth2 protocol to gain token-based access to the Polaris Hub API"""
+    """Authenticate to the Polaris Hub.
+
+    This CLI will use the OAuth2 protocol to gain token-based access to the Polaris Hub API.
+    """
     with PolarisHubClient(env_file=client_env_file) as client:
         client.login(auto_open_browser=auto_open_browser, overwrite=overwrite)
 
