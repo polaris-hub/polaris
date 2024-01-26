@@ -230,12 +230,14 @@ def run_data_curation(
         # detect stereo activity cliff, keep or remove
         data = _process_stereoisomer_with_activity_cliff(
             data=data,
-            data_cols=[
-                f"{CLASS_PREFIX}{data_col}" if f"{CLASS_PREFIX}{data_col}" in data.columns else data_col
-                for data_col in data_cols
-            ]
-            if class_thresholds
-            else data_cols,
+            data_cols=(
+                [
+                    f"{CLASS_PREFIX}{data_col}" if f"{CLASS_PREFIX}{data_col}" in data.columns else data_col
+                    for data_col in data_cols
+                ]
+                if class_thresholds
+                else data_cols
+            ),
             mask_stereo_undefined_mols=mask_stereo_undefined_mols,
             **activity_cliff_params if activity_cliff_params is not None else {},
         )
