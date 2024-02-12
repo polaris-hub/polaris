@@ -18,6 +18,7 @@ from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from httpx import HTTPStatusError
 from httpx._types import HeaderTypes, TimeoutTypes, URLTypes
 from loguru import logger
+import zarr
 
 from polaris.benchmark import (
     BenchmarkSpecification,
@@ -27,6 +28,7 @@ from polaris.benchmark import (
 from polaris.dataset import Dataset
 from polaris.evaluate import BenchmarkResults
 from polaris.hub.settings import PolarisHubSettings
+from polaris.hub.polarisfs import PolarisFSFileSystem
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
@@ -101,6 +103,10 @@ class PolarisHubClient(OAuth2Client):
 
         self.code_verifier = generate_token(48)
 
+        self.polarisfs = PolarisFSFileSystem(
+            polarisfs_url=settings.api_url,
+            default_expirations_seconds=10 * 60)
+
         super().__init__(
             # OAuth2Client
             client_id=settings.client_id,
@@ -142,7 +148,6 @@ class PolarisHubClient(OAuth2Client):
             raise PolarisHubError(
                 f"The request to the Polaris Hub failed. See the error message below for more details:\n{response}"
             ) from error
-
         # Convert the response to json format if the response contains a 'text' body
         try:
             response = response.json()
@@ -302,6 +307,42 @@ class PolarisHubClient(OAuth2Client):
         )
         dataset_list = [bm["artifactId"] for bm in response["data"]]
         return dataset_list
+    
+    # TEMP
+    # Just using this to verify the path works from directly from the client
+    def list_objects_in_path(self, 
+        owner="polaris-test", # owner: Union[str, HubOwner],
+        name="__test", # name: str
+        path="zarr_test_archives/1GB_many_arrays.zarr/data.zarr/", 
+        **kwargs
+    ):
+
+        return self._base_request_to_hub(url=f"storage/dataset/{owner}/{name}/ls/{path}", 
+            method="GET")
+
+
+    def get_zarr_root_file(self, 
+    owner="polaris-test", 
+    name="__test", 
+    parts="zarr_test_archives/1GB_many_arrays.zarr/data.zarr/", 
+    **kwargs
+    ):
+        import traceback
+
+        path = f"{self.polarisfs.protocol}://storage/dataset/polaris-test/__test/ls/zarr_test_archives/1GB_many_arrays.zarr/data.zarr/"
+
+        try:
+            store = zarr.storage.FSStore(path, fs=self.polarisfs)
+            root = zarr.open(store, mode="a")
+            print(root.info)
+
+        except Exception as e:
+            print(f"Error opening Zarr store: {e}")
+            traceback.print_exc()
+
+        return None
+
+
 
     def get_dataset(self, owner: Union[str, HubOwner], name: str) -> Dataset:
         """Load a dataset from the Polaris Hub.
