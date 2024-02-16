@@ -1,7 +1,7 @@
 import json
 import os
 from hashlib import md5
-from typing import Any, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import fsspec
 import numpy as np
@@ -353,7 +353,11 @@ class BenchmarkSpecification(BaseArtifactModel):
         return v.value
 
     def get_train_test_split(
-        self, input_format: DataFormat = "dict", target_format: DataFormat = "dict"
+        self,
+        input_format: DataFormat = "dict",
+        target_format: DataFormat = "dict",
+        input_transform_fn: Optional[Callable] = None,
+        target_transform_fn: Optional[Callable] = None,
     ) -> tuple[Subset, Union["Subset", dict[str, Subset]]]:
         """Construct the train and test sets, given the split in the benchmark specification.
 
@@ -365,6 +369,10 @@ class BenchmarkSpecification(BaseArtifactModel):
             input_format: How the input data is returned from the `Subset` object.
             target_format: How the target data is returned from the `Subset` object.
                 This will only affect the train set.
+            input_transform_fn: A function to apply to the input data. If a multi-input benchmark, this function
+                receives a dict with the columns as keys.
+            target_transform_fn: A function to apply to the target data. If a multi-target benchmark, this function
+                receives a dict with the columns as keys.
 
         Returns:
             A tuple with the train `Subset` and test `Subset` objects.
@@ -381,6 +389,8 @@ class BenchmarkSpecification(BaseArtifactModel):
                 target_cols=self.target_cols,
                 target_format=target_format,
                 hide_targets=hide_targets,
+                input_transform_fn=input_transform_fn,
+                target_transform_fn=target_transform_fn,
             )
 
         train = _get_subset(self.split[0], hide_targets=False)
