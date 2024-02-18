@@ -33,3 +33,7 @@ class TestAccessError(Exception):
     __test__ = False
 
     pass
+
+
+class EvaluationError(Exception):
+    pass

@@ -20,6 +20,7 @@ class Subset:
 
         ```python
         import datamol as dm
+
         benchmark.get_train_test_split(..., input_transform_fn=dm.to_fp)
         ```
 
@@ -147,12 +148,14 @@ class Subset:
         # Also handles loading data stored in external files for pointer columns
         ret = {col: self.dataset.get_data(row, col) for col in cols}
 
+        # Format
+        ret = self._format(ret, cols, format)
+
         # Transform
         if transform_fn is not None:
             ret = transform_fn(ret)
 
-        # Format
-        return self._format(ret, cols, format)
+        return ret
 
     def _get_single_input(self, row: str | int):
         """Get a single input for a specific data-point and given the benchmark specification."""
