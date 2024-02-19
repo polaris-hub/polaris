@@ -10,7 +10,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     HttpUrl,
-    constr,
+    StringConstraints,
     model_validator,
 )
 from pydantic.alias_generators import to_camel
@@ -50,12 +50,16 @@ DataFormat: TypeAlias = Literal["dict", "tuple"]
 The target formats that are supported by the `Subset` class. 
 """
 
-SlugStringType: TypeAlias = constr(pattern="^[a-z0-9-]+$", min_length=4, max_length=64)
+SlugStringType: TypeAlias = Annotated[
+    str, StringConstraints(pattern="^[a-z0-9-]+$", min_length=4, max_length=64)
+]
 """
 A URL-compatible string that can serve as slug on the hub.
 """
 
-SlugCompatibleStringType: TypeAlias = constr(pattern="^[A-Za-z0-9_-]+$", min_length=4, max_length=64)
+SlugCompatibleStringType: TypeAlias = Annotated[
+    str, StringConstraints(pattern="^[A-Za-z0-9_-]+$", min_length=4, max_length=64)
+]
 """
 A URL-compatible string that can be turned into a slug by the hub.
 

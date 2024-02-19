@@ -1,10 +1,9 @@
 from typing import Callable, List, Literal, Optional, Sequence, Union
-from loguru import logger
 
 import numpy as np
 
-from polaris.dataset import Dataset, Modality
-from polaris.utils.errors import EvaluationError, TestAccessError
+from polaris.dataset import Dataset
+from polaris.utils.errors import TestAccessError
 from polaris.utils.types import DataFormat, DatapointType
 
 
@@ -59,8 +58,6 @@ class Subset:
         TestAccessError: When trying to access the targets of the test set (specified by the `hide_targets` attribute).
     """
 
-    _SUPPORTED_FORMATS = ["dict", "tuple"]
-
     def __init__(
         self,
         dataset: Dataset,
@@ -68,7 +65,7 @@ class Subset:
         input_cols: Union[List[str], str],
         target_cols: Union[List[str], str],
         input_format: DataFormat = "dict",
-        target_format: DataFormat = "tuple",
+        target_format: DataFormat = "dict",
         featurization_fn: Optional[Callable] = None,
         hide_targets: bool = False,
     ):
@@ -188,12 +185,15 @@ class Subset:
             # With a multi-task or multi-input data point, this will be a 2D array.
             return np.array(ret)
 
-        # If the return type is a dict, we want to convert
+        # If the return format is a dict, we want to convert
         # from an array of dicts to a dict of arrays.
-        if data_type == "y":
+        if data_type == "y" and self._target_format == "dict":
             ret = {k: np.array([v[k] for v in ret]) for k in self.target_cols}
-        else:
+        elif data_type == "x" and self._input_format == "dict":
             ret = {k: np.array([v[k] for v in ret]) for k in self.input_cols}
+        else:
+            # The format is a tuple, so we have list of tuples and convert this to an array
+            ret = np.array(ret)
 
         return ret
 

@@ -9,7 +9,6 @@ import pandas as pd
 from pydantic import (
     Field,
     FieldValidationInfo,
-    PrivateAttr,
     computed_field,
     field_serializer,
     field_validator,
@@ -24,7 +23,7 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils import fs
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
-from polaris.utils.errors import EvaluationError, InvalidBenchmarkError, PolarisChecksumError
+from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
 from polaris.utils.misc import listit
 from polaris.utils.types import (
     AccessType,
@@ -112,10 +111,6 @@ class BenchmarkSpecification(BaseArtifactModel):
     target_types: dict[str, Optional[Union[TargetType, str]]] = Field(
         default_factory=dict, validate_default=True
     )
-
-    # Private attributes to track the internal state
-    _test_subset: Optional[Subset] = PrivateAttr(None)
-    _n_splits_since_evaluate: int = PrivateAttr(0)
 
     @field_validator("dataset")
     def _validate_dataset(cls, v):
@@ -400,27 +395,6 @@ class BenchmarkSpecification(BaseArtifactModel):
         else:
             test = _get_subset(self.split[1], hide_targets=True)
 
-        # Polaris is designed to reduce the risk of accidental access to the test set.
-        # One of the design decisions was to ask the users to just provide the predictions in evaluate(), not y_true.
-        # Because of this, we do need to check if a user has created multiple test objects with different parameters
-        # without calling evaluate in between. This would lead to ambiguity as to which test object to use.
-        previous_test_set = (
-            list(self._test_subset.values())[0] if isinstance(self._test_subset, dict) else self._test_subset
-        )
-        different_parameters = previous_test_set is not None and (
-            previous_test_set._target_format != target_format
-            or previous_test_set._input_format != input_format
-            or previous_test_set._featurization_fn is not featurization_fn
-        )
-        self._n_splits_since_evaluate += 1
-        if self._n_splits_since_evaluate > 1 and different_parameters:
-            raise EvaluationError(
-                "You have called get_train_test_split() multiple times with different parameters, "
-                "without calling evaluate() in between. This leads to ambiguity when evaluating the model "
-                "because Polaris cannot infer which test set object should be used."
-            )
-
-        self._test_subset = test
         return train, test
 
     def evaluate(self, y_pred: PredictionsType) -> BenchmarkResults:
@@ -439,8 +413,10 @@ class BenchmarkSpecification(BaseArtifactModel):
         5. There can be metrics which measure across tasks.
 
         Args:
-            y_pred: The predictions for the test set, as NumPy arrays. If there are multiple test sets,
-                this should be a dictionary with the test set names as keys.
+            y_pred: The predictions for the test set, as NumPy arrays.
+                If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
+                If there are multiple test sets, the predictions should be further wrapped in a dictionary
+                    with the test subset labels as keys.
 
         Returns:
             A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
@@ -449,10 +425,8 @@ class BenchmarkSpecification(BaseArtifactModel):
         # Instead of having the user pass the ground truth, we maintain a copy of the last created test set internally.
         # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
         # See also the `hide_targets` parameter in the `Subset` class.
+        test = self.get_train_test_split(target_format="dict")[1]
 
-        self._n_splits_since_evaluate = 0
-
-        test = self._test_subset
         if not isinstance(test, dict):
             test = {"test": test}
 
