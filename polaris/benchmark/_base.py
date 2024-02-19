@@ -422,7 +422,7 @@ class BenchmarkSpecification(BaseArtifactModel):
             A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
         """
 
-        # Instead of having the user pass the ground truth, we maintain a copy of the last created test set internally.
+        # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
         # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
         # See also the `hide_targets` parameter in the `Subset` class.
         test = self.get_train_test_split(target_format="dict")[1]
