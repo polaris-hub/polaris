@@ -65,7 +65,7 @@ def test_input_featurization(test_single_task_benchmark):
     x = test[0]
     assert isinstance(x, str)
 
-    train, test = test_single_task_benchmark.get_train_test_split(input_transform_fn=dm.to_fp)
+    train, test = test_single_task_benchmark.get_train_test_split(featurization_fn=dm.to_fp)
 
     # For all different flavours of accessing the data
     # Make sure the input is now featurized
@@ -88,29 +88,6 @@ def test_input_featurization(test_single_task_benchmark):
     assert isinstance(x, np.ndarray)
 
 
-def test_target_transformation(test_single_task_benchmark):
-
-    # Get the normal value without transformation
-    train, test = test_single_task_benchmark.get_train_test_split()
-    test_single_task_benchmark._n_splits_since_evaluate = 0  # Manually reset for sake of test
-
-    x, original_y = train[0]
-
-    train, test = test_single_task_benchmark.get_train_test_split(target_transform_fn=lambda y: y * 2)
-
-    # For all different flavours of accessing the data
-    # Make sure the target is now transformed
-    # We do not need to test the test set, because this
-    x, y = train[0]
-    assert y == original_y * 2
-
-    x, y = next(train)
-    assert y == original_y * 2
-
-    y = train.y[0]
-    assert y == original_y * 2
-
-
 def test_expected_exception_with_test_set_ambiguity(test_single_task_benchmark):
 
     y_pred = np.random.random(len(test_single_task_benchmark.split[1]))
@@ -123,10 +100,10 @@ def test_expected_exception_with_test_set_ambiguity(test_single_task_benchmark):
     # With two different split, we do expect an error
     test_single_task_benchmark.get_train_test_split()
     with pytest.raises(EvaluationError):
-        test_single_task_benchmark.get_train_test_split(target_transform_fn=lambda x: x * 2)
+        test_single_task_benchmark.get_train_test_split(featurization_fn=dm.to_fp)
     test_single_task_benchmark.evaluate(y_pred)
 
     # With two different splits, but an evaluate in between, all is good again!
     test_single_task_benchmark.get_train_test_split()
     test_single_task_benchmark.evaluate(y_pred)
-    test_single_task_benchmark.get_train_test_split(target_transform_fn=lambda x: x * 2)
+    test_single_task_benchmark.get_train_test_split(featurization_fn=dm.to_fp)

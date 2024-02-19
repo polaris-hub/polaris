@@ -1,9 +1,10 @@
 from typing import Callable, List, Literal, Optional, Sequence, Union
+from loguru import logger
 
 import numpy as np
 
-from polaris.dataset import Dataset
-from polaris.utils.errors import TestAccessError
+from polaris.dataset import Dataset, Modality
+from polaris.utils.errors import EvaluationError, TestAccessError
 from polaris.utils.types import DataFormat, DatapointType
 
 
@@ -21,7 +22,7 @@ class Subset:
         ```python
         import datamol as dm
 
-        benchmark.get_train_test_split(..., input_transform_fn=dm.to_fp)
+        benchmark.get_train_test_split(..., featurization_fn=dm.to_fp)
         ```
 
     This should be the starting point for any framework-specific (e.g. PyTorch, Tensorflow) data-loader implementation.
@@ -68,8 +69,7 @@ class Subset:
         target_cols: Union[List[str], str],
         input_format: DataFormat = "dict",
         target_format: DataFormat = "tuple",
-        input_transform_fn: Optional[Callable] = None,
-        target_transform_fn: Optional[Callable] = None,
+        featurization_fn: Optional[Callable] = None,
         hide_targets: bool = False,
     ):
         self.dataset = dataset
@@ -78,8 +78,8 @@ class Subset:
         self.input_cols = input_cols if isinstance(input_cols, list) else [input_cols]
         self._input_format = input_format
         self._target_format = target_format
-        self._input_transform_fn = input_transform_fn
-        self._target_transform_fn = target_transform_fn
+
+        self._featurization_fn = featurization_fn
 
         # For the iterator implementation
         self._pointer = 0
@@ -131,7 +131,7 @@ class Subset:
         self,
         row: str | int,
         cols: List[str],
-        transform_fn: Optional[Callable],
+        featurization_fn: Optional[Callable],
         format: DataFormat,
     ):
         """
@@ -141,7 +141,7 @@ class Subset:
         Args:
             row: The row index of the datapoint.
             cols: The columns (i.e. variables) to load for that data point.
-            transform_fn: The transformation function to apply to the data-point.
+            featurization_fn: The transformation function to apply to the data-point.
             format: The format to return the data-point in.
         """
         # Load the data-point
@@ -151,19 +151,19 @@ class Subset:
         # Format
         ret = self._format(ret, cols, format)
 
-        # Transform
-        if transform_fn is not None:
-            ret = transform_fn(ret)
+        # Featurize
+        if featurization_fn is not None:
+            ret = featurization_fn(ret)
 
         return ret
 
     def _get_single_input(self, row: str | int):
         """Get a single input for a specific data-point and given the benchmark specification."""
-        return self._get_single(row, self.input_cols, self._input_transform_fn, self._input_format)
+        return self._get_single(row, self.input_cols, self._featurization_fn, self._input_format)
 
     def _get_single_output(self, row: str | int):
         """Get a single output for a specific data-point and given the benchmark specification."""
-        return self._get_single(row, self.target_cols, self._target_transform_fn, self._target_format)
+        return self._get_single(row, self.target_cols, None, self._target_format)
 
     def as_array(self, data_type: Union[Literal["x"], Literal["y"], Literal["xy"]]):
         """

@@ -361,8 +361,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         self,
         input_format: DataFormat = "dict",
         target_format: DataFormat = "dict",
-        input_transform_fn: Optional[Callable] = None,
-        target_transform_fn: Optional[Callable] = None,
+        featurization_fn: Optional[Callable] = None,
     ) -> tuple[Subset, Union["Subset", dict[str, Subset]]]:
         """Construct the train and test sets, given the split in the benchmark specification.
 
@@ -374,10 +373,8 @@ class BenchmarkSpecification(BaseArtifactModel):
             input_format: How the input data is returned from the `Subset` object.
             target_format: How the target data is returned from the `Subset` object.
                 This will only affect the train set.
-            input_transform_fn: A function to apply to the input data. If a multi-input benchmark, this function
+            featurization_fn: A function to apply to the input data. If a multi-input benchmark, this function
                 expects an input in the format specified by the `input_format` parameter.
-            target_transform_fn: A function to apply to the target data. If a multi-target benchmark, this function
-                expects an input in the format specified by the `target_format` parameter.
 
         Returns:
             A tuple with the train `Subset` and test `Subset` objects.
@@ -394,8 +391,7 @@ class BenchmarkSpecification(BaseArtifactModel):
                 target_cols=self.target_cols,
                 target_format=target_format,
                 hide_targets=hide_targets,
-                input_transform_fn=input_transform_fn,
-                target_transform_fn=target_transform_fn,
+                featurization_fn=featurization_fn,
             )
 
         train = _get_subset(self.split[0], hide_targets=False)
@@ -413,9 +409,8 @@ class BenchmarkSpecification(BaseArtifactModel):
         )
         different_parameters = previous_test_set is not None and (
             previous_test_set._target_format != target_format
-            or previous_test_set._target_transform_fn is not target_transform_fn
             or previous_test_set._input_format != input_format
-            or previous_test_set._input_transform_fn is not input_transform_fn
+            or previous_test_set._featurization_fn is not featurization_fn
         )
         self._n_splits_since_evaluate += 1
         if self._n_splits_since_evaluate > 1 and different_parameters:
