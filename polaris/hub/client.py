@@ -103,10 +103,6 @@ class PolarisHubClient(OAuth2Client):
 
         self.code_verifier = generate_token(48)
 
-        self.polarisfs = PolarisFSFileSystem(
-            polarisfs_url=settings.api_url,
-            default_expirations_seconds=10 * 60)
-
         super().__init__(
             # OAuth2Client
             client_id=settings.client_id,
@@ -308,34 +304,32 @@ class PolarisHubClient(OAuth2Client):
         dataset_list = [bm["artifactId"] for bm in response["data"]]
         return dataset_list
     
-    # TEMP
-    # Just using this to verify the path works from directly from the client
-    def list_objects_in_path(self, 
-        owner="polaris-test", # owner: Union[str, HubOwner],
-        name="__test", # name: str
-        path="zarr_test_archives/1GB_many_arrays.zarr/data.zarr/", 
-        **kwargs
-    ):
-
-        return self._base_request_to_hub(url=f"storage/dataset/{owner}/{name}/ls/{path}", 
+    def list_objects_in_path(self, **kwargs):
+        return self._base_request_to_hub(url=f"/storage/dataset/polaris/hello-world/ls/data.zarr", 
             method="GET")
 
+    
 
-    def get_zarr_root_file(self, 
-    owner="polaris-test", 
-    name="__test", 
-    parts="zarr_test_archives/1GB_many_arrays.zarr/data.zarr/", 
-    **kwargs
-    ):
+    def get_zarr_root_file(self, path="data.zarr", **kwargs):
         import traceback
+        polaris_fs = PolarisFSFileSystem(
+            polaris_client=self, 
+            polarisfs_url="http://localhost:3000/api/v1",
+            default_expirations_seconds=100 * 600
+        )
 
-        path = f"{self.polarisfs.protocol}://storage/dataset/polaris-test/__test/ls/zarr_test_archives/1GB_many_arrays.zarr/data.zarr/"
+        # entries = polaris_fs.ls(path="data.zarr", detail=False)
+        # mapper = polaris_fs.get_mapper()
+        # print(polaris_fs.cat(path="data.zarr/.zgroup"))
+        # print("data.zarr/.zgroup" in mapper, "\n")
+        # print("data.zarr/A/" in mapper)
+        # print("data.zarr/A/" in entries)
 
         try:
-            store = zarr.storage.FSStore(path, fs=self.polarisfs)
-            root = zarr.open(store, mode="a")
+            store = zarr.storage.FSStore(url=path, fs=polaris_fs)
+            import pdb;pdb.set_trace()
+            root = zarr.open(store, mode="r")
             print(root.info)
-
         except Exception as e:
             print(f"Error opening Zarr store: {e}")
             traceback.print_exc()
