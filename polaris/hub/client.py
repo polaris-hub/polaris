@@ -308,35 +308,30 @@ class PolarisHubClient(OAuth2Client):
         return self._base_request_to_hub(url=f"/storage/dataset/polaris/hello-world/ls/data.zarr", 
             method="GET")
 
-    
+    def read_zarr_file(self, owner: str, name: str, path: str, **kwargs):
+        """Read a Zarr file from a Polaris dataset
 
-    def get_zarr_root_file(self, path="data.zarr", **kwargs):
-        import traceback
+        Args:
+            owner: Which Hub user or organization owns the artifact.
+            name: Name of the dataset.
+            path: Path to the Zarr file within the dataset.
+
+        Returns:
+            zarr.hierarchy.Group: The Zarr object representing the dataset.
+        """
         polaris_fs = PolarisFSFileSystem(
-            polaris_client=self, 
-            polarisfs_url="http://localhost:3000/api/v1",
-            default_expirations_seconds=100 * 600
+            polaris_client=self,
+            polarisfs_url=str(self.base_url), 
+            default_expirations_seconds=10 * 60,
+            dataset_owner=owner,
+            dataset_name=name
         )
 
-        # entries = polaris_fs.ls(path="data.zarr", detail=False)
-        # mapper = polaris_fs.get_mapper()
-        # print(polaris_fs.cat(path="data.zarr/.zgroup"))
-        # print("data.zarr/.zgroup" in mapper, "\n")
-        # print("data.zarr/A/" in mapper)
-        # print("data.zarr/A/" in entries)
-
         try:
-            store = zarr.storage.FSStore(url=path, fs=polaris_fs)
-            import pdb;pdb.set_trace()
-            root = zarr.open(store, mode="r")
-            print(root.info)
+            store = zarr.storage.FSStore(path, fs=polaris_fs)
+            return zarr.open(store, mode="r")            
         except Exception as e:
-            print(f"Error opening Zarr store: {e}")
-            traceback.print_exc()
-
-        return None
-
-
+            raise PolarisHubError(f"Error opening Zarr store: {e}")
 
     def get_dataset(self, owner: Union[str, HubOwner], name: str) -> Dataset:
         """Load a dataset from the Polaris Hub.
