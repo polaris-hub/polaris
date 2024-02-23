@@ -1,5 +1,4 @@
 from typing import Optional
-from typing import Union
 
 import fsspec
 import httpx
@@ -7,6 +6,7 @@ import httpx
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from polaris.utils.errors import PolarisHubError
+
 
 class PolarisfsSettings(BaseSettings):
     url: str = "http://localhost:3000/"
@@ -19,13 +19,15 @@ class PolarisFSFileSystem(fsspec.AbstractFileSystem):
     protocol = "polarisfs"
     async_impl = False
 
-    def __init__(self, 
-                polaris_client, 
-                polarisfs_url: Optional[str],
-                dataset_owner: str,
-                dataset_name: str,
-                default_expirations_seconds: int = 10 * 60, 
-                **kwargs):
+    def __init__(
+        self,
+        polaris_client,
+        polarisfs_url: Optional[str],
+        dataset_owner: str,
+        dataset_name: str,
+        default_expirations_seconds: int = 10 * 60,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
 
         if polarisfs_url is None:
@@ -35,7 +37,7 @@ class PolarisFSFileSystem(fsspec.AbstractFileSystem):
 
         self.default_expirations_seconds = default_expirations_seconds
 
-        self.polaris_client = polaris_client 
+        self.polaris_client = polaris_client
 
         self.http_client = httpx.Client(base_url=self.settings.url)
         self.http_fs = fsspec.filesystem("http")
@@ -56,11 +58,14 @@ class PolarisFSFileSystem(fsspec.AbstractFileSystem):
             entries = [p["name"].replace(self.prefix, "") for p in response.json()]
             return entries
         else:
-            detailed_entries = [{"name": p["name"].replace(self.prefix, ""), "size": p["size"], "type": p["type"]} for p in response.json()]
+            detailed_entries = [
+                {"name": p["name"].replace(self.prefix, ""), "size": p["size"], "type": p["type"]}
+                for p in response.json()
+            ]
             return detailed_entries
 
-    def cat_file(self, path:str, **kwargs):
-        cat_path=f"{self.base_path}/{path}"
+    def cat_file(self, path: str, **kwargs):
+        cat_path = f"{self.base_path}/{path}"
 
         # GET request to Polaris Hub for signed URL of file
         response = self.polaris_client.get(cat_path, params={})

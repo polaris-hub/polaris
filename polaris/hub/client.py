@@ -346,15 +346,15 @@ class PolarisHubClient(OAuth2Client):
         """
         polaris_fs = PolarisFSFileSystem(
             polaris_client=self,
-            polarisfs_url=str(self.base_url), 
+            polarisfs_url=str(self.base_url),
             default_expirations_seconds=10 * 60,
             dataset_owner=owner,
-            dataset_name=name
+            dataset_name=name,
         )
 
         try:
             store = zarr.storage.FSStore(path, fs=polaris_fs)
-            return zarr.open(store, mode="r")            
+            return zarr.open(store, mode="r")
         except Exception as e:
             raise PolarisHubError(f"Error opening Zarr store: {e}")
 
