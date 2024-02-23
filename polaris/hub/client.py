@@ -303,35 +303,6 @@ class PolarisHubClient(OAuth2Client):
         )
         dataset_list = [bm["artifactId"] for bm in response["data"]]
         return dataset_list
-    
-    def list_objects_in_path(self, **kwargs):
-        return self._base_request_to_hub(url=f"/storage/dataset/polaris/hello-world/ls/data.zarr", 
-            method="GET")
-
-    def read_zarr_file(self, owner: str, name: str, path: str, **kwargs):
-        """Read a Zarr file from a Polaris dataset
-
-        Args:
-            owner: Which Hub user or organization owns the artifact.
-            name: Name of the dataset.
-            path: Path to the Zarr file within the dataset.
-
-        Returns:
-            zarr.hierarchy.Group: The Zarr object representing the dataset.
-        """
-        polaris_fs = PolarisFSFileSystem(
-            polaris_client=self,
-            polarisfs_url=str(self.base_url), 
-            default_expirations_seconds=10 * 60,
-            dataset_owner=owner,
-            dataset_name=name
-        )
-
-        try:
-            store = zarr.storage.FSStore(path, fs=polaris_fs)
-            return zarr.open(store, mode="r")            
-        except Exception as e:
-            raise PolarisHubError(f"Error opening Zarr store: {e}")
 
     def get_dataset(self, owner: Union[str, HubOwner], name: str) -> Dataset:
         """Load a dataset from the Polaris Hub.
@@ -361,6 +332,31 @@ class PolarisHubClient(OAuth2Client):
         response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
 
         return Dataset(**response)
+
+    def read_zarr_file(self, owner: str, name: str, path: str, **kwargs):
+        """Read a Zarr file from a Polaris dataset
+
+        Args:
+            owner: Which Hub user or organization owns the artifact.
+            name: Name of the dataset.
+            path: Path to the Zarr file within the dataset.
+
+        Returns:
+            zarr.hierarchy.Group: The Zarr object representing the dataset.
+        """
+        polaris_fs = PolarisFSFileSystem(
+            polaris_client=self,
+            polarisfs_url=str(self.base_url), 
+            default_expirations_seconds=10 * 60,
+            dataset_owner=owner,
+            dataset_name=name
+        )
+
+        try:
+            store = zarr.storage.FSStore(path, fs=polaris_fs)
+            return zarr.open(store, mode="r")            
+        except Exception as e:
+            raise PolarisHubError(f"Error opening Zarr store: {e}")
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.
