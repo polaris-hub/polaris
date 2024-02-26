@@ -333,7 +333,7 @@ class PolarisHubClient(OAuth2Client):
 
         return Dataset(**response)
 
-    def read_zarr_file(self, owner: str, name: str, path: str, **kwargs):
+    def read_zarr_file(self, owner: Union[str, HubOwner], name: str, path: str) -> zarr.hierarchy.Group:
         """Read a Zarr file from a Polaris dataset
 
         Args:
@@ -342,12 +342,10 @@ class PolarisHubClient(OAuth2Client):
             path: Path to the Zarr file within the dataset.
 
         Returns:
-            zarr.hierarchy.Group: The Zarr object representing the dataset.
+            The Zarr object representing the dataset.
         """
         polaris_fs = PolarisFSFileSystem(
             polaris_client=self,
-            polarisfs_url=str(self.base_url),
-            default_expirations_seconds=10 * 60,
             dataset_owner=owner,
             dataset_name=name,
         )
@@ -355,6 +353,8 @@ class PolarisHubClient(OAuth2Client):
         try:
             store = zarr.storage.FSStore(path, fs=polaris_fs)
             return zarr.open(store, mode="r")
+        except TimeoutError as timeout_error:
+            raise PolarisHubError(f"Timeout error: {timeout_error}. Consider increasing the expiration_seconds parameter and try again.")
         except Exception as e:
             raise PolarisHubError(f"Error opening Zarr store: {e}")
 
