@@ -354,7 +354,9 @@ class PolarisHubClient(OAuth2Client):
             store = zarr.storage.FSStore(path, fs=polaris_fs)
             return zarr.open(store, mode="r")
         except TimeoutError as timeout_error:
-            raise PolarisHubError(f"Timeout error: {timeout_error}. Consider increasing the expiration_seconds parameter and try again.")
+            raise PolarisHubError(
+                f"Timeout error: {timeout_error}. Consider increasing the expiration_seconds parameter and try again."
+            )
         except Exception as e:
             raise PolarisHubError(f"Error opening Zarr store: {e}")
 
