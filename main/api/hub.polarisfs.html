@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/api/evaluation.html">
+        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/api/hub.polarisfs.html">
       
       
-        <link rel="prev" href="subset.html">
+        <link rel="prev" href="hub.client.html">
       
       
-        <link rel="next" href="hub.client.html">
+        <link rel="next" href="base.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Evaluation - Polaris</title>
+        <title>PolarisFileSystem - Polaris</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#polaris.evaluate.BenchmarkResults" class="md-skip">
+        <a href="#polaris.hub.polarisfs.PolarisFileSystem" class="md-skip">
           Skip to content
         </a>
       
@@ -125,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Evaluation
+              PolarisFileSystem
             
           </span>
         </div>
@@ -604,8 +604,6 @@
                 
   
   
-    
-  
   
   
     
@@ -620,11 +618,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
         
           
           <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="">
@@ -638,7 +636,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_2">
             <span class="md-nav__icon md-icon"></span>
             Core
@@ -712,28 +710,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Evaluation
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="evaluation.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="evaluation.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -742,81 +722,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#polaris.evaluate.BenchmarkResults" class="md-nav__link">
-    <span class="md-ellipsis">
-      BenchmarkResults
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="BenchmarkResults">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#polaris.evaluate.BenchmarkResults.upload_to_hub" class="md-nav__link">
-    <span class="md-ellipsis">
-      upload_to_hub
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#polaris.evaluate.MetricInfo" class="md-nav__link">
-    <span class="md-ellipsis">
-      MetricInfo
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#polaris.evaluate.Metric" class="md-nav__link">
-    <span class="md-ellipsis">
-      Metric
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Metric">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#polaris.evaluate.Metric.score" class="md-nav__link">
-    <span class="md-ellipsis">
-      score
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -834,6 +739,8 @@
                 
   
   
+    
+  
   
   
     
@@ -848,11 +755,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="">
@@ -866,7 +773,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_3">
             <span class="md-nav__icon md-icon"></span>
             Hub
@@ -898,10 +805,28 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="hub.polarisfs.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    PolarisFileSystem
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="hub.polarisfs.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -910,6 +835,57 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.hub.polarisfs.PolarisFileSystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      PolarisFileSystem
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PolarisFileSystem">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.hub.polarisfs.PolarisFileSystem.ls" class="md-nav__link">
+    <span class="md-ellipsis">
+      ls
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.hub.polarisfs.PolarisFileSystem.cat_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      cat_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1088,52 +1064,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#polaris.evaluate.BenchmarkResults" class="md-nav__link">
+  <a href="#polaris.hub.polarisfs.PolarisFileSystem" class="md-nav__link">
     <span class="md-ellipsis">
-      BenchmarkResults
+      PolarisFileSystem
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="BenchmarkResults">
+    <nav class="md-nav" aria-label="PolarisFileSystem">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#polaris.evaluate.BenchmarkResults.upload_to_hub" class="md-nav__link">
+  <a href="#polaris.hub.polarisfs.PolarisFileSystem.ls" class="md-nav__link">
     <span class="md-ellipsis">
-      upload_to_hub
+      ls
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#polaris.evaluate.MetricInfo" class="md-nav__link">
-    <span class="md-ellipsis">
-      MetricInfo
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#polaris.evaluate.Metric" class="md-nav__link">
-    <span class="md-ellipsis">
-      Metric
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Metric">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#polaris.evaluate.Metric.score" class="md-nav__link">
+  <a href="#polaris.hub.polarisfs.PolarisFileSystem.cat_file" class="md-nav__link">
     <span class="md-ellipsis">
-      score
+      cat_file
     </span>
   </a>
   
@@ -1162,167 +1114,96 @@
   
 
 
-  <h1>Evaluation</h1>
+  <h1>PolarisFileSystem</h1>
 
 <div class="doc doc-object doc-class">
 
 
 
-<h3 id="polaris.evaluate.BenchmarkResults" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.evaluate.BenchmarkResults</span>
+<h3 id="polaris.hub.polarisfs.PolarisFileSystem" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">polaris.hub.polarisfs.PolarisFileSystem</span>
 
 
 </h3>
-
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">PolarisFileSystem</span><span class="p">(</span><span class="n">polaris_client</span><span class="p">:</span> <span class="n">PolarisHubClient</span><span class="p">,</span> <span class="n">dataset_owner</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span>
+</span></code></pre></div>
 
   <div class="doc doc-contents first">
           <p class="doc doc-class-bases">
-            Bases: <code><a class="autorefs autorefs-internal" title="polaris._artifact.BaseArtifactModel" href="base.html#polaris._artifact.BaseArtifactModel">BaseArtifactModel</a></code></p>
+            Bases: <code><span title="fsspec.AbstractFileSystem">AbstractFileSystem</span></code></p>
 
   
-      <p>Class for saving benchmarking results</p>
-<p>This object is returned by <a class="autorefs autorefs-internal" href="benchmark.html#polaris.benchmark.BenchmarkSpecification.evaluate"><code>BenchmarkSpecification.evaluate</code></a>.
-In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
-the results with the Polaris Hub.</p>
-<p>The actual results are saved in the <code>results</code> field using the following tabular format:</p>
-<table>
-<thead>
-<tr>
-<th>Test set</th>
-<th>Target label</th>
-<th>Metric</th>
-<th>Score</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>test_iid</td>
-<td>EGFR_WT</td>
-<td>AUC</td>
-<td>0.9</td>
-</tr>
-<tr>
-<td>test_ood</td>
-<td>EGFR_WT</td>
-<td>AUC</td>
-<td>0.75</td>
-</tr>
-<tr>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-</tr>
-<tr>
-<td>test_ood</td>
-<td>EGFR_L858R</td>
-<td>AUC</td>
-<td>0.79</td>
-</tr>
-</tbody>
-</table>
+      <p>A file system interface for accessing datasets on the Polaris platform.</p>
+<p>This class extends <code>fsspec.AbstractFileSystem</code> and provides methods to list objects within a Polaris dataset
+and fetch the content of a file from the dataset.</p>
 
-<details class="question" open>
-  <summary>Categorizing methods</summary>
-  <p>An open question is how to best categorize a methodology (e.g. a model).
-This is needed since we would like to be able to aggregate results across benchmarks too,
-to say something about which (type of) methods performs best <em>in general</em>.</p>
+<details class="note" open>
+  <summary>Zarr Integration</summary>
+  <p>This file system can be used with Zarr to load multidimensional array data stored in a Dataset from
+the Polaris infrastructure. This class is needed because we otherwise cannot generate signed URLs for
+folders and Zarr is a folder based data-format.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">fs</span> <span class="o">=</span> <span class="n">PolarisFileSystem</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">store</span> <span class="o">=</span> <span class="n">zarr</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">FSStore</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">polaris_fs</span><span class="p">)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">root</span> <span class="o">=</span> <span class="n">zarr</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 </details>
 
 
-  <p><strong>Attributes:</strong></p>
+  <p><strong>Parameters:</strong></p>
   <table>
     <thead>
       <tr>
         <th>Name</th>
         <th>Type</th>
         <th>Description</th>
+        <th>Default</th>
       </tr>
     </thead>
     <tbody>
         <tr>
-          <td><code><span title="polaris.evaluate.BenchmarkResults.results">results</span></code></td>
+          <td><code>polaris_client</code></td>
           <td>
-                <code><span title="polaris.evaluate._results.ResultsType">ResultsType</span></code>
+                <code><a class="autorefs autorefs-internal" title="polaris.hub.client.PolarisHubClient" href="hub.client.html#polaris.hub.client.PolarisHubClient">PolarisHubClient</a></code>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>Benchmark results are stored directly in a dataframe or in a serialized, JSON compatible dict
-that can be decoded into the associated tabular format.</p>
+              <p>The Polaris Hub client used to make API requests.</p>
             </div>
+          </td>
+          <td>
+              <em>required</em>
           </td>
         </tr>
         <tr>
-          <td><code><span title="polaris.evaluate.BenchmarkResults.benchmark_name">benchmark_name</span></code></td>
+          <td><code>dataset_owner</code></td>
           <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.SlugCompatibleStringType" href="utils.types.html#polaris.utils.types.SlugCompatibleStringType">SlugCompatibleStringType</a></code>
+                <code>str</code>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>The name of the benchmark for which these results were generated.
-Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.</p>
+              <p>The owner of the dataset.</p>
             </div>
+          </td>
+          <td>
+              <em>required</em>
           </td>
         </tr>
         <tr>
-          <td><code><span title="polaris.evaluate.BenchmarkResults.benchmark_owner">benchmark_owner</span></code></td>
+          <td><code>dataset_name</code></td>
           <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
+                <code>str</code>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>The owner of the benchmark for which these results were generated.
-Together with the benchmark name, this uniquely identifies the benchmark on the Hub.</p>
+              <p>The name of the dataset.</p>
             </div>
           </td>
-        </tr>
-        <tr>
-          <td><code><span title="polaris.evaluate.BenchmarkResults.github_url">github_url</span></code></td>
           <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The URL to the GitHub repository of the code used to generate these results.</p>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><code><span title="polaris.evaluate.BenchmarkResults.paper_url">paper_url</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The URL to the paper describing the methodology used to generate these results.</p>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><code><span title="polaris.evaluate.BenchmarkResults.contributors">contributors</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[list[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubUser" href="utils.types.html#polaris.utils.types.HubUser">HubUser</a>]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The users that are credited for these results.</p>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><code><span title="polaris.evaluate.BenchmarkResults._created_at">_created_at</span></code></td>
-          <td>
-                <code><span title="datetime.datetime">datetime</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The time-stamp at which the results were created. Automatically set.</p>
-            </div>
+              <em>required</em>
           </td>
         </tr>
     </tbody>
   </table>
-      <p>For additional meta-data attributes, see the <a class="autorefs autorefs-internal" href="base.html#polaris._artifact.BaseArtifactModel"><code>BaseArtifactModel</code></a> class.</p>
 
 
   
@@ -1342,186 +1223,230 @@ Together with the benchmark name, this uniquely identifies the benchmark on the 
 
 
 
-<h4 id="polaris.evaluate.BenchmarkResults.upload_to_hub" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">upload_to_hub</span>
+<h4 id="polaris.hub.polarisfs.PolarisFileSystem.ls" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">ls</span>
 
 
 </h4>
-<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_to_hub</span><span class="p">(</span><span class="n">env_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PolarisHubSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AccessType</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ls</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">detail</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TimeoutTypes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
   
-      <p>Very light, convenient wrapper around the
-<a class="autorefs autorefs-internal" href="hub.client.html#polaris.hub.client.PolarisHubClient.upload_results"><code>PolarisHubClient.upload_results</code></a> method.</p>
+      <p>List objects in the specified path within the Polaris dataset.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>path</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The path within the dataset to list objects.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>detail</code></td>
+          <td>
+                <code>bool</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>If True, returns detailed information about each object.</p>
+            </div>
+          </td>
+          <td>
+                <code>False</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>timeout</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.TimeoutTypes" href="utils.types.html#polaris.utils.types.TimeoutTypes">TimeoutTypes</a>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Maximum time (in seconds) to wait for the request to complete.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.Union">Union</span>[<span title="typing.List">List</span>[str], <span title="typing.List">List</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>A list of dictionaries if detail is True; otherwise, a list of object names.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
 
   </div>
 
 </div>
 
 
-
-  </div>
-
-  </div>
-
-
-</div><hr />
-
-
-<div class="doc doc-object doc-class">
+<div class="doc doc-object doc-function">
 
 
 
-<h3 id="polaris.evaluate.MetricInfo" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.evaluate.MetricInfo</span>
+<h4 id="polaris.hub.polarisfs.PolarisFileSystem.cat_file" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">cat_file</span>
 
 
-</h3>
+</h4>
+<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">cat_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TimeoutTypes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span>
+</span></code></pre></div>
 
-
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
-
+  <div class="doc doc-contents ">
   
-      <p>Metric metadata</p>
+      <p>Fetches and returns the content of a file from the Polaris dataset.</p>
 
 
 
-  <p><strong>Attributes:</strong></p>
+  <p><strong>Parameters:</strong></p>
   <table>
     <thead>
       <tr>
         <th>Name</th>
         <th>Type</th>
         <th>Description</th>
+        <th>Default</th>
       </tr>
     </thead>
     <tbody>
         <tr>
-          <td><code><span title="polaris.evaluate.MetricInfo.fn">fn</span></code></td>
+          <td><code>path</code></td>
           <td>
-                <code><span title="typing.Callable">Callable</span></code>
+                <code>str</code>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>The callable that actually computes the metric.</p>
+              <p>The path to the file within the dataset.</p>
             </div>
+          </td>
+          <td>
+              <em>required</em>
           </td>
         </tr>
         <tr>
-          <td><code><span title="polaris.evaluate.MetricInfo.is_multitask">is_multitask</span></code></td>
+          <td><code>start</code></td>
           <td>
-                <code>bool</code>
+                <code><span title="typing.Union">Union</span>[int, None]</code>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>Whether the metric expects a single set of predictions or a dict of predictions.</p>
+              <p>The starting index of the content to retrieve.</p>
             </div>
+          </td>
+          <td>
+                <code>None</code>
           </td>
         </tr>
         <tr>
-          <td><code><span title="polaris.evaluate.MetricInfo.kwargs">kwargs</span></code></td>
+          <td><code>end</code></td>
+          <td>
+                <code><span title="typing.Union">Union</span>[int, None]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The ending index of the content to retrieve.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>timeout</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.TimeoutTypes" href="utils.types.html#polaris.utils.types.TimeoutTypes">TimeoutTypes</a>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Maximum time (in seconds) to wait for the request to complete.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>kwargs</code></td>
           <td>
                 <code>dict</code>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>Additional parameters required for the metric.</p>
+              <p>Extra arguments passed to <code>fsspec.open()</code></p>
             </div>
           </td>
-        </tr>
-        <tr>
-          <td><code><span title="polaris.evaluate.MetricInfo.direction">direction</span></code></td>
           <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.DirectionType" href="utils.types.html#polaris.utils.types.DirectionType">DirectionType</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The direction for ranking of the metric,  "max" for maximization and "min" for minimization.</p>
-            </div>
+                <code>{}</code>
           </td>
         </tr>
     </tbody>
   </table>
 
 
-  
 
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-  </div>
-
-
-</div><hr />
-
-
-<div class="doc doc-object doc-class">
-
-
-
-<h3 id="polaris.evaluate.Metric" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.evaluate.Metric</span>
-
-
-</h3>
-
-
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><span title="enum.Enum">Enum</span></code></p>
-
-  
-      <p>A metric within the Polaris ecosystem is uniquely identified by its name
-and is associated with additional metadata in a <code>MetricInfo</code> instance.</p>
-<p>Implemented as an enum.</p>
-
-
-  
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<h4 id="polaris.evaluate.Metric.score" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">score</span>
-
-
-</h4>
-<div class="doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">score</span><span class="p">(</span><span class="n">y_true</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
-</span></code></pre></div>
-
-  <div class="doc doc-contents ">
-  
-      <p>Endpoint for computing the metric.</p>
-<p>For convenience, calling a <code>Metric</code> will result in this method being called.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">metric</span> <span class="o">=</span> <span class="n">Metric</span><span class="o">.</span><span class="n">mean_absolute_error</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">assert</span> <span class="n">metric</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">first</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">second</span><span class="p">)</span> <span class="o">==</span> <span class="n">metric</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">first</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">second</span><span class="p">)</span>
-</span></code></pre></div>
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>bytes</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The content of the requested file.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
 
   </div>
 
@@ -1612,7 +1537,7 @@ and is associated with additional metadata in a <code>MetricInfo</code> instance
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="subset.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Subset">
+          <a href="hub.client.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Client">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -1622,20 +1547,20 @@ and is associated with additional metadata in a <code>MetricInfo</code> instance
                 Previous
               </span>
               <div class="md-ellipsis">
-                Subset
+                Client
               </div>
             </div>
           </a>
         
         
           
-          <a href="hub.client.html" class="md-footer__link md-footer__link--next" aria-label="Next: Client">
+          <a href="base.html" class="md-footer__link md-footer__link--next" aria-label="Next: Base classes">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Client
+                Base classes
               </div>
             </div>
             <div class="md-footer__button md-icon">
