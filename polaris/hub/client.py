@@ -11,14 +11,14 @@ import certifi
 import fsspec
 import httpx
 import pandas as pd
+import zarr
 from authlib.common.security import generate_token
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from httpx import HTTPStatusError
-from httpx._types import HeaderTypes, TimeoutTypes, URLTypes
+from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
-import zarr
 
 from polaris.benchmark import (
     BenchmarkSpecification,
@@ -27,12 +27,12 @@ from polaris.benchmark import (
 )
 from polaris.dataset import Dataset
 from polaris.evaluate import BenchmarkResults
+from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
-from polaris.hub.polarisfs import PolarisFS
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
-from polaris.utils.types import AccessType, HubOwner
+from polaris.utils.types import AccessType, HubOwner, TimeoutTypes
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -344,7 +344,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             The Zarr object representing the dataset.
         """
-        polaris_fs = PolarisFS(
+        polaris_fs = PolarisFileSystem(
             polaris_client=self,
             dataset_owner=owner,
             dataset_name=name,
@@ -353,10 +353,8 @@ class PolarisHubClient(OAuth2Client):
         try:
             store = zarr.storage.FSStore(path, fs=polaris_fs)
             return zarr.open(store, mode="r")
-        except TimeoutError as timeout_error:
-            raise PolarisHubError(f"Timeout error.") from timeout_error
         except Exception as e:
-            raise PolarisHubError(f"Error opening Zarr store") from e
+            raise PolarisHubError("Error opening Zarr store") from e
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.

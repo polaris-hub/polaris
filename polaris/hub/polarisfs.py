@@ -1,18 +1,15 @@
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
 import fsspec
 
-from typing import Optional, Union, List, Dict, Any
-
 from polaris.utils.errors import PolarisHubError
-
-from httpx._types import TimeoutTypes
-
-from typing import TYPE_CHECKING
+from polaris.utils.types import TimeoutTypes
 
 if TYPE_CHECKING:
     from polaris.hub.client import PolarisHubClient
 
 
-class PolarisFS(fsspec.AbstractFileSystem):
+class PolarisFileSystem(fsspec.AbstractFileSystem):
     """
     A file system interface for accessing datasets on the Polaris platform.
 
@@ -20,8 +17,9 @@ class PolarisFS(fsspec.AbstractFileSystem):
     and fetch the content of a file from the dataset.
 
     Note: Zarr Integration
-        This file system can be used with Zarr for working with multidimensional array data stored in the Polaris dataset.
-        This integration aims to enhance the Polaris Hub's capabilities by providing support for interacting with Zarr-based datasets on the platform.
+        This file system can be used with Zarr to load multidimensional array data stored in a Dataset from
+        the Polaris infrastructure. This class is needed because we otherwise cannot generate signed URLs for
+        folders and Zarr is a folder based data-format.
 
         ```python
         fs = PolarisFileSystem(...)
@@ -78,14 +76,12 @@ class PolarisFS(fsspec.AbstractFileSystem):
         response.raise_for_status()
 
         if not detail:
-            entries = [p["name"].removeprefix(self.prefix) for p in response.json()]
-            return entries
-        else:
-            detailed_entries = [
-                {"name": p["name"].removeprefix(self.prefix), "size": p["size"], "type": p["type"]}
-                for p in response.json()
-            ]
-            return detailed_entries
+            return [p["name"].removeprefix(self.prefix) for p in response.json()]
+
+        return [
+            {"name": p["name"].removeprefix(self.prefix), "size": p["size"], "type": p["type"]}
+            for p in response.json()
+        ]
 
     def cat_file(
         self,
@@ -102,6 +98,7 @@ class PolarisFS(fsspec.AbstractFileSystem):
             start: The starting index of the content to retrieve.
             end: The ending index of the content to retrieve.
             timeout: Maximum time (in seconds) to wait for the request to complete.
+            kwargs: Extra arguments passed to `fsspec.open()`
 
         Returns:
             The content of the requested file.
