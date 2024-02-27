@@ -24,7 +24,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         ```python
         fs = PolarisFileSystem(...)
         store = zarr.storage.FSStore(..., fs=polaris_fs)
-        return zarr.open(store, mode="r")
+        root = zarr.open(store, mode="r")
         ```
 
     Args:
