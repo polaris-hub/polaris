@@ -1,5 +1,5 @@
-::: polaris.hub.polarisfs.PolarisFSFileSystem
+::: polaris.hub.polarisfs.PolarisFS
     options: 
         merge_init_into_class: true
-        filters: ["!^_", "!create_authorization_url", "!fetch_token", "!request", "!token"]
+        filters: ["!^_"]
 ---

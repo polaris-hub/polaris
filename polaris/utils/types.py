@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from typing import Annotated, Any, ClassVar, Literal, Optional, Union
+from typing import Annotated, Any, ClassVar, Literal, Optional, Union, Tuple
 
 import fsspec
 import numpy as np
@@ -85,6 +85,11 @@ This can be used to sort the metric score, indicate the optmization direction of
 AccessType: TypeAlias = Literal["public", "private"]
 """
 Type to specify access to a dataset, benchmark or result in the Hub.
+"""
+
+TimeoutTypes = Union[Tuple[int, int], Literal["timeout", "never"]]
+"""
+Timeout types for specifying maximum wait times.
 """
 
 

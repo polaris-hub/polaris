@@ -1,13 +1,18 @@
 import fsspec
 
-from typing import Union, List, Dict, Any
+from typing import Optional, Union, List, Dict, Any
 
 from polaris.utils.errors import PolarisHubError
 
 from httpx._types import TimeoutTypes
 
+from typing import TYPE_CHECKING
 
-class PolarisFSFileSystem(fsspec.AbstractFileSystem):
+if TYPE_CHECKING:
+    from polaris.hub.client import PolarisHubClient
+
+
+class PolarisFS(fsspec.AbstractFileSystem):
     """
     A file system interface for accessing datasets on the Polaris platform.
 
@@ -16,13 +21,18 @@ class PolarisFSFileSystem(fsspec.AbstractFileSystem):
 
     Note: Zarr Integration
         This file system can be used with Zarr for working with multidimensional array data stored in the Polaris dataset.
+        This integration aims to enhance the Polaris Hub's capabilities by providing support for interacting with Zarr-based datasets on the platform.
+
+        ```python
+        fs = PolarisFileSystem(...)
+        store = zarr.storage.FSStore(..., fs=polaris_fs)
+        return zarr.open(store, mode="r")
+        ```
 
     Args:
         polaris_client: The Polaris Hub client used to make API requests.
         dataset_owner: The owner of the dataset.
         dataset_name: The name of the dataset.
-        default_expirations_seconds: Default expiration time for signed URLs.
-        **kwargs: Additional keyword arguments.
     """
 
     sep = "/"
@@ -31,33 +41,36 @@ class PolarisFSFileSystem(fsspec.AbstractFileSystem):
 
     def __init__(
         self,
-        polaris_client: Any,
+        polaris_client: "PolarisHubClient",
         dataset_owner: str,
         dataset_name: str,
-        default_expirations_seconds: int = 10 * 60,
         **kwargs: dict,
     ):
         super().__init__(**kwargs)
 
         self.polaris_client = polaris_client
+        self.default_timeout = self.polaris_client.settings.default_timeout
 
         # Prefix to remove from ls entries
         self.prefix = f"dataset/{dataset_owner}/{dataset_name}/"
         self.base_path = f"/storage/{self.prefix}"
 
     def ls(
-        self, path: str, detail: bool = False, timeout: TimeoutTypes = (10, 200), **kwargs: dict
+        self, path: str, detail: bool = False, timeout: Optional[TimeoutTypes] = None, **kwargs: dict
     ) -> Union[List[str], List[Dict[str, Any]]]:
         """List objects in the specified path within the Polaris dataset.
 
         Args:
             path: The path within the dataset to list objects.
             detail: If True, returns detailed information about each object.
-            **kwargs: Additional keyword arguments.
+            timeout: Maximum time (in seconds) to wait for the request to complete.
 
         Returns:
             A list of dictionaries if detail is True; otherwise, a list of object names.
         """
+        if timeout is None:
+            timeout = self.default_timeout
+
         ls_path = f"{self.base_path}ls/{path}"
 
         # GET request to Polaris Hub to list objects in path
@@ -65,17 +78,22 @@ class PolarisFSFileSystem(fsspec.AbstractFileSystem):
         response.raise_for_status()
 
         if not detail:
-            entries = [p["name"][len(self.prefix) :] for p in response.json()]
+            entries = [p["name"].removeprefix(self.prefix) for p in response.json()]
             return entries
         else:
             detailed_entries = [
-                {"name": p["name"][len(self.prefix) :], "size": p["size"], "type": p["type"]}
+                {"name": p["name"].removeprefix(self.prefix), "size": p["size"], "type": p["type"]}
                 for p in response.json()
             ]
             return detailed_entries
 
     def cat_file(
-        self, path: str, start: int = None, end: int = None, timeout: TimeoutTypes = (10, 200), **kwargs: dict
+        self,
+        path: str,
+        start: Union[int, None] = None,
+        end: Union[int, None] = None,
+        timeout: Optional[TimeoutTypes] = None,
+        **kwargs: dict,
     ) -> bytes:
         """Fetches and returns the content of a file from the Polaris dataset.
 
@@ -84,11 +102,13 @@ class PolarisFSFileSystem(fsspec.AbstractFileSystem):
             start: The starting index of the content to retrieve.
             end: The ending index of the content to retrieve.
             timeout: Maximum time (in seconds) to wait for the request to complete.
-            **kwargs: Additional keyword arguments.
 
         Returns:
             The content of the requested file.
         """
+        if timeout is None:
+            timeout = self.default_timeout
+
         cat_path = f"{self.base_path}{path}"
 
         # GET request to Polaris Hub for signed URL of file
@@ -98,7 +118,8 @@ class PolarisFSFileSystem(fsspec.AbstractFileSystem):
         if response.status_code != 307:
             raise PolarisHubError("Could not get signed URL from Polaris Hub.")
 
-        storage_response = self.polaris_client.get(response.json()["url"], auth=None, timeout=timeout)
-        storage_response.raise_for_status()
+        signed_url = response.json()["url"]
 
-        return storage_response.content[start:end]
+        with fsspec.open(signed_url, "rb", **kwargs) as f:
+            data = f.read()
+        return data[start:end]

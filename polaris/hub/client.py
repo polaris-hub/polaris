@@ -28,7 +28,7 @@ from polaris.benchmark import (
 from polaris.dataset import Dataset
 from polaris.evaluate import BenchmarkResults
 from polaris.hub.settings import PolarisHubSettings
-from polaris.hub.polarisfs import PolarisFSFileSystem
+from polaris.hub.polarisfs import PolarisFS
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
@@ -344,7 +344,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             The Zarr object representing the dataset.
         """
-        polaris_fs = PolarisFSFileSystem(
+        polaris_fs = PolarisFS(
             polaris_client=self,
             dataset_owner=owner,
             dataset_name=name,
@@ -354,11 +354,9 @@ class PolarisHubClient(OAuth2Client):
             store = zarr.storage.FSStore(path, fs=polaris_fs)
             return zarr.open(store, mode="r")
         except TimeoutError as timeout_error:
-            raise PolarisHubError(
-                f"Timeout error: {timeout_error}. Consider increasing the expiration_seconds parameter and try again."
-            )
+            raise PolarisHubError(f"Timeout error.") from timeout_error
         except Exception as e:
-            raise PolarisHubError(f"Error opening Zarr store: {e}")
+            raise PolarisHubError(f"Error opening Zarr store") from e
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.
