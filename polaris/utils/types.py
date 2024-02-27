@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from typing import Annotated, Any, ClassVar, Literal, Optional, Union
+from typing import Annotated, Any, ClassVar, Literal, Optional, Tuple, Union
 
 import fsspec
 import numpy as np
@@ -10,7 +10,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     HttpUrl,
-    constr,
+    StringConstraints,
     model_validator,
 )
 from pydantic.alias_generators import to_camel
@@ -50,12 +50,16 @@ DataFormat: TypeAlias = Literal["dict", "tuple"]
 The target formats that are supported by the `Subset` class. 
 """
 
-SlugStringType: TypeAlias = constr(pattern="^[a-z0-9-]+$", min_length=4, max_length=64)
+SlugStringType: TypeAlias = Annotated[
+    str, StringConstraints(pattern="^[a-z0-9-]+$", min_length=4, max_length=64)
+]
 """
 A URL-compatible string that can serve as slug on the hub.
 """
 
-SlugCompatibleStringType: TypeAlias = constr(pattern="^[A-Za-z0-9_-]+$", min_length=4, max_length=64)
+SlugCompatibleStringType: TypeAlias = Annotated[
+    str, StringConstraints(pattern="^[A-Za-z0-9_-]+$", min_length=4, max_length=64)
+]
 """
 A URL-compatible string that can be turned into a slug by the hub.
 
@@ -87,6 +91,11 @@ AccessType: TypeAlias = Literal["public", "private"]
 Type to specify access to a dataset, benchmark or result in the Hub.
 """
 
+TimeoutTypes = Union[Tuple[int, int], Literal["timeout", "never"]]
+"""
+Timeout types for specifying maximum wait times.
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
@@ -115,9 +124,9 @@ class License(BaseModel):
             Else it is required to manually specify this.
     """
 
-    SPDX_LICENSE_DATA_PATH: ClassVar[str] = (
-        "https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json"
-    )
+    SPDX_LICENSE_DATA_PATH: ClassVar[
+        str
+    ] = "https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json"
 
     id: str
     reference: Optional[HttpUrlString] = None

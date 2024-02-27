@@ -4,7 +4,9 @@ from urllib.parse import urljoin
 from pydantic import FieldValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from polaris.utils.types import HttpUrlString
+from polaris.utils.types import HttpUrlString, TimeoutTypes
+
+# from httpx._types import TimeoutTypes
 
 
 class PolarisHubSettings(BaseSettings):
@@ -37,6 +39,8 @@ class PolarisHubSettings(BaseSettings):
     scopes: str = "profile email"
     client_id: str = "QJg8zadGwjnr6nbN"
     ca_bundle: Optional[Union[str, bool]] = None
+
+    default_timeout: TimeoutTypes = (10, 200)
 
     # Configuration of the pydantic model
     model_config = SettingsConfigDict(env_prefix="POLARIS_")

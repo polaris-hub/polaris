@@ -30,6 +30,7 @@ nav:
           - Evaluation: api/evaluation.md
       - Hub:
           - Client: api/hub.client.md
+          - PolarisFileSystem: api/hub.polarisfs.md
       - Additional:
           - Base classes: api/base.md
           - Types: api/utils.types.md
