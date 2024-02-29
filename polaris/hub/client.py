@@ -356,6 +356,73 @@ class PolarisHubClient(OAuth2Client):
         except Exception as e:
             raise PolarisHubError("Error opening Zarr store") from e
 
+
+    def emulate_3d_protein_zarr_archive(self,
+        datapoint_per_array: bool,
+        no_columns: int,
+        no_proteins: int,
+        no_coordinates: int,
+    ):
+        import numpy as np
+        # from datamol import fs
+        import string
+        # Create the zarr archive
+        path = "test.zarr"
+        root = zarr.open_group(path, mode="w")
+
+        # Create an empty group in the root of the zarr archive for each pointer column
+        columns = []
+        for i in range(no_columns):
+            label = string.ascii_uppercase[i]
+            col = root.create_group(f"{label}/")
+            columns.append(col)
+
+        # Populate each group with data
+        def _populate_group(group):
+            # Either add a single array per datapoint
+            if datapoint_per_array:
+                for i in range(no_proteins):
+                    group.array(i, data=np.random.random((no_coordinates, 3)))
+
+            # Or add a single array for all datapoints
+            else:
+                group.array(
+                    "data",
+                    data=np.random.random((no_proteins, no_coordinates, 3)),
+                )
+
+        for col in columns:
+            _populate_group(col)
+
+        return root
+
+
+    def write_zarr_file(self, owner: Union[str, HubOwner], name: str, path: str, data: zarr.hierarchy.Group) -> None:
+        """Write a Zarr file to a Polaris dataset
+
+        Args:
+            owner: Which Hub user or organization owns the artifact.
+            name: Name of the dataset.
+            path: Path to the Zarr file within the dataset.
+            data: The Zarr object representing the dataset.
+        """
+        polaris_fs = PolarisFileSystem(
+            polaris_client=self,
+            dataset_owner=owner,
+            dataset_name=name,
+        )
+
+        try:
+            store = zarr.storage.FSStore(path, fs=polaris_fs)
+            root = zarr.open(store, mode="w")
+            # new_array = root.create_group("new_array")
+            # root["new_array"] = data
+            import pdb;pdb.set_trace()
+            return True
+        except Exception as e:
+            raise PolarisHubError("Error opening Zarr store") from e
+
+
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.
 

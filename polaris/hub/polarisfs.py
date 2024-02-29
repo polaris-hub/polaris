@@ -1,9 +1,11 @@
+import json
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import fsspec
 
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import TimeoutTypes
+from polaris.utils.httpx import _log_response
 
 if TYPE_CHECKING:
     from polaris.hub.client import PolarisHubClient
@@ -70,6 +72,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             timeout = self.default_timeout
 
         ls_path = f"{self.base_path}ls/{path}"
+        print("ls path", ls_path)
 
         # GET request to Polaris Hub to list objects in path
         response = self.polaris_client.get(ls_path.rstrip("/"), timeout=timeout)
@@ -107,6 +110,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             timeout = self.default_timeout
 
         cat_path = f"{self.base_path}{path}"
+        print("cat path", cat_path)
 
         # GET request to Polaris Hub for signed URL of file
         response = self.polaris_client.get(cat_path)
@@ -120,3 +124,50 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         with fsspec.open(signed_url, "rb", **kwargs) as f:
             data = f.read()
         return data[start:end]
+    
+    def rm(self, path: str, recursive: bool = False, maxdepth: Optional[int] = None):
+
+        ls_path = f"{self.base_path}ls/{path}"
+        print("rm path", ls_path)
+
+        # GET request to Polaris Hub to list objects in path
+        response = self.polaris_client.get(ls_path.rstrip("/"))
+        response.raise_for_status()
+
+        return [p["name"].removeprefix(self.prefix) for p in response.json()]
+
+    def pipe_file(self, path:str, content: Union[bytes, str], timeout: Optional[TimeoutTypes] = None, **kwargs:dict) -> None:
+        """Pipes the content of a file to the Polaris dataset.
+
+        Args:
+            path: The path to the file within the dataset.
+            content: The content to be piped into the file.
+            timeout: Maximum time (in seconds) to wait for the request to complete.
+
+        Returns:
+            None
+        """
+        if timeout is None:
+            timeout = self.default_timeout
+
+        pipe_path = f"{self.base_path}put/{path}"
+        print(f'pipe path: {pipe_path}')
+        print(f'content: {content} \n\n')
+
+        # PUT request to Polaris Hub to put object in path
+        response = self.polaris_client.put(pipe_path, timeout=timeout, content=content)
+
+        if response.status_code != 307:
+            raise PolarisHubError("Could not get signed URL from Polaris Hub.")
+
+        signed_url = response.json()["url"]
+
+        headers = {"Content-Type": "application/octet-stream"}
+
+        response = self.polaris_client.put(signed_url, content=content, headers=headers, timeout=timeout)
+        
+        print(_log_response(response))
+
+        # response.raise_for_status()
+        if response.status_code != 200:
+            raise PolarisHubError(f"Failed to upload data to Polaris Hub. Status code: {response.status_code}")
