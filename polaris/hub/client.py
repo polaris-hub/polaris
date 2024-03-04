@@ -118,7 +118,9 @@ class PolarisHubClient(OAuth2Client):
             **kwargs,
         )
 
-    def _load_from_signed_url(self, url: URLTypes, load_fn: Callable, headers: Optional[HeaderTypes] = None):
+    def _load_from_signed_url(
+        self, url: URLTypes, load_fn: Callable, headers: Optional[HeaderTypes] = None
+    ):
         """Utility function to load a file from a signed URL"""
         response = self.get(url, auth=None, headers=headers)  # type: ignore
         response.raise_for_status()
@@ -184,10 +186,14 @@ class PolarisHubClient(OAuth2Client):
     def fetch_token(self, **kwargs):
         """Light wrapper to automatically pass in the right URL"""
         return super().fetch_token(
-            url=self.settings.token_fetch_url, code_verifier=self.code_verifier, **kwargs
+            url=self.settings.token_fetch_url,
+            code_verifier=self.code_verifier,
+            **kwargs,
         )
 
-    def request(self, method, url, withhold_token=False, auth=httpx.USE_CLIENT_DEFAULT, **kwargs):
+    def request(
+        self, method, url, withhold_token=False, auth=httpx.USE_CLIENT_DEFAULT, **kwargs
+    ):
         """Wraps the base request method to handle errors"""
         try:
             response = super().request(method, url, withhold_token, auth, **kwargs)
@@ -203,8 +209,16 @@ class PolarisHubClient(OAuth2Client):
                     "SSL verification by setting the POLARIS_CA_BUNDLE environment variable to `false`."
                 ) from error
             raise error
-        except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError, OAuthError) as error:
-            if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:
+        except (
+            MissingTokenError,
+            InvalidTokenError,
+            httpx.HTTPStatusError,
+            OAuthError,
+        ) as error:
+            if (
+                isinstance(error, httpx.HTTPStatusError)
+                and error.response.status_code != 401
+            ):
                 raise
             raise PolarisUnauthorizedError from error
         return response
@@ -242,7 +256,9 @@ class PolarisHubClient(OAuth2Client):
     @property
     def user_as_owner(self) -> HubOwner:
         """Easily get the currently logged-in user a `HubOwner` instance."""
-        return HubOwner(user_id=self.user_info["user_id"], slug=self.user_info["username"])
+        return HubOwner(
+            user_id=self.user_info["user_id"], slug=self.user_info["username"]
+        )
 
     def login(self, overwrite: bool = False, auto_open_browser: bool = True):
         """Login to the Polaris Hub using the OAuth2 protocol.
@@ -272,7 +288,9 @@ class PolarisHubClient(OAuth2Client):
         authorization_url, _ = self.create_authorization_url()
 
         if auto_open_browser:
-            logger.info(f"Your browser has been opened to visit:\n{authorization_url}\n")
+            logger.info(
+                f"Your browser has been opened to visit:\n{authorization_url}\n"
+            )
             webbrowser.open_new_tab(authorization_url)
         else:
             logger.info(f"Please visit the following URL:\n{authorization_url}\n")
@@ -315,7 +333,9 @@ class PolarisHubClient(OAuth2Client):
             A `Dataset` instance, if it exists.
         """
 
-        response = self._base_request_to_hub(url=f"/dataset/{owner}/{name}", method="GET")
+        response = self._base_request_to_hub(
+            url=f"/dataset/{owner}/{name}", method="GET"
+        )
         storage_response = self.get(response["tableContent"]["url"])
 
         # This should be a 307 redirect with the signed URL
@@ -323,17 +343,23 @@ class PolarisHubClient(OAuth2Client):
             try:
                 storage_response.raise_for_status()
             except HTTPStatusError as error:
-                raise PolarisHubError("Could not get signed URL from Polaris Hub.") from error
+                raise PolarisHubError(
+                    "Could not get signed URL from Polaris Hub."
+                ) from error
 
         storage_response = storage_response.json()
         url = storage_response["url"]
         headers = storage_response["headers"]
 
-        response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
+        response["table"] = self._load_from_signed_url(
+            url=url, headers=headers, load_fn=pd.read_parquet
+        )
 
         return Dataset(**response)
 
-    def read_zarr_file(self, owner: Union[str, HubOwner], name: str, path: str) -> zarr.hierarchy.Group:
+    def read_zarr_file(
+        self, owner: Union[str, HubOwner], name: str, path: str
+    ) -> zarr.hierarchy.Group:
         """Read a Zarr file from a Polaris dataset
 
         Args:
@@ -356,55 +382,15 @@ class PolarisHubClient(OAuth2Client):
         except Exception as e:
             raise PolarisHubError("Error opening Zarr store") from e
 
-
-    def emulate_3d_protein_zarr_archive(self,
-        datapoint_per_array: bool,
-        no_columns: int,
-        no_proteins: int,
-        no_coordinates: int,
-    ):
-        import numpy as np
-        # from datamol import fs
-        import string
-        # Create the zarr archive
-        path = "test.zarr"
-        root = zarr.open_group(path, mode="w")
-
-        # Create an empty group in the root of the zarr archive for each pointer column
-        columns = []
-        for i in range(no_columns):
-            label = string.ascii_uppercase[i]
-            col = root.create_group(f"{label}/")
-            columns.append(col)
-
-        # Populate each group with data
-        def _populate_group(group):
-            # Either add a single array per datapoint
-            if datapoint_per_array:
-                for i in range(no_proteins):
-                    group.array(i, data=np.random.random((no_coordinates, 3)))
-
-            # Or add a single array for all datapoints
-            else:
-                group.array(
-                    "data",
-                    data=np.random.random((no_proteins, no_coordinates, 3)),
-                )
-
-        for col in columns:
-            _populate_group(col)
-
-        return root
-
-
-    def write_zarr_file(self, owner: Union[str, HubOwner], name: str, path: str, data: zarr.hierarchy.Group) -> None:
+    def write_zarr_file(
+        self, owner: Union[str, HubOwner], name: str, path: str
+    ) -> None:
         """Write a Zarr file to a Polaris dataset
 
         Args:
             owner: Which Hub user or organization owns the artifact.
             name: Name of the dataset.
             path: Path to the Zarr file within the dataset.
-            data: The Zarr object representing the dataset.
         """
         polaris_fs = PolarisFileSystem(
             polaris_client=self,
@@ -414,14 +400,9 @@ class PolarisHubClient(OAuth2Client):
 
         try:
             store = zarr.storage.FSStore(path, fs=polaris_fs)
-            root = zarr.open(store, mode="w")
-            # new_array = root.create_group("new_array")
-            # root["new_array"] = data
-            import pdb;pdb.set_trace()
-            return True
+            return zarr.open(store, mode="w")
         except Exception as e:
             raise PolarisHubError("Error opening Zarr store") from e
-
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.
@@ -438,10 +419,14 @@ class PolarisHubClient(OAuth2Client):
         response = self._base_request_to_hub(
             url="/benchmark", method="GET", params={"limit": limit, "offset": offset}
         )
-        benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
+        benchmarks_list = [
+            f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]
+        ]
         return benchmarks_list
 
-    def get_benchmark(self, owner: Union[str, HubOwner], name: str) -> BenchmarkSpecification:
+    def get_benchmark(
+        self, owner: Union[str, HubOwner], name: str
+    ) -> BenchmarkSpecification:
         """Load a benchmark from the Polaris Hub.
 
         Args:
@@ -452,7 +437,9 @@ class PolarisHubClient(OAuth2Client):
             A `BenchmarkSpecification` instance, if it exists.
         """
 
-        response = self._base_request_to_hub(url=f"/benchmark/{owner}/{name}", method="GET")
+        response = self._base_request_to_hub(
+            url=f"/benchmark/{owner}/{name}", method="GET"
+        )
 
         # TODO (cwognum): Currently, the benchmark endpoints do not return the owner info for the underlying dataset.
         # TODO (jstlaurent): Use the same owner for now, until the benchmark returns a better dataset entity
@@ -505,7 +492,9 @@ class PolarisHubClient(OAuth2Client):
                 raise ValueError(
                     "The `owner` argument must be specified if the `results.owner` attribute is not set."
                 )
-            results.owner = owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
+            results.owner = (
+                owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
+            )
 
         result_json = results.model_dump(by_alias=True, exclude_none=True)
 
@@ -519,7 +508,9 @@ class PolarisHubClient(OAuth2Client):
             self.settings.hub_url,
             f"benchmarks/{results.benchmark_owner}/{results.benchmark_name}/{response['id']}",
         )
-        logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
+        logger.success(
+            f"Your result has been successfully uploaded to the Hub. View it here: {result_url}"
+        )
         return response
 
     def upload_dataset(
@@ -558,11 +549,15 @@ class PolarisHubClient(OAuth2Client):
                 raise ValueError(
                     "The `owner` argument must be specified if the `dataset.owner` attribute is not set."
                 )
-            dataset.owner = owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
+            dataset.owner = (
+                owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
+            )
 
         # Get the serialized data-model
         # We exclude the table as it handled separately and the cache_dir as it is user-specific
-        dataset_json = dataset.model_dump(exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True)
+        dataset_json = dataset.model_dump(
+            exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True
+        )
 
         # Uploading a dataset is a two-step process.
         # 1. Upload the dataset meta data to the hub and prepare the hub to receive the parquet file
@@ -609,7 +604,10 @@ class PolarisHubClient(OAuth2Client):
             bucket_response = self.request(
                 url=hub_response_body["url"],
                 method=hub_response_body["method"],
-                headers={"Content-type": "application/vnd.apache.parquet", **hub_response_body["headers"]},
+                headers={
+                    "Content-type": "application/vnd.apache.parquet",
+                    **hub_response_body["headers"],
+                },
                 content=buffer.getvalue(),
                 auth=None,
                 timeout=timeout,  # required for large size dataset
@@ -659,11 +657,15 @@ class PolarisHubClient(OAuth2Client):
                 raise ValueError(
                     "The `owner` argument must be specified if the `benchmark.owner` attribute is not set."
                 )
-            benchmark.owner = owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
+            benchmark.owner = (
+                owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
+            )
 
         # Get the serialized data-model
         # We exclude the dataset as we expect it to exist on the hub already.
-        benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
+        benchmark_json = benchmark.model_dump(
+            exclude={"dataset"}, exclude_none=True, by_alias=True
+        )
         benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
         benchmark_json["access"] = access
 

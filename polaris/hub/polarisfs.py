@@ -1,11 +1,9 @@
-import json
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-
+import datetime
 import fsspec
 
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import TimeoutTypes
-from polaris.utils.httpx import _log_response
 
 if TYPE_CHECKING:
     from polaris.hub.client import PolarisHubClient
@@ -56,7 +54,11 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         self.base_path = f"/storage/{self.prefix}"
 
     def ls(
-        self, path: str, detail: bool = False, timeout: Optional[TimeoutTypes] = None, **kwargs: dict
+        self,
+        path: str,
+        detail: bool = False,
+        timeout: Optional[TimeoutTypes] = None,
+        **kwargs: dict,
     ) -> Union[List[str], List[Dict[str, Any]]]:
         """List objects in the specified path within the Polaris dataset.
 
@@ -72,7 +74,6 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             timeout = self.default_timeout
 
         ls_path = f"{self.base_path}ls/{path}"
-        print("ls path", ls_path)
 
         # GET request to Polaris Hub to list objects in path
         response = self.polaris_client.get(ls_path.rstrip("/"), timeout=timeout)
@@ -82,7 +83,11 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             return [p["name"].removeprefix(self.prefix) for p in response.json()]
 
         return [
-            {"name": p["name"].removeprefix(self.prefix), "size": p["size"], "type": p["type"]}
+            {
+                "name": p["name"].removeprefix(self.prefix),
+                "size": p["size"],
+                "type": p["type"],
+            }
             for p in response.json()
         ]
 
@@ -110,7 +115,6 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             timeout = self.default_timeout
 
         cat_path = f"{self.base_path}{path}"
-        print("cat path", cat_path)
 
         # GET request to Polaris Hub for signed URL of file
         response = self.polaris_client.get(cat_path)
@@ -124,19 +128,34 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         with fsspec.open(signed_url, "rb", **kwargs) as f:
             data = f.read()
         return data[start:end]
-    
+
     def rm(self, path: str, recursive: bool = False, maxdepth: Optional[int] = None):
+        """Remove a file or directory from the Polaris dataset.
 
-        ls_path = f"{self.base_path}ls/{path}"
-        print("rm path", ls_path)
+        This method is provided for compatibility with the Zarr storage interface.
+        It may be called by the Zarr store when removing a file or directory.
 
-        # GET request to Polaris Hub to list objects in path
-        response = self.polaris_client.get(ls_path.rstrip("/"))
-        response.raise_for_status()
+        Args:
+            path: The path to the file or directory to be removed.
+            recursive: If True, remove directories and their contents recursively.
+            maxdepth: The maximum depth to recurse when removing directories.
 
-        return [p["name"].removeprefix(self.prefix) for p in response.json()]
+        Returns:
+            None
 
-    def pipe_file(self, path:str, content: Union[bytes, str], timeout: Optional[TimeoutTypes] = None, **kwargs:dict) -> None:
+        Note:
+            This method currently it does not perform any removal operations and is included
+            as a placeholder that aligns with the Zarr interface's expectations.
+        """
+        return
+
+    def pipe_file(
+        self,
+        path: str,
+        content: Union[bytes, str],
+        timeout: Optional[TimeoutTypes] = None,
+        **kwargs: dict,
+    ) -> None:
         """Pipes the content of a file to the Polaris dataset.
 
         Args:
@@ -151,8 +170,6 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             timeout = self.default_timeout
 
         pipe_path = f"{self.base_path}put/{path}"
-        print(f'pipe path: {pipe_path}')
-        print(f'content: {content} \n\n')
 
         # PUT request to Polaris Hub to put object in path
         response = self.polaris_client.put(pipe_path, timeout=timeout, content=content)
@@ -160,14 +177,22 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         if response.status_code != 307:
             raise PolarisHubError("Could not get signed URL from Polaris Hub.")
 
-        signed_url = response.json()["url"]
+        hub_response_body = response.json()
+        signed_url = hub_response_body["url"]
 
-        headers = {"Content-Type": "application/octet-stream"}
+        headers = {
+            "Content-Type": "application/octet-stream",
+            "x-amz-content-sha256": "UNSIGNED-PAYLOAD",
+            "x-amz-date": datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ"),
+            **hub_response_body["headers"],
+        }
 
-        response = self.polaris_client.put(signed_url, content=content, headers=headers, timeout=timeout)
-        
-        print(_log_response(response))
-
-        # response.raise_for_status()
-        if response.status_code != 200:
-            raise PolarisHubError(f"Failed to upload data to Polaris Hub. Status code: {response.status_code}")
+        response = self.polaris_client.request(
+            url=signed_url,
+            method="PUT",
+            auth=None,
+            content=content,
+            headers=headers,
+            timeout=timeout,
+        )
+        response.raise_for_status()
