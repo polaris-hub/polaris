@@ -1,6 +1,9 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 import datetime
 import fsspec
+import hashlib
+import time
+
 
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import TimeoutTypes
@@ -51,7 +54,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
 
         # Prefix to remove from ls entries
         self.prefix = f"dataset/{dataset_owner}/{dataset_name}/"
-        self.base_path = f"/storage/{self.prefix}"
+        self.base_path = f"/storage/{self.prefix.rstrip('/')}"
 
     def ls(
         self,
@@ -73,7 +76,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         if timeout is None:
             timeout = self.default_timeout
 
-        ls_path = f"{self.base_path}ls/{path}"
+        ls_path = self.sep.join([self.base_path, "ls", path])
 
         # GET request to Polaris Hub to list objects in path
         response = self.polaris_client.get(ls_path.rstrip("/"), timeout=timeout)
@@ -114,7 +117,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         if timeout is None:
             timeout = self.default_timeout
 
-        cat_path = f"{self.base_path}{path}"
+        cat_path = self.sep.join([self.base_path, path])
 
         # GET request to Polaris Hub for signed URL of file
         response = self.polaris_client.get(cat_path)
@@ -129,7 +132,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             data = f.read()
         return data[start:end]
 
-    def rm(self, path: str, recursive: bool = False, maxdepth: Optional[int] = None):
+    def rm(self, path: str, recursive: bool = False, maxdepth: Optional[int] = None)  -> None :
         """Remove a file or directory from the Polaris dataset.
 
         This method is provided for compatibility with the Zarr storage interface.
@@ -147,7 +150,10 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             This method currently it does not perform any removal operations and is included
             as a placeholder that aligns with the Zarr interface's expectations.
         """
-        return
+        try:
+            raise NotImplementedError("PolarisFS does not currently support the file removal operation.")
+        except NotImplementedError as e:
+            print(f"NotImplementedError: {e}")
 
     def pipe_file(
         self,
@@ -169,7 +175,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         if timeout is None:
             timeout = self.default_timeout
 
-        pipe_path = f"{self.base_path}put/{path}"
+        pipe_path = self.sep.join([self.base_path, "put", path])
 
         # PUT request to Polaris Hub to put object in path
         response = self.polaris_client.put(pipe_path, timeout=timeout, content=content)
@@ -180,9 +186,11 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
 
+        sha256_hash = hashlib.sha256(content).hexdigest()
+
         headers = {
             "Content-Type": "application/octet-stream",
-            "x-amz-content-sha256": "UNSIGNED-PAYLOAD",
+            "x-amz-content-sha256": sha256_hash,
             "x-amz-date": datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ"),
             **hub_response_body["headers"],
         }
