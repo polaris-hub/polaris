@@ -50,6 +50,7 @@ def test_multi_task_benchmark_loop(test_multi_task_benchmark):
     x_test = np.array([dm.to_fp(dm.to_mol(smi)) for smi in test.inputs])
 
     y_pred = {}
+    print(multi_y)
     for k, y in multi_y.items():
         model = RandomForestRegressor()
 

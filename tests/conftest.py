@@ -74,7 +74,7 @@ def test_zarr_archive_single_array(tmp_path):
     return _get_zarr_archive(tmp_path, datapoint_per_array=False)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def test_single_task_benchmark(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
@@ -96,7 +96,7 @@ def test_single_task_benchmark(test_dataset):
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def test_single_task_benchmark_clf(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
@@ -111,7 +111,7 @@ def test_single_task_benchmark_clf(test_dataset):
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def test_single_task_benchmark_multiple_test_sets(test_dataset):
     train_indices = list(range(90))
     test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
@@ -133,7 +133,7 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def test_multi_task_benchmark(test_dataset):
     # For the sake of simplicity, just use a small set of indices
     train_indices = list(range(90))
@@ -157,7 +157,7 @@ def test_multi_task_benchmark(test_dataset):
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def test_multi_task_benchmark_clf(test_dataset):
     # For the sake of simplicity, just use a small set of indices
     train_indices = list(range(90))

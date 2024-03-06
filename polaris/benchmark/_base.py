@@ -1,7 +1,7 @@
 import json
 import os
 from hashlib import md5
-from typing import Any, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import fsspec
 import numpy as np
@@ -353,7 +353,10 @@ class BenchmarkSpecification(BaseArtifactModel):
         return v.value
 
     def get_train_test_split(
-        self, input_format: DataFormat = "dict", target_format: DataFormat = "dict"
+        self,
+        input_format: DataFormat = "dict",
+        target_format: DataFormat = "dict",
+        featurization_fn: Optional[Callable] = None,
     ) -> tuple[Subset, Union["Subset", dict[str, Subset]]]:
         """Construct the train and test sets, given the split in the benchmark specification.
 
@@ -365,6 +368,8 @@ class BenchmarkSpecification(BaseArtifactModel):
             input_format: How the input data is returned from the `Subset` object.
             target_format: How the target data is returned from the `Subset` object.
                 This will only affect the train set.
+            featurization_fn: A function to apply to the input data. If a multi-input benchmark, this function
+                expects an input in the format specified by the `input_format` parameter.
 
         Returns:
             A tuple with the train `Subset` and test `Subset` objects.
@@ -381,6 +386,7 @@ class BenchmarkSpecification(BaseArtifactModel):
                 target_cols=self.target_cols,
                 target_format=target_format,
                 hide_targets=hide_targets,
+                featurization_fn=featurization_fn,
             )
 
         train = _get_subset(self.split[0], hide_targets=False)
@@ -388,6 +394,7 @@ class BenchmarkSpecification(BaseArtifactModel):
             test = {k: _get_subset(v, hide_targets=True) for k, v in self.split[1].items()}
         else:
             test = _get_subset(self.split[1], hide_targets=True)
+
         return train, test
 
     def evaluate(self, y_pred: PredictionsType) -> BenchmarkResults:
@@ -406,8 +413,10 @@ class BenchmarkSpecification(BaseArtifactModel):
         5. There can be metrics which measure across tasks.
 
         Args:
-            y_pred: The predictions for the test set, as NumPy arrays. If there are multiple test sets,
-                this should be a dictionary with the test set names as keys.
+            y_pred: The predictions for the test set, as NumPy arrays.
+                If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
+                If there are multiple test sets, the predictions should be further wrapped in a dictionary
+                    with the test subset labels as keys.
 
         Returns:
             A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
@@ -416,7 +425,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
         # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
         # See also the `hide_targets` parameter in the `Subset` class.
-        test = self.get_train_test_split()[1]
+        test = self.get_train_test_split(target_format="dict")[1]
 
         if not isinstance(test, dict):
             test = {"test": test}

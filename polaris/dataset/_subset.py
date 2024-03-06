@@ -1,15 +1,28 @@
-from typing import List, Literal, Optional, Sequence, Union
+from typing import Callable, List, Literal, Optional, Sequence, Union
 
 import numpy as np
 
 from polaris.dataset import Dataset
-from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import TestAccessError
 from polaris.utils.types import DataFormat, DatapointType
 
 
 class Subset:
     """The `Subset` class provides easy access to a single partition of a split dataset.
+
+    Info: No need to create this class manually
+        You should not have to create this class manually. In most use-cases, you can create a `Subset` through the
+        `get_train_test_split` method of a `BenchmarkSpecification` object.
+
+    Tip: Featurize your inputs
+        Not all datasets are already featurized. For example, a small-molecule task might simply provide the SMILES string.
+        To easily featurize the inputs, you can pass or set a transformation function. For example:
+
+        ```python
+        import datamol as dm
+
+        benchmark.get_train_test_split(..., featurization_fn=dm.to_fp)
+        ```
 
     This should be the starting point for any framework-specific (e.g. PyTorch, Tensorflow) data-loader implementation.
     How the data is loaded in Polaris can be non-trivial, so this class is provided to abstract away the details.
@@ -45,8 +58,6 @@ class Subset:
         TestAccessError: When trying to access the targets of the test set (specified by the `hide_targets` attribute).
     """
 
-    _SUPPORTED_FORMATS = ["dict", "tuple"]
-
     def __init__(
         self,
         dataset: Dataset,
@@ -54,25 +65,18 @@ class Subset:
         input_cols: Union[List[str], str],
         target_cols: Union[List[str], str],
         input_format: DataFormat = "dict",
-        target_format: DataFormat = "tuple",
+        target_format: DataFormat = "dict",
+        featurization_fn: Optional[Callable] = None,
         hide_targets: bool = False,
     ):
         self.dataset = dataset
         self.indices = indices
         self.target_cols = target_cols if isinstance(target_cols, list) else [target_cols]
         self.input_cols = input_cols if isinstance(input_cols, list) else [input_cols]
-
-        # Validate the output format
-        if input_format not in self._SUPPORTED_FORMATS:
-            raise ValueError(
-                f"Unsupported output format {input_format}. Choose from {self._SUPPORTED_FORMATS}"
-            )
-        if target_format not in self._SUPPORTED_FORMATS:
-            raise ValueError(
-                f"Unsupported output format {target_format}. Choose from {self._SUPPORTED_FORMATS}"
-            )
         self._input_format = input_format
         self._target_format = target_format
+
+        self._featurization_fn = featurization_fn
 
         # For the iterator implementation
         self._pointer = 0
@@ -90,43 +94,73 @@ class Subset:
 
     @property
     def inputs(self):
-        """
-        Scikit-learn style access to the inputs.
-        If the dataset is multi-input, this will return a dict of arrays.
-        """
+        """Alias for `self.as_array("x")`"""
+        return self.as_array("x")
+
+    @property
+    def X(self):
+        """Alias for `self.as_array("x")`"""
         return self.as_array("x")
 
     @property
     def targets(self):
-        """
-        Scikit-learn style access to the targets.
-        If the dataset is multi-target, this will return a dict of arrays.
-        """
+        """Alias for `self.as_array("y")`"""
+        return self.as_array("y")
+
+    @property
+    def y(self):
+        """Alias for `self.as_array("y")`"""
         return self.as_array("y")
 
     @staticmethod
-    def _convert(data: dict, order: List[str], fmt: str):
-        """Converts from the default dict format to the specified format"""
+    def _format(data: dict, order: List[str], fmt: str):
+        """
+        Converts the internally used dict format to the user-specified format.
+        If the user-specified format is a tuple, it orders the column according to the specified order.
+        """
         if len(data) == 1:
             data = list(data.values())[0]
         elif fmt == "tuple":
             data = tuple(data[k] for k in order)
         return data
 
-    def _extract(
+    def _get_single(
         self,
-        data: DatapointType,
-        data_type: Union[Literal["x"], Literal["y"], Literal["xy"]],
-        key: Optional[str] = None,
+        row: str | int,
+        cols: List[str],
+        featurization_fn: Optional[Callable],
+        format: DataFormat,
     ):
-        """Helper function to extract data from the return format of this class"""
-        if self._hide_targets:
-            return data
-        x, y = data
-        ret = x if data_type == "x" else y
-        if not isinstance(ret, dict) or key is None:
-            return ret
-        return ret[key]
+        """
+        Loads a subset of the variables for a single data-point from the datasets.
+        The dataset stores datapoint in a row-wise manner, so this method is used to access a single row.
+
+        Args:
+            row: The row index of the datapoint.
+            cols: The columns (i.e. variables) to load for that data point.
+            featurization_fn: The transformation function to apply to the data-point.
+            format: The format to return the data-point in.
+        """
+        # Load the data-point
+        # Also handles loading data stored in external files for pointer columns
+        ret = {col: self.dataset.get_data(row, col) for col in cols}
+
+        # Format
+        ret = self._format(ret, cols, format)
+
+        # Featurize
+        if featurization_fn is not None:
+            ret = featurization_fn(ret)
+
+        return ret
+
+    def _get_single_input(self, row: str | int):
+        """Get a single input for a specific data-point and given the benchmark specification."""
+        return self._get_single(row, self.input_cols, self._featurization_fn, self._input_format)
+
+    def _get_single_output(self, row: str | int):
+        """Get a single output for a specific data-point and given the benchmark specification."""
+        return self._get_single(row, self.target_cols, None, self._target_format)
 
     def as_array(self, data_type: Union[Literal["x"], Literal["y"], Literal["xy"]]):
         """
@@ -138,21 +172,30 @@ class Subset:
             return self.as_array("x"), self.as_array("y")
 
         if data_type == "y" and self._hide_targets:
-            raise TestAccessError("Within Polaris, you should not need to access the targets of the test set")
+            raise TestAccessError("Within Polaris you should not need to access the targets of the test set")
 
-        if not self.is_multi_task:
-            return np.array([self._extract(ret, data_type) for ret in self])
+        if data_type == "x":
+            ret = [self._get_single_input(self.dataset.table.iloc[idx].name) for idx in self.indices]
+        else:
+            ret = [self._get_single_output(self.dataset.table.iloc[idx].name) for idx in self.indices]
 
-        out = {}
-        columns = self.input_cols if data_type == "x" else self.target_cols
+        if not ((self.is_multi_input and data_type == "x") or (self.is_multi_task and data_type == "y")):
+            # If the target format is not a dict, we can just create the array directly.
+            # With a single-task or single-input data point, this will be a 1D array.
+            # With a multi-task or multi-input data point, this will be a 2D array.
+            return np.array(ret)
 
-        # Temporarily change the target format for easier conversion
-        with tmp_attribute_change(self, "_target_format", "dict"):
-            with tmp_attribute_change(self, "_input_format", "dict"):
-                for k in columns:
-                    out[k] = np.array([self._extract(ret, data_type, k) for ret in self])
+        # If the return format is a dict, we want to convert
+        # from an array of dicts to a dict of arrays.
+        if data_type == "y" and self._target_format == "dict":
+            ret = {k: np.array([v[k] for v in ret]) for k in self.target_cols}
+        elif data_type == "x" and self._input_format == "dict":
+            ret = {k: np.array([v[k] for v in ret]) for k in self.input_cols}
+        else:
+            # The format is a tuple, so we have list of tuples and convert this to an array
+            ret = np.array(ret)
 
-        return self._convert(out, self.target_cols, self._target_format)
+        return ret
 
     def __len__(self):
         return len(self.indices)
@@ -175,8 +218,7 @@ class Subset:
         row = self.dataset.table.iloc[idx]
 
         # Load the input modalities
-        ins = {col: self.dataset.get_data(row.name, col) for col in self.input_cols}
-        ins = self._convert(ins, self.input_cols, self._input_format)
+        ins = self._get_single_input(row.name)
 
         if self._hide_targets:
             # If we are not allowed to access the targets, we return the inputs only.
@@ -184,9 +226,7 @@ class Subset:
             return ins
 
         # Retrieve the targets
-        outs = {col: self.dataset.get_data(row.name, col) for col in self.target_cols}
-        outs = self._convert(outs, self.target_cols, self._target_format)
-
+        outs = self._get_single_output(row.name)
         return ins, outs
 
     def __iter__(self):
