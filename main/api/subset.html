@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.11">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.13">
     
     
       
@@ -1083,7 +1083,21 @@
 
   
       <p>The <code>Subset</code> class provides easy access to a single partition of a split dataset.</p>
-<p>This should be the starting point for any framework-specific (e.g. PyTorch, Tensorflow) data-loader implementation.
+
+<details class="info" open>
+  <summary>No need to create this class manually</summary>
+  <p>You should not have to create this class manually. In most use-cases, you can create a <code>Subset</code> through the
+<code>get_train_test_split</code> method of a <code>BenchmarkSpecification</code> object.</p>
+</details>
+<details class="tip" open>
+  <summary>Featurize your inputs</summary>
+  <p>Not all datasets are already featurized. For example, a small-molecule task might simply provide the SMILES string.
+To easily featurize the inputs, you can pass or set a transformation function. For example:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">benchmark</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">featurization_fn</span><span class="o">=</span><span class="n">dm</span><span class="o">.</span><span class="n">to_fp</span><span class="p">)</span>
+</span></code></pre></div>
+</details>      <p>This should be the starting point for any framework-specific (e.g. PyTorch, Tensorflow) data-loader implementation.
 How the data is loaded in Polaris can be non-trivial, so this class is provided to abstract away the details.
 To easily build framework-specific data-loaders, a <code>Subset</code> supports various styles of accessing the data:</p>
 <ol>
@@ -1374,7 +1388,7 @@ To easily build framework-specific data-loaders, a <code>Subset</code> supports 
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.8fd75fb4.min.js"></script>
+      <script src="../assets/javascripts/bundle.c8d2eff1.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
