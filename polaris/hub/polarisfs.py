@@ -175,7 +175,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         if timeout is None:
             timeout = self.default_timeout
 
-        pipe_path = self.sep.join([self.base_path, "put", path])
+        pipe_path =  self.sep.join([self.base_path, path])
 
         # PUT request to Polaris Hub to put object in path
         response = self.polaris_client.put(pipe_path, timeout=timeout, content=content)
