@@ -75,11 +75,6 @@ include = ["polaris", "polaris.*"]
 exclude = []
 namespaces = false
 
-[tool.black]
-line-length = 110
-target-version = ['py310', 'py311']
-include = '\.pyi?$'
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=75 --cov-report xml --cov-report term"
@@ -111,6 +106,7 @@ lint.ignore = [
 ]
 line-length = 110
 target-version = "py310"
+
 lint.per-file-ignores."__init__.py" = [
     "F401", # imported but unused
     "E402", # Module level import not at top of file

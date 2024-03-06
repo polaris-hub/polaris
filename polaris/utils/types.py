@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from typing import Annotated, Any, ClassVar, Literal, Optional, Union
+from typing import Annotated, Any, ClassVar, Literal, Optional, Tuple, Union
 
 import fsspec
 import numpy as np
@@ -91,6 +91,11 @@ AccessType: TypeAlias = Literal["public", "private"]
 Type to specify access to a dataset, benchmark or result in the Hub.
 """
 
+TimeoutTypes = Union[Tuple[int, int], Literal["timeout", "never"]]
+"""
+Timeout types for specifying maximum wait times.
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
@@ -119,9 +124,9 @@ class License(BaseModel):
             Else it is required to manually specify this.
     """
 
-    SPDX_LICENSE_DATA_PATH: ClassVar[str] = (
-        "https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json"
-    )
+    SPDX_LICENSE_DATA_PATH: ClassVar[
+        str
+    ] = "https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json"
 
     id: str
     reference: Optional[HttpUrlString] = None

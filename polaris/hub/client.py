@@ -11,12 +11,13 @@ import certifi
 import fsspec
 import httpx
 import pandas as pd
+import zarr
 from authlib.common.security import generate_token
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from httpx import HTTPStatusError
-from httpx._types import HeaderTypes, TimeoutTypes, URLTypes
+from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
 
 from polaris.benchmark import (
@@ -26,11 +27,12 @@ from polaris.benchmark import (
 )
 from polaris.dataset import Dataset
 from polaris.evaluate import BenchmarkResults
+from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
-from polaris.utils.types import AccessType, HubOwner
+from polaris.utils.types import AccessType, HubOwner, TimeoutTypes
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -142,7 +144,6 @@ class PolarisHubClient(OAuth2Client):
             raise PolarisHubError(
                 f"The request to the Polaris Hub failed. See the error message below for more details:\n{response}"
             ) from error
-
         # Convert the response to json format if the response contains a 'text' body
         try:
             response = response.json()
@@ -331,6 +332,29 @@ class PolarisHubClient(OAuth2Client):
         response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
 
         return Dataset(**response)
+
+    def read_zarr_file(self, owner: Union[str, HubOwner], name: str, path: str) -> zarr.hierarchy.Group:
+        """Read a Zarr file from a Polaris dataset
+
+        Args:
+            owner: Which Hub user or organization owns the artifact.
+            name: Name of the dataset.
+            path: Path to the Zarr file within the dataset.
+
+        Returns:
+            The Zarr object representing the dataset.
+        """
+        polaris_fs = PolarisFileSystem(
+            polaris_client=self,
+            dataset_owner=owner,
+            dataset_name=name,
+        )
+
+        try:
+            store = zarr.storage.FSStore(path, fs=polaris_fs)
+            return zarr.open(store, mode="r")
+        except Exception as e:
+            raise PolarisHubError("Error opening Zarr store") from e
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.
