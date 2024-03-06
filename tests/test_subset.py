@@ -54,7 +54,6 @@ def test_access_to_test_set(test_single_task_benchmark):
 
 
 def test_input_featurization(test_single_task_benchmark):
-
     # Without a transformation, we expect a SMILES string
     train, test = test_single_task_benchmark.get_train_test_split()
     test_single_task_benchmark._n_splits_since_evaluate = 0  # Manually reset for sake of test
@@ -115,7 +114,6 @@ def test_different_subset_formats_multi_task_tuple(test_multi_task_benchmark):
 
 
 def test_consistency_between_different_formats(test_multi_task_benchmark):
-
     train_tup, _ = test_multi_task_benchmark.get_train_test_split(target_format="tuple")
     train_dict, _ = test_multi_task_benchmark.get_train_test_split(target_format="dict")
 
