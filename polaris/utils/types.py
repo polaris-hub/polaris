@@ -21,13 +21,17 @@ SplitIndicesType: TypeAlias = list[int]
 A split is defined by a sequence of integers.
 """
 
-SplitType: TypeAlias = tuple[SplitIndicesType, Union[SplitIndicesType, dict[str, SplitIndicesType]]]
+SplitType: TypeAlias = tuple[
+    SplitIndicesType, Union[SplitIndicesType, dict[str, SplitIndicesType]]
+]
 """
 A split is a pair of which the first item is always assumed to be the train set.
 The second item can either be a single test set or a dictionary with multiple, named test sets.
 """
 
-PredictionsType: TypeAlias = Union[np.ndarray, dict[str, Union[np.ndarray, dict[str, np.ndarray]]]]
+PredictionsType: TypeAlias = Union[
+    np.ndarray, dict[str, Union[np.ndarray, dict[str, np.ndarray]]]
+]
 """
 A prediction is one of three things:
 
@@ -96,6 +100,10 @@ TimeoutTypes = Union[Tuple[int, int], Literal["timeout", "never"]]
 Timeout types for specifying maximum wait times.
 """
 
+IOMode: TypeAlias = Literal["r", "r+", "a", "w", "w-"]
+"""
+Type to specify the mode for input/output operations (I/O) when interacting with a file or resource.
+"""
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
@@ -146,7 +154,9 @@ class License(BaseModel):
 
         if m.id in data:
             if m.reference is not None and m.reference != data[m.id]["reference"]:
-                logger.warning(f"Found license ID {m.id} in SPDX, using the associated reference.")
+                logger.warning(
+                    f"Found license ID {m.id} in SPDX, using the associated reference."
+                )
             m.reference = data[m.id]["reference"]
 
         if m.id not in data and m.reference is None:

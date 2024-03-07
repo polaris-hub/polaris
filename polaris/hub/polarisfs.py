@@ -2,8 +2,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 import datetime
 import fsspec
 import hashlib
-import time
-
 
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import TimeoutTypes
@@ -150,10 +148,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             This method currently it does not perform any removal operations and is included
             as a placeholder that aligns with the Zarr interface's expectations.
         """
-        try:
-            raise NotImplementedError("PolarisFS does not currently support the file removal operation.")
-        except NotImplementedError as e:
-            print(f"NotImplementedError: {e}")
+        raise NotImplementedError("PolarisFS does not currently support the file removal operation.")
 
     def pipe_file(
         self,

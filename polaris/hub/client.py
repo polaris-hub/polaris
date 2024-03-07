@@ -32,7 +32,7 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
-from polaris.utils.types import AccessType, HubOwner, TimeoutTypes
+from polaris.utils.types import AccessType, HubOwner, TimeoutTypes, IOMode
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -334,7 +334,7 @@ class PolarisHubClient(OAuth2Client):
         return Dataset(**response)
 
     def open_zarr_file(
-        self, owner: Union[str, HubOwner], name: str, path: str, mode: str
+        self, owner: Union[str, HubOwner], name: str, path: str, mode: IOMode
     ) -> zarr.hierarchy.Group:
         """Open a Zarr file from a Polaris dataset
 
@@ -342,7 +342,7 @@ class PolarisHubClient(OAuth2Client):
             owner: Which Hub user or organization owns the artifact.
             name: Name of the dataset.
             path: Path to the Zarr file within the dataset.
-            mode: The mode in which the file is opened ('r' for read-only, 'w' for write).
+            mode: The mode in which the file is opened.
 
         Returns:
             The Zarr object representing the dataset.
