@@ -893,9 +893,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#polaris.hub.client.PolarisHubClient.read_zarr_file" class="md-nav__link">
+  <a href="#polaris.hub.client.PolarisHubClient.open_zarr_file" class="md-nav__link">
     <span class="md-ellipsis">
-      read_zarr_file
+      open_zarr_file
     </span>
   </a>
   
@@ -1218,9 +1218,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#polaris.hub.client.PolarisHubClient.read_zarr_file" class="md-nav__link">
+  <a href="#polaris.hub.client.PolarisHubClient.open_zarr_file" class="md-nav__link">
     <span class="md-ellipsis">
-      read_zarr_file
+      open_zarr_file
     </span>
   </a>
   
@@ -1889,17 +1889,17 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
 
 
 
-<h4 id="polaris.hub.client.PolarisHubClient.read_zarr_file" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">read_zarr_file</span>
+<h4 id="polaris.hub.client.PolarisHubClient.open_zarr_file" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">open_zarr_file</span>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">read_zarr_file</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HubOwner</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">zarr</span><span class="o">.</span><span class="n">hierarchy</span><span class="o">.</span><span class="n">Group</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">open_zarr_file</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HubOwner</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">IOMode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">zarr</span><span class="o">.</span><span class="n">hierarchy</span><span class="o">.</span><span class="n">Group</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
   
-      <p>Read a Zarr file from a Polaris dataset</p>
+      <p>Open a Zarr file from a Polaris dataset</p>
 
 
 
@@ -1950,6 +1950,20 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
           <td>
             <div class="doc-md-description">
               <p>Path to the Zarr file within the dataset.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>mode</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.IOMode" href="utils.types.html#polaris.utils.types.IOMode">IOMode</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The mode in which the file is opened.</p>
             </div>
           </td>
           <td>
