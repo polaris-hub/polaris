@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-
+from datetime import datetime, timezone
 import fsspec
+import hashlib
 
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import TimeoutTypes
@@ -51,10 +52,14 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
 
         # Prefix to remove from ls entries
         self.prefix = f"dataset/{dataset_owner}/{dataset_name}/"
-        self.base_path = f"/storage/{self.prefix}"
+        self.base_path = f"/storage/{self.prefix.rstrip('/')}"
 
     def ls(
-        self, path: str, detail: bool = False, timeout: Optional[TimeoutTypes] = None, **kwargs: dict
+        self,
+        path: str,
+        detail: bool = False,
+        timeout: Optional[TimeoutTypes] = None,
+        **kwargs: dict,
     ) -> Union[List[str], List[Dict[str, Any]]]:
         """List objects in the specified path within the Polaris dataset.
 
@@ -69,7 +74,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         if timeout is None:
             timeout = self.default_timeout
 
-        ls_path = f"{self.base_path}ls/{path}"
+        ls_path = self.sep.join([self.base_path, "ls", path])
 
         # GET request to Polaris Hub to list objects in path
         response = self.polaris_client.get(ls_path.rstrip("/"), timeout=timeout)
@@ -79,7 +84,11 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             return [p["name"].removeprefix(self.prefix) for p in response.json()]
 
         return [
-            {"name": p["name"].removeprefix(self.prefix), "size": p["size"], "type": p["type"]}
+            {
+                "name": p["name"].removeprefix(self.prefix),
+                "size": p["size"],
+                "type": p["type"],
+            }
             for p in response.json()
         ]
 
@@ -106,7 +115,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         if timeout is None:
             timeout = self.default_timeout
 
-        cat_path = f"{self.base_path}{path}"
+        cat_path = self.sep.join([self.base_path, path])
 
         # GET request to Polaris Hub for signed URL of file
         response = self.polaris_client.get(cat_path)
@@ -120,3 +129,73 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         with fsspec.open(signed_url, "rb", **kwargs) as f:
             data = f.read()
         return data[start:end]
+
+    def rm(self, path: str, recursive: bool = False, maxdepth: Optional[int] = None) -> None:
+        """Remove a file or directory from the Polaris dataset.
+
+        This method is provided for compatibility with the Zarr storage interface.
+        It may be called by the Zarr store when removing a file or directory.
+
+        Args:
+            path: The path to the file or directory to be removed.
+            recursive: If True, remove directories and their contents recursively.
+            maxdepth: The maximum depth to recurse when removing directories.
+
+        Returns:
+            None
+
+        Note:
+            This method currently it does not perform any removal operations and is included
+            as a placeholder that aligns with the Zarr interface's expectations.
+        """
+        raise NotImplementedError("PolarisFS does not currently support the file removal operation.")
+
+    def pipe_file(
+        self,
+        path: str,
+        content: Union[bytes, str],
+        timeout: Optional[TimeoutTypes] = None,
+        **kwargs: dict,
+    ) -> None:
+        """Pipes the content of a file to the Polaris dataset.
+
+        Args:
+            path: The path to the file within the dataset.
+            content: The content to be piped into the file.
+            timeout: Maximum time (in seconds) to wait for the request to complete.
+
+        Returns:
+            None
+        """
+        if timeout is None:
+            timeout = self.default_timeout
+
+        pipe_path = self.sep.join([self.base_path, path])
+
+        # PUT request to Polaris Hub to put object in path
+        response = self.polaris_client.put(pipe_path, timeout=timeout, content=content)
+
+        if response.status_code != 307:
+            raise PolarisHubError("Could not get signed URL from Polaris Hub.")
+
+        hub_response_body = response.json()
+        signed_url = hub_response_body["url"]
+
+        sha256_hash = hashlib.sha256(content).hexdigest()
+
+        headers = {
+            "Content-Type": "application/octet-stream",
+            "x-amz-content-sha256": sha256_hash,
+            "x-amz-date": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
+            **hub_response_body["headers"],
+        }
+
+        response = self.polaris_client.request(
+            url=signed_url,
+            method="PUT",
+            auth=None,
+            content=content,
+            headers=headers,
+            timeout=timeout,
+        )
+        response.raise_for_status()

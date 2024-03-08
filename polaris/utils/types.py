@@ -96,6 +96,11 @@ TimeoutTypes = Union[Tuple[int, int], Literal["timeout", "never"]]
 Timeout types for specifying maximum wait times.
 """
 
+IOMode: TypeAlias = Literal["r", "r+", "a", "w", "w-"]
+"""
+Type to specify the mode for input/output operations (I/O) when interacting with a file or resource.
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
