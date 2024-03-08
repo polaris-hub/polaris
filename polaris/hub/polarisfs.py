@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-import datetime
+from datetime import datetime, timezone
 import fsspec
 import hashlib
 
@@ -186,7 +186,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         headers = {
             "Content-Type": "application/octet-stream",
             "x-amz-content-sha256": sha256_hash,
-            "x-amz-date": datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ"),
+            "x-amz-date": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
             **hub_response_body["headers"],
         }
 
