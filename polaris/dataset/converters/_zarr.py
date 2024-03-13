@@ -12,18 +12,19 @@ if TYPE_CHECKING:
 
 
 class ZarrConverter(Converter):
-    """Parse a [.zarr](https://zarr.readthedocs.io/en/stable/index.html) hierarchy into a Polaris `Dataset`.
-
-    In short: A `.zarr` file can contain groups and arrays, where each group can again contain groups and arrays.
-
-    Within Polaris:
-
-    1. Each subgroup of the root group corresponds to a single column.
-    2. Each subgroup is in turn expected to contain a single array with _all_ datapoints.
+    """Parse a [.zarr](https://zarr.readthedocs.io/en/stable/index.html) archive into a Polaris `Dataset`.
 
     Tip: Tutorial
         To learn more about the zarr format, see the
         [tutorial](../tutorials/dataset_zarr.ipynb).
+
+    Warning: Loading from `.zarr`
+        Loading and saving datasets from and to `.zarr` is still experimental and currently not
+        fully supported by the Hub.
+
+    A `.zarr` file can contain groups and arrays, where each group can again contain groups and arrays.
+    Within Polaris, the Zarr archive is expected to have a flat hierarchy where each array corresponds
+    to a single column and each array contains the values for all datapoints in that column.
     """
 
     def convert(self, path: str, factory: "DatasetFactory") -> FactoryProduct:
@@ -38,7 +39,7 @@ class ZarrConverter(Converter):
         data = defaultdict(dict)
         for col, arr in src.arrays():
             # Copy to the source zarr, so everything is in one place
-            dst = zarr.open_group("/".join([factory.zarr_root_path, col]), "w")
+            dst = zarr.open_group("/".join([factory._zarr_root_path, col]), "w")
             zarr.copy(arr, dst)
 
             for i in range(len(arr)):

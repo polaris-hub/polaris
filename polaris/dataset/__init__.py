@@ -1,4 +1,3 @@
-from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation, Modality
 from polaris.dataset._dataset import Dataset
 from polaris.dataset._factory import DatasetFactory, get_dataset_from_file

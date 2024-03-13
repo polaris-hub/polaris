@@ -1,11 +1,12 @@
+import json
+
 import fsspec
-import yaml
 
 from polaris.benchmark._definitions import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.dataset._dataset import Dataset
+from polaris.dataset import Dataset, get_dataset_from_file
 from polaris.hub.client import PolarisHubClient
 from polaris.utils import fs
 
@@ -24,12 +25,8 @@ def load_dataset(path: str) -> Dataset:
         provide the `owner/name` slug. This can be easily copied from the relevant dataset
         page on the Hub.
     - **Directory**: When loading the dataset from a directory, you should provide the path
-        as returned by [`Dataset.to_json`][polaris.dataset.Dataset.to_json] or
-        [`Dataset.to_zarr`][polaris.dataset.Dataset.to_zarr]. The path can be local or remote.
-
-    Warning: Loading from `.zarr`
-        Loading and saving datasets from and to `.zarr` is still experimental and currently not
-        supported by the Hub.
+        as returned by [`Dataset.to_json`][polaris.dataset.Dataset.to_json].
+        The path can be local or remote.
     """
 
     extension = fs.get_extension(path)
@@ -40,12 +37,9 @@ def load_dataset(path: str) -> Dataset:
         client = PolarisHubClient()
         return client.get_dataset(*path.split("/"))
 
-    if extension == "zarr":
-        return Dataset.from_zarr(path)
-    elif extension == "json":
+    if extension == "json":
         return Dataset.from_json(path)
-
-    raise NotImplementedError("This should not be reached.")
+    return get_dataset_from_file(path)
 
 
 def load_benchmark(path: str):
@@ -75,7 +69,7 @@ def load_benchmark(path: str):
         return client.get_benchmark(*path.split("/"))
 
     with fsspec.open(path, "r") as fd:
-        data = yaml.safe_load(fd)  # type: ignore
+        data = json.load(fd)
 
     # TODO (cwognum): As this gets more complex, how do we effectivly choose which class we should use?
     #  e.g. we might end up with a single class per benchmark.

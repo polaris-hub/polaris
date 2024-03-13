@@ -13,31 +13,47 @@ if TYPE_CHECKING:
 
 
 class SDFConverter(Converter):
-    """Convert from a SDF file"""
+    """
+    Converts a SDF file into a Polaris dataset.
+
+    Info: Binary strings for serialization
+        This class converts the molecules to binary strings (for ML purposes, this should be lossless).
+        This might not be the most storage efficient, but is fastest and easiest to maintain.
+        See this [Github Discussion](https://github.com/rdkit/rdkit/discussions/7235) for more info.
+
+    Properties defined on the molecule level in the SDF file can be extracted into separate columns
+    or can be kept in the molecule object.
+
+    Args:
+        mol_column: The name of the column that will contain the pointers to the molecules.
+        smiles_column: The name of the column that will contain the SMILES strings.
+        use_isomeric_smiles: Whether to use isomeric SMILES.
+        mol_id_column: The name of the column that will contain the molecule names.
+        mol_prop_as_cols: Whether to extract properties defined on the molecule level in the SDF file into separate columns.
+        groupby_key: The name of the column to group by. If set, the dataset can combine multiple pointers
+            to the molecules into a single datapoint.
+    """
 
     def __init__(
         self,
         mol_column: str = "molecule",
         smiles_column: Optional[str] = "smiles",
+        use_isomeric_smiles: bool = True,
         mol_id_column: Optional[str] = None,
         mol_prop_as_cols: bool = True,
         groupby_key: Optional[str] = None,
         n_jobs: int = 1,
     ) -> None:
-        """ """
         super().__init__()
         self.mol_column = mol_column
         self.smiles_column = smiles_column
+        self.use_isomeric_smiles = use_isomeric_smiles
         self.mol_id_column = mol_id_column
         self.mol_prop_as_cols = mol_prop_as_cols
         self.groupby_key = groupby_key
         self.n_jobs = n_jobs
 
     def convert(self, path: str, factory: "DatasetFactory") -> FactoryProduct:
-        """
-        Converts the molecules in an SDF file to a Polaris compatible format.
-        """
-
         tmp_col = uuid.uuid4().hex
 
         # We do not sanitize the molecules or remove the Hs.
@@ -72,17 +88,14 @@ class SDFConverter(Converter):
         # Add a column with the SMILES if it doesn't exist yet
         if self.smiles_column is not None and self.smiles_column not in df.columns:
             names = dm.parallelized(
-                lambda mol: dm.to_smiles(mol, isomeric=False), df[tmp_col], n_jobs=self.n_jobs
+                lambda mol: dm.to_smiles(mol, isomeric=self.use_isomeric_smiles),
+                df[tmp_col],
+                n_jobs=self.n_jobs,
             )
             df[self.smiles_column] = names
 
-        # Convert the molecules to binary strings (for ML purposes, this should be lossless).
-        # This might not be the most storage efficient, but is fastest and easiest to maintain.
-        # We do not save the MolProps, because we have already extracted these into columns.
-        # See: https://github.com/rdkit/rdkit/discussions/7235
-
-        # NOTE (cwognum): We might want to improve efficiency
-        #  by not always storing private and computed properties.
+        # Convert the molecules to binary strings. This should be lossless and efficient.
+        # NOTE (cwognum): We might want to not always store private and computed properties.
         props = Chem.PropertyPickleOptions.AllProps
         if self.mol_prop_as_cols:
             props &= ~Chem.PropertyPickleOptions.MolProps
@@ -95,7 +108,6 @@ class SDFConverter(Converter):
 
         # Add a pointer column to the table
         # We support grouping by a key, to allow inputs of variable length
-
         grouped = pd.DataFrame(columns=[*df.columns, self.mol_column])
         if self.groupby_key is not None:
             for _, group in df.reset_index(drop=True).groupby(by=self.groupby_key):
@@ -110,7 +122,7 @@ class SDFConverter(Converter):
 
                 # Get the pointer path
                 pointer_idx = f"{start}:{end}" if start != end else f"{start}"
-                pointer = self.get_pointer(factory.zarr_root_path, self.mol_column, pointer_idx)
+                pointer = self.get_pointer(factory._zarr_root_path, self.mol_column, pointer_idx)
 
                 # Get the single unique value per column for the group and append
                 unique_values = [group[col].unique()[0] for col in df.columns]
@@ -119,7 +131,7 @@ class SDFConverter(Converter):
             df = grouped
 
         else:
-            pointers = [self.get_pointer(factory.zarr_root_path, self.mol_column, i) for i in range(len(df))]
+            pointers = [self.get_pointer(factory._zarr_root_path, self.mol_column, i) for i in range(len(df))]
             df[self.mol_column] = pd.Series(pointers)
 
         # Set the annotations
