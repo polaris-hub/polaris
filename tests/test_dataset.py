@@ -99,29 +99,6 @@ def test_dataset_checksum(test_dataset):
     assert dataset.md5sum is not None
 
 
-@pytest.mark.parametrize("array_per_datapoint", [True, False])
-def test_dataset_from_zarr(
-    test_zarr_archive_single_array, test_zarr_archive_multiple_arrays, array_per_datapoint
-):
-    """Test whether loading works when the zarr archive contains a single array or multiple arrays."""
-    archive = test_zarr_archive_multiple_arrays if array_per_datapoint else test_zarr_archive_single_array
-    dataset = Dataset.from_zarr(archive)
-    assert len(dataset.table) == 100
-    for i in range(100):
-        assert dataset.get_data(row=i, col="A").shape == (2048,)
-        assert dataset.get_data(row=i, col="B").shape == (2048,)
-
-
-def test_dataset_from_zarr_equality(test_zarr_archive_single_array, test_zarr_archive_multiple_arrays):
-    """
-    Test whether two methods for specifying .zarr datasets lead to the same dataset.
-    This specifically tests whether indexing a single arrow with our custom path syntax works.
-    """
-    dataset_1 = Dataset.from_zarr(test_zarr_archive_single_array)
-    dataset_2 = Dataset.from_zarr(test_zarr_archive_multiple_arrays)
-    assert _equality_test(dataset_1, dataset_2)
-
-
 def test_dataset_from_json(test_dataset, tmpdir):
     """Test whether the dataset can be saved and loaded from json."""
     test_dataset.to_json(str(tmpdir))
@@ -133,37 +110,6 @@ def test_dataset_from_json(test_dataset, tmpdir):
 
     new_dataset = load_dataset(path)
     assert _equality_test(test_dataset, new_dataset)
-
-
-@pytest.mark.parametrize("array_per_datapoint", [True, False])
-def test_dataset_from_zarr_to_json_and_back(
-    test_zarr_archive_single_array,
-    test_zarr_archive_multiple_arrays,
-    array_per_datapoint,
-    tmpdir,
-):
-    """
-    Test whether a dataset with pointer columns, instantiated from a zarr archive,
-    can be saved to and loaded from json.
-    """
-
-    tmpdir = str(tmpdir)
-    json_dir = fs.join(tmpdir, "json")
-    zarr_dir = fs.join(tmpdir, "zarr")
-
-    archive = test_zarr_archive_multiple_arrays if array_per_datapoint else test_zarr_archive_single_array
-    dataset = Dataset.from_zarr(archive)
-    path = dataset.to_json(json_dir)
-
-    new_dataset = Dataset.from_json(path)
-    assert _equality_test(dataset, new_dataset)
-
-    new_dataset = load_dataset(path)
-    assert _equality_test(dataset, new_dataset)
-
-    path = new_dataset.to_zarr(zarr_dir, "multiple" if array_per_datapoint else "single")
-    new_dataset = load_dataset(path)
-    assert _equality_test(dataset, new_dataset)
 
 
 @pytest.mark.parametrize("array_per_datapoint", [True, False])

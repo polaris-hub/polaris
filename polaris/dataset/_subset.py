@@ -2,9 +2,9 @@ from typing import Callable, List, Literal, Optional, Sequence, Union
 
 import numpy as np
 
-from polaris.dataset import Dataset
+from polaris.dataset import Adapter, Dataset
 from polaris.utils.errors import TestAccessError
-from polaris.utils.types import DataFormat, DatapointType
+from polaris.utils.types import DatapointType
 
 
 class Subset:
@@ -64,8 +64,8 @@ class Subset:
         indices: List[Union[int, Sequence[int]]],
         input_cols: Union[List[str], str],
         target_cols: Union[List[str], str],
-        input_format: DataFormat = "dict",
-        target_format: DataFormat = "dict",
+        input_adapter: Optional[Adapter] = None,
+        target_adapter: Optional[Adapter] = None,
         featurization_fn: Optional[Callable] = None,
         hide_targets: bool = False,
     ):
@@ -73,8 +73,8 @@ class Subset:
         self.indices = indices
         self.target_cols = target_cols if isinstance(target_cols, list) else [target_cols]
         self.input_cols = input_cols if isinstance(input_cols, list) else [input_cols]
-        self._input_format = input_format
-        self._target_format = target_format
+        self._input_adapter = input_adapter
+        self._target_adapter = target_adapter
 
         self._featurization_fn = featurization_fn
 
@@ -112,24 +112,12 @@ class Subset:
         """Alias for `self.as_array("y")`"""
         return self.as_array("y")
 
-    @staticmethod
-    def _format(data: dict, order: List[str], fmt: str):
-        """
-        Converts the internally used dict format to the user-specified format.
-        If the user-specified format is a tuple, it orders the column according to the specified order.
-        """
-        if len(data) == 1:
-            data = list(data.values())[0]
-        elif fmt == "tuple":
-            data = tuple(data[k] for k in order)
-        return data
-
     def _get_single(
         self,
         row: str | int,
         cols: List[str],
         featurization_fn: Optional[Callable],
-        format: DataFormat,
+        adapter: Optional[Adapter],
     ):
         """
         Loads a subset of the variables for a single data-point from the datasets.
@@ -139,14 +127,17 @@ class Subset:
             row: The row index of the datapoint.
             cols: The columns (i.e. variables) to load for that data point.
             featurization_fn: The transformation function to apply to the data-point.
-            format: The format to return the data-point in.
+            adapter: Format the data-point to a specific format.
         """
         # Load the data-point
         # Also handles loading data stored in external files for pointer columns
         ret = {col: self.dataset.get_data(row, col) for col in cols}
 
         # Format
-        ret = self._format(ret, cols, format)
+        if adapter is not None:
+            ret = adapter(ret)
+        if len(ret) == 1:
+            ret = ret[cols[0]]
 
         # Featurize
         if featurization_fn is not None:
@@ -156,11 +147,11 @@ class Subset:
 
     def _get_single_input(self, row: str | int):
         """Get a single input for a specific data-point and given the benchmark specification."""
-        return self._get_single(row, self.input_cols, self._featurization_fn, self._input_format)
+        return self._get_single(row, self.input_cols, self._featurization_fn, self._input_adapter)
 
     def _get_single_output(self, row: str | int):
         """Get a single output for a specific data-point and given the benchmark specification."""
-        return self._get_single(row, self.target_cols, None, self._target_format)
+        return self._get_single(row, self.target_cols, None, self._target_adapter)
 
     def as_array(self, data_type: Union[Literal["x"], Literal["y"], Literal["xy"]]):
         """
@@ -187,13 +178,10 @@ class Subset:
 
         # If the return format is a dict, we want to convert
         # from an array of dicts to a dict of arrays.
-        if data_type == "y" and self._target_format == "dict":
+        if data_type == "y":
             ret = {k: np.array([v[k] for v in ret]) for k in self.target_cols}
-        elif data_type == "x" and self._input_format == "dict":
+        elif data_type == "x":
             ret = {k: np.array([v[k] for v in ret]) for k in self.input_cols}
-        else:
-            # The format is a tuple, so we have list of tuples and convert this to an array
-            ret = np.array(ret)
 
         return ret
 

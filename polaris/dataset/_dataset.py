@@ -2,7 +2,7 @@ import json
 import os.path
 from collections import defaultdict
 from hashlib import md5
-from typing import Dict, Literal, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 
 import fsspec
 import numpy as np
@@ -17,6 +17,7 @@ from pydantic import (
 )
 
 from polaris._artifact import BaseArtifactModel
+from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils import fs
@@ -30,7 +31,6 @@ from polaris.utils.types import AccessType, HttpUrlString, HubOwner, License
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
 _CACHE_SUBDIR = "datasets"
 _INDEX_SEP = "#"
-_INDEX_FMT = f"{{path}}{_INDEX_SEP}{{index}}"
 
 
 class Dataset(BaseArtifactModel):
@@ -68,6 +68,8 @@ class Dataset(BaseArtifactModel):
     # Public attributes
     # Data
     table: Union[pd.DataFrame, str]
+    input_adapter: Optional[Adapter] = None
+    target_adapter: Optional[Adapter] = None
     md5sum: Optional[str] = None
 
     # Additional meta-data
@@ -193,11 +195,13 @@ class Dataset(BaseArtifactModel):
                 the content of the referenced file is loaded to memory.
         """
 
-        def _load(p: str, index: Optional[int]) -> np.ndarray:
+        def _load(p: str, index: Optional[Union[int, slice]]) -> np.ndarray:
             """Tiny helper function to reduce code repetition."""
-            arr = zarr.convenience.load(p)
+            arr = zarr.open(p, mode="r")
             if index is not None:
                 arr = arr[index]
+                if isinstance(index, slice):
+                    arr = tuple(arr)
             return arr
 
         value = self.table.loc[row, col]
@@ -238,152 +242,12 @@ class Dataset(BaseArtifactModel):
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient(
-            env_file=env_file, settings=settings, cache_auth_token=cache_auth_token, **kwargs
+            env_file=env_file,
+            settings=settings,
+            cache_auth_token=cache_auth_token,
+            **kwargs,
         ) as client:
             return client.upload_dataset(self, access=access, owner=owner)
-
-    @classmethod
-    def from_zarr(cls, path: str) -> "Dataset":
-        """Parse a [.zarr](https://zarr.readthedocs.io/en/stable/index.html) hierarchy into a Polaris `Dataset`.
-
-        In short: A `.zarr` file can contain groups and arrays, where each group can again contain groups and arrays.
-        Additional user attributes (for any array or group) are saved as JSON files.
-
-        Within Polaris:
-
-        1. Each subgroup of the root group corresponds to a single column.
-        2. Each subgroup can contain:
-            - A single array with _all_ datapoints.
-            - A single array _per_ datapoint.
-        3. Additional meta-data is saved to the user attributes of the root group.
-        3. The indices are required to be integers.
-
-        Tip: Tutorial
-            To learn more about the zarr format, see the
-            [tutorial](../tutorials/dataset_zarr.ipynb).
-
-        Warning: Beta functionality
-            This feature is still in beta and the API will likely change. Please report any issues you encounter.
-
-        Args:
-            path: The path to the root of the `.zarr` directory. Should be compatible with fsspec.
-        """
-
-        logger.warning(
-            "We are still testing to save and load from .zarr files. "
-            "This part of the API will likely change."
-        )
-
-        root = zarr.open(path, "r")
-
-        # Get the user attributes
-        attrs = root.attrs.asdict()
-
-        # TODO (cwognum): This is outdated and needs to be updated.
-        possible_user_attr = ["name", "description", "source", "annotations"]
-        attrs = {k: v for k, v in attrs.items() if k in possible_user_attr}
-
-        # Set the annotations
-        attrs["annotations"] = attrs.get("annotations", {})
-        for column_label in root.group_keys():
-            obj = attrs["annotations"].get(column_label, {})
-            obj = ColumnAnnotation.model_validate(obj)
-            obj.is_pointer = True
-            attrs["annotations"][column_label] = obj
-
-        # Construct the table
-        # Parse any group into a column
-        data = defaultdict(dict)
-        for col, group in root.groups():
-            keys = list(group.array_keys())
-
-            if len(keys) == 1:
-                arr = group[keys[0]]
-                for i, arr_row in enumerate(arr):
-                    # In case all data is saved in a single array, we construct a path with an index suffix.
-                    data[col][i] = _INDEX_FMT.format(path=fs.join(path, arr.name), index=i)
-
-            else:
-                for name, arr in group.arrays():
-                    try:
-                        name = int(name)
-                    except ValueError as error:
-                        raise InvalidDatasetError(
-                            "All names for arrays in the .zarr archive are required to be integers."
-                        ) from error
-                    data[col][name] = fs.join(path, arr.path)
-
-        # Construct the dataset
-        table = pd.DataFrame(data)
-        return cls(table=table, **attrs)
-
-    def to_zarr(
-        self,
-        destination: str,
-        array_mode: Dict[str, Literal["single", "multiple"]],
-    ) -> str:
-        """Saves a dataset to a .zarr file. For more information on the resulting structure,
-        see [`from_zarr`][polaris.dataset.Dataset.from_zarr].
-
-        Tip: Tutorial
-            To learn more about the zarr format, see the
-            [tutorial](../tutorials/dataset_zarr.ipynb).
-
-        Warning: Beta functionality
-            This feature is still in beta and the API will likely change. Please report any issues you encounter.
-
-        Args:
-            destination: The _directory_ to save the associated data to.
-            array_mode: For each of the columns, whether to save all datapoints in a single array
-                or create an array per datapoint. Should be one of "single" or "multiple".
-
-        Returns:
-            The path to the root zarr file.
-        """
-
-        logger.warning(
-            "We are still testing to save and load from .zarr files. "
-            "This part of the API will likely change."
-        )
-
-        if array_mode not in ["single", "multiple"]:
-            raise ValueError(f"array_mode should be one of 'single' or 'multiple', not {array_mode}")
-
-        fs.mkdir(destination, exist_ok=True)
-        path = fs.join(destination, "dataset.zarr")
-
-        if not isinstance(array_mode, dict):
-            array_mode = {k: array_mode for k in self.table.columns}
-
-        root = zarr.open(path, "w")
-        for col in self.table.columns:
-            group = root.create_group(col)
-
-            # Load an example to get the dtype and shape
-            example = self.get_data(row=0, col=col)
-
-            if array_mode[col] == "single":
-                # Create one big array for all datapoints
-                shape = (len(self.table), *example.shape)
-                arr = group.empty(col, shape=shape, dtype=example.dtype)
-
-                for row in self.table.index:
-                    # Save the data to the array
-                    arr[row] = self.get_data(row=row, col=col)
-            else:
-                for row in self.table.index:
-                    # Create an array per datapoint
-                    group.array(row, self.get_data(row=row, col=col))
-
-        # Save the meta-data
-        # TODO (cwognum): This is outdated and needs to be updated.
-        root.user_attrs = {
-            "name": self.name,
-            "description": self.description,
-            "source": self.source,
-            "annotations": {k: v.model_dump() for k, v in self.annotations.items()},
-        }
-        return path
 
     @classmethod
     def from_json(cls, path: str):
@@ -490,7 +354,14 @@ class Dataset(BaseArtifactModel):
         index = None
         if _INDEX_SEP in path:
             path, index = path.split(_INDEX_SEP)
-            index = int(index)
+            index = index.split(":")
+
+            if len(index) == 1:
+                index = int(index[0])
+            elif len(index) == 2:
+                index = slice(int(index[0]), int(index[1]))
+            else:
+                raise ValueError(f"Invalid index format: {index}")
         return path, index
 
     def _copy_and_update_pointers(
