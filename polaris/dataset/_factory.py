@@ -64,6 +64,8 @@ class DatasetFactory:
         """Adds a single column"""
         if column.name is None:
             raise RuntimeError("You need to specify a column name")
+        if column.name in self.table.columns:
+            raise ValueError(f"Column name '{column.name}' already exists in the table")
 
         if annotation is not None and annotation.is_pointer:
             if self.zarr_root is None:
@@ -75,17 +77,35 @@ class DatasetFactory:
             annotation = ColumnAnnotation()
         self.annotations[column.name] = annotation
 
+    def add_columns(
+        self,
+        df: pd.DataFrame,
+        annotations: Optional[Dict[str, ColumnAnnotation]] = None,
+        merge_on: Optional[str] = None,
+    ):
+        """Adds a single column"""
+        if merge_on is not None:
+            df = self.table.merge(df, on=merge_on, how="outer")
+
+        if annotations is None:
+            annotations = {}
+        annotations = {**self.annotations, **annotations}
+
+        if merge_on is not None:
+            self.reset()
+
+        for name, series in df.items():
+            annotation = annotations.get(name)
+            self.add_column(series, annotation)
+
     def add_from_file(self, path: str):
-        """ """
         ext = dm.fs.get_extension(path)
         converter = self._converters.get(ext)
         if converter is None:
             raise ValueError(f"No converter found for extension {ext}")
 
         table, annotations = converter.convert(path, self)
-
-        for name, series in table.items():
-            self.add_column(series, annotations.get(name))
+        self.add_columns(table, annotations)
 
     def build(self) -> Dataset:
         return Dataset(table=self.table, annotations=self.annotations)

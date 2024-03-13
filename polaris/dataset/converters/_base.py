@@ -29,4 +29,4 @@ class Converter(abc.ABC):
             index_substr = f"{_INDEX_SEP}{index.start}:{index.stop}"
         else:
             index_substr = f"{_INDEX_SEP}{index}"
-        return f"{root}{column}{index_substr}"
+        return f"{root}/{column}{index_substr}"

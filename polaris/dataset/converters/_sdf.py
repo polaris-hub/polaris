@@ -49,7 +49,6 @@ class SDFConverter(Converter):
             mol_column=tmp_col,
             remove_hs=False,
             sanitize=False,
-            max_num_mols=1000,
         )
 
         if not isinstance(df, pd.DataFrame):
@@ -72,7 +71,9 @@ class SDFConverter(Converter):
 
         # Add a column with the SMILES if it doesn't exist yet
         if self.smiles_column is not None and self.smiles_column not in df.columns:
-            names = dm.parallelized(dm.to_smiles, df[tmp_col], n_jobs=self.n_jobs)
+            names = dm.parallelized(
+                lambda mol: dm.to_smiles(mol, isomeric=False), df[tmp_col], n_jobs=self.n_jobs
+            )
             df[self.smiles_column] = names
 
         # Convert the molecules to binary strings (for ML purposes, this should be lossless).
