@@ -4,7 +4,7 @@ import pytest
 import zarr
 from pydantic import ValidationError
 
-from polaris.dataset import Dataset
+from polaris.dataset import Dataset, get_dataset_from_file
 from polaris.loader import load_dataset
 from polaris.utils import fs
 from polaris.utils.errors import PolarisChecksumError
@@ -42,19 +42,23 @@ def test_load_data(tmp_path):
 
     tmpdir = str(tmp_path)
     path = fs.join(tmpdir, "data.zarr")
-    zarr.save(path, arr)
 
+    root = zarr.open(path, "w")
+    root.array("A", data=arr)
+
+    path = f"{path}/A#0"
     table = pd.DataFrame({"A": [path]}, index=[0])
-    dataset = Dataset(table=table, cache_dir=tmpdir, annotations={"A": {"is_pointer": True}})
+    dataset = Dataset(table=table, annotations={"A": {"is_pointer": True}})
 
     # Without caching
+
     data = dataset.get_data(row=0, col="A")
-    assert (data == arr).all()
+    assert (data == arr[0]).all()
 
     # With caching
-    dataset.cache()
+    dataset.cache(tmpdir)
     data = dataset.get_data(row=0, col="A")
-    assert (data == arr).all()
+    assert (data == arr[0]).all()
 
 
 def test_dataset_checksum(test_dataset):
@@ -99,6 +103,17 @@ def test_dataset_checksum(test_dataset):
     assert dataset.md5sum is not None
 
 
+def test_dataset_from_zarr(test_zarr_archive_single_array, tmpdir):
+    """Test whether loading works when the zarr archive contains a single array or multiple arrays."""
+    archive = test_zarr_archive_single_array
+    dataset = get_dataset_from_file(archive, tmpdir.join("data"))
+
+    assert len(dataset.table) == 100
+    for i in range(100):
+        assert dataset.get_data(row=i, col="A").shape == (2048,)
+        assert dataset.get_data(row=i, col="B").shape == (2048,)
+
+
 def test_dataset_from_json(test_dataset, tmpdir):
     """Test whether the dataset can be saved and loaded from json."""
     test_dataset.to_json(str(tmpdir))
@@ -112,27 +127,37 @@ def test_dataset_from_json(test_dataset, tmpdir):
     assert _equality_test(test_dataset, new_dataset)
 
 
-@pytest.mark.parametrize("array_per_datapoint", [True, False])
-def test_dataset_caching(
-    test_zarr_archive_single_array,
-    test_zarr_archive_multiple_arrays,
-    array_per_datapoint,
-    tmpdir,
-):
-    """Test whether the dataset remains the same after caching."""
-    archive = test_zarr_archive_multiple_arrays if array_per_datapoint else test_zarr_archive_single_array
+def test_dataset_from_zarr_to_json_and_back(test_zarr_archive_single_array, tmpdir):
+    """
+    Test whether a dataset with pointer columns, instantiated from a zarr archive,
+    can be saved to and loaded from json.
+    """
 
-    original_dataset = Dataset.from_zarr(archive)
-    cached_dataset = Dataset.from_zarr(archive)
+    json_dir = tmpdir.join("json")
+    zarr_dir = tmpdir.join("zarr")
+
+    archive = test_zarr_archive_single_array
+    dataset = get_dataset_from_file(archive, zarr_dir)
+    path = dataset.to_json(json_dir)
+
+    new_dataset = Dataset.from_json(path)
+    assert _equality_test(dataset, new_dataset)
+
+    new_dataset = load_dataset(path)
+    assert _equality_test(dataset, new_dataset)
+
+
+def test_dataset_caching(test_zarr_archive_single_array, tmpdir):
+    """Test whether the dataset remains the same after caching."""
+    archive = test_zarr_archive_single_array
+
+    original_dataset = get_dataset_from_file(archive, tmpdir.join("original1"))
+    cached_dataset = get_dataset_from_file(archive, tmpdir.join("original2"))
     assert original_dataset == cached_dataset
 
+    cache_dir = cached_dataset.cache(tmpdir.join("cached").strpath)
     for i in range(len(cached_dataset)):
-        assert not cached_dataset.table.loc[i, "A"].startswith(original_dataset.cache_dir)
-        assert not cached_dataset.table.loc[i, "B"].startswith(original_dataset.cache_dir)
-
-    cached_dataset.cache()
-    for i in range(len(cached_dataset)):
-        assert cached_dataset.table.loc[i, "A"].startswith(original_dataset.cache_dir)
-        assert cached_dataset.table.loc[i, "B"].startswith(original_dataset.cache_dir)
+        assert cached_dataset.table.loc[i, "A"].startswith(cache_dir)
+        assert cached_dataset.table.loc[i, "B"].startswith(cache_dir)
 
     assert _equality_test(cached_dataset, original_dataset)

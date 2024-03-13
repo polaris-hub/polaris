@@ -2,7 +2,7 @@ import json
 import os.path
 from collections import defaultdict
 from hashlib import md5
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import fsspec
 import numpy as np
@@ -48,6 +48,8 @@ class Dataset(BaseArtifactModel):
     Attributes:
         table: The core data-structure, storing data-points in a row-wise manner. Can be specified as either a
             path to a `.parquet` file or a `pandas.DataFrame`.
+        default_adapters: The adapters that the Dataset recommends to use by default to change the format of the data
+            for specific columns.
         md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
             raise an error if the specified checksum doesn't match the computed checksum.
         readme: Markdown text that can be used to provide a formatted description of the dataset.
@@ -68,8 +70,7 @@ class Dataset(BaseArtifactModel):
     # Public attributes
     # Data
     table: Union[pd.DataFrame, str]
-    input_adapter: Optional[Adapter] = None
-    target_adapter: Optional[Adapter] = None
+    default_adapters: Optional[List[Adapter]] = None
     md5sum: Optional[str] = None
 
     # Additional meta-data
@@ -106,7 +107,13 @@ class Dataset(BaseArtifactModel):
 
         # Verify that all annotations are for columns that exist
         if any(k not in m.table.columns for k in m.annotations):
-            raise InvalidDatasetError("There is annotations for columns that do not exist")
+            raise InvalidDatasetError("There are annotations for columns that do not exist")
+
+        # Verify that all adapters are for columns that exist
+        if m.default_adapters is not None and any(
+            adapter.column not in m.table.columns for adapter in m.default_adapters
+        ):
+            raise InvalidDatasetError("There are default adapters for columns that do not exist")
 
         # Set a default for missing annotations and convert strings to Modality
         for c in m.table.columns:
@@ -195,13 +202,12 @@ class Dataset(BaseArtifactModel):
                 the content of the referenced file is loaded to memory.
         """
 
-        def _load(p: str, index: Optional[Union[int, slice]]) -> np.ndarray:
+        def _load(p: str, index: Union[int, slice]) -> np.ndarray:
             """Tiny helper function to reduce code repetition."""
             arr = zarr.open(p, mode="r")
-            if index is not None:
-                arr = arr[index]
-                if isinstance(index, slice):
-                    arr = tuple(arr)
+            arr = arr[index]
+            if isinstance(index, slice):
+                arr = tuple(arr)
             return arr
 
         value = self.table.loc[row, col]

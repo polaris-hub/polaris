@@ -361,9 +361,6 @@ class BenchmarkSpecification(BaseArtifactModel):
         data-loaders on top of.
 
         Args:
-            input_adapter: How the input data is returned from the `Subset` object.
-            target_adapter: How the target data is returned from the `Subset` object.
-                This will only affect the train set.
             featurization_fn: A function to apply to the input data. If a multi-input benchmark, this function
                 expects an input in the format specified by the `input_format` parameter.
 
@@ -419,7 +416,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
         # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
         # See also the `hide_targets` parameter in the `Subset` class.
-        test = self.get_train_test_split(target_format="dict")[1]
+        test = self.get_train_test_split()[1]
 
         if not isinstance(test, dict):
             test = {"test": test}

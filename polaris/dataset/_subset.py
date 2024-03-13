@@ -64,8 +64,7 @@ class Subset:
         indices: List[Union[int, Sequence[int]]],
         input_cols: Union[List[str], str],
         target_cols: Union[List[str], str],
-        input_adapter: Optional[Adapter] = None,
-        target_adapter: Optional[Adapter] = None,
+        adapters: Optional[List[Adapter]] = None,
         featurization_fn: Optional[Callable] = None,
         hide_targets: bool = False,
     ):
@@ -73,9 +72,8 @@ class Subset:
         self.indices = indices
         self.target_cols = target_cols if isinstance(target_cols, list) else [target_cols]
         self.input_cols = input_cols if isinstance(input_cols, list) else [input_cols]
-        self._input_adapter = input_adapter
-        self._target_adapter = target_adapter
 
+        self._adapters = self.dataset.default_adapters if adapters is None else adapters
         self._featurization_fn = featurization_fn
 
         # For the iterator implementation
@@ -117,7 +115,6 @@ class Subset:
         row: str | int,
         cols: List[str],
         featurization_fn: Optional[Callable],
-        adapter: Optional[Adapter],
     ):
         """
         Loads a subset of the variables for a single data-point from the datasets.
@@ -127,15 +124,16 @@ class Subset:
             row: The row index of the datapoint.
             cols: The columns (i.e. variables) to load for that data point.
             featurization_fn: The transformation function to apply to the data-point.
-            adapter: Format the data-point to a specific format.
         """
         # Load the data-point
         # Also handles loading data stored in external files for pointer columns
         ret = {col: self.dataset.get_data(row, col) for col in cols}
 
         # Format
-        if adapter is not None:
-            ret = adapter(ret)
+        if self._adapters is not None:
+            for adapter in self._adapters:
+                ret = adapter(ret)
+
         if len(ret) == 1:
             ret = ret[cols[0]]
 
@@ -147,11 +145,11 @@ class Subset:
 
     def _get_single_input(self, row: str | int):
         """Get a single input for a specific data-point and given the benchmark specification."""
-        return self._get_single(row, self.input_cols, self._featurization_fn, self._input_adapter)
+        return self._get_single(row, self.input_cols, self._featurization_fn)
 
     def _get_single_output(self, row: str | int):
         """Get a single output for a specific data-point and given the benchmark specification."""
-        return self._get_single(row, self.target_cols, None, self._target_adapter)
+        return self._get_single(row, self.target_cols, None)
 
     def as_array(self, data_type: Union[Literal["x"], Literal["y"], Literal["xy"]]):
         """

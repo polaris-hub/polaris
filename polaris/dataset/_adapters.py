@@ -1,20 +1,20 @@
 import abc
-from typing import Optional
 
 import datamol as dm
 from pydantic import BaseModel
 
 
 class Adapter(BaseModel, abc.ABC):
-    column: Optional[str] = None
+    column: str
 
     def __call__(self, data: dict) -> dict:
+        if self.column not in data:
+            return data
         v = data[self.column]
         if isinstance(v, tuple):
             data[self.column] = [self.adapt(x) for x in v]
         else:
             data[self.column] = self.adapt(v)
-
         return data
 
     @abc.abstractmethod
