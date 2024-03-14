@@ -34,7 +34,9 @@ def _equality_test(dataset_1, dataset_2):
     return True
 
 
-def test_load_data(tmp_path):
+@pytest.mark.parametrize("with_caching", [True, False])
+@pytest.mark.parametrize("with_slice", [True, False])
+def test_load_data(tmp_path, with_slice, with_caching):
     """Test accessing the data, specifically whether pointer columns are properly handled."""
 
     # Dummy data (could e.g. be a 3D structure or Image)
@@ -46,19 +48,25 @@ def test_load_data(tmp_path):
     root = zarr.open(path, "w")
     root.array("A", data=arr)
 
-    path = f"{path}/A#0"
+    path = f"{path}/A#0:5" if with_slice else f"{path}/A#0"
     table = pd.DataFrame({"A": [path]}, index=[0])
     dataset = Dataset(table=table, annotations={"A": {"is_pointer": True}})
 
-    # Without caching
+    if with_caching:
+        dataset.cache(tmpdir)
 
     data = dataset.get_data(row=0, col="A")
-    assert (data == arr[0]).all()
 
-    # With caching
-    dataset.cache(tmpdir)
-    data = dataset.get_data(row=0, col="A")
-    assert (data == arr[0]).all()
+    if with_slice:
+        assert isinstance(data, tuple)
+        assert len(data) == 5
+
+        for i, d in enumerate(data):
+            assert (d == arr[i]).all()
+
+    else:
+        data = dataset.get_data(row=0, col="A")
+        assert (data == arr[0]).all()
 
 
 def test_dataset_checksum(test_dataset):
@@ -103,9 +111,9 @@ def test_dataset_checksum(test_dataset):
     assert dataset.md5sum is not None
 
 
-def test_dataset_from_zarr(test_zarr_archive_single_array, tmpdir):
+def test_dataset_from_zarr(zarr_archive, tmpdir):
     """Test whether loading works when the zarr archive contains a single array or multiple arrays."""
-    archive = test_zarr_archive_single_array
+    archive = zarr_archive
     dataset = create_dataset_from_file(archive, tmpdir.join("data"))
 
     assert len(dataset.table) == 100
@@ -127,7 +135,7 @@ def test_dataset_from_json(test_dataset, tmpdir):
     assert _equality_test(test_dataset, new_dataset)
 
 
-def test_dataset_from_zarr_to_json_and_back(test_zarr_archive_single_array, tmpdir):
+def test_dataset_from_zarr_to_json_and_back(zarr_archive, tmpdir):
     """
     Test whether a dataset with pointer columns, instantiated from a zarr archive,
     can be saved to and loaded from json.
@@ -136,7 +144,7 @@ def test_dataset_from_zarr_to_json_and_back(test_zarr_archive_single_array, tmpd
     json_dir = tmpdir.join("json")
     zarr_dir = tmpdir.join("zarr")
 
-    archive = test_zarr_archive_single_array
+    archive = zarr_archive
     dataset = create_dataset_from_file(archive, zarr_dir)
     path = dataset.to_json(json_dir)
 
@@ -147,9 +155,9 @@ def test_dataset_from_zarr_to_json_and_back(test_zarr_archive_single_array, tmpd
     assert _equality_test(dataset, new_dataset)
 
 
-def test_dataset_caching(test_zarr_archive_single_array, tmpdir):
+def test_dataset_caching(zarr_archive, tmpdir):
     """Test whether the dataset remains the same after caching."""
-    archive = test_zarr_archive_single_array
+    archive = zarr_archive
 
     original_dataset = create_dataset_from_file(archive, tmpdir.join("original1"))
     cached_dataset = create_dataset_from_file(archive, tmpdir.join("original2"))

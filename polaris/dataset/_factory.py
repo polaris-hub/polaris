@@ -178,7 +178,7 @@ class DatasetFactory:
         adapters = {**self._adapters, **adapters}
 
         if merge_on is not None:
-            self.reset()
+            self.reset(self._zarr_root_path)
 
         for name, series in df.items():
             annotation = annotations.get(name)

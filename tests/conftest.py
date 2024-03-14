@@ -12,14 +12,6 @@ from polaris.utils import fs
 from polaris.utils.types import HubOwner, License
 
 
-def _get_zarr_archive(tmp_path):
-    tmp_path = fs.join(str(tmp_path), "data.zarr")
-    root = zarr.open_group(tmp_path, mode="w")
-    root.array("A", data=np.random.random((100, 2048)))
-    root.array("B", data=np.random.random((100, 2048)))
-    return tmp_path
-
-
 @pytest.fixture(scope="module")
 def test_data():
     data = dm.data.freesolv()[:100]
@@ -27,6 +19,28 @@ def test_data():
     data["CLASS_expt"] = data["expt"].gt(0).astype(int).values
     data["CLASS_calc"] = data["calc"].gt(0).astype(int).values
     return data
+
+
+@pytest.fixture(scope="module")
+def caffeine():
+    # Let's generate a toy dataset with a single molecule
+    smiles = "Cn1cnc2c1c(=O)n(C)c(=O)n2C"
+    mol = dm.to_mol(smiles)
+
+    # We will generate 3D conformers for this molecule with some conformers
+    # NOTE (cwognum): We only generate a single conformer, because dm.to_sdf() only saves one.
+    mol = dm.conformers.generate(mol, align_conformers=True, n_confs=1)
+
+    # Let's also set a molecular property
+    mol.SetProp("my_property", "my_value")
+    return mol
+
+
+@pytest.fixture(scope="module")
+def sdf_file(tmp_path_factory, caffeine):
+    path = tmp_path_factory.mktemp("data") / "caffeine.sdf"
+    dm.to_sdf(caffeine, path)
+    return path
 
 
 @pytest.fixture(scope="module")
@@ -55,8 +69,12 @@ def test_dataset(test_data, test_org_owner):
 
 
 @pytest.fixture(scope="function")
-def test_zarr_archive_single_array(tmp_path):
-    return _get_zarr_archive(tmp_path)
+def zarr_archive(tmp_path):
+    tmp_path = fs.join(str(tmp_path), "data.zarr")
+    root = zarr.open_group(tmp_path, mode="w")
+    root.array("A", data=np.random.random((100, 2048)))
+    root.array("B", data=np.random.random((100, 2048)))
+    return tmp_path
 
 
 @pytest.fixture(scope="function")
