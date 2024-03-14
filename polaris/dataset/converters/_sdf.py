@@ -6,6 +6,7 @@ import pandas as pd
 from rdkit import Chem
 
 from polaris.dataset import ColumnAnnotation, Modality
+from polaris.dataset._adapters import Adapter
 from polaris.dataset.converters._base import Converter, FactoryProduct
 
 if TYPE_CHECKING:
@@ -122,7 +123,7 @@ class SDFConverter(Converter):
 
                 # Get the pointer path
                 pointer_idx = f"{start}:{end}" if start != end else f"{start}"
-                pointer = self.get_pointer(factory._zarr_root_path, self.mol_column, pointer_idx)
+                pointer = self.get_pointer(factory.zarr_root_path, self.mol_column, pointer_idx)
 
                 # Get the single unique value per column for the group and append
                 unique_values = [group[col].unique()[0] for col in df.columns]
@@ -131,7 +132,7 @@ class SDFConverter(Converter):
             df = grouped
 
         else:
-            pointers = [self.get_pointer(factory._zarr_root_path, self.mol_column, i) for i in range(len(df))]
+            pointers = [self.get_pointer(factory.zarr_root_path, self.mol_column, i) for i in range(len(df))]
             df[self.mol_column] = pd.Series(pointers)
 
         # Set the annotations
@@ -140,4 +141,4 @@ class SDFConverter(Converter):
             annotations[self.smiles_column] = ColumnAnnotation(modality=Modality.MOLECULE)
 
         # Return the dataframe and the annotations
-        return df, annotations
+        return df, annotations, {self.mol_column: Adapter.BYTES_TO_MOL}

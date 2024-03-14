@@ -12,6 +12,7 @@ from loguru import logger
 from pydantic import (
     Field,
     computed_field,
+    field_serializer,
     field_validator,
     model_validator,
 )
@@ -70,7 +71,7 @@ class Dataset(BaseArtifactModel):
     # Public attributes
     # Data
     table: Union[pd.DataFrame, str]
-    default_adapters: Optional[List[Adapter]] = None
+    default_adapters: Dict[str, Adapter] = Field(default_factory=dict)
     md5sum: Optional[str] = None
 
     # Additional meta-data
@@ -90,11 +91,24 @@ class Dataset(BaseArtifactModel):
 
     @field_validator("table")
     def _validate_table(cls, v):
-        """If the table is not a dataframe yet, assume it's a path and try load it."""
+        """
+        If the table is not a dataframe yet, assume it's a path and try load it.
+        We also make sure that the pandas index is contiguous and starts at 0, and
+        that all columns are named and unique.
+        """
+        # Load from path if not a dataframe
         if not isinstance(v, pd.DataFrame):
             if not fs.is_file(v) or fs.get_extension(v) not in _SUPPORTED_TABLE_EXTENSIONS:
                 raise InvalidDatasetError(f"{v} is not a valid DataFrame or .parquet path.")
             v = pd.read_parquet(v)
+        # Check if there are any duplicate columns
+        if any(v.columns.duplicated()):
+            raise InvalidDatasetError("The table contains duplicate columns")
+        # Check if there are any unnamed columns
+        if not all(isinstance(c, str) for c in v.columns):
+            raise InvalidDatasetError("The table contains unnamed columns")
+        # Make sure the index is contiguous and starts at 0
+        v = v.reset_index(drop=True)
         return v
 
     @model_validator(mode="after")
@@ -110,9 +124,7 @@ class Dataset(BaseArtifactModel):
             raise InvalidDatasetError("There are annotations for columns that do not exist")
 
         # Verify that all adapters are for columns that exist
-        if m.default_adapters is not None and any(
-            adapter.column not in m.table.columns for adapter in m.default_adapters
-        ):
+        if any(k not in m.table.columns for k in m.default_adapters.keys()):
             raise InvalidDatasetError("There are default adapters for columns that do not exist")
 
         # Set a default for missing annotations and convert strings to Modality
@@ -141,6 +153,16 @@ class Dataset(BaseArtifactModel):
 
         return m
 
+    @field_validator("default_adapters")
+    def _validate_adapters(cls, value):
+        """Serializes the adapters"""
+        return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
+
+    @field_serializer("default_adapters")
+    def _serialize_adapters(self, value: List[Adapter]):
+        """Serializes the adapters"""
+        return {k: v.name for k, v in value.items()}
+
     @staticmethod
     def _compute_checksum(table):
         """Computes a hash of the dataset.
@@ -160,7 +182,7 @@ class Dataset(BaseArtifactModel):
         df = df[sorted(df.columns.tolist())]
 
         # Use the sum of the row-wise hashes s.t. the hash is insensitive to the row-ordering
-        table_hash = pd.util.hash_pandas_object(df).sum()
+        table_hash = pd.util.hash_pandas_object(df, index=False).sum()
         hash_fn.update(table_hash)
 
         checksum = hash_fn.hexdigest()
@@ -188,7 +210,7 @@ class Dataset(BaseArtifactModel):
         """Return all columns for the dataset"""
         return self.table.columns.tolist()
 
-    def get_data(self, row: Union[str, int], col: str) -> np.ndarray:
+    def get_data(self, row: int, col: str, adapters: Optional[List[Adapter]] = None) -> np.ndarray:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
         than just indexing the `table` attribute. This method provides an end-point for seamlessly
         accessing the underlying data.
@@ -196,18 +218,28 @@ class Dataset(BaseArtifactModel):
         Args:
             row: The row index in the `Dataset.table` attribute
             col: The column index in the `Dataset.table` attribute
+            adapters: The adapters to apply to the data before returning it.
+                If None, will use the default adapters specified for the dataset.
 
         Returns:
             A numpy array with the data at the specified indices. If the column is a pointer column,
                 the content of the referenced file is loaded to memory.
         """
 
+        adapters = adapters or self.default_adapters
+
         def _load(p: str, index: Union[int, slice]) -> np.ndarray:
             """Tiny helper function to reduce code repetition."""
             arr = zarr.open(p, mode="r")
             arr = arr[index]
+
             if isinstance(index, slice):
                 arr = tuple(arr)
+
+            adapter = adapters.get(col)
+            if adapter is not None:
+                arr = adapter(arr)
+
             return arr
 
         value = self.table.loc[row, col]
@@ -409,17 +441,17 @@ class Dataset(BaseArtifactModel):
         if isinstance(ret, pd.Series):
             # Load the data from the pointer columns
 
-            if len(ret) == self.n_columns:
-                # Returning a row
-                ret = ret.to_dict()
-                for k in ret.keys():
-                    ret[k] = self.get_data(item, k)
-
-            if len(ret) == self.n_rows:
-                # Returning a column
+            if ret.name in self.table.columns:
+                # Returning a column, the indices are rows
                 if self.annotations[ret.name].is_pointer:
-                    ret = [self.get_data(item, ret.name) for item in ret.index]
-                return np.array(ret)
+                    ret = np.array([self.get_data(k, ret.name) for k in ret.index])
+
+            elif len(ret) == self.n_rows:
+                # Returning a row, the indices are columns
+                ret = {
+                    k: self.get_data(k, ret.name) if self.annotations[ret.name].is_pointer else ret[k]
+                    for k in ret.index
+                }
 
         # Returning a dataframe
         if isinstance(ret, pd.DataFrame):

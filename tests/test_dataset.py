@@ -4,7 +4,7 @@ import pytest
 import zarr
 from pydantic import ValidationError
 
-from polaris.dataset import Dataset, get_dataset_from_file
+from polaris.dataset import Dataset, create_dataset_from_file
 from polaris.loader import load_dataset
 from polaris.utils import fs
 from polaris.utils.errors import PolarisChecksumError
@@ -106,7 +106,7 @@ def test_dataset_checksum(test_dataset):
 def test_dataset_from_zarr(test_zarr_archive_single_array, tmpdir):
     """Test whether loading works when the zarr archive contains a single array or multiple arrays."""
     archive = test_zarr_archive_single_array
-    dataset = get_dataset_from_file(archive, tmpdir.join("data"))
+    dataset = create_dataset_from_file(archive, tmpdir.join("data"))
 
     assert len(dataset.table) == 100
     for i in range(100):
@@ -137,7 +137,7 @@ def test_dataset_from_zarr_to_json_and_back(test_zarr_archive_single_array, tmpd
     zarr_dir = tmpdir.join("zarr")
 
     archive = test_zarr_archive_single_array
-    dataset = get_dataset_from_file(archive, zarr_dir)
+    dataset = create_dataset_from_file(archive, zarr_dir)
     path = dataset.to_json(json_dir)
 
     new_dataset = Dataset.from_json(path)
@@ -151,8 +151,8 @@ def test_dataset_caching(test_zarr_archive_single_array, tmpdir):
     """Test whether the dataset remains the same after caching."""
     archive = test_zarr_archive_single_array
 
-    original_dataset = get_dataset_from_file(archive, tmpdir.join("original1"))
-    cached_dataset = get_dataset_from_file(archive, tmpdir.join("original2"))
+    original_dataset = create_dataset_from_file(archive, tmpdir.join("original1"))
+    cached_dataset = create_dataset_from_file(archive, tmpdir.join("original2"))
     assert original_dataset == cached_dataset
 
     cache_dir = cached_dataset.cache(tmpdir.join("cached").strpath)

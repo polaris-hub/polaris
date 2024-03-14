@@ -2,7 +2,8 @@ from typing import Callable, List, Literal, Optional, Sequence, Union
 
 import numpy as np
 
-from polaris.dataset import Adapter, Dataset
+from polaris.dataset import Dataset
+from polaris.dataset._adapters import Adapter
 from polaris.utils.errors import TestAccessError
 from polaris.utils.types import DatapointType
 
@@ -73,7 +74,7 @@ class Subset:
         self.target_cols = target_cols if isinstance(target_cols, list) else [target_cols]
         self.input_cols = input_cols if isinstance(input_cols, list) else [input_cols]
 
-        self._adapters = self.dataset.default_adapters if adapters is None else adapters
+        self._adapters = adapters
         self._featurization_fn = featurization_fn
 
         # For the iterator implementation
@@ -127,12 +128,7 @@ class Subset:
         """
         # Load the data-point
         # Also handles loading data stored in external files for pointer columns
-        ret = {col: self.dataset.get_data(row, col) for col in cols}
-
-        # Format
-        if self._adapters is not None:
-            for adapter in self._adapters:
-                ret = adapter(ret)
+        ret = {col: self.dataset.get_data(row, col, adapters=self._adapters) for col in cols}
 
         if len(ret) == 1:
             ret = ret[cols[0]]

@@ -6,7 +6,7 @@ from polaris.benchmark._definitions import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.dataset import Dataset, get_dataset_from_file
+from polaris.dataset import Dataset, create_dataset_from_file
 from polaris.hub.client import PolarisHubClient
 from polaris.utils import fs
 
@@ -39,7 +39,7 @@ def load_dataset(path: str) -> Dataset:
 
     if extension == "json":
         return Dataset.from_json(path)
-    return get_dataset_from_file(path)
+    return create_dataset_from_file(path)
 
 
 def load_benchmark(path: str):

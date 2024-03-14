@@ -4,7 +4,7 @@
 
 ---
 
-::: polaris.dataset.get_dataset_from_file
+::: polaris.dataset.create_dataset_from_file
     options:
         filters: ["!^_"]
 

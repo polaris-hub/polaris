@@ -7,10 +7,11 @@ import zarr
 from loguru import logger
 
 from polaris.dataset import ColumnAnnotation, Dataset
+from polaris.dataset._adapters import Adapter
 from polaris.dataset.converters import Converter, SDFConverter, ZarrConverter
 
 
-def get_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) -> Dataset:
+def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) -> Dataset:
     """
     This function is a convenience function to create a dataset from a file.
 
@@ -39,11 +40,11 @@ class DatasetFactory:
     Tip: Try quickly converting one of your datasets
         The `DatasetFactory` is designed to give you full control.
         If your dataset is saved in a single file and you don't need anything fancy, you can try use
-        [`get_dataset_from_file`][polaris.dataset.get_dataset_from_file] instead.
+        [`create_dataset_from_file`][polaris.dataset.create_dataset_from_file] instead.
 
         ```py
-        from polaris.dataset import get_dataset_from_file
-        dataset = get_dataset_from_file("path/to/my_dataset.sdf")
+        from polaris.dataset import create_dataset_from_file
+        dataset = create_dataset_from_file("path/to/my_dataset.sdf")
         ```
 
     Question: How to make adding meta-data easier?
@@ -60,11 +61,17 @@ class DatasetFactory:
             zarr_root_path: The root path of the zarr hierarchy. If you want to use pointer columns,
                 this arguments needs to be passed.
         """
-        self._zarr_root_path = os.path.abspath(zarr_root_path).rstrip("/")
-        self._zarr_root = None
-        self._table: pd.DataFrame = pd.DataFrame()
-        self._annotations: Dict[str, ColumnAnnotation] = {}
-        self._converters = {}
+        self.reset(zarr_root_path=zarr_root_path)
+
+    @property
+    def zarr_root_path(self) -> zarr.Group:
+        """
+        The root of the zarr archive for the Dataset that is being built.
+        All data for a single dataset is expected to be stored in the same Zarr archive.
+        """
+        if self._zarr_root_path is None:
+            raise ValueError("You need to pass `zarr_root_path` to the factory to use pointer columns")
+        return self._zarr_root_path
 
     @property
     def zarr_root(self) -> zarr.Group:
@@ -72,11 +79,8 @@ class DatasetFactory:
         The root of the zarr archive for the Dataset that is being built.
         All data for a single dataset is expected to be stored in the same Zarr archive.
         """
-        if self._zarr_root_path is None:
-            raise ValueError("You need to pass `zarr_root_path` to the factory to use pointer columns")
-
         if self._zarr_root is None:
-            self._zarr_root = zarr.open(self._zarr_root_path, "w")
+            self._zarr_root = zarr.open(self.zarr_root_path, "w")
             if not isinstance(self._zarr_root, zarr.Group):
                 raise ValueError("The root of the zarr hierarchy should be a group")
         return self._zarr_root
@@ -95,7 +99,12 @@ class DatasetFactory:
             logger.info(f"You are overwriting the converter for the {ext} extension.")
         self._converters[ext] = converter
 
-    def add_column(self, column: pd.Series, annotation: Optional[ColumnAnnotation] = None):
+    def add_column(
+        self,
+        column: pd.Series,
+        annotation: Optional[ColumnAnnotation] = None,
+        adapters: Optional[Adapter] = None,
+    ):
         """
         Add a single column to the DataFrame
 
@@ -130,10 +139,14 @@ class DatasetFactory:
             annotation = ColumnAnnotation()
         self._annotations[column.name] = annotation
 
+        if adapters is not None:
+            self._adapters[column.name] = adapters
+
     def add_columns(
         self,
         df: pd.DataFrame,
         annotations: Optional[Dict[str, ColumnAnnotation]] = None,
+        adapters: Optional[Dict[str, Adapter]] = None,
         merge_on: Optional[str] = None,
     ):
         """
@@ -159,12 +172,17 @@ class DatasetFactory:
             annotations = {}
         annotations = {**self._annotations, **annotations}
 
+        if adapters is None:
+            adapters = {}
+        adapters = {**self._adapters, **adapters}
+
         if merge_on is not None:
             self.reset()
 
         for name, series in df.items():
             annotation = annotations.get(name)
-            self.add_column(series, annotation)
+            adapter = adapters.get(name)
+            self.add_column(series, annotation, adapter)
 
     def add_from_file(self, path: str):
         """
@@ -179,12 +197,16 @@ class DatasetFactory:
         if converter is None:
             raise ValueError(f"No converter found for extension {ext}")
 
-        table, annotations = converter.convert(path, self)
-        self.add_columns(table, annotations)
+        table, annotations, adapters = converter.convert(path, self)
+        self.add_columns(table, annotations, adapters)
 
     def build(self) -> Dataset:
         """Returns a Dataset based on the current state of the factory."""
-        return Dataset(table=self._table, annotations=self._annotations)
+        return Dataset(
+            table=self._table,
+            annotations=self._annotations,
+            default_adapters=self._adapters,
+        )
 
     def reset(self, zarr_root_path: Optional[str] = None):
         """
@@ -195,6 +217,12 @@ class DatasetFactory:
             zarr_root_path: The root path of the zarr hierarchy. If you want to use pointer columns
                 for your next dataset, this arguments needs to be passed.
         """
+
+        if zarr_root_path is not None:
+            zarr_root_path = os.path.abspath(zarr_root_path).rstrip("/")
+
+        self._zarr_root = None
         self._zarr_root_path = zarr_root_path
         self._table = pd.DataFrame()
         self._annotations = {}
+        self._adapters = {}

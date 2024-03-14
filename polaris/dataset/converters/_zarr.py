@@ -39,7 +39,7 @@ class ZarrConverter(Converter):
         data = defaultdict(dict)
         for col, arr in src.arrays():
             # Copy to the source zarr, so everything is in one place
-            dst = zarr.open_group("/".join([factory._zarr_root_path, col]), "w")
+            dst = zarr.open_group("/".join([factory.zarr_root_path, col]), "w")
             zarr.copy(arr, dst)
 
             for i in range(len(arr)):
@@ -48,4 +48,4 @@ class ZarrConverter(Converter):
 
         # Construct the dataset
         table = pd.DataFrame(data)
-        return table, {k: ColumnAnnotation(is_pointer=True) for k in table.columns}
+        return table, {k: ColumnAnnotation(is_pointer=True) for k in table.columns}, {}

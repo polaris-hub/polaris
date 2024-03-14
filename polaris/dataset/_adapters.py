@@ -1,70 +1,22 @@
-import abc
-from typing import Any
+from enum import Enum
 
 import datamol as dm
-from pydantic import BaseModel
 
 
-class Adapter(BaseModel, abc.ABC):
+class Adapter(Enum):
     """
-    Adapters are callable, serializable objects that can be used to _adapt_ the
-    datapoint in a dataset. This is for example
-    """
+    Adapters are predefined callables that change the format of the data.
+    Adapters are serializable and can thus be saved alongside datasets.
 
-    column: str
-
-    def __call__(self, data: dict) -> dict:
-        """Adapts the entire datapoint
-
-        Used like:
-        ```python
-        adapter = Adapter(column="my_column")
-        adapter({"my_column": datapoint})
-        ```
-
-        Args:
-            data: The entire datapoint with column -> value pairs.
-        """
-        if self.column not in data:
-            return data
-        v = data[self.column]
-        if isinstance(v, tuple):
-            data[self.column] = [self.adapt(x) for x in v]
-        else:
-            data[self.column] = self.adapt(v)
-        return data
-
-    @abc.abstractmethod
-    def adapt(self, data: Any) -> Any:
-        """
-        Adapt the value for a specific column.
-        This method has to be overwritten by subclasses.
-
-        Used like:
-        ```python
-        adapter = Adapter(column="my_column")
-        adapter().adapt(datapoint["my_column"])
-        ```
-
-        Args:
-            data: The value to adapt
-        """
-        raise NotImplementedError
-
-
-class SmilesAdapter(Adapter):
-    """
-    Creates a RDKit `Mol` object from a SMILES string
+    Attributes:
+        SMILES_TO_MOL: Convert a SMILES string to a RDKit molecule.
+        BYTES_TO_MOL: Convert a RDKit binary string to a RDKit molecule.
     """
 
-    def adapt(self, data: str) -> dm.Mol:
-        return dm.to_mol(data)
+    SMILES_TO_MOL = dm.to_mol
+    BYTES_TO_MOL = dm.Mol
 
-
-class MolBytestringAdapter(Adapter):
-    """
-    Creates a RDKit `Mol` object from the RDKit-specific bytestring serialization
-    """
-
-    def adapt(self, data: bytes) -> dm.Mol:
-        return dm.Mol(data)
+    def __call__(self, data):
+        if isinstance(data, tuple):
+            return tuple(self.value(d) for d in data)
+        return self.value(data)

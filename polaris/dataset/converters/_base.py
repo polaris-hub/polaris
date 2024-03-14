@@ -4,9 +4,10 @@ from typing import Dict, Tuple, TypeAlias, Union
 import pandas as pd
 
 from polaris.dataset import ColumnAnnotation
+from polaris.dataset._adapters import Adapter
 from polaris.dataset._dataset import _INDEX_SEP
 
-FactoryProduct: TypeAlias = Tuple[pd.DataFrame, Dict[str, ColumnAnnotation]]
+FactoryProduct: TypeAlias = Tuple[pd.DataFrame, Dict[str, ColumnAnnotation], Dict[str, Adapter]]
 
 
 class Converter(abc.ABC):
