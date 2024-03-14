@@ -61,6 +61,7 @@ class DatasetFactory:
             zarr_root_path: The root path of the zarr hierarchy. If you want to use pointer columns,
                 this arguments needs to be passed.
         """
+        self._converters: Dict[str, Converter] = {}
         self.reset(zarr_root_path=zarr_root_path)
 
     @property
