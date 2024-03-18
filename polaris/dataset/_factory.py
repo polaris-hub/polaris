@@ -53,15 +53,23 @@ class DatasetFactory:
         the Python API?
     """
 
-    def __init__(self, zarr_root_path: Optional[str] = None) -> None:
+    def __init__(
+        self, zarr_root_path: Optional[str] = None, converters: Optional[Dict[str, Converter]] = None
+    ) -> None:
         """
         Create a new factory object.
 
         Args:
             zarr_root_path: The root path of the zarr hierarchy. If you want to use pointer columns,
                 this arguments needs to be passed.
+            converters: The converters to use for specific file types.
+                You can also register them later with register_converter().
         """
-        self._converters: Dict[str, Converter] = {}
+
+        if converters is None:
+            converters = {}
+
+        self._converters: Dict[str, Converter] = converters
         self.reset(zarr_root_path=zarr_root_path)
 
     @property
