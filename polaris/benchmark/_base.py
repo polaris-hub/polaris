@@ -27,7 +27,6 @@ from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
 from polaris.utils.misc import listit
 from polaris.utils.types import (
     AccessType,
-    DataFormat,
     HubOwner,
     PredictionsType,
     SplitType,
@@ -353,10 +352,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         return v.value
 
     def get_train_test_split(
-        self,
-        input_format: DataFormat = "dict",
-        target_format: DataFormat = "dict",
-        featurization_fn: Optional[Callable] = None,
+        self, featurization_fn: Optional[Callable] = None
     ) -> tuple[Subset, Union["Subset", dict[str, Subset]]]:
         """Construct the train and test sets, given the split in the benchmark specification.
 
@@ -365,9 +361,6 @@ class BenchmarkSpecification(BaseArtifactModel):
         data-loaders on top of.
 
         Args:
-            input_format: How the input data is returned from the `Subset` object.
-            target_format: How the target data is returned from the `Subset` object.
-                This will only affect the train set.
             featurization_fn: A function to apply to the input data. If a multi-input benchmark, this function
                 expects an input in the format specified by the `input_format` parameter.
 
@@ -382,9 +375,7 @@ class BenchmarkSpecification(BaseArtifactModel):
                 dataset=self.dataset,
                 indices=indices,
                 input_cols=self.input_cols,
-                input_format=input_format,
                 target_cols=self.target_cols,
-                target_format=target_format,
                 hide_targets=hide_targets,
                 featurization_fn=featurization_fn,
             )
@@ -425,7 +416,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
         # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
         # See also the `hide_targets` parameter in the `Subset` class.
-        test = self.get_train_test_split(target_format="dict")[1]
+        test = self.get_train_test_split()[1]
 
         if not isinstance(test, dict):
             test = {"test": test}
@@ -459,7 +450,12 @@ class BenchmarkSpecification(BaseArtifactModel):
                 if not isinstance(y_true_subset, dict):
                     # Single task
                     score = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
-                    scores.loc[len(scores)] = (test_label, self.target_cols[0], metric, score)
+                    scores.loc[len(scores)] = (
+                        test_label,
+                        self.target_cols[0],
+                        metric,
+                        score,
+                    )
                     continue
 
                 # Otherwise, for every target...
@@ -467,7 +463,10 @@ class BenchmarkSpecification(BaseArtifactModel):
                     # Single-task metrics for a multi-task benchmark
                     # In such a setting, there can be NaN values, which we thus have to filter out.
                     mask = ~np.isnan(y_true_target)
-                    score = metric(y_true=y_true_target[mask], y_pred=y_pred[test_label][target_label][mask])
+                    score = metric(
+                        y_true=y_true_target[mask],
+                        y_pred=y_pred[test_label][target_label][mask],
+                    )
                     scores.loc[len(scores)] = (test_label, target_label, metric, score)
 
         return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)
@@ -488,7 +487,10 @@ class BenchmarkSpecification(BaseArtifactModel):
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient(
-            env_file=env_file, settings=settings, cache_auth_token=cache_auth_token, **kwargs
+            env_file=env_file,
+            settings=settings,
+            cache_auth_token=cache_auth_token,
+            **kwargs,
         ) as client:
             return client.upload_benchmark(self, access=access, owner=owner)
 

@@ -2,7 +2,7 @@ import json
 import os.path
 from collections import defaultdict
 from hashlib import md5
-from typing import Dict, Literal, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import fsspec
 import numpy as np
@@ -12,11 +12,13 @@ from loguru import logger
 from pydantic import (
     Field,
     computed_field,
+    field_serializer,
     field_validator,
     model_validator,
 )
 
 from polaris._artifact import BaseArtifactModel
+from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils import fs
@@ -30,7 +32,6 @@ from polaris.utils.types import AccessType, HttpUrlString, HubOwner, License
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
 _CACHE_SUBDIR = "datasets"
 _INDEX_SEP = "#"
-_INDEX_FMT = f"{{path}}{_INDEX_SEP}{{index}}"
 
 
 class Dataset(BaseArtifactModel):
@@ -48,6 +49,8 @@ class Dataset(BaseArtifactModel):
     Attributes:
         table: The core data-structure, storing data-points in a row-wise manner. Can be specified as either a
             path to a `.parquet` file or a `pandas.DataFrame`.
+        default_adapters: The adapters that the Dataset recommends to use by default to change the format of the data
+            for specific columns.
         md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
             raise an error if the specified checksum doesn't match the computed checksum.
         readme: Markdown text that can be used to provide a formatted description of the dataset.
@@ -68,6 +71,7 @@ class Dataset(BaseArtifactModel):
     # Public attributes
     # Data
     table: Union[pd.DataFrame, str]
+    default_adapters: Dict[str, Adapter] = Field(default_factory=dict)
     md5sum: Optional[str] = None
 
     # Additional meta-data
@@ -87,11 +91,24 @@ class Dataset(BaseArtifactModel):
 
     @field_validator("table")
     def _validate_table(cls, v):
-        """If the table is not a dataframe yet, assume it's a path and try load it."""
+        """
+        If the table is not a dataframe yet, assume it's a path and try load it.
+        We also make sure that the pandas index is contiguous and starts at 0, and
+        that all columns are named and unique.
+        """
+        # Load from path if not a dataframe
         if not isinstance(v, pd.DataFrame):
             if not fs.is_file(v) or fs.get_extension(v) not in _SUPPORTED_TABLE_EXTENSIONS:
                 raise InvalidDatasetError(f"{v} is not a valid DataFrame or .parquet path.")
             v = pd.read_parquet(v)
+        # Check if there are any duplicate columns
+        if any(v.columns.duplicated()):
+            raise InvalidDatasetError("The table contains duplicate columns")
+        # Check if there are any unnamed columns
+        if not all(isinstance(c, str) for c in v.columns):
+            raise InvalidDatasetError("The table contains unnamed columns")
+        # Make sure the index is contiguous and starts at 0
+        v = v.reset_index(drop=True)
         return v
 
     @model_validator(mode="after")
@@ -104,7 +121,11 @@ class Dataset(BaseArtifactModel):
 
         # Verify that all annotations are for columns that exist
         if any(k not in m.table.columns for k in m.annotations):
-            raise InvalidDatasetError("There is annotations for columns that do not exist")
+            raise InvalidDatasetError("There are annotations for columns that do not exist")
+
+        # Verify that all adapters are for columns that exist
+        if any(k not in m.table.columns for k in m.default_adapters.keys()):
+            raise InvalidDatasetError("There are default adapters for columns that do not exist")
 
         # Set a default for missing annotations and convert strings to Modality
         for c in m.table.columns:
@@ -132,6 +153,16 @@ class Dataset(BaseArtifactModel):
 
         return m
 
+    @field_validator("default_adapters")
+    def _validate_adapters(cls, value):
+        """Serializes the adapters"""
+        return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
+
+    @field_serializer("default_adapters")
+    def _serialize_adapters(self, value: List[Adapter]):
+        """Serializes the adapters"""
+        return {k: v.name for k, v in value.items()}
+
     @staticmethod
     def _compute_checksum(table):
         """Computes a hash of the dataset.
@@ -151,7 +182,7 @@ class Dataset(BaseArtifactModel):
         df = df[sorted(df.columns.tolist())]
 
         # Use the sum of the row-wise hashes s.t. the hash is insensitive to the row-ordering
-        table_hash = pd.util.hash_pandas_object(df).sum()
+        table_hash = pd.util.hash_pandas_object(df, index=False).sum()
         hash_fn.update(table_hash)
 
         checksum = hash_fn.hexdigest()
@@ -179,7 +210,7 @@ class Dataset(BaseArtifactModel):
         """Return all columns for the dataset"""
         return self.table.columns.tolist()
 
-    def get_data(self, row: Union[str, int], col: str) -> np.ndarray:
+    def get_data(self, row: int, col: str, adapters: Optional[List[Adapter]] = None) -> np.ndarray:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
         than just indexing the `table` attribute. This method provides an end-point for seamlessly
         accessing the underlying data.
@@ -187,17 +218,28 @@ class Dataset(BaseArtifactModel):
         Args:
             row: The row index in the `Dataset.table` attribute
             col: The column index in the `Dataset.table` attribute
+            adapters: The adapters to apply to the data before returning it.
+                If None, will use the default adapters specified for the dataset.
 
         Returns:
             A numpy array with the data at the specified indices. If the column is a pointer column,
                 the content of the referenced file is loaded to memory.
         """
 
-        def _load(p: str, index: Optional[int]) -> np.ndarray:
+        adapters = adapters or self.default_adapters
+
+        def _load(p: str, index: Union[int, slice]) -> np.ndarray:
             """Tiny helper function to reduce code repetition."""
-            arr = zarr.convenience.load(p)
-            if index is not None:
-                arr = arr[index]
+            arr = zarr.open(p, mode="r")
+            arr = arr[index]
+
+            if isinstance(index, slice):
+                arr = tuple(arr)
+
+            adapter = adapters.get(col)
+            if adapter is not None:
+                arr = adapter(arr)
+
             return arr
 
         value = self.table.loc[row, col]
@@ -238,152 +280,12 @@ class Dataset(BaseArtifactModel):
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient(
-            env_file=env_file, settings=settings, cache_auth_token=cache_auth_token, **kwargs
+            env_file=env_file,
+            settings=settings,
+            cache_auth_token=cache_auth_token,
+            **kwargs,
         ) as client:
             return client.upload_dataset(self, access=access, owner=owner)
-
-    @classmethod
-    def from_zarr(cls, path: str) -> "Dataset":
-        """Parse a [.zarr](https://zarr.readthedocs.io/en/stable/index.html) hierarchy into a Polaris `Dataset`.
-
-        In short: A `.zarr` file can contain groups and arrays, where each group can again contain groups and arrays.
-        Additional user attributes (for any array or group) are saved as JSON files.
-
-        Within Polaris:
-
-        1. Each subgroup of the root group corresponds to a single column.
-        2. Each subgroup can contain:
-            - A single array with _all_ datapoints.
-            - A single array _per_ datapoint.
-        3. Additional meta-data is saved to the user attributes of the root group.
-        3. The indices are required to be integers.
-
-        Tip: Tutorial
-            To learn more about the zarr format, see the
-            [tutorial](../tutorials/dataset_zarr.ipynb).
-
-        Warning: Beta functionality
-            This feature is still in beta and the API will likely change. Please report any issues you encounter.
-
-        Args:
-            path: The path to the root of the `.zarr` directory. Should be compatible with fsspec.
-        """
-
-        logger.warning(
-            "We are still testing to save and load from .zarr files. "
-            "This part of the API will likely change."
-        )
-
-        root = zarr.open(path, "r")
-
-        # Get the user attributes
-        attrs = root.attrs.asdict()
-
-        # TODO (cwognum): This is outdated and needs to be updated.
-        possible_user_attr = ["name", "description", "source", "annotations"]
-        attrs = {k: v for k, v in attrs.items() if k in possible_user_attr}
-
-        # Set the annotations
-        attrs["annotations"] = attrs.get("annotations", {})
-        for column_label in root.group_keys():
-            obj = attrs["annotations"].get(column_label, {})
-            obj = ColumnAnnotation.model_validate(obj)
-            obj.is_pointer = True
-            attrs["annotations"][column_label] = obj
-
-        # Construct the table
-        # Parse any group into a column
-        data = defaultdict(dict)
-        for col, group in root.groups():
-            keys = list(group.array_keys())
-
-            if len(keys) == 1:
-                arr = group[keys[0]]
-                for i, arr_row in enumerate(arr):
-                    # In case all data is saved in a single array, we construct a path with an index suffix.
-                    data[col][i] = _INDEX_FMT.format(path=fs.join(path, arr.name), index=i)
-
-            else:
-                for name, arr in group.arrays():
-                    try:
-                        name = int(name)
-                    except ValueError as error:
-                        raise InvalidDatasetError(
-                            "All names for arrays in the .zarr archive are required to be integers."
-                        ) from error
-                    data[col][name] = fs.join(path, arr.path)
-
-        # Construct the dataset
-        table = pd.DataFrame(data)
-        return cls(table=table, **attrs)
-
-    def to_zarr(
-        self,
-        destination: str,
-        array_mode: Dict[str, Literal["single", "multiple"]],
-    ) -> str:
-        """Saves a dataset to a .zarr file. For more information on the resulting structure,
-        see [`from_zarr`][polaris.dataset.Dataset.from_zarr].
-
-        Tip: Tutorial
-            To learn more about the zarr format, see the
-            [tutorial](../tutorials/dataset_zarr.ipynb).
-
-        Warning: Beta functionality
-            This feature is still in beta and the API will likely change. Please report any issues you encounter.
-
-        Args:
-            destination: The _directory_ to save the associated data to.
-            array_mode: For each of the columns, whether to save all datapoints in a single array
-                or create an array per datapoint. Should be one of "single" or "multiple".
-
-        Returns:
-            The path to the root zarr file.
-        """
-
-        logger.warning(
-            "We are still testing to save and load from .zarr files. "
-            "This part of the API will likely change."
-        )
-
-        if array_mode not in ["single", "multiple"]:
-            raise ValueError(f"array_mode should be one of 'single' or 'multiple', not {array_mode}")
-
-        fs.mkdir(destination, exist_ok=True)
-        path = fs.join(destination, "dataset.zarr")
-
-        if not isinstance(array_mode, dict):
-            array_mode = {k: array_mode for k in self.table.columns}
-
-        root = zarr.open(path, "w")
-        for col in self.table.columns:
-            group = root.create_group(col)
-
-            # Load an example to get the dtype and shape
-            example = self.get_data(row=0, col=col)
-
-            if array_mode[col] == "single":
-                # Create one big array for all datapoints
-                shape = (len(self.table), *example.shape)
-                arr = group.empty(col, shape=shape, dtype=example.dtype)
-
-                for row in self.table.index:
-                    # Save the data to the array
-                    arr[row] = self.get_data(row=row, col=col)
-            else:
-                for row in self.table.index:
-                    # Create an array per datapoint
-                    group.array(row, self.get_data(row=row, col=col))
-
-        # Save the meta-data
-        # TODO (cwognum): This is outdated and needs to be updated.
-        root.user_attrs = {
-            "name": self.name,
-            "description": self.description,
-            "source": self.source,
-            "annotations": {k: v.model_dump() for k, v in self.annotations.items()},
-        }
-        return path
 
     @classmethod
     def from_json(cls, path: str):
@@ -490,7 +392,14 @@ class Dataset(BaseArtifactModel):
         index = None
         if _INDEX_SEP in path:
             path, index = path.split(_INDEX_SEP)
-            index = int(index)
+            index = index.split(":")
+
+            if len(index) == 1:
+                index = int(index[0])
+            elif len(index) == 2:
+                index = slice(int(index[0]), int(index[1]))
+            else:
+                raise ValueError(f"Invalid index format: {index}")
         return path, index
 
     def _copy_and_update_pointers(
@@ -532,17 +441,17 @@ class Dataset(BaseArtifactModel):
         if isinstance(ret, pd.Series):
             # Load the data from the pointer columns
 
-            if len(ret) == self.n_columns:
-                # Returning a row
-                ret = ret.to_dict()
-                for k in ret.keys():
-                    ret[k] = self.get_data(item, k)
-
-            if len(ret) == self.n_rows:
-                # Returning a column
+            if ret.name in self.table.columns:
+                # Returning a column, the indices are rows
                 if self.annotations[ret.name].is_pointer:
-                    ret = [self.get_data(item, ret.name) for item in ret.index]
-                return np.array(ret)
+                    ret = np.array([self.get_data(k, ret.name) for k in ret.index])
+
+            elif len(ret) == self.n_rows:
+                # Returning a row, the indices are columns
+                ret = {
+                    k: self.get_data(k, ret.name) if self.annotations[ret.name].is_pointer else ret[k]
+                    for k in ret.index
+                }
 
         # Returning a dataframe
         if isinstance(ret, pd.DataFrame):

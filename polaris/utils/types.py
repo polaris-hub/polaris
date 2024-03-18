@@ -45,11 +45,6 @@ A datapoint has:
 - No target, a single target or a multiple targets (either as dict or tuple)
 """
 
-DataFormat: TypeAlias = Literal["dict", "tuple"]
-"""
-The target formats that are supported by the `Subset` class. 
-"""
-
 SlugStringType: TypeAlias = Annotated[
     str, StringConstraints(pattern="^[a-z0-9-]+$", min_length=4, max_length=64)
 ]

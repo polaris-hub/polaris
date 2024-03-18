@@ -17,10 +17,12 @@ nav:
       - Polaris: index.md
       - Quickstart: quickstart.md
   - Tutorials:
-      - The Basics: tutorials/basics.ipynb
-      - Data Curation: tutorials/data_curation.ipynb
-      - Custom Datasets and Benchmarks: tutorials/custom_dataset_benchmark.ipynb
-      # - Creating Datasets with zarr: tutorials/dataset_zarr.ipynb
+      - Basics: tutorials/basics.ipynb
+      - Data Models: tutorials/custom_dataset_benchmark.ipynb
+      - Creating Datasets:
+          - Data Curation: tutorials/data_curation.ipynb
+          - Zarr Datasets: tutorials/dataset_zarr.ipynb
+          - Dataset Factory: tutorials/dataset_factory.ipynb
   - API Reference:
       - Load: api/load.md
       - Core:
@@ -32,6 +34,9 @@ nav:
           - Client: api/hub.client.md
           - PolarisFileSystem: api/hub.polarisfs.md
       - Additional:
+          - Dataset Factory: api/factory.md
+          - Data Converters: api/converters.md
+          - Data Adapters: api/adapters.md
           - Base classes: api/base.md
           - Types: api/utils.types.md
   - Community: community/community.md
