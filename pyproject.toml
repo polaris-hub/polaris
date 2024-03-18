@@ -49,9 +49,31 @@ dependencies = [
     "scipy",
     "scikit-learn",
     "seaborn",
-    "datamol >=0.12",
+    "datamol >=0.12.1",
     "zarr",
     "pyarrow",
+    "fsspec[http]"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-xdist",
+    "pytest-cov",
+    "ruff",
+    "jupyterlab",
+    "ipywidgets"
+]
+doc = [
+    "mkdocs",
+    "mkdocs-material >=9.4.7",
+    "mkdocstrings",
+    "mkdocstrings-python",
+    "mkdocs-jupyter",
+    "markdown-include",
+    "mdx_truly_sane_lists",
+    "nbconvert",
+    "mike >=1.0.0"
 ]
 
 [project.scripts]
@@ -76,7 +98,7 @@ exclude = []
 namespaces = false
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "7.0"
 addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=75 --cov-report xml --cov-report term"
 testpaths = ["tests"]
 pythonpath = "."
