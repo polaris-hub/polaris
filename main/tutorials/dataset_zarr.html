@@ -13,6 +13,10 @@
         <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/tutorials/dataset_zarr.html">
       
       
+        <link rel="prev" href="data_curation.html">
+      
+      
+        <link rel="next" href="dataset_factory.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -20,7 +24,7 @@
     
     
       
-        <title>Creating datasets with zarr - Polaris</title>
+        <title>Zarr Datasets - Polaris</title>
       
     
     
@@ -84,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#creating-datasets-with-zarr" class="md-skip">
+        <a href="#pointer-columns" class="md-skip">
           Skip to content
         </a>
       
@@ -121,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Creating datasets with zarr
+              Zarr Datasets
             
           </span>
         </div>
@@ -218,10 +222,12 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="basics.html" class="md-tabs__link">
           
   
@@ -422,25 +428,30 @@
       
   
   
+    
   
   
+  
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -451,7 +462,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Tutorials
@@ -486,11 +497,11 @@
   
   
     <li class="md-nav__item">
-      <a href="data_curation.html" class="md-nav__link">
+      <a href="custom_dataset_benchmark.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Dataset curation
+    Data Models
   </span>
   
 
@@ -504,18 +515,215 @@
                 
   
   
+    
+  
+  
+  
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Creating Datasets
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            Creating Datasets
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
   
   
     <li class="md-nav__item">
-      <a href="custom_dataset_benchmark.html" class="md-nav__link">
+      <a href="data_curation.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Custom datasets and benchmarks
+    Data Curation
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Zarr Datasets
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="dataset_zarr.html" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Zarr Datasets
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pointer-columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pointer columns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pointer columns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dummy-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dummy example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-datasets-from-zarr-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      Creating datasets from .zarr arrays
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating datasets from .zarr arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-single-array-for-all-datapoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      A single array for all datapoints
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#saving-the-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Saving the dataset
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#load-the-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Load the dataset
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dataset_factory.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -858,6 +1066,69 @@
   
   
     <li class="md-nav__item">
+      <a href="../api/factory.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/converters.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Converters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/adapters.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Adapters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../api/base.html" class="md-nav__link">
         
   
@@ -965,8 +1236,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1007,15 +1276,6 @@
   
     <nav class="md-nav" aria-label="Creating datasets from .zarr arrays">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#a-single-array-per-data-point" class="md-nav__link">
-    <span class="md-ellipsis">
-      A single array per data point
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#a-single-array-for-all-datapoints" class="md-nav__link">
@@ -1066,6 +1326,8 @@
   
   
 
+
+  <h1>Zarr Datasets</h1>
 
 <script>
 (function (global, factory) {
@@ -1508,7 +1770,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="creating-datasets-with-zarr">Creating datasets with zarr<a class="anchor-link" href="#creating-datasets-with-zarr">¶</a></h1><div class="admonition abstract highlight">
+<div class="admonition abstract highlight">
 <p class="admonition-title">In short</p>
 <p>This tutorial shows how to create datasets with more advanced data-modalities through the .zarr format.</p>
 </div>
@@ -1534,7 +1796,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-1">
@@ -1569,13 +1831,13 @@ SAVE_DIR = dm.fs.join(platformdirs.user_cache_dir(appname="polaris-tutorials"), 
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=07442028">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=07442028">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-2">
@@ -1588,35 +1850,45 @@ SAVE_DIR = dm.fs.join(platformdirs.user_cache_dir(appname="polaris-tutorials"), 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Create a single image and save it to a .zarr directory</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Create two images and save them to a Zarr archive</span>
+<span class="n">base_path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"data.zarr"</span><span class="p">)</span>
+<span class="n">inp_col_name</span> <span class="o">=</span> <span class="s2">"images"</span>
+
 <span class="n">images</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-
-<span class="n">train_path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"single_train.zarr"</span><span class="p">)</span>
-<span class="n">zarr</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-<span class="n">test_path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"single_test.zarr"</span><span class="p">)</span>
-<span class="n">zarr</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">test_path</span><span class="p">,</span> <span class="n">images</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">root</span> <span class="o">=</span> <span class="n">zarr</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">base_path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span>
+<span class="n">root</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">inp_col_name</span><span class="p">,</span> <span class="n">images</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2"># Create a single image and save it to a .zarr directory
+<div class="clipboard-copy-txt" id="cell-2"># Create two images and save them to a Zarr archive
+base_path = dm.fs.join(SAVE_DIR, "data.zarr")
+inp_col_name = "images"
+
 images = np.random.random((2, 64, 64, 3))
-
-train_path = dm.fs.join(SAVE_DIR, "single_train.zarr")
-zarr.save(train_path, images[0])
-
-test_path = dm.fs.join(SAVE_DIR, "single_test.zarr")
-zarr.save(test_path, images[1])</div>
+root = zarr.open(base_path, "w")
+root.array(inp_col_name, images)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
+<pre>&lt;zarr.core.Array '/images' (2, 64, 64, 3) float64&gt;</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=16543db7">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=15df9619-e659-4558-9c69-416a186c1f3a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-3">
@@ -1629,17 +1901,54 @@ zarr.save(test_path, images[1])</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># For performance reasons, Polaris expects all data related to a column to be saved in a single Zarr array. </span>
+<span class="c1"># To index a specific element in that array, the pointer path can have a suffix to specify the index. </span>
+<span class="n">train_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">inp_col_name</span><span class="si">}</span><span class="s2">#0"</span>
+<span class="n">test_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">inp_col_name</span><span class="si">}</span><span class="s2">#1"</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-3"># For performance reasons, Polaris expects all data related to a column to be saved in a single Zarr array. 
+# To index a specific element in that array, the pointer path can have a suffix to specify the index. 
+train_path = f"{base_path}/{inp_col_name}#0"
+test_path = f"{base_path}/{inp_col_name}#1"</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=16543db7">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-4">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">tgt_col_name</span> <span class="o">=</span> <span class="s2">"target"</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
     <span class="p">{</span>
-        <span class="s2">"images"</span><span class="p">:</span> <span class="p">[</span><span class="n">train_path</span><span class="p">,</span> <span class="n">test_path</span><span class="p">],</span>  <span class="c1"># Instead of the content, we specify paths</span>
-        <span class="s2">"target"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">inp_col_name</span><span class="p">:</span> <span class="p">[</span><span class="n">train_path</span><span class="p">,</span> <span class="n">test_path</span><span class="p">],</span>  <span class="c1"># Instead of the content, we specify paths</span>
+        <span class="n">tgt_col_name</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
     <span class="p">}</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">table = pd.DataFrame(
+<div class="clipboard-copy-txt" id="cell-4">tgt_col_name = "target"
+
+table = pd.DataFrame(
     {
-        "images": [train_path, test_path],  # Instead of the content, we specify paths
-        "target": np.random.random(2),
+        inp_col_name: [train_path, test_path],  # Instead of the content, we specify paths
+        tgt_col_name: np.random.random(2),
     }
 )</div>
 </div>
@@ -1653,10 +1962,10 @@ zarr.save(test_path, images[1])</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-4">
+<clipboard-copy for="cell-5">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -1675,7 +1984,7 @@ zarr.save(test_path, images[1])</div>
     <span class="n">annotations</span><span class="o">=</span><span class="p">{</span><span class="s2">"images"</span><span class="p">:</span> <span class="n">ColumnAnnotation</span><span class="p">(</span><span class="n">is_pointer</span><span class="o">=</span><span class="kc">True</span><span class="p">)},</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">from polaris.dataset import Dataset, ColumnAnnotation
+<div class="clipboard-copy-txt" id="cell-5">from polaris.dataset import Dataset, ColumnAnnotation
 
 dataset = Dataset(
     table=table,
@@ -1705,10 +2014,10 @@ dataset = Dataset(
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-5">
+<clipboard-copy for="cell-6">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -1720,7 +2029,7 @@ dataset = Dataset(
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"images"</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">dataset.table.loc[0, "images"]</div>
+<div class="clipboard-copy-txt" id="cell-6">dataset.table.loc[0, "images"]</div>
 </div>
 </div>
 </div>
@@ -1730,9 +2039,9 @@ dataset = Dataset(
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>'/home/cas/.cache/polaris-tutorials/002/single_train.zarr'</pre>
+<pre>'/home/cas/.cache/polaris-tutorials/002/data.zarr/images#0'</pre>
 </div>
 </div>
 </div>
@@ -1755,10 +2064,10 @@ dataset = Dataset(
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-6">
+<clipboard-copy for="cell-7">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -1770,7 +2079,7 @@ dataset = Dataset(
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="s2">"images"</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">dataset.get_data(col="images", row=0).shape</div>
+<div class="clipboard-copy-txt" id="cell-7">dataset.get_data(col="images", row=0).shape</div>
 </div>
 </div>
 </div>
@@ -1780,7 +2089,7 @@ dataset = Dataset(
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
 <pre>(64, 64, 3)</pre>
 </div>
@@ -1805,10 +2114,10 @@ dataset = Dataset(
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-7">
+<clipboard-copy for="cell-8">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -1822,18 +2131,18 @@ dataset = Dataset(
 
 <span class="n">benchmark</span> <span class="o">=</span> <span class="n">SingleTaskBenchmarkSpecification</span><span class="p">(</span>
     <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
-    <span class="n">input_cols</span><span class="o">=</span><span class="s2">"images"</span><span class="p">,</span>
-    <span class="n">target_cols</span><span class="o">=</span><span class="s2">"target"</span><span class="p">,</span>
+    <span class="n">input_cols</span><span class="o">=</span><span class="n">inp_col_name</span><span class="p">,</span>
+    <span class="n">target_cols</span><span class="o">=</span><span class="n">tgt_col_name</span><span class="p">,</span>
     <span class="n">metrics</span><span class="o">=</span><span class="s2">"mean_absolute_error"</span><span class="p">,</span>
     <span class="n">split</span><span class="o">=</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">from polaris.benchmark import SingleTaskBenchmarkSpecification
+<div class="clipboard-copy-txt" id="cell-8">from polaris.benchmark import SingleTaskBenchmarkSpecification
 
 benchmark = SingleTaskBenchmarkSpecification(
     dataset=dataset,
-    input_cols="images",
-    target_cols="target",
+    input_cols=inp_col_name,
+    target_cols=tgt_col_name,
     metrics="mean_absolute_error",
     split=([0], [1]),
 )</div>
@@ -1848,10 +2157,10 @@ benchmark = SingleTaskBenchmarkSpecification(
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-8">
+<clipboard-copy for="cell-9">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -1867,7 +2176,7 @@ benchmark = SingleTaskBenchmarkSpecification(
     <span class="c1"># At this point, the content is loaded from the path specified in the table</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">train, test = benchmark.get_train_test_split()
+<div class="clipboard-copy-txt" id="cell-9">train, test = benchmark.get_train_test_split()
 
 for x, y in train:
     # At this point, the content is loaded from the path specified in the table
@@ -1897,221 +2206,8 @@ for x, y in train:
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="creating-datasets-from-zarr-arrays">Creating datasets from <code>.zarr</code> arrays<a class="anchor-link" href="#creating-datasets-from-zarr-arrays">¶</a></h2><p>While the above example works, creating the table with all paths from scratch is time-consuming when datasets get large. Instead, you can also automatically parse a <code>.zarr</code> hierarchy into the expected tabular data structure.</p>
-<p>A little more about zarr: A <code>.zarr</code> file can contain groups and arrays, where each group can again contain groups and arrays. Each array can be saved as one or multiple chunks. Additional user attributes (for any array or group) are saved as JSON files.</p>
-<p>Within Polaris:</p>
-<ol>
-<li>Each subgroup of the root group corresponds to a single column.</li>
-<li>Each subgroup can contain:<ul>
-<li>A single array with all datapoints.</li>
-<li>A single array per datapoint.</li>
-</ul>
-</li>
-<li>Additional meta-data is saved to the user attributes of the root group.</li>
-<li>The indices are required to be integers.</li>
-</ol>
-<p>To better explain how this works, let's look at two examples corresponding to the two cases in point 2 above.</p>
-<h3 id="a-single-array-per-data-point">A single array <em>per</em> data point<a class="anchor-link" href="#a-single-array-per-data-point">¶</a></h3><p>In this first example we will create a zarr array <em>per</em> data point. The structure of the zarr will look like:</p>
-<pre><code>/
-  column_a/
-      array_1
-      array_2
-      ...
-      array_N
-</code></pre>
-<p>and as we will see, this will get parsed into</p>
-<table>
-<thead>
-<tr>
-<th>column_a</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>/path/to/root.zarr/column_a/array_1</td>
-</tr>
-<tr>
-<td>/path/to/root.zarr/column_a/array_2</td>
-</tr>
-<tr>
-<td>...</td>
-</tr>
-<tr>
-<td>/path/to/root.zarr/column_a/array_N</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition info highlight">
-<p class="admonition-title">Note</p>
-<p>Notice that the dataset now no longer stores the content of the array itself, but rather a reference to the array.</p>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=04f47190">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-9">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Let's first create some dummy dataset with 1000 64x64 "images"</span>
-<span class="n">images</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-9"># Let's first create some dummy dataset with 1000 64x64 "images"
-images = np.random.random((1000, 64, 64, 3))</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d55e55f3">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>To be able to use these images in Polaris, we need to save them in the zarr hierarchy.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=e4d4d32e">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-10">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"zarr"</span><span class="p">,</span> <span class="s2">"archive_multi.zarr"</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="n">zarr</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">root</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">root</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">"images"</span><span class="p">)</span> <span class="k">as</span> <span class="n">group</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">images</span><span class="p">):</span>
-            <span class="c1"># If you're saving an array per datapoint,</span>
-            <span class="c1"># the name of the array needs to be an integer</span>
-            <span class="n">group</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span>
-
-    <span class="c1"># The root directory can furthermore contain all additional meta-data in its user attributes.</span>
-    <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"dummy_image_dataset"</span>
-    <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"description"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Randomly generated 64x64 images"</span>
-    <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"source"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"https://doi.org/xx.xxxx"</span>
-
-    <span class="c1"># To ensure proper processing, it is important that we annotate the column.</span>
-    <span class="c1"># As this has to be JSON serializable, we create a dict instead of the object.</span>
-    <span class="c1"># Due to using Pydantic, this will work seamlessly.</span>
-    <span class="n">root</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">"annotations"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"images"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"is_pointer"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-10">path = dm.fs.join(SAVE_DIR, "zarr", "archive_multi.zarr")
-
-with zarr.open(path, "w") as root:
-    with root.create_group("images") as group:
-        for i, arr in enumerate(images):
-            # If you're saving an array per datapoint,
-            # the name of the array needs to be an integer
-            group.array(i, arr)
-
-    # The root directory can furthermore contain all additional meta-data in its user attributes.
-    root.attrs["name"] = "dummy_image_dataset"
-    root.attrs["description"] = "Randomly generated 64x64 images"
-    root.attrs["source"] = "https://doi.org/xx.xxxx"
-
-    # To ensure proper processing, it is important that we annotate the column.
-    # As this has to be JSON serializable, we create a dict instead of the object.
-    # Due to using Pydantic, this will work seamlessly.
-    root.attrs["annotations"] = {"images": {"is_pointer": True}}</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=f0885513">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-11">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_zarr</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-11">dataset = Dataset.from_zarr(path)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=2a7809e1">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-12">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="s2">"images"</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-12">dataset.get_data(col="images", row=0).shape</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>(64, 64, 3)</pre>
-</div>
-</div>
+<h2 id="creating-datasets-from-zarr-arrays">Creating datasets from <code>.zarr</code> arrays<a class="anchor-link" href="#creating-datasets-from-zarr-arrays">¶</a></h2><p>While the above example works, creating the table with all paths from scratch is time-consuming when datasets get large. Instead, you can also automatically parse a Zarr archive into the expected tabular data structure.</p>
+<p>A Zarr archive can contain groups and arrays, where each group can again contain groups and arrays. Within Polaris, we expect the root to be a flat hierarchy that contains a single array per column.</p>
 </div>
 </div>
 </div>
@@ -2122,11 +2218,9 @@ with zarr.open(path, "w") as root:
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="a-single-array-for-all-datapoints">A single array for <em>all</em> datapoints<a class="anchor-link" href="#a-single-array-for-all-datapoints">¶</a></h3><p>Instead of having an array per datapoint, you might also batch all arrays in a single array. This could for example speed up compression.</p>
-<p>In this case, our zarr hierarchy will look like this:</p>
+<h3 id="a-single-array-for-all-datapoints">A single array for <em>all</em> datapoints<a class="anchor-link" href="#a-single-array-for-all-datapoints">¶</a></h3><p>Polaris expects a flat zarr hierarchy, with a single array per pointer column:</p>
 <pre><code>/
-  column_a/
-      array
+  column_a
 </code></pre>
 <p>Which will get parsed into a table like:</p>
 <table>
@@ -2158,12 +2252,145 @@ with zarr.open(path, "w") as root:
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=622287ed-16ad-484e-a0d7-ca6cf648ed5d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-10">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Let's first create some dummy dataset with 1000 64x64 "images"</span>
+<span class="n">images</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-10"># Let's first create some dummy dataset with 1000 64x64 "images"
+images = np.random.random((1000, 64, 64, 3))</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=12a06b89">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-11">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"zarr"</span><span class="p">,</span> <span class="s2">"data.zarr"</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">zarr</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">root</span><span class="p">:</span>
+    <span class="n">root</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">inp_col_name</span><span class="p">,</span> <span class="n">images</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-11">path = dm.fs.join(SAVE_DIR, "zarr", "data.zarr")
+
+with zarr.open(path, "w") as root:
+    root.array(inp_col_name, images)</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=59ddcf4b-6858-45d0-afd2-b396ee0bc498">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>To create a dataset from a Zarr archive, we can use the convenience function <code>create_dataset_from_file()</code>.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=3c7c11ac">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-12">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">create_dataset_from_file</span>
+
+<span class="c1"># Because Polaris might restructure the Zarr archive, </span>
+<span class="c1"># we need to specify a location to save the Zarr file to.</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">zarr_root_path</span><span class="o">=</span><span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"zarr"</span><span class="p">,</span> <span class="s2">"processed.zarr"</span><span class="p">))</span>
+
+<span class="c1"># The path refers to the original zarr directory we created in the above code block</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">inp_col_name</span><span class="p">]</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-12">from polaris.dataset import create_dataset_from_file
+
+# Because Polaris might restructure the Zarr archive, 
+# we need to specify a location to save the Zarr file to.
+dataset = create_dataset_from_file(path, zarr_root_path=dm.fs.join(SAVE_DIR, "zarr", "processed.zarr"))
+
+# The path refers to the original zarr directory we created in the above code block
+dataset.table.iloc[0][inp_col_name]</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>A
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[13]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
+<pre>'/home/cas/.cache/polaris-tutorials/002/zarr/data.zarr//images#0'</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=f8d1b42d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-13">
@@ -2176,50 +2403,9 @@ with zarr.open(path, "w") as root:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"zarr"</span><span class="p">,</span> <span class="s2">"archive_single.zarr"</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="n">zarr</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">root</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">root</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">"images"</span><span class="p">)</span> <span class="k">as</span> <span class="n">group</span><span class="p">:</span>
-        <span class="n">group</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="n">images</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="n">inp_col_name</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-13">path = dm.fs.join(SAVE_DIR, "zarr", "archive_single.zarr")
-
-with zarr.open(path, "w") as root:
-    with root.create_group("images") as group:
-        group.array("data", images)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=3c7c11ac">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-14">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_zarr</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
-<span class="c1"># The path refers to the original zarr directory we created in the above code block</span>
-<span class="n">dataset</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"images"</span><span class="p">]</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-14">dataset = Dataset.from_zarr(path)
-
-# The path refers to the original zarr directory we created in the above code block
-dataset.table.iloc[0]["images"]</div>
+<div class="clipboard-copy-txt" id="cell-13">dataset.get_data(col=inp_col_name, row=0).shape</div>
 </div>
 </div>
 </div>
@@ -2230,45 +2416,6 @@ dataset.table.iloc[0]["images"]</div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>'/home/cas/.cache/polaris-tutorials/002/zarr/archive_single.zarr//images/data#0'</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=f8d1b42d">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-15">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="s2">"images"</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-15">dataset.get_data(col="images", row=0).shape</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[15]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
 <pre>(64, 64, 3)</pre>
 </div>
@@ -2293,10 +2440,10 @@ dataset.table.iloc[0]["images"]</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-16">
+<clipboard-copy for="cell-14">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2309,7 +2456,7 @@ dataset.table.iloc[0]["images"]</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">savedir</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"json"</span><span class="p">)</span>
 <span class="n">json_path</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">savedir</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-16">savedir = dm.fs.join(SAVE_DIR, "json")
+<div class="clipboard-copy-txt" id="cell-14">savedir = dm.fs.join(SAVE_DIR, "json")
 json_path = dataset.to_json(savedir)</div>
 </div>
 </div>
@@ -2322,10 +2469,10 @@ json_path = dataset.to_json(savedir)</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-17">
+<clipboard-copy for="cell-15">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2338,7 +2485,7 @@ json_path = dataset.to_json(savedir)</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">fs</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">get_mapper</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">fs</span>
 <span class="n">fs</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-17">fs = dm.fs.get_mapper(path).fs
+<div class="clipboard-copy-txt" id="cell-15">fs = dm.fs.get_mapper(path).fs
 fs.ls(SAVE_DIR)</div>
 </div>
 </div>
@@ -2349,15 +2496,11 @@ fs.ls(SAVE_DIR)</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[16]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>['/home/cas/.cache/polaris-tutorials/002/benchmark.json',
- '/home/cas/.cache/polaris-tutorials/002/single_train.zarr',
- '/home/cas/.cache/polaris-tutorials/002/dataset.json',
- '/home/cas/.cache/polaris-tutorials/002/table.parquet',
- '/home/cas/.cache/polaris-tutorials/002/zarr',
- '/home/cas/.cache/polaris-tutorials/002/single_test.zarr',
- '/home/cas/.cache/polaris-tutorials/002/json']</pre>
+<pre>['/home/cas/.cache/polaris-tutorials/002/zarr',
+ '/home/cas/.cache/polaris-tutorials/002/json',
+ '/home/cas/.cache/polaris-tutorials/002/data.zarr']</pre>
 </div>
 </div>
 </div>
@@ -2370,36 +2513,7 @@ fs.ls(SAVE_DIR)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Besides the <code>table.parquet</code> and <code>dataset.yaml</code>, we can now also see a <code>data</code> folder which stores the content for the additional content from the pointer columns. Instead, we might want to rather save as a single <code>.zarr</code> file. With the <code>array_mode</code> argument, we can choose between the two structures we outlined in this repository.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=40e210fc">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-18">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">savedir</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"zarr"</span><span class="p">)</span>
-<span class="n">zarr_path</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="n">savedir</span><span class="p">,</span> <span class="n">array_mode</span><span class="o">=</span><span class="s2">"single"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-18">savedir = dm.fs.join(SAVE_DIR, "zarr")
-zarr_path = dataset.to_zarr(savedir, array_mode="single")</div>
-</div>
-</div>
+<p>Besides the <code>table.parquet</code> and <code>dataset.yaml</code>, we can now also see a <code>data</code> folder which stores the content for the additional content from the pointer columns.</p>
 </div>
 </div>
 </div>
@@ -2414,16 +2528,16 @@ zarr_path = dataset.to_zarr(savedir, array_mode="single")</div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=33c25a55">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=33c25a55">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-19">
+<clipboard-copy for="cell-16">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2435,34 +2549,19 @@ zarr_path = dataset.to_zarr(savedir, array_mode="single")</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">json_path</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-19">Dataset.from_json(json_path)</div>
+<div class="clipboard-copy-txt" id="cell-16">Dataset.from_json(json_path)</div>
 </div>
 </div>
 </div>
 </div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6f7de196">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-20">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_zarr</span><span class="p">(</span><span class="n">zarr_path</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-20">Dataset.from_zarr(zarr_path)</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<table border="1"><tr><th>name</th><td>None</td></tr><tr><th>description</th><td></td></tr><tr><th>tags</th><td></td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>owner</th><td>None</td></tr><tr><th>default_adapters</th><td>None</td></tr><tr><th>md5sum</th><td>6ef8d23737aafcbf82c421e7f99e1d95</td></tr><tr><th>readme</th><td></td></tr><tr><th>annotations</th><td><table border="1"><tr><th>images</th><td><table border="1"><tr><th>is_pointer</th><td>True</td></tr><tr><th>modality</th><td>UNKNOWN</td></tr><tr><th>description</th><td>None</td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>dtype</th><td>object</td></tr></table></td></tr></table></td></tr><tr><th>source</th><td>None</td></tr><tr><th>license</th><td>None</td></tr><tr><th>curation_reference</th><td>None</td></tr><tr><th>cache_dir</th><td>/home/cas/.cache/polaris/datasets/None/6ef8d23737aafcbf82c421e7f99e1d95</td></tr><tr><th>artifact_id</th><td>None</td></tr><tr><th>n_rows</th><td>1000</td></tr><tr><th>n_columns</th><td>1</td></tr></table>
 </div>
 </div>
 </div>
@@ -2559,6 +2658,44 @@ zarr_path = dataset.to_zarr(savedir, array_mode="single")</div>
       
         <footer class="md-footer">
   
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="data_curation.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Data Curation">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Data Curation
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="dataset_factory.html" class="md-footer__link md-footer__link--next" aria-label="Next: Dataset Factory">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Dataset Factory
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
     
   
   <div class="md-footer-meta md-typeset">

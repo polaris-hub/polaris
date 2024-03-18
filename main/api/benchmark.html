@@ -492,11 +492,72 @@
   
   
     <li class="md-nav__item">
+      <a href="../tutorials/custom_dataset_benchmark.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Creating Datasets
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            Creating Datasets
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../tutorials/data_curation.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Dataset curation
+    Data Curation
   </span>
   
 
@@ -513,15 +574,44 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorials/custom_dataset_benchmark.html" class="md-nav__link">
+      <a href="../tutorials/dataset_zarr.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Custom datasets and benchmarks
+    Zarr Datasets
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/dataset_factory.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -1071,6 +1161,69 @@
             Additional
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="factory.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="converters.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Converters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="adapters.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Adapters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1690,7 +1843,7 @@ as it provides a rich text editor for writing markdown.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">get_train_test_split</span><span class="p">(</span><span class="n">input_format</span><span class="p">:</span> <span class="n">DataFormat</span> <span class="o">=</span> <span class="s1">&#39;dict&#39;</span><span class="p">,</span> <span class="n">target_format</span><span class="p">:</span> <span class="n">DataFormat</span> <span class="o">=</span> <span class="s1">&#39;dict&#39;</span><span class="p">,</span> <span class="n">featurization_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Subset</span><span class="p">]]]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">get_train_test_split</span><span class="p">(</span><span class="n">featurization_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Subset</span><span class="p">]]]</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1713,35 +1866,6 @@ data-loaders on top of.</p>
       </tr>
     </thead>
     <tbody>
-        <tr>
-          <td><code>input_format</code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.DataFormat" href="utils.types.html#polaris.utils.types.DataFormat">DataFormat</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>How the input data is returned from the <code>Subset</code> object.</p>
-            </div>
-          </td>
-          <td>
-                <code>&#39;dict&#39;</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>target_format</code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.DataFormat" href="utils.types.html#polaris.utils.types.DataFormat">DataFormat</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>How the target data is returned from the <code>Subset</code> object.
-This will only affect the train set.</p>
-            </div>
-          </td>
-          <td>
-                <code>&#39;dict&#39;</code>
-          </td>
-        </tr>
         <tr>
           <td><code>featurization_fn</code></td>
           <td>

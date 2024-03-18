@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/api/load.html">
+        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/api/converters.html">
       
       
-        <link rel="prev" href="../tutorials/dataset_factory.html">
+        <link rel="prev" href="factory.html">
       
       
-        <link rel="next" href="dataset.html">
+        <link rel="next" href="adapters.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Load - Polaris</title>
+        <title>Data Converters - Polaris</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#polaris.load_dataset" class="md-skip">
+        <a href="#polaris.dataset.converters.Converter" class="md-skip">
           Skip to content
         </a>
       
@@ -125,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Load
+              Data Converters
             
           </span>
         </div>
@@ -673,28 +673,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Load
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="load.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="load.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -703,42 +685,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#polaris.load_dataset" class="md-nav__link">
-    <span class="md-ellipsis">
-      load_dataset
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#polaris.load_benchmark" class="md-nav__link">
-    <span class="md-ellipsis">
-      load_benchmark
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -976,6 +922,8 @@
                 
   
   
+    
+  
   
   
     
@@ -990,11 +938,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
         
           
           <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
@@ -1008,7 +956,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_4">
             <span class="md-nav__icon md-icon"></span>
             Additional
@@ -1040,10 +988,28 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="converters.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Data Converters
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="converters.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -1052,6 +1018,75 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.Converter" class="md-nav__link">
+    <span class="md-ellipsis">
+      Converter
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Converter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.Converter.convert" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.Converter.get_pointer" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_pointer
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.SDFConverter" class="md-nav__link">
+    <span class="md-ellipsis">
+      SDFConverter
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.ZarrConverter" class="md-nav__link">
+    <span class="md-ellipsis">
+      ZarrConverter
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1200,18 +1235,51 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#polaris.load_dataset" class="md-nav__link">
+  <a href="#polaris.dataset.converters.Converter" class="md-nav__link">
     <span class="md-ellipsis">
-      load_dataset
+      Converter
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Converter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.Converter.convert" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.Converter.get_pointer" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_pointer
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.SDFConverter" class="md-nav__link">
+    <span class="md-ellipsis">
+      SDFConverter
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#polaris.load_benchmark" class="md-nav__link">
+  <a href="#polaris.dataset.converters.ZarrConverter" class="md-nav__link">
     <span class="md-ellipsis">
-      load_benchmark
+      ZarrConverter
     </span>
   </a>
   
@@ -1235,73 +1303,355 @@
   
 
 
-  <h1>Load</h1>
+  <h1>Data Converters</h1>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="polaris.dataset.converters.Converter" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">polaris.dataset.converters.Converter</span>
+
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
 
 <div class="doc doc-object doc-function">
 
 
 
-<h3 id="polaris.load_dataset" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">polaris.load_dataset</span>
+<h4 id="polaris.dataset.converters.Converter.convert" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">convert</span>
 
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
 
-</h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">load_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">convert</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FactoryProduct</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents first">
+  <div class="doc doc-contents ">
   
-      <p>Loads a Polaris dataset.</p>
-<p>In Polaris, a dataset is a tabular data structure that stores data-points in a row-wise manner.
-A dataset can have multiple modalities or targets, can be sparse
-and can be part of <em>one or multiple benchmarks</em>.</p>
-<p>The Polaris dataset can be loaded from the Hub or from a local or remote directory.</p>
-<ul>
-<li><strong>Hub</strong> (recommended): When loading the dataset from the Hub, you can simply
-    provide the <code>owner/name</code> slug. This can be easily copied from the relevant dataset
-    page on the Hub.</li>
-<li><strong>Directory</strong>: When loading the dataset from a directory, you should provide the path
-    as returned by <a class="autorefs autorefs-internal" href="dataset.html#polaris.dataset.Dataset.to_json"><code>Dataset.to_json</code></a>.
-    The path can be local or remote.</li>
-</ul>
+      <p>This converts a file into a table and possibly annotations</p>
 
   </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h4 id="polaris.dataset.converters.Converter.get_pointer" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">get_pointer</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">get_pointer</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">column</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Creates a pointer.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>root</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The root path of the zarr hierarchy.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>column</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The name of the column. Each column has its own group in the root.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>index</code></td>
+          <td>
+                <code><span title="typing.Union">Union</span>[int, slice]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The index or slice of the pointer.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
 
 </div><hr />
 
 
-
-<div class="doc doc-object doc-function">
-
+<div class="doc doc-object doc-class">
 
 
-<h3 id="polaris.load_benchmark" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">polaris.load_benchmark</span>
+
+<h3 id="polaris.dataset.converters.SDFConverter" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">polaris.dataset.converters.SDFConverter</span>
 
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">load_benchmark</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
-</span></code></pre></div>
+
 
   <div class="doc doc-contents first">
-  
-      <p>Loads a Polaris benchmark.</p>
-<p>In Polaris, a benchmark wraps a dataset with additional meta-data to specify the evaluation logic.</p>
-<p>The Polaris benchmark can be loaded from the Hub or from a local or remote directory.</p>
+          <p class="doc doc-class-bases">
+            Bases: <code><a class="autorefs autorefs-internal" title="polaris.dataset.converters._base.Converter" href="#polaris.dataset.converters.Converter">Converter</a></code></p>
 
-<details class="note" open>
-  <summary>Dataset is automatically loaded</summary>
-  <p>The dataset underlying the benchmark is automatically loaded when loading the benchmark.</p>
-</details>      <ul>
-<li><strong>Hub</strong> (recommended): When loading the benchmark from the Hub, you can simply
-    provide the <code>owner/name</code> slug. This can be easily copied from the relevant benchmark
-    page on the Hub.</li>
-<li><strong>Directory</strong>: When loading the benchmark from a directory, you should provide the path
-    as returned by <a class="autorefs autorefs-internal" href="benchmark.html#polaris.benchmark.BenchmarkSpecification.to_json"><code>BenchmarkSpecification.to_json</code></a>.
-    The path can be local or remote.</li>
-</ul>
+  
+      <p>Converts a SDF file into a Polaris dataset.</p>
+
+<details class="info" open>
+  <summary>Binary strings for serialization</summary>
+  <p>This class converts the molecules to binary strings (for ML purposes, this should be lossless).
+This might not be the most storage efficient, but is fastest and easiest to maintain.
+See this <a href="https://github.com/rdkit/rdkit/discussions/7235">Github Discussion</a> for more info.</p>
+</details>      <p>Properties defined on the molecule level in the SDF file can be extracted into separate columns
+or can be kept in the molecule object.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>mol_column</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The name of the column that will contain the pointers to the molecules.</p>
+            </div>
+          </td>
+          <td>
+                <code>&#39;molecule&#39;</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>smiles_column</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[str]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The name of the column that will contain the SMILES strings.</p>
+            </div>
+          </td>
+          <td>
+                <code>&#39;smiles&#39;</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>use_isomeric_smiles</code></td>
+          <td>
+                <code>bool</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Whether to use isomeric SMILES.</p>
+            </div>
+          </td>
+          <td>
+                <code>True</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>mol_id_column</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[str]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The name of the column that will contain the molecule names.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>mol_prop_as_cols</code></td>
+          <td>
+                <code>bool</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Whether to extract properties defined on the molecule level in the SDF file into separate columns.</p>
+            </div>
+          </td>
+          <td>
+                <code>True</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>groupby_key</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[str]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The name of the column to group by. If set, the dataset can combine multiple pointers
+to the molecules into a single datapoint.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
 
   </div>
+
+  </div>
+
+
+</div><hr />
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="polaris.dataset.converters.ZarrConverter" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">polaris.dataset.converters.ZarrConverter</span>
+
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+          <p class="doc doc-class-bases">
+            Bases: <code><a class="autorefs autorefs-internal" title="polaris.dataset.converters._base.Converter" href="#polaris.dataset.converters.Converter">Converter</a></code></p>
+
+  
+      <p>Parse a <a href="https://zarr.readthedocs.io/en/stable/index.html">.zarr</a> archive into a Polaris <code>Dataset</code>.</p>
+
+<details class="tip" open>
+  <summary>Tutorial</summary>
+  <p>To learn more about the zarr format, see the
+<a href="../tutorials/dataset_zarr.html">tutorial</a>.</p>
+</details>
+<details class="warning" open>
+  <summary>Loading from <code>.zarr</code></summary>
+  <p>Loading and saving datasets from and to <code>.zarr</code> is still experimental and currently not
+fully supported by the Hub.</p>
+</details>      <p>A <code>.zarr</code> file can contain groups and arrays, where each group can again contain groups and arrays.
+Within Polaris, the Zarr archive is expected to have a flat hierarchy where each array corresponds
+to a single column and each array contains the values for all datapoints in that column.</p>
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
 
 </div><hr />
 
@@ -1381,7 +1731,7 @@ and can be part of <em>one or multiple benchmarks</em>.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../tutorials/dataset_factory.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Dataset Factory">
+          <a href="factory.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Dataset Factory">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -1398,13 +1748,13 @@ and can be part of <em>one or multiple benchmarks</em>.</p>
         
         
           
-          <a href="dataset.html" class="md-footer__link md-footer__link--next" aria-label="Next: Dataset">
+          <a href="adapters.html" class="md-footer__link md-footer__link--next" aria-label="Next: Data Adapters">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Dataset
+                Data Adapters
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -492,11 +492,72 @@
   
   
     <li class="md-nav__item">
+      <a href="../tutorials/custom_dataset_benchmark.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Creating Datasets
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            Creating Datasets
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../tutorials/data_curation.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Dataset curation
+    Data Curation
   </span>
   
 
@@ -513,15 +574,44 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorials/custom_dataset_benchmark.html" class="md-nav__link">
+      <a href="../tutorials/dataset_zarr.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Custom datasets and benchmarks
+    Zarr Datasets
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/dataset_factory.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -752,24 +842,6 @@
   <a href="#polaris.dataset.Dataset.upload_to_hub" class="md-nav__link">
     <span class="md-ellipsis">
       upload_to_hub
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#polaris.dataset.Dataset.from_zarr" class="md-nav__link">
-    <span class="md-ellipsis">
-      from_zarr
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#polaris.dataset.Dataset.to_zarr" class="md-nav__link">
-    <span class="md-ellipsis">
-      to_zarr
     </span>
   </a>
   
@@ -1039,6 +1111,69 @@
   
   
     <li class="md-nav__item">
+      <a href="factory.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dataset Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="converters.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Converters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="adapters.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Adapters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="base.html" class="md-nav__link">
         
   
@@ -1218,24 +1353,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#polaris.dataset.Dataset.from_zarr" class="md-nav__link">
-    <span class="md-ellipsis">
-      from_zarr
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#polaris.dataset.Dataset.to_zarr" class="md-nav__link">
-    <span class="md-ellipsis">
-      to_zarr
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.from_json" class="md-nav__link">
     <span class="md-ellipsis">
       from_json
@@ -1344,6 +1461,18 @@ In that case, the table contains <em>pointers</em> to these blobs that are dynam
             <div class="doc-md-description">
               <p>The core data-structure, storing data-points in a row-wise manner. Can be specified as either a
 path to a <code>.parquet</code> file or a <code>pandas.DataFrame</code>.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><code><span title="polaris.dataset.Dataset.default_adapters">default_adapters</span></code></td>
+          <td>
+                <code><span title="typing.Dict">Dict</span>[str, <a class="autorefs autorefs-internal" title="polaris.dataset._adapters.Adapter" href="adapters.html#polaris.dataset._adapters.Adapter">Adapter</a>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The adapters that the Dataset recommends to use by default to change the format of the data
+for specific columns.</p>
             </div>
           </td>
         </tr>
@@ -1570,7 +1699,7 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">get_data</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">get_data</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Adapter</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1595,7 +1724,7 @@ accessing the underlying data.</p>
         <tr>
           <td><code>row</code></td>
           <td>
-                <code><span title="typing.Union">Union</span>[str, int]</code>
+                <code>int</code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -1618,6 +1747,21 @@ accessing the underlying data.</p>
           </td>
           <td>
               <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>adapters</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="polaris.dataset._adapters.Adapter" href="adapters.html#polaris.dataset._adapters.Adapter">Adapter</a>]]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The adapters to apply to the data before returning it.
+If None, will use the default adapters specified for the dataset.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
           </td>
         </tr>
     </tbody>
@@ -1669,183 +1813,6 @@ the content of the referenced file is loaded to memory.</p>
   
       <p>Very light, convenient wrapper around the
 <a class="autorefs autorefs-internal" href="hub.client.html#polaris.hub.client.PolarisHubClient.upload_dataset"><code>PolarisHubClient.upload_dataset</code></a> method.</p>
-
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<h4 id="polaris.dataset.Dataset.from_zarr" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">from_zarr</span>
-
-  
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
-  </span>
-
-</h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">from_zarr</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
-</span></code></pre></div>
-
-  <div class="doc doc-contents ">
-  
-      <p>Parse a <a href="https://zarr.readthedocs.io/en/stable/index.html">.zarr</a> hierarchy into a Polaris <code>Dataset</code>.</p>
-<p>In short: A <code>.zarr</code> file can contain groups and arrays, where each group can again contain groups and arrays.
-Additional user attributes (for any array or group) are saved as JSON files.</p>
-<p>Within Polaris:</p>
-<ol>
-<li>Each subgroup of the root group corresponds to a single column.</li>
-<li>Each subgroup can contain:<ul>
-<li>A single array with <em>all</em> datapoints.</li>
-<li>A single array <em>per</em> datapoint.</li>
-</ul>
-</li>
-<li>Additional meta-data is saved to the user attributes of the root group.</li>
-<li>The indices are required to be integers.</li>
-</ol>
-
-<details class="tip" open>
-  <summary>Tutorial</summary>
-  <p>To learn more about the zarr format, see the
-<a href="../tutorials/dataset_zarr.html">tutorial</a>.</p>
-</details>
-<details class="warning" open>
-  <summary>Beta functionality</summary>
-  <p>This feature is still in beta and the API will likely change. Please report any issues you encounter.</p>
-</details>
-
-
-  <p><strong>Parameters:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td><code>path</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The path to the root of the <code>.zarr</code> directory. Should be compatible with fsspec.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<h4 id="polaris.dataset.Dataset.to_zarr" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">to_zarr</span>
-
-
-</h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">to_zarr</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">array_mode</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;multiple&#39;</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">str</span>
-</span></code></pre></div>
-
-  <div class="doc doc-contents ">
-  
-      <p>Saves a dataset to a .zarr file. For more information on the resulting structure,
-see <a class="autorefs autorefs-internal" href="#polaris.dataset.Dataset.from_zarr"><code>from_zarr</code></a>.</p>
-
-<details class="tip" open>
-  <summary>Tutorial</summary>
-  <p>To learn more about the zarr format, see the
-<a href="../tutorials/dataset_zarr.html">tutorial</a>.</p>
-</details>
-<details class="warning" open>
-  <summary>Beta functionality</summary>
-  <p>This feature is still in beta and the API will likely change. Please report any issues you encounter.</p>
-</details>
-
-
-  <p><strong>Parameters:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td><code>destination</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The <em>directory</em> to save the associated data to.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr>
-          <td><code>array_mode</code></td>
-          <td>
-                <code><span title="typing.Dict">Dict</span>[str, <span title="typing.Literal">Literal</span>[&#39;single&#39;, &#39;multiple&#39;]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>For each of the columns, whether to save all datapoints in a single array
-or create an array per datapoint. Should be one of "single" or "multiple".</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-
-  <p><strong>Returns:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The path to the root zarr file.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
 
   </div>
 

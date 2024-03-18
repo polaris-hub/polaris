@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/api/load.html">
+        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/api/factory.html">
       
       
-        <link rel="prev" href="../tutorials/dataset_factory.html">
+        <link rel="prev" href="hub.polarisfs.html">
       
       
-        <link rel="next" href="dataset.html">
+        <link rel="next" href="converters.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Load - Polaris</title>
+        <title>Dataset Factory - Polaris</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#polaris.load_dataset" class="md-skip">
+        <a href="#polaris.dataset.DatasetFactory" class="md-skip">
           Skip to content
         </a>
       
@@ -125,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Load
+              Dataset Factory
             
           </span>
         </div>
@@ -673,28 +673,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Load
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="load.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="load.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -703,42 +685,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#polaris.load_dataset" class="md-nav__link">
-    <span class="md-ellipsis">
-      load_dataset
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#polaris.load_benchmark" class="md-nav__link">
-    <span class="md-ellipsis">
-      load_benchmark
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -976,6 +922,8 @@
                 
   
   
+    
+  
   
   
     
@@ -990,11 +938,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
         
           
           <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
@@ -1008,7 +956,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_4">
             <span class="md-nav__icon md-icon"></span>
             Additional
@@ -1019,10 +967,28 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="factory.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Dataset Factory
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="factory.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -1031,6 +997,120 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory" class="md-nav__link">
+    <span class="md-ellipsis">
+      DatasetFactory
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DatasetFactory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.zarr_root_path" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_root_path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.zarr_root" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_root
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.register_converter" class="md-nav__link">
+    <span class="md-ellipsis">
+      register_converter
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.add_column" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_column
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.add_columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_columns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.add_from_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_from_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.build" class="md-nav__link">
+    <span class="md-ellipsis">
+      build
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      reset
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.create_dataset_from_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_dataset_from_file
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1200,18 +1280,96 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#polaris.load_dataset" class="md-nav__link">
+  <a href="#polaris.dataset.DatasetFactory" class="md-nav__link">
     <span class="md-ellipsis">
-      load_dataset
+      DatasetFactory
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DatasetFactory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.zarr_root_path" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_root_path
     </span>
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.zarr_root" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_root
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.register_converter" class="md-nav__link">
+    <span class="md-ellipsis">
+      register_converter
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.add_column" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_column
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.add_columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_columns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.add_from_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_from_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.build" class="md-nav__link">
+    <span class="md-ellipsis">
+      build
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      reset
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#polaris.load_benchmark" class="md-nav__link">
+  <a href="#polaris.dataset.create_dataset_from_file" class="md-nav__link">
     <span class="md-ellipsis">
-      load_benchmark
+      create_dataset_from_file
     </span>
   </a>
   
@@ -1235,37 +1393,460 @@
   
 
 
-  <h1>Load</h1>
+  <h1>Dataset Factory</h1>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="polaris.dataset.DatasetFactory" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">polaris.dataset.DatasetFactory</span>
+
+
+</h3>
+
+
+  <div class="doc doc-contents first">
+
+  
+      <p>The <code>DatasetFactory</code> makes it easier to create complex datasets.</p>
+<p>It is based on the the factory design pattern and allows a user to specify specific handlers
+(i.e. <a class="autorefs autorefs-internal" href="converters.html#polaris.dataset.converters.Converter"><code>Converter</code></a> objects) for different file types.
+These converters are used to convert commonly used file types in drug discovery
+to something that can be used within Polaris while losing as little information as possible.</p>
+<p>In addition, it contains utility method to incrementally build out a dataset from different sources.</p>
+
+<details class="tip" open>
+  <summary>Try quickly converting one of your datasets</summary>
+  <p>The <code>DatasetFactory</code> is designed to give you full control.
+If your dataset is saved in a single file and you don't need anything fancy, you can try use
+<a class="autorefs autorefs-internal" href="#polaris.dataset.create_dataset_from_file"><code>create_dataset_from_file</code></a> instead.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">create_dataset_from_file</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset_from_file</span><span class="p">(</span><span class="s2">&quot;path/to/my_dataset.sdf&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+</details>
+<details class="question" open>
+  <summary>How to make adding meta-data easier?</summary>
+  <p>The <code>DatasetFactory</code> is designed to more easily pull together data from different sources.
+However, adding meta-data remains a laborous process. How could we make this simpler through
+the Python API?</p>
+</details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="polaris.dataset.DatasetFactory.zarr_root_path" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">zarr_root_path</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">zarr_root_path</span><span class="p">:</span> <span class="n">Group</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The root of the zarr archive for the Dataset that is being built.
+All data for a single dataset is expected to be stored in the same Zarr archive.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="polaris.dataset.DatasetFactory.zarr_root" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">zarr_root</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">zarr_root</span><span class="p">:</span> <span class="n">Group</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The root of the zarr archive for the Dataset that is being built.
+All data for a single dataset is expected to be stored in the same Zarr archive.</p>
+  </div>
+
+</div>
+
+
+
 
 <div class="doc doc-object doc-function">
 
 
 
-<h3 id="polaris.load_dataset" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">polaris.load_dataset</span>
+<h4 id="polaris.dataset.DatasetFactory.register_converter" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">register_converter</span>
 
 
-</h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">load_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">register_converter</span><span class="p">(</span><span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">converter</span><span class="p">:</span> <span class="n">Converter</span><span class="p">)</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents first">
+  <div class="doc doc-contents ">
   
-      <p>Loads a Polaris dataset.</p>
-<p>In Polaris, a dataset is a tabular data structure that stores data-points in a row-wise manner.
-A dataset can have multiple modalities or targets, can be sparse
-and can be part of <em>one or multiple benchmarks</em>.</p>
-<p>The Polaris dataset can be loaded from the Hub or from a local or remote directory.</p>
-<ul>
-<li><strong>Hub</strong> (recommended): When loading the dataset from the Hub, you can simply
-    provide the <code>owner/name</code> slug. This can be easily copied from the relevant dataset
-    page on the Hub.</li>
-<li><strong>Directory</strong>: When loading the dataset from a directory, you should provide the path
-    as returned by <a class="autorefs autorefs-internal" href="dataset.html#polaris.dataset.Dataset.to_json"><code>Dataset.to_json</code></a>.
-    The path can be local or remote.</li>
-</ul>
+      <p>Registers a new converter for a specific file type.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>ext</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The file extension for which the converter should be used.
+There can only be a single converter per file extension.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>converter</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="polaris.dataset.converters.Converter" href="converters.html#polaris.dataset.converters.Converter">Converter</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The handler for the file type. This should convert
+the file to a Polaris-compatible format.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
 
   </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h4 id="polaris.dataset.DatasetFactory.add_column" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">add_column</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">add_column</span><span class="p">(</span><span class="n">column</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ColumnAnnotation</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Adapter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Add a single column to the DataFrame</p>
+<p>We require:</p>
+<ol>
+<li>The name attribute of the column to be set.</li>
+<li>The name attribute of the column to be unique.</li>
+<li>If the column is a pointer column, the <code>zarr_root_path</code> needs to be set.</li>
+<li>The length of the column to match the length of the alredy constructed table.</li>
+</ol>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>column</code></td>
+          <td>
+                <code><span title="pandas.Series">Series</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The column to add to the dataset.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>annotation</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.ColumnAnnotation" href="dataset.html#polaris.dataset.ColumnAnnotation">ColumnAnnotation</a>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The annotation for the column. If None, a default annotation will be used.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h4 id="polaris.dataset.DatasetFactory.add_columns" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">add_columns</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">add_columns</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ColumnAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Adapter</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">merge_on</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Add multiple columns to the dataset based on another dataframe.</p>
+<p>To have more control over how the two dataframes are combined, you can
+specify a column to merge on. This will always do an <strong>outer</strong> join.</p>
+<p>If not specifying a key to merge on, the columns will simply be added to the dataset
+that has been built so far without any reordering. They are therefore expected to meet all
+the same expectations as for <a class="autorefs autorefs-internal" href="#polaris.dataset.DatasetFactory.add_column"><code>add_column</code></a>.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>df</code></td>
+          <td>
+                <code><span title="pandas.DataFrame">DataFrame</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>A Pandas DataFrame with the columns that we want to add to the dataset.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>annotations</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <a class="autorefs autorefs-internal" title="polaris.dataset.ColumnAnnotation" href="dataset.html#polaris.dataset.ColumnAnnotation">ColumnAnnotation</a>]]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The annotations for the columns. If None, default annotations will be used.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>merge_on</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[str]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The column to merge on, if any.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h4 id="polaris.dataset.DatasetFactory.add_from_file" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">add_from_file</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">add_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Uses the registered converters to parse the data from a specific file and add it to the dataset.
+If no converter is found for the file extension, it raises an error.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>path</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The path to the file that should be parsed.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h4 id="polaris.dataset.DatasetFactory.build" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">build</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">build</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Returns a Dataset based on the current state of the factory.</p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h4 id="polaris.dataset.DatasetFactory.reset" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">reset</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">reset</span><span class="p">(</span><span class="n">zarr_root_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Resets the factory to its initial state to start building the next dataset from scratch.
+Note that this will not reset the registered converters.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>zarr_root_path</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[str]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The root path of the zarr hierarchy. If you want to use pointer columns
+for your next dataset, this arguments needs to be passed.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
 
 </div><hr />
 
@@ -1275,31 +1856,19 @@ and can be part of <em>one or multiple benchmarks</em>.</p>
 
 
 
-<h3 id="polaris.load_benchmark" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">polaris.load_benchmark</span>
+<h3 id="polaris.dataset.create_dataset_from_file" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">polaris.dataset.create_dataset_from_file</span>
 
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">load_benchmark</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">create_dataset_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">zarr_root_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents first">
   
-      <p>Loads a Polaris benchmark.</p>
-<p>In Polaris, a benchmark wraps a dataset with additional meta-data to specify the evaluation logic.</p>
-<p>The Polaris benchmark can be loaded from the Hub or from a local or remote directory.</p>
-
-<details class="note" open>
-  <summary>Dataset is automatically loaded</summary>
-  <p>The dataset underlying the benchmark is automatically loaded when loading the benchmark.</p>
-</details>      <ul>
-<li><strong>Hub</strong> (recommended): When loading the benchmark from the Hub, you can simply
-    provide the <code>owner/name</code> slug. This can be easily copied from the relevant benchmark
-    page on the Hub.</li>
-<li><strong>Directory</strong>: When loading the benchmark from a directory, you should provide the path
-    as returned by <a class="autorefs autorefs-internal" href="benchmark.html#polaris.benchmark.BenchmarkSpecification.to_json"><code>BenchmarkSpecification.to_json</code></a>.
-    The path can be local or remote.</li>
-</ul>
+      <p>This function is a convenience function to create a dataset from a file.</p>
+<p>It sets up the dataset factory with sensible defaults for the converters.
+For creating more complicated datasets, please use the <code>DatasetFactory</code> directly.</p>
 
   </div>
 
@@ -1381,7 +1950,7 @@ and can be part of <em>one or multiple benchmarks</em>.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../tutorials/dataset_factory.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Dataset Factory">
+          <a href="hub.polarisfs.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: PolarisFileSystem">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -1391,20 +1960,20 @@ and can be part of <em>one or multiple benchmarks</em>.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Dataset Factory
+                PolarisFileSystem
               </div>
             </div>
           </a>
         
         
           
-          <a href="dataset.html" class="md-footer__link md-footer__link--next" aria-label="Next: Dataset">
+          <a href="converters.html" class="md-footer__link md-footer__link--next" aria-label="Next: Data Converters">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Dataset
+                Data Converters
               </div>
             </div>
             <div class="md-footer__button md-icon">
