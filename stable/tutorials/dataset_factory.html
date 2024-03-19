@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/polaris-hub/polaris/stable/tutorials/basics.html">
+        <link rel="canonical" href="https://github.com/polaris-hub/polaris/stable/tutorials/dataset_factory.html">
       
       
-        <link rel="prev" href="../quickstart.html">
+        <link rel="prev" href="dataset_zarr.html">
       
       
-        <link rel="next" href="custom_dataset_benchmark.html">
+        <link rel="next" href="../api/load.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -24,7 +24,7 @@
     
     
       
-        <title>The Basics - Polaris</title>
+        <title>Dataset Factory - Polaris</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-basics" class="md-skip">
+        <a href="#dataset-factory" class="md-skip">
           Skip to content
         </a>
       
@@ -125,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              The Basics
+              Dataset Factory
             
           </span>
         </div>
@@ -473,30 +473,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    The Basics
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="basics.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="basics.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -505,62 +485,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#login" class="md-nav__link">
-    <span class="md-ellipsis">
-      Login
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#load-from-the-hub" class="md-nav__link">
-    <span class="md-ellipsis">
-      Load from the Hub
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#use-the-benchmark" class="md-nav__link">
-    <span class="md-ellipsis">
-      Use the benchmark
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#partake-in-the-benchmark" class="md-nav__link">
-    <span class="md-ellipsis">
-      Partake in the benchmark
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -591,6 +515,8 @@
                 
   
   
+    
+  
   
   
     
@@ -605,11 +531,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
         
           
           <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
@@ -623,7 +549,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             Creating Datasets
@@ -676,10 +602,28 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="dataset_factory.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Dataset Factory
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="dataset_factory.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -688,6 +632,66 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dataset-factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dataset Factory
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#factory-design-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      Factory Design Pattern
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Factory Design Pattern">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuring-the-converter" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuring the converter
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merging-data-from-different-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Merging data from different sources
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1208,8 +1212,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1218,38 +1220,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#login" class="md-nav__link">
+  <a href="#dataset-factory" class="md-nav__link">
     <span class="md-ellipsis">
-      Login
+      Dataset Factory
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#load-from-the-hub" class="md-nav__link">
+  <a href="#factory-design-pattern" class="md-nav__link">
     <span class="md-ellipsis">
-      Load from the Hub
+      Factory Design Pattern
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Factory Design Pattern">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuring-the-converter" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuring the converter
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#use-the-benchmark" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#merging-data-from-different-sources" class="md-nav__link">
     <span class="md-ellipsis">
-      Use the benchmark
+      Merging data from different sources
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#partake-in-the-benchmark" class="md-nav__link">
-    <span class="md-ellipsis">
-      Partake in the benchmark
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1270,6 +1278,8 @@
   
   
 
+
+  <h1>Dataset Factory</h1>
 
 <script>
 (function (global, factory) {
@@ -1706,23 +1716,25 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=40f99374-b47e-4f84-bdb9-148a11f9c07d">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f842d55c-6327-4e81-ba07-79eafe9d47a3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="the-basics">The Basics<a class="anchor-link" href="#the-basics">¶</a></h1><div class="admonition abstract highlight">
+<div class="admonition abstract highlight">
 <p class="admonition-title">In short</p>
-<p>This tutorial walks you through the basic usage of Polaris. We will first login to the hub and will then see how easy it is to load a dataset or benchmark from it. Finally, we will train a simple baseline to submit a first set of results!</p>
+<p>This tutorial shows how we can create more complicated datasets by leveraging the dataset factory in Polaris.</p>
 </div>
-<p>Polaris is designed to standardize the process of constructing datasets, specifying benchmarks and evaluating novel machine learning techniques within the realm of drug discovery.</p>
-<p>While the Polaris library can be used independently from the <a href="https://polarishub.io/">Polaris Hub</a>, the two were designed to seamlessly work together. The hub provides various pre-made, high quality datasets and benchmarks to develop and evaluate novel ML methods. In this tutorial, we will see how easy it is to load and use these datasets and benchmarks.</p>
+<div class="admonition abstract example">
+<p class="admonition-title">This feature is still very new</p>
+<p>The features we will show in this tutorial are still experimental. We would love to learn from the community how we can make it easier to create datasets.</p>
+</div>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=9b465ea4-7c71-443b-9908-3f9e567ee4c4">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=278ce19e-0b47-43f1-9876-b3b69a2154e1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1740,29 +1752,30 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">polaris</span> <span class="k">as</span> <span class="nn">po</span>
-<span class="kn">from</span> <span class="nn">polaris.hub.client</span> <span class="kn">import</span> <span class="n">PolarisHubClient</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">platformdirs</span>
+<span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import polaris as po
-from polaris.hub.client import PolarisHubClient</div>
+<div class="clipboard-copy-txt" id="cell-1">import platformdirs
+import datamol as dm</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=168c7f21-f9ec-43e2-b123-2bdcba2e8a71">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=856afc27-6f9e-40a1-97c2-e4c1188b2faf">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="login">Login<a class="anchor-link" href="#login">¶</a></h3><p>To be able to complete this step, you will require a Polaris Hub account. Go to <a href="https://polarishub.io/">https://polarishub.io/</a> to create one. You only have to log in once at the start or when you haven't used your account in a while.</p>
+<h2 id="dataset-factory">Dataset Factory<a class="anchor-link" href="#dataset-factory">¶</a></h2><p>Datasets in Polaris are expected to be saved in a very specific format. This format has been carefully designed to be as universal and performant as possible. Nevertheless, we expect very few datasets to be readily available in this format. We therefore provide the <code>DatasetFactory</code> as a way to more easily convert datasets to the Polaris specific format.</p>
+<p>Let's assume we have a dataset in the SDF format.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=de8bf4bf-4dbd-42eb-8f74-bf8aa0339469">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d8b3087e-8c50-45b4-ada7-44bf783cc929">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1780,55 +1793,16 @@ from polaris.hub.client import PolarisHubClient</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">PolarisHubClient</span><span class="p">()</span>
-<span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">SAVE_DIR</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">platformdirs</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span><span class="n">appname</span><span class="o">=</span><span class="s2">"polaris-tutorials"</span><span class="p">),</span> <span class="s2">"003"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">client = PolarisHubClient()
-client.login()</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre><span class="ansi-green-fg">2024-02-18 12:35:01.048</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris.hub.client</span>:<span class="ansi-cyan-fg">login</span>:<span class="ansi-cyan-fg">262</span> - <span class="ansi-bold">You are already logged in to the Polaris Hub as cwognum (cas@valencelabs.com). Set `overwrite=True` to force re-authentication.</span>
-</pre>
+<div class="clipboard-copy-txt" id="cell-2">SAVE_DIR = dm.fs.join(platformdirs.user_cache_dir(appname="polaris-tutorials"), "003")</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0ea6d6c0">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Instead of through the Python API, you could also use the Polaris CLI. See:</p>
-<div class="highlight"><pre><span></span>polaris<span class="w"> </span>login<span class="w"> </span>--help
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5edee39f-ce29-4ae6-91ce-453d9190541b">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="load-from-the-hub">Load from the Hub<a class="anchor-link" href="#load-from-the-hub">¶</a></h3><p>Both datasets and benchmarks are identified by a <code>owner/name</code> id. You can easily find and copy these through the Hub. Once you have the id, loading a dataset or benchmark is incredibly easy.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=4e004589-6c48-4232-b353-b1700536dde6">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=0776f067-d01b-4b7c-89f6-a3c817f934fb">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1846,318 +1820,29 @@ client.login()</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">"polaris/hello-world"</span><span class="p">)</span>
-<span class="n">benchmark</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_benchmark</span><span class="p">(</span><span class="s2">"polaris/hello-world-benchmark"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-3">dataset = po.load_dataset("polaris/hello-world")
-benchmark = po.load_benchmark("polaris/hello-world-benchmark")</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1ce8e0e5-88c8-4d3b-9292-e75c97315833">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="use-the-benchmark">Use the benchmark<a class="anchor-link" href="#use-the-benchmark">¶</a></h3><p>The polaris library is designed to make it easy to participate in a benchmark. In just a few lines of code, we can get the train and test partition, access the associated data in various ways and evaluate our predictions. There's two main API endpoints.</p>
-<ul>
-<li><code>get_train_test_split()</code>: For creating objects through which we can access the different dataset partitions.</li>
-<li><code>evaluate()</code>: For evaluating a set of predictions in accordance with the benchmark protocol.</li>
-</ul>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=b55195cd-84da-4cd9-951b-c148265b303c">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-4">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">()</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-4">train, test = benchmark.get_train_test_split()</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c14e189c">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>The created objects support various flavours to access the data.</p>
-<ul>
-<li>The objects are iterable;</li>
-<li>The objects can be indexed;</li>
-<li>The objects have properties to access all data at once.</li>
-</ul>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=43cbe460">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-5">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">train</span><span class="p">:</span>
-    <span class="k">pass</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-5">for x, y in train:
-    pass</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=2f317c10">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-6">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">)):</span>
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-6">for i in range(len(train)):
-    x, y = train[i]</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=08ce24c7-992a-40a7-b8ef-c862fab99e6e">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-7">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">inputs</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">targets</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-7">x = train.inputs
-y = train.targets</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d5fa35c5-e2d0-4d75-a2cb-75b4749d91ef">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>To avoid accidental access to the test targets, the test object does not expose the labels and will throw an error if you try access them explicitly.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=8c33b7d4-fa82-4994-a7ab-5d0821ad5fd4">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-8">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">test</span><span class="p">:</span>
-    <span class="k">pass</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-8">for x in test:
-    pass</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=8b4ac073">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-9">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">test</span><span class="p">)):</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">test</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-9">for i in range(len(test)):
-    x = test[i]</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5664eb87">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-10">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">inputs</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Let's generate a toy dataset with a single molecule</span>
+<span class="n">smiles</span> <span class="o">=</span> <span class="s2">"Cn1cnc2c1c(=O)n(C)c(=O)n2C"</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">to_mol</span><span class="p">(</span><span class="n">smiles</span><span class="p">)</span>
 
-<span class="c1"># NOTE: The below will throw an error!</span>
-<span class="c1"># y = test.targets</span>
+<span class="c1"># We will generate 3D conformers for this molecule with some conformers</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">conformers</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">align_conformers</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Let's also set a molecular property</span>
+<span class="n">mol</span><span class="o">.</span><span class="n">SetProp</span><span class="p">(</span><span class="s2">"my_property"</span><span class="p">,</span> <span class="s2">"my_value"</span><span class="p">)</span>
+
+<span class="n">mol</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10">x = test.inputs
+<div class="clipboard-copy-txt" id="cell-3"># Let's generate a toy dataset with a single molecule
+smiles = "Cn1cnc2c1c(=O)n(C)c(=O)n2C"
+mol = dm.to_mol(smiles)
 
-# NOTE: The below will throw an error!
-# y = test.targets</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=955ad9db-3468-4f34-b303-18e6d642be56">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="partake-in-the-benchmark">Partake in the benchmark<a class="anchor-link" href="#partake-in-the-benchmark">¶</a></h3><p>To complete our example, let's participate in the benchmark. We will train a simple random forest model on the ECFP representation through scikit-learn and datamol.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=748dd278-0fd0-4c5b-ac6a-8d974143c3b9">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-11">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
-<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+# We will generate 3D conformers for this molecule with some conformers
+mol = dm.conformers.generate(mol, align_conformers=True)
 
-<span class="c1"># Load the benchmark (automatically loads the underlying dataset as well)</span>
-<span class="n">benchmark</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_benchmark</span><span class="p">(</span><span class="s2">"polaris/hello_world_benchmark"</span><span class="p">)</span>
+# Let's also set a molecular property
+mol.SetProp("my_property", "my_value")
 
-<span class="c1"># Get the split and convert SMILES to ECFP fingerprints by specifying an featurize function.</span>
-<span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">(</span><span class="n">featurization_fn</span><span class="o">=</span><span class="n">dm</span><span class="o">.</span><span class="n">to_fp</span><span class="p">)</span>
-
-<span class="c1"># Define a model and train</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">train</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-11">import datamol as dm
-from sklearn.ensemble import RandomForestRegressor
-
-# Load the benchmark (automatically loads the underlying dataset as well)
-benchmark = po.load_benchmark("polaris/hello_world_benchmark")
-
-# Get the split and convert SMILES to ECFP fingerprints by specifying an featurize function.
-train, test = benchmark.get_train_test_split(featurization_fn=dm.to_fp)
-
-# Define a model and train
-model = RandomForestRegressor(max_depth=2, random_state=0)
-model.fit(train.X, train.y)</div>
+mol</div>
 </div>
 </div>
 </div>
@@ -2175,431 +1860,494 @@ Failed to patch pandas - PandasTools will have limited functionality
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-<style>#sk-container-id-1 {
-  /* Definition of color scheme common for light and dark mode */
-  --sklearn-color-text: black;
-  --sklearn-color-line: gray;
-  /* Definition of color scheme for unfitted estimators */
-  --sklearn-color-unfitted-level-0: #fff5e6;
-  --sklearn-color-unfitted-level-1: #f6e4d2;
-  --sklearn-color-unfitted-level-2: #ffe0b3;
-  --sklearn-color-unfitted-level-3: chocolate;
-  /* Definition of color scheme for fitted estimators */
-  --sklearn-color-fitted-level-0: #f0f8ff;
-  --sklearn-color-fitted-level-1: #d4ebff;
-  --sklearn-color-fitted-level-2: #b3dbfd;
-  --sklearn-color-fitted-level-3: cornflowerblue;
-
-  /* Specific color for light theme */
-  --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
-  --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, white)));
-  --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
-  --sklearn-color-icon: #696969;
-
-  @media (prefers-color-scheme: dark) {
-    /* Redefinition of color scheme for dark theme */
-    --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
-    --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, #111)));
-    --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
-    --sklearn-color-icon: #878787;
-  }
-}
-
-#sk-container-id-1 {
-  color: var(--sklearn-color-text);
-}
-
-#sk-container-id-1 pre {
-  padding: 0;
-}
-
-#sk-container-id-1 input.sk-hidden--visually {
-  border: 0;
-  clip: rect(1px 1px 1px 1px);
-  clip: rect(1px, 1px, 1px, 1px);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  width: 1px;
-}
-
-#sk-container-id-1 div.sk-dashed-wrapped {
-  border: 1px dashed var(--sklearn-color-line);
-  margin: 0 0.4em 0.5em 0.4em;
-  box-sizing: border-box;
-  padding-bottom: 0.4em;
-  background-color: var(--sklearn-color-background);
-}
-
-#sk-container-id-1 div.sk-container {
-  /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
-     but bootstrap.min.css set `[hidden] { display: none !important; }`
-     so we also need the `!important` here to be able to override the
-     default hidden behavior on the sphinx rendered scikit-learn.org.
-     See: https://github.com/scikit-learn/scikit-learn/issues/21755 */
-  display: inline-block !important;
-  position: relative;
-}
-
-#sk-container-id-1 div.sk-text-repr-fallback {
-  display: none;
-}
-
-div.sk-parallel-item,
-div.sk-serial,
-div.sk-item {
-  /* draw centered vertical line to link estimators */
-  background-image: linear-gradient(var(--sklearn-color-text-on-default-background), var(--sklearn-color-text-on-default-background));
-  background-size: 2px 100%;
-  background-repeat: no-repeat;
-  background-position: center center;
-}
-
-/* Parallel-specific style estimator block */
-
-#sk-container-id-1 div.sk-parallel-item::after {
-  content: "";
-  width: 100%;
-  border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
-  flex-grow: 1;
-}
-
-#sk-container-id-1 div.sk-parallel {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  background-color: var(--sklearn-color-background);
-  position: relative;
-}
-
-#sk-container-id-1 div.sk-parallel-item {
-  display: flex;
-  flex-direction: column;
-}
-
-#sk-container-id-1 div.sk-parallel-item:first-child::after {
-  align-self: flex-end;
-  width: 50%;
-}
-
-#sk-container-id-1 div.sk-parallel-item:last-child::after {
-  align-self: flex-start;
-  width: 50%;
-}
-
-#sk-container-id-1 div.sk-parallel-item:only-child::after {
-  width: 0;
-}
-
-/* Serial-specific style estimator block */
-
-#sk-container-id-1 div.sk-serial {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: var(--sklearn-color-background);
-  padding-right: 1em;
-  padding-left: 1em;
-}
-
-
-/* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
-clickable and can be expanded/collapsed.
-- Pipeline and ColumnTransformer use this feature and define the default style
-- Estimators will overwrite some part of the style using the `sk-estimator` class
-*/
-
-/* Pipeline and ColumnTransformer style (default) */
-
-#sk-container-id-1 div.sk-toggleable {
-  /* Default theme specific background. It is overwritten whether we have a
-  specific estimator or a Pipeline/ColumnTransformer */
-  background-color: var(--sklearn-color-background);
-}
-
-/* Toggleable label */
-#sk-container-id-1 label.sk-toggleable__label {
-  cursor: pointer;
-  display: block;
-  width: 100%;
-  margin-bottom: 0;
-  padding: 0.5em;
-  box-sizing: border-box;
-  text-align: center;
-}
-
-#sk-container-id-1 label.sk-toggleable__label-arrow:before {
-  /* Arrow on the left of the label */
-  content: "▸";
-  float: left;
-  margin-right: 0.25em;
-  color: var(--sklearn-color-icon);
-}
-
-#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {
-  color: var(--sklearn-color-text);
-}
-
-/* Toggleable content - dropdown */
-
-#sk-container-id-1 div.sk-toggleable__content {
-  max-height: 0;
-  max-width: 0;
-  overflow: hidden;
-  text-align: left;
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-0);
-}
-
-#sk-container-id-1 div.sk-toggleable__content.fitted {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-0);
-}
-
-#sk-container-id-1 div.sk-toggleable__content pre {
-  margin: 0.2em;
-  border-radius: 0.25em;
-  color: var(--sklearn-color-text);
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-0);
-}
-
-#sk-container-id-1 div.sk-toggleable__content.fitted pre {
-  /* unfitted */
-  background-color: var(--sklearn-color-fitted-level-0);
-}
-
-#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {
-  /* Expand drop-down */
-  max-height: 200px;
-  max-width: 100%;
-  overflow: auto;
-}
-
-#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
-  content: "▾";
-}
-
-/* Pipeline/ColumnTransformer-specific style */
-
-#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  color: var(--sklearn-color-text);
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-#sk-container-id-1 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-/* Estimator-specific style */
-
-/* Colorize estimator box */
-#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-#sk-container-id-1 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-#sk-container-id-1 div.sk-label label.sk-toggleable__label,
-#sk-container-id-1 div.sk-label label {
-  /* The background is the default theme color */
-  color: var(--sklearn-color-text-on-default-background);
-}
-
-/* On hover, darken the color of the background */
-#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {
-  color: var(--sklearn-color-text);
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-/* Label box, darken color on hover, fitted */
-#sk-container-id-1 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
-  color: var(--sklearn-color-text);
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-/* Estimator label */
-
-#sk-container-id-1 div.sk-label label {
-  font-family: monospace;
-  font-weight: bold;
-  display: inline-block;
-  line-height: 1.2em;
-}
-
-#sk-container-id-1 div.sk-label-container {
-  text-align: center;
-}
-
-/* Estimator-specific */
-#sk-container-id-1 div.sk-estimator {
-  font-family: monospace;
-  border: 1px dotted var(--sklearn-color-border-box);
-  border-radius: 0.25em;
-  box-sizing: border-box;
-  margin-bottom: 0.5em;
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-0);
-}
-
-#sk-container-id-1 div.sk-estimator.fitted {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-0);
-}
-
-/* on hover */
-#sk-container-id-1 div.sk-estimator:hover {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-2);
-}
-
-#sk-container-id-1 div.sk-estimator.fitted:hover {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-2);
-}
-
-/* Specification for estimator info (e.g. "i" and "?") */
-
-/* Common style for "i" and "?" */
-
-.sk-estimator-doc-link,
-a:link.sk-estimator-doc-link,
-a:visited.sk-estimator-doc-link {
-  float: right;
-  font-size: smaller;
-  line-height: 1em;
-  font-family: monospace;
-  background-color: var(--sklearn-color-background);
-  border-radius: 1em;
-  height: 1em;
-  width: 1em;
-  text-decoration: none !important;
-  margin-left: 1ex;
-  /* unfitted */
-  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
-  color: var(--sklearn-color-unfitted-level-1);
-}
-
-.sk-estimator-doc-link.fitted,
-a:link.sk-estimator-doc-link.fitted,
-a:visited.sk-estimator-doc-link.fitted {
-  /* fitted */
-  border: var(--sklearn-color-fitted-level-1) 1pt solid;
-  color: var(--sklearn-color-fitted-level-1);
-}
-
-/* On hover */
-div.sk-estimator:hover .sk-estimator-doc-link:hover,
-.sk-estimator-doc-link:hover,
-div.sk-label-container:hover .sk-estimator-doc-link:hover,
-.sk-estimator-doc-link:hover {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-3);
-  color: var(--sklearn-color-background);
-  text-decoration: none;
-}
-
-div.sk-estimator.fitted:hover .sk-estimator-doc-link.fitted:hover,
-.sk-estimator-doc-link.fitted:hover,
-div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
-.sk-estimator-doc-link.fitted:hover {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-3);
-  color: var(--sklearn-color-background);
-  text-decoration: none;
-}
-
-/* Span, style for the box shown on hovering the info icon */
-.sk-estimator-doc-link span {
-  display: none;
-  z-index: 9999;
-  position: relative;
-  font-weight: normal;
-  right: .2ex;
-  padding: .5ex;
-  margin: .5ex;
-  width: min-content;
-  min-width: 20ex;
-  max-width: 50ex;
-  color: var(--sklearn-color-text);
-  box-shadow: 2pt 2pt 4pt #999;
-  /* unfitted */
-  background: var(--sklearn-color-unfitted-level-0);
-  border: .5pt solid var(--sklearn-color-unfitted-level-3);
-}
-
-.sk-estimator-doc-link.fitted span {
-  /* fitted */
-  background: var(--sklearn-color-fitted-level-0);
-  border: var(--sklearn-color-fitted-level-3);
-}
-
-.sk-estimator-doc-link:hover span {
-  display: block;
-}
-
-/* "?"-specific style due to the `<a>` HTML tag */
-
-#sk-container-id-1 a.estimator_doc_link {
-  float: right;
-  font-size: 1rem;
-  line-height: 1em;
-  font-family: monospace;
-  background-color: var(--sklearn-color-background);
-  border-radius: 1rem;
-  height: 1rem;
-  width: 1rem;
-  text-decoration: none;
-  /* unfitted */
-  color: var(--sklearn-color-unfitted-level-1);
-  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
-}
-
-#sk-container-id-1 a.estimator_doc_link.fitted {
-  /* fitted */
-  border: var(--sklearn-color-fitted-level-1) 1pt solid;
-  color: var(--sklearn-color-fitted-level-1);
-}
-
-/* On hover */
-#sk-container-id-1 a.estimator_doc_link:hover {
-  /* unfitted */
-  background-color: var(--sklearn-color-unfitted-level-3);
-  color: var(--sklearn-color-background);
-  text-decoration: none;
-}
-
-#sk-container-id-1 a.estimator_doc_link.fitted:hover {
-  /* fitted */
-  background-color: var(--sklearn-color-fitted-level-3);
-}
-</style><div class="sk-top-container" id="sk-container-id-1"><div class="sk-text-repr-fallback"><pre>RandomForestRegressor(max_depth=2, random_state=0)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br/>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input checked="" class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox"/><label class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted" for="sk-estimator-id-1">  RandomForestRegressor<a class="sk-estimator-doc-link fitted" href="https://scikit-learn.org/1.4/modules/generated/sklearn.ensemble.RandomForestRegressor.html" rel="noreferrer" target="_blank">?<span>Documentation for RandomForestRegressor</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>RandomForestRegressor(max_depth=2, random_state=0)</pre></div> </div></div></div></div>
+<table><tr><td colspan="2" style="text-align: center;"><image src="data:image/png;base64,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"/></td></tr>
+<tr><th style="text-align: right">my_property</th><td style="text-align: left">my_value</td></tr></table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d5b6aa13-3951-461d-b4fc-dfcaeb169301">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-4">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"caffeine.sdf"</span><span class="p">)</span>
+<span class="n">dm</span><span class="o">.</span><span class="n">to_sdf</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-4">path = dm.fs.join(SAVE_DIR, "caffeine.sdf")
+dm.to_sdf(mol, path)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a75a9f01">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a79bf673-1bed-4c78-be92-e98a10cf5ec0">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>To evaluate a model within Polaris, you should use the <code>evaluate()</code> endpoint. This requires you to just provide the predictions. The targets of the test set are automatically extracted so that the chance of the user accessing the test labels is minimal</p>
+<p>This being a toy example, it is a very small dataset. However, for many real-world datasets SDF files can quickly get large, at which point it is no longer efficient to store everything directly in the Pandas DataFrame. This is why Polaris supports <a href="./dataset_zarr.html">pointer columns</a> to store large data outside of the DataFrame in a Zarr archive. But... How to convert from SDF to Zarr?</p>
+<p>There are a lot of considerations here:</p>
+<ul>
+<li>You want read and write operations to be quick.</li>
+<li>You want to reduce the storage requirements.</li>
+<li>You want the conversion to be lossless.</li>
+</ul>
+<p>Chances are you've no in-depth understanding of how Zarr works, making it a big investment to convert your SDF dataset to Zarr.</p>
+<p><code>DatasetFactory</code> to the rescue!</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6633ec79-a6ff-4ce0-bc7d-cdb9e1042462">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=2955c572-6d1d-47ff-8101-5c2781fc1c4d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-5">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">DatasetFactory</span>
+<span class="kn">from</span> <span class="nn">polaris.dataset.converters</span> <span class="kn">import</span> <span class="n">SDFConverter</span>
+
+<span class="c1"># Create a new factory object</span>
+<span class="n">save_dst</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"data.zarr"</span><span class="p">)</span>
+<span class="n">factory</span> <span class="o">=</span> <span class="n">DatasetFactory</span><span class="p">(</span><span class="n">zarr_root_path</span><span class="o">=</span><span class="n">save_dst</span><span class="p">)</span>
+
+<span class="c1"># Register a converter for the SDF file format</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">"sdf"</span><span class="p">,</span> <span class="n">SDFConverter</span><span class="p">())</span>
+
+<span class="c1"># Process your SDF file</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">add_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+<span class="c1"># Build the dataset</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-5">from polaris.dataset import DatasetFactory
+from polaris.dataset.converters import SDFConverter
+
+# Create a new factory object
+save_dst = dm.fs.join(SAVE_DIR, "data.zarr")
+factory = DatasetFactory(zarr_root_path=save_dst)
+
+# Register a converter for the SDF file format
+factory.register_converter("sdf", SDFConverter())
+
+# Process your SDF file
+factory.add_from_file(path)
+
+# Build the dataset
+dataset = factory.build()</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b5f0b66f-36c0-48ab-8da9-817414ba6083">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>That's all! Let's take a closer look at what this has actually done.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=34022d65-7d1f-41ca-902d-a8385c4b6e40">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-6">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">annotations</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-6">dataset.annotations</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
+<pre>{'smiles': ColumnAnnotation(is_pointer=False, modality=&lt;Modality.MOLECULE: 'molecule'&gt;, description=None, user_attributes={}, dtype=dtype('O')),
+ 'my_property': ColumnAnnotation(is_pointer=False, modality=&lt;Modality.UNKNOWN: 'unknown'&gt;, description=None, user_attributes={}, dtype=dtype('O')),
+ 'molecule': ColumnAnnotation(is_pointer=True, modality=&lt;Modality.MOLECULE_3D: 'molecule_3D'&gt;, description=None, user_attributes={}, dtype=dtype('O'))}</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=451b687e-34dd-4a86-9d36-b39d6247a24e">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-7">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s2">"molecule"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-7">dataset.get_data(row=0, col="molecule")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
+<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult" tabindex="0">
+<img alt="No description has been provided for this image" class="" src="data:image/png;base64,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"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6c822bda-1fe1-4c9e-8437-4714a6855baf">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>We can see that Polaris has:</p>
+<ul>
+<li>Saved the molecule in an external Zarr archive and set the column annotations accordingly.</li>
+<li>Has extracted the molecule-level properties as additional columns.</li>
+<li>Has added an additional column with the SMILES.</li>
+<li>Effortlessly saves and loads the molecule object from the Zarr.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8913a820-3649-4566-8049-195480070d9c">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="factory-design-pattern">Factory Design Pattern<a class="anchor-link" href="#factory-design-pattern">¶</a></h2><p>If you've been dilligently going through the tutorials, you might remember that there is a function that seems to be doing something similar. And you would be right!</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=18beb7e0-95f2-4fd2-917d-8d4bcceb65af">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-8">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">create_dataset_from_file</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">save_dst</span><span class="p">)</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s2">"molecule"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-8">from polaris.dataset import create_dataset_from_file
+
+dataset = create_dataset_from_file(path, save_dst)
+dataset.get_data(row=0, col="molecule")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+<div class="jp-RenderedImage jp-OutputArea-output jp-OutputArea-executeResult" tabindex="0">
+<img alt="No description has been provided for this image" class="" src="data:image/png;base64,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"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f31f61de-3818-4b52-9548-a8f8d2cc752d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>The <code>DatasetFactory</code> is based on the factory design pattern. That way, you can easily create and add your own file converters. However, the defaults are set to be a good option for most people.</p>
+<p>Let's consider two cases that show the power of the <code>DatasetFactory</code> design.</p>
+<h3 id="configuring-the-converter">Configuring the converter<a class="anchor-link" href="#configuring-the-converter">¶</a></h3><p>Let's assume we do not want to extract the properties as separate columns, but rather keep them in the RDKit object. We cannot do this with the default converter, but we can configure its behavior to achieve this.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=35b6e2cb-3b45-4944-903d-7da81ff1e7a4">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-9">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">save_dst</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"data2.zarr"</span><span class="p">)</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)</span>
+
+<span class="c1"># Configure the converter</span>
+<span class="n">converter</span> <span class="o">=</span> <span class="n">SDFConverter</span><span class="p">(</span><span class="n">mol_prop_as_cols</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Overwrite the converter for SDF files</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">"sdf"</span><span class="p">,</span> <span class="n">converter</span><span class="p">)</span>
+
+<span class="c1"># Process the SDF file again</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">add_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+<span class="c1"># Build the dataset</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-9">save_dst = dm.fs.join(SAVE_DIR, "data2.zarr")
+factory.reset(save_dst)
+
+# Configure the converter
+converter = SDFConverter(mol_prop_as_cols=False)
+
+# Overwrite the converter for SDF files
+factory.register_converter("sdf", converter)
+
+# Process the SDF file again
+factory.add_from_file(path)
+
+# Build the dataset
+dataset = factory.build()</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre><span class="ansi-green-fg">2024-03-14 15:33:36.569</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris.dataset._factory</span>:<span class="ansi-cyan-fg">register_converter</span>:<span class="ansi-cyan-fg">100</span> - <span class="ansi-bold">You are overwriting the converter for the sdf extension.</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d066c9b5-2c5c-471c-8739-c63f1eca8b54">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>And voila! The property is saved to the Zarr instead of to a separate column.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=dbd94922-a9b9-4096-b42b-4e593581b947">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-10">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s2">"molecule"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-10">dataset.get_data(row=0, col="molecule")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<table><tr><td colspan="2" style="text-align: center;"><image src="data:image/png;base64,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"/></td></tr>
+<tr><th style="text-align: right">my_property</th><td style="text-align: left">my_value</td></tr></table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=2b12c7c0-23be-4286-8dca-23d0e7a606cf">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-11">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">table</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-11">dataset.table</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>smiles</th>
+<th>molecule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>CN1C=NC2=C1C(=O)N(C)C(=O)N2C</td>
+<td>/home/cas/.cache/polaris-tutorials/003/data2.z...</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4db64c4d-4712-4dfe-81ae-c8daa01066de">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="merging-data-from-different-sources">Merging data from different sources<a class="anchor-link" href="#merging-data-from-different-sources">¶</a></h3><p>Another case is when you want to merge data from multiple sources. Maybe you have two different SDF files.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=ef15bf98-f301-465d-9e93-2531f9f1f98c">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2617,16 +2365,52 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">save_dst</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"data3.zarr"</span><span class="p">)</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)</span>
+
+<span class="c1"># Let's pretend these are two different SDF files</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">"sdf"</span><span class="p">,</span> <span class="n">SDFConverter</span><span class="p">(</span><span class="n">mol_column</span><span class="o">=</span><span class="s2">"molecule1"</span><span class="p">,</span> <span class="n">smiles_column</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">add_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+<span class="c1"># We change the configuration between files</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">"sdf"</span><span class="p">,</span> <span class="n">SDFConverter</span><span class="p">(</span><span class="n">mol_column</span><span class="o">=</span><span class="s2">"molecule2"</span><span class="p">,</span> <span class="n">mol_prop_as_cols</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">add_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-12">predictions = model.predict(test.X)</div>
+<div class="clipboard-copy-txt" id="cell-12">save_dst = dm.fs.join(SAVE_DIR, "data3.zarr")
+factory.reset(save_dst)
+
+# Let's pretend these are two different SDF files
+factory.register_converter("sdf", SDFConverter(mol_column="molecule1", smiles_column=None))
+factory.add_from_file(path)
+
+# We change the configuration between files
+factory.register_converter("sdf", SDFConverter(mol_column="molecule2", mol_prop_as_cols=False))
+factory.add_from_file(path)
+
+dataset = factory.build()</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre><span class="ansi-green-fg">2024-03-14 15:33:36.611</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris.dataset._factory</span>:<span class="ansi-cyan-fg">register_converter</span>:<span class="ansi-cyan-fg">100</span> - <span class="ansi-bold">You are overwriting the converter for the sdf extension.</span>
+<span class="ansi-green-fg">2024-03-14 15:33:36.614</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris.dataset._factory</span>:<span class="ansi-cyan-fg">register_converter</span>:<span class="ansi-cyan-fg">100</span> - <span class="ansi-bold">You are overwriting the converter for the sdf extension.</span>
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=79c072cf-683e-4257-b31e-59fdbcf5e979">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=65960c85-ee0d-4d37-b50d-b1c8ba1cec64">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2644,11 +2428,9 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
-<span class="n">results</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">table</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-13">results = benchmark.evaluate(predictions)
-results</div>
+<div class="clipboard-copy-txt" id="cell-13">dataset.table</div>
 </div>
 </div>
 </div>
@@ -2660,125 +2442,54 @@ results</div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-<table border="1"><tr><th>name</th><td>None</td></tr><tr><th>description</th><td></td></tr><tr><th>tags</th><td></td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>owner</th><td>None</td></tr><tr><th>benchmark_name</th><td>hello-world-benchmark</td></tr><tr><th>benchmark_owner</th><td><table border="1"><tr><th>slug</th><td>polaris</td></tr><tr><th>external_id</th><td>org_2WG9hRFgKNIRtGw4orsMPcr1F4S</td></tr><tr><th>type</th><td>organization</td></tr></table></td></tr><tr><th>github_url</th><td>None</td></tr><tr><th>paper_url</th><td>None</td></tr><tr><th>contributors</th><td>None</td></tr><tr><th>artifact_id</th><td>None</td></tr><tr><th>benchmark_artifact_id</th><td>polaris/hello-world-benchmark</td></tr><tr><th>results</th><td><table border="1"><thead><tr><th>Test set</th><th>Target label</th><th>Metric</th><th>Score</th></tr></thead><tbody><tr><td>test</td><td>SOL</td><td>mean_squared_error</td><td>2.6875139821</td></tr><tr><td>test</td><td>SOL</td><td>mean_absolute_error</td><td>1.2735690161</td></tr></tbody></table></td></tr></table>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=90114c20-4c01-432b-9f4d-b31863881cc6">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Before uploading the results to the Hub, you can provide some additional information about the results that will be displayed on the Polaris Hub.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=a601f415-c563-4efe-94c3-0d44f3fd6576">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-14">
 <div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>my_property</th>
+<th>molecule1</th>
+<th>smiles</th>
+<th>molecule2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>my_value</td>
+<td>/home/cas/.cache/polaris-tutorials/003/data3.z...</td>
+<td>CN1C=NC2=C1C(=O)N(C)C(=O)N2C</td>
+<td>/home/cas/.cache/polaris-tutorials/003/data3.z...</td>
+</tr>
+</tbody>
+</table>
 </div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># For a complete list of meta-data, check out the BenchmarkResults object</span>
-<span class="n">results</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"hello-world-result"</span>
-<span class="n">results</span><span class="o">.</span><span class="n">github_url</span> <span class="o">=</span> <span class="s2">"https://github.com/polaris-hub/polaris-hub"</span>
-<span class="n">results</span><span class="o">.</span><span class="n">paper_url</span> <span class="o">=</span> <span class="s2">"https://polarishub.io/"</span>
-<span class="n">results</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">"Hello, World!"</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-14"># For a complete list of meta-data, check out the BenchmarkResults object
-results.name = "hello-world-result"
-results.github_url = "https://github.com/polaris-hub/polaris-hub"
-results.paper_url = "https://polarishub.io/"
-results.description = "Hello, World!"</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4e7cc06d">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a5d7bf37-7950-4026-b6c1-3fac556754ba">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Finally, let's upload the results to the Hub! The result will be private, but visiting the link in the logs you can decide to make it public through the Hub.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=60cbf4b9-8514-480d-beda-8a50e5f7c9a6">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-15">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">client</span><span class="o">.</span><span class="n">upload_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="s2">"cwognum"</span><span class="p">)</span>
-<span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-15">client.upload_results(results, owner="cwognum")
-client.close()</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>/Users/cas.wognum/micromamba/envs/polaris/lib/python3.12/site-packages/pydantic/main.py:314: UserWarning: Pydantic serializer warnings:
-  Expected `url` but got `str` - serialized value may not be as expected
-  Expected `url` but got `str` - serialized value may not be as expected
-  return self.__pydantic_serializer__.to_python(
-<span class="ansi-green-fg">2024-02-18 12:35:09.465</span> | <span class="ansi-green-intense-fg ansi-bold">SUCCESS </span> | <span class="ansi-cyan-fg">polaris.hub.client</span>:<span class="ansi-cyan-fg">upload_results</span>:<span class="ansi-cyan-fg">431</span> - <span class="ansi-green-intense-fg ansi-bold">Your result has been successfully uploaded to the Hub. View it here: https://polarishub.io/benchmarks/polaris/hello-world-benchmark/l3uWzFBEyaD09Sa4Aik21</span>
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=78fe8d63">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>That's it! Just like that you have partaken in your first Polaris benchmark. In next tutorials, we will consider more advanced use cases of Polaris, such as creating and uploading your own datasets and benchmarks.</p>
 <p>The End.</p>
-<hr/>
 </div>
 </div>
 </div>
@@ -2867,7 +2578,7 @@ client.close()</div>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../quickstart.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Quickstart">
+          <a href="dataset_zarr.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Zarr Datasets">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -2877,20 +2588,20 @@ client.close()</div>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Quickstart
+                Zarr Datasets
               </div>
             </div>
           </a>
         
         
           
-          <a href="custom_dataset_benchmark.html" class="md-footer__link md-footer__link--next" aria-label="Next: Data Models">
+          <a href="../api/load.html" class="md-footer__link md-footer__link--next" aria-label="Next: Load">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Data Models
+                Load
               </div>
             </div>
             <div class="md-footer__button md-icon">
