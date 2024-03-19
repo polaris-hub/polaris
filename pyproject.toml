@@ -45,7 +45,7 @@ dependencies = [
     "tenacity",
     "filelock",
     "numpy",
-    "pandas",
+    "pandas < 2.2.0",
     "scipy",
     "scikit-learn",
     "seaborn",
