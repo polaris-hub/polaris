@@ -93,18 +93,31 @@ pip install polaris-lib
 
 ### Setup dev environment
 
-```bash
+```shell
 conda env create -n polaris -f env.yml
 conda activate polaris
 
 pip install --no-deps -e .
 ```
 
+<details>
+  <summary>Other installation options</summary>
+  
+    Alternatively, using [uv](https://github.com/astral-sh/uv):
+    ```shell
+    uv venv -p 3.12 polaris
+    source .venv/polaris/bin/activate
+    uv pip compile pyproject.toml -o requirements.txt --all-extras
+    uv pip install -r requirements.txt 
+    ```   
+</details>
+
+
 ### Tests
 
 You can run tests locally with:
 
-```bash
+```shell
 pytest
 ```
 
