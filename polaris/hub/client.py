@@ -32,7 +32,7 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
-from polaris.utils.types import AccessType, HubOwner, TimeoutTypes, IOMode
+from polaris.utils.types import AccessType, HubOwner, IOMode, TimeoutTypes
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -304,12 +304,13 @@ class PolarisHubClient(OAuth2Client):
         dataset_list = [bm["artifactId"] for bm in response["data"]]
         return dataset_list
 
-    def get_dataset(self, owner: Union[str, HubOwner], name: str) -> Dataset:
+    def get_dataset(self, owner: Union[str, HubOwner], name: str, verify_checksum: bool = True) -> Dataset:
         """Load a dataset from the Polaris Hub.
 
         Args:
             owner: The owner of the dataset. Can be either a user or organization from the Polaris Hub.
             name: The name of the dataset.
+            verify_checksum: Whether to use the checksum to verify the integrity of the dataset.
 
         Returns:
             A `Dataset` instance, if it exists.
@@ -330,6 +331,9 @@ class PolarisHubClient(OAuth2Client):
         headers = storage_response["headers"]
 
         response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
+
+        if not verify_checksum:
+            response.pop("md5Sum", None)
 
         return Dataset(**response)
 
@@ -377,12 +381,15 @@ class PolarisHubClient(OAuth2Client):
         benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
         return benchmarks_list
 
-    def get_benchmark(self, owner: Union[str, HubOwner], name: str) -> BenchmarkSpecification:
+    def get_benchmark(
+        self, owner: Union[str, HubOwner], name: str, verify_checksum: bool = True
+    ) -> BenchmarkSpecification:
         """Load a benchmark from the Polaris Hub.
 
         Args:
             owner: The owner of the benchmark. Can be either a user or organization from the Polaris Hub.
             name: The name of the benchmark.
+            verify_checksum: Whether to use the checksum to verify the integrity of the dataset.
 
         Returns:
             A `BenchmarkSpecification` instance, if it exists.
@@ -392,7 +399,9 @@ class PolarisHubClient(OAuth2Client):
 
         # TODO (cwognum): Currently, the benchmark endpoints do not return the owner info for the underlying dataset.
         # TODO (jstlaurent): Use the same owner for now, until the benchmark returns a better dataset entity
-        response["dataset"] = self.get_dataset(owner, response["dataset"]["name"])
+        response["dataset"] = self.get_dataset(
+            owner, response["dataset"]["name"], verify_checksum=verify_checksum
+        )
 
         # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
         #  Maybe through structural pattern matching, introduced in Py3.10, or Pydantic's discriminated unions?
@@ -401,6 +410,10 @@ class PolarisHubClient(OAuth2Client):
             if len(response["targetCols"]) == 1
             else MultiTaskBenchmarkSpecification
         )
+
+        if not verify_checksum:
+            response.pop("md5Sum", None)
+
         return benchmark_cls(**response)
 
     def upload_results(

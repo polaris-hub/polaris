@@ -11,7 +11,7 @@ from polaris.hub.client import PolarisHubClient
 from polaris.utils import fs
 
 
-def load_dataset(path: str) -> Dataset:
+def load_dataset(path: str, verify_checksum: bool = True) -> Dataset:
     """
     Loads a Polaris dataset.
 
@@ -35,14 +35,14 @@ def load_dataset(path: str) -> Dataset:
     if not is_file:
         # Load from the Hub
         client = PolarisHubClient()
-        return client.get_dataset(*path.split("/"))
+        return client.get_dataset(*path.split("/"), verify_checksum=verify_checksum)
 
     if extension == "json":
         return Dataset.from_json(path)
     return create_dataset_from_file(path)
 
 
-def load_benchmark(path: str):
+def load_benchmark(path: str, verify_checksum: bool = True):
     """
     Loads a Polaris benchmark.
 
@@ -66,7 +66,7 @@ def load_benchmark(path: str):
     if not is_file:
         # Load from the Hub
         client = PolarisHubClient()
-        return client.get_benchmark(*path.split("/"))
+        return client.get_benchmark(*path.split("/"), verify_checksum=verify_checksum)
 
     with fsspec.open(path, "r") as fd:
         data = json.load(fd)
