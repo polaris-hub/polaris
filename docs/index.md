@@ -51,7 +51,7 @@ This is where you will find the technical documentation of the code itself. Lear
 
 Whether you are a first-time contributor or open-source veteran, we welcome any contribution to Polaris. Learn more about our community initiatives.
 
-[:material-arrow-right: Let's get started](https://portal.valencelabs.com/)
+[:material-arrow-right: Let's get started](https://discord.gg/vBFd8p6H7u)
 
 ---
 
