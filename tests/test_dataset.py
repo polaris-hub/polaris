@@ -43,17 +43,17 @@ def test_load_data(tmp_path, with_slice, with_caching):
     arr = np.random.random((100, 100))
 
     tmpdir = str(tmp_path)
-    path = fs.join(tmpdir, "data.zarr")
+    zarr_path = fs.join(tmpdir, "data.zarr")
 
-    root = zarr.open(path, "w")
+    root = zarr.open(zarr_path, "w")
     root.array("A", data=arr)
 
-    path = f"{path}/A#0:5" if with_slice else f"{path}/A#0"
+    path = "A#0:5" if with_slice else "A#0"
     table = pd.DataFrame({"A": [path]}, index=[0])
-    dataset = Dataset(table=table, annotations={"A": {"is_pointer": True}})
+    dataset = Dataset(table=table, annotations={"A": {"is_pointer": True}}, zarr_archive=zarr_path)
 
     if with_caching:
-        dataset.cache(tmpdir)
+        dataset.cache(fs.join(tmpdir, "cache"))
 
     data = dataset.get_data(row=0, col="A")
 
@@ -164,8 +164,6 @@ def test_dataset_caching(zarr_archive, tmpdir):
     assert original_dataset == cached_dataset
 
     cache_dir = cached_dataset.cache(tmpdir.join("cached").strpath)
-    for i in range(len(cached_dataset)):
-        assert cached_dataset.table.loc[i, "A"].startswith(cache_dir)
-        assert cached_dataset.table.loc[i, "B"].startswith(cache_dir)
+    assert cached_dataset.zarr_archive.startswith(cache_dir)
 
     assert _equality_test(cached_dataset, original_dataset)

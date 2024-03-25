@@ -123,7 +123,7 @@ class SDFConverter(Converter):
 
                 # Get the pointer path
                 pointer_idx = f"{start}:{end}" if start != end else f"{start}"
-                pointer = self.get_pointer(factory.zarr_root_path, self.mol_column, pointer_idx)
+                pointer = self.get_pointer(self.mol_column, pointer_idx)
 
                 # Get the single unique value per column for the group and append
                 unique_values = [group[col].unique()[0] for col in df.columns]
@@ -132,7 +132,7 @@ class SDFConverter(Converter):
             df = grouped
 
         else:
-            pointers = [self.get_pointer(factory.zarr_root_path, self.mol_column, i) for i in range(len(df))]
+            pointers = [self.get_pointer(self.mol_column, i) for i in range(len(df))]
             df[self.mol_column] = pd.Series(pointers)
 
         # Set the annotations

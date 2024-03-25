@@ -59,7 +59,7 @@ def test_dataset(test_data, test_org_owner):
         table=test_data,
         name="test-dataset",
         source="https://www.example.com",
-        annotations={"expt": ColumnAnnotation(is_pointer=False, user_attributes={"unit": "kcal/mol"})},
+        annotations={"expt": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
         tags=["tagA", "tagB"],
         user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
         owner=test_org_owner,
