@@ -200,3 +200,6 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             timeout=timeout,
         )
         response.raise_for_status()
+
+
+fsspec.register_implementation("polarisfs", PolarisFileSystem)

@@ -1,5 +1,4 @@
 import json
-import os.path
 from hashlib import md5
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -20,7 +19,7 @@ from pydantic import (
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
-from polaris.hub.settings import PolarisHubSettings
+from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
@@ -87,6 +86,7 @@ class Dataset(BaseArtifactModel):
 
     # Private attributes
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
+    _client = PrivateAttr(None)  # Optional[PolarisHubClient]
     _has_been_warned: bool = False
     _has_been_cached: bool = False
 
@@ -190,10 +190,28 @@ class Dataset(BaseArtifactModel):
         return checksum
 
     @property
+    def client(self):
+        """The Polaris Hub client used to interact with the Polaris Hub."""
+
+        # Import it here to prevent circular imports
+        from polaris.hub.client import PolarisHubClient
+
+        if self._client is None:
+            self._client = PolarisHubClient()
+        return self._client
+
+    @property
     def zarr_root(self):
         """Open the zarr archive in read-write mode if it is not already open."""
+        if not any(anno.is_pointer for anno in self.annotations.values()):
+            return None
         if self._zarr_root is None:
-            self._zarr_root = zarr.open(self.zarr_archive, "a")
+            options = {}
+            if PolarisFileSystem.protocol in self.zarr_archive:
+                options["client"] = self.client
+                options["dataset_owner"] = self.owner
+                options["dataset_name"] = self.name
+            self._zarr_root = zarr.open(self.zarr_archive, "a", storage_options=options)
         return self._zarr_root
 
     @computed_field
@@ -271,27 +289,13 @@ class Dataset(BaseArtifactModel):
         return _load(value, index)
 
     def upload_to_hub(
-        self,
-        env_file: Optional[Union[str, os.PathLike]] = None,
-        settings: Optional[PolarisHubSettings] = None,
-        cache_auth_token: bool = True,
-        access: Optional[AccessType] = "private",
-        owner: Optional[Union[HubOwner, str]] = None,
-        **kwargs: dict,
+        self, access: Optional[AccessType] = "private", owner: Optional[Union[HubOwner, str]] = None
     ):
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
         """
-        from polaris.hub.client import PolarisHubClient
-
-        with PolarisHubClient(
-            env_file=env_file,
-            settings=settings,
-            cache_auth_token=cache_auth_token,
-            **kwargs,
-        ) as client:
-            return client.upload_dataset(self, access=access, owner=owner)
+        self.client.upload_dataset(self, access=access, owner=owner)
 
     @classmethod
     def from_json(cls, path: str):
@@ -331,14 +335,15 @@ class Dataset(BaseArtifactModel):
         dataset_path = fs.join(destination, "dataset.json")
         zarr_archive = fs.join(destination, "data.zarr")
 
-        # Copy over Zarr data to the destination
-        dest = zarr.open(zarr_archive, "w")
-        zarr.copy_all(source=self.zarr_root, dest=dest)
-
         # Lu: Avoid serilizing and sending None to hub app.
         serialized = self.model_dump(exclude={"cache_dir"}, exclude_none=True)
         serialized["table"] = table_path
-        serialized["zarr_archive"] = zarr_archive
+
+        # Copy over Zarr data to the destination
+        if self.zarr_root is not None:
+            dest = zarr.open(zarr_archive, "w")
+            zarr.copy_all(source=self.zarr_root, dest=dest)
+            serialized["zarr_archive"] = zarr_archive
 
         self.table.to_parquet(table_path)
         with fsspec.open(dataset_path, "w") as f:
@@ -441,3 +446,8 @@ class Dataset(BaseArtifactModel):
         if not isinstance(other, Dataset):
             return False
         return self.md5sum == other.md5sum
+
+    def __del__(self):
+        """Close the connection of the client"""
+        if self._client is not None:
+            self._client.close()
