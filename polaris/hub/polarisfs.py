@@ -172,16 +172,27 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
 
         pipe_path = self.sep.join([self.base_path, path])
 
+        sha256_hash = hashlib.sha256(content).hexdigest()
+
+        headers = {
+            "Content-Length": str(len(content)),
+            "Content-Type": "application/octet-stream",
+            "x-amz-content-sha256": sha256_hash,
+        }
+
         # PUT request to Polaris Hub to put object in path
-        response = self.polaris_client.put(pipe_path, timeout=timeout, content=content)
+        response = self.polaris_client.put(
+            pipe_path, 
+            timeout=timeout, 
+            content=content,
+            headers=headers
+        )
 
         if response.status_code != 307:
             raise PolarisHubError("Could not get signed URL from Polaris Hub.")
 
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
-
-        sha256_hash = hashlib.sha256(content).hexdigest()
 
         headers = {
             "Content-Type": "application/octet-stream",
