@@ -2,7 +2,6 @@ import datamol as dm
 import numpy as np
 import pytest
 import zarr
-from packaging.version import Version
 
 import polaris as po
 from polaris.benchmark import (
@@ -15,7 +14,7 @@ from polaris.utils.types import HubOwner, License
 
 
 def check_version(artifact):
-    assert Version(po.__version__) == artifact.version
+    assert po.__version__ == str(artifact.version)
 
 
 @pytest.fixture(scope="module")

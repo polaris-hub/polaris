@@ -15,7 +15,7 @@ from pydantic import (
 from pydantic.alias_generators import to_camel
 
 import polaris as po
-from polaris.utils.misc import sluggify
+from polaris.utils.misc import sluggify, str_to_version
 from polaris.utils.types import HubOwner, SlugCompatibleStringType
 
 
@@ -47,9 +47,7 @@ class BaseArtifactModel(BaseModel):
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
-    version: Optional[Union[str, Version]] = Field(
-        default_factory=lambda: Version(po.__version__) if po.__version__ != "dev" else None
-    )
+    version: Optional[Union[str, Version]] = Field(default_factory=lambda: str_to_version(po.__version__))
 
     @computed_field
     @property
@@ -59,12 +57,11 @@ class BaseArtifactModel(BaseModel):
     @field_validator("version")
     @classmethod
     def _validate_version(cls, value: Union[str, Version]):
-        current_version = Version(po.__version__)
+        current_version = str_to_version(po.__version__)
         if value is None:
             value = current_version
         elif isinstance(value, str):
-            if value != "dev":
-                value = Version(value)
+            value = str_to_version(value)
 
         if value is not None and value != current_version:
             logger.info(

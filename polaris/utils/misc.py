@@ -1,4 +1,6 @@
-from typing import Any
+from typing import Any, Literal
+
+from packaging.version import Version
 
 from polaris.utils.types import SlugCompatibleStringType
 
@@ -16,3 +18,12 @@ def sluggify(sluggable: SlugCompatibleStringType):
     Converts a string to a slug-compatible string.
     """
     return sluggable.lower().replace("_", "-")
+
+
+def str_to_version(value: str) -> Version | Literal["dev"]:
+    """
+    Convert a string to a Version object if possible, unless it is 'dev'
+    """
+    if value == "dev":
+        return "dev"
+    return Version(value)
