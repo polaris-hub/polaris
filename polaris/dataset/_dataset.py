@@ -49,7 +49,7 @@ class Dataset(BaseArtifactModel):
             path to a `.parquet` file or a `pandas.DataFrame`.
         default_adapters: The adapters that the Dataset recommends to use by default to change the format of the data
             for specific columns.
-        zarr_archive: The data for any pointer column should be saved in the Zarr archive this path points to.
+        zarr_root_path: The data for any pointer column should be saved in the Zarr archive this path points to.
         md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
             raise an error if the specified checksum doesn't match the computed checksum.
         readme: Markdown text that can be used to provide a formatted description of the dataset.
@@ -71,7 +71,7 @@ class Dataset(BaseArtifactModel):
     # Data
     table: Union[pd.DataFrame, str]
     default_adapters: Dict[str, Adapter] = Field(default_factory=dict)
-    zarr_archive: Optional[str] = None
+    zarr_root_path: Optional[str] = None
     md5sum: Optional[str] = None
 
     # Additional meta-data
@@ -203,11 +203,11 @@ class Dataset(BaseArtifactModel):
     @property
     def zarr_root(self):
         """Open the zarr archive in read-write mode if it is not already open."""
-        if self.zarr_archive is None or not any(anno.is_pointer for anno in self.annotations.values()):
+        if self.zarr_root_path is None or not any(anno.is_pointer for anno in self.annotations.values()):
             return None
 
-        saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_archive)
-        saved_remote = saved_on_hub or not fs.is_local_path(self.zarr_archive)
+        saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_root_path)
+        saved_remote = saved_on_hub or not fs.is_local_path(self.zarr_root_path)
 
         if saved_remote and not self._has_been_warned:
             logger.warning(
@@ -220,9 +220,9 @@ class Dataset(BaseArtifactModel):
         # We open the archive in read-only mode if it is saved on the Hub
         if self._zarr_root is None:
             if saved_on_hub:
-                self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_archive, "r+")
+                self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_root_path, "r+")
             else:
-                self._zarr_root = zarr.open(self.zarr_archive, "r+")
+                self._zarr_root = zarr.open(self.zarr_root_path, "r+")
         return self._zarr_root
 
     @computed_field
@@ -340,7 +340,7 @@ class Dataset(BaseArtifactModel):
         if self.zarr_root is not None:
             dest = zarr.open(zarr_archive, "w")
             zarr.copy_all(source=self.zarr_root, dest=dest)
-            serialized["zarr_archive"] = zarr_archive
+            serialized["zarr_root_path"] = zarr_archive
 
         self.table.to_parquet(table_path)
         with fsspec.open(dataset_path, "w") as f:
@@ -364,8 +364,8 @@ class Dataset(BaseArtifactModel):
 
         self.to_json(self.cache_dir)
 
-        if self.zarr_archive is not None:
-            self.zarr_archive = fs.join(self.cache_dir, "data.zarr")
+        if self.zarr_root_path is not None:
+            self.zarr_root_path = fs.join(self.cache_dir, "data.zarr")
 
         if not self._has_been_cached:
             self._has_been_cached = True

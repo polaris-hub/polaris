@@ -523,8 +523,7 @@ class PolarisHubClient(OAuth2Client):
         dataset_json = dataset.model_dump(exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True)
 
         # We will save the Zarr archive to the Hub as well
-        zarr_fname = "data.zarr"
-        dataset_json["zarrArchive"] = f"{PolarisFileSystem.protocol}://{zarr_fname}"
+        dataset_json["zarrRootPath"] = f"{PolarisFileSystem.protocol}://data.zarr"
 
         # Uploading a dataset is a three-step process.
         # 1. Upload the dataset meta data to the hub and prepare the hub to receive the parquet file
@@ -592,7 +591,7 @@ class PolarisHubClient(OAuth2Client):
                 dest = self.open_zarr_file(
                     owner=dataset.owner,
                     name=dataset.name,
-                    path=zarr_fname,
+                    path=dataset_json["zarrRootPath"],
                     mode="w",
                 )
                 logger.info("Copying Zarr archive to the Hub. This may take a while.")

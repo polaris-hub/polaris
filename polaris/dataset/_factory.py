@@ -219,7 +219,7 @@ class DatasetFactory:
             table=self._table,
             annotations=self._annotations,
             default_adapters=self._adapters,
-            zarr_archive=self.zarr_root_path,
+            zarr_root_path=self.zarr_root_path,
         )
 
     def reset(self, zarr_root_path: Optional[str] = None):
