@@ -1,6 +1,7 @@
 import json
 
 import fsspec
+from datamol.utils import fs
 
 from polaris.benchmark._definitions import (
     MultiTaskBenchmarkSpecification,
@@ -8,7 +9,6 @@ from polaris.benchmark._definitions import (
 )
 from polaris.dataset import Dataset, create_dataset_from_file
 from polaris.hub.client import PolarisHubClient
-from polaris.utils import fs
 
 
 def load_dataset(path: str, verify_checksum: bool = True) -> Dataset:

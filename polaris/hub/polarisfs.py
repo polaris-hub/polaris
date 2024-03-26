@@ -1,7 +1,8 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-from datetime import datetime, timezone
-import fsspec
 import hashlib
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
+import fsspec
 
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import TimeoutTypes
@@ -53,6 +54,18 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         # Prefix to remove from ls entries
         self.prefix = f"dataset/{dataset_owner}/{dataset_name}/"
         self.base_path = f"/storage/{self.prefix.rstrip('/')}"
+
+    @staticmethod
+    def is_polarisfs_path(path: str) -> bool:
+        """Check if the given path is a PolarisFS path.
+
+        Args:
+            path: The path to check.
+
+        Returns:
+            True if the path is a PolarisFS path; otherwise, False.
+        """
+        return path.startswith(f"{PolarisFileSystem.protocol}://")
 
     def ls(
         self,

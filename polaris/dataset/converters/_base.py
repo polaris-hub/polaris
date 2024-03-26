@@ -17,12 +17,11 @@ class Converter(abc.ABC):
         raise NotImplementedError
 
     @staticmethod
-    def get_pointer(root: str, column: str, index: Union[int, slice]) -> str:
+    def get_pointer(column: str, index: Union[int, slice]) -> str:
         """
         Creates a pointer.
 
         Args:
-            root: The root path of the zarr hierarchy.
             column: The name of the column. Each column has its own group in the root.
             index: The index or slice of the pointer.
         """
@@ -30,4 +29,4 @@ class Converter(abc.ABC):
             index_substr = f"{_INDEX_SEP}{index.start}:{index.stop}"
         else:
             index_substr = f"{_INDEX_SEP}{index}"
-        return f"{root}/{column}{index_substr}"
+        return f"{column}{index_substr}"
