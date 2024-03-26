@@ -6,6 +6,7 @@ import fsspec
 import numpy as np
 import pandas as pd
 import zarr
+from datamol.utils import fs
 from loguru import logger
 from pydantic import (
     Field,
@@ -20,7 +21,6 @@ from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
 from polaris.hub.polarisfs import PolarisFileSystem
-from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
@@ -203,15 +203,26 @@ class Dataset(BaseArtifactModel):
     @property
     def zarr_root(self):
         """Open the zarr archive in read-write mode if it is not already open."""
-        if not any(anno.is_pointer for anno in self.annotations.values()):
+        if self.zarr_archive is None or not any(anno.is_pointer for anno in self.annotations.values()):
             return None
+
+        saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_archive)
+        saved_remote = saved_on_hub or not fs.is_local_path(self.zarr_archive)
+
+        if saved_remote and not self._has_been_warned:
+            logger.warning(
+                f"You're loading data from a remote location. "
+                f"To speed up this process, consider caching the dataset first "
+                f"using {self.__class__.__name__}.cache()"
+            )
+            self._has_been_warned = True
+
+        # We open the archive in read-only mode if it is saved on the Hub
         if self._zarr_root is None:
-            options = {}
-            if PolarisFileSystem.protocol in self.zarr_archive:
-                options["client"] = self.client
-                options["dataset_owner"] = self.owner
-                options["dataset_name"] = self.name
-            self._zarr_root = zarr.open(self.zarr_archive, "a", storage_options=options)
+            if saved_on_hub:
+                self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_archive, "r+")
+            else:
+                self._zarr_root = zarr.open(self.zarr_archive, "r+")
         return self._zarr_root
 
     @computed_field
@@ -254,39 +265,25 @@ class Dataset(BaseArtifactModel):
 
         adapters = adapters or self.default_adapters
 
-        def _load(p: str, index: Union[int, slice]) -> np.ndarray:
-            """Tiny helper function to reduce code repetition."""
-            arr = self.zarr_root[p][index]
-
-            if isinstance(index, slice):
-                arr = tuple(arr)
-
-            adapter = adapters.get(col)
-            if adapter is not None:
-                arr = adapter(arr)
-
-            return arr
-
+        # If not a pointer, we can just return here
         value = self.table.loc[row, col]
         if not self.annotations[col].is_pointer:
             return value
 
-        value, index = self._split_index_from_path(value)
+        # Load the data from the Zarr archive
+        path, index = self._split_index_from_path(value)
+        arr = self.zarr_root[path][index]
 
-        # In the case it is a pointer column, we need to load additional data into memory
-        # We first check if the data has been downloaded to the cache.
-        if self._has_been_cached:
-            return _load(value, index)
+        # Change to tuple if a slice
+        if isinstance(index, slice):
+            arr = tuple(arr)
 
-        # If it doesn't exist, we load from the original path and warn if not local
-        if not fs.is_local_path(self.zarr_archive) and not self._has_been_warned:
-            logger.warning(
-                f"You're loading data from a remote location. "
-                f"To speed up this process, consider caching the dataset first "
-                f"using {self.__class__.__name__}.cache()"
-            )
-            self._has_been_warned = True
-        return _load(value, index)
+        # Adapt the input
+        adapter = adapters.get(col)
+        if adapter is not None:
+            arr = adapter(arr)
+
+        return arr
 
     def upload_to_hub(
         self, access: Optional[AccessType] = "private", owner: Optional[Union[HubOwner, str]] = None

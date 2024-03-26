@@ -6,6 +6,7 @@ from typing import Any, Callable, Optional, Union
 import fsspec
 import numpy as np
 import pandas as pd
+from datamol.utils import fs
 from pydantic import (
     Field,
     FieldValidationInfo,
@@ -20,7 +21,6 @@ from polaris._artifact import BaseArtifactModel
 from polaris.dataset import Dataset, Subset
 from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils import fs
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError

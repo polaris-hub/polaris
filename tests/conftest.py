@@ -2,13 +2,13 @@ import datamol as dm
 import numpy as np
 import pytest
 import zarr
+from datamol.utils import fs
 
 from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
 from polaris.dataset import ColumnAnnotation, Dataset
-from polaris.utils import fs
 from polaris.utils.types import HubOwner, License
 
 

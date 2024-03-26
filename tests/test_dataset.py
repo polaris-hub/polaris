@@ -2,11 +2,11 @@ import numpy as np
 import pandas as pd
 import pytest
 import zarr
+from datamol.utils import fs
 from pydantic import ValidationError
 
 from polaris.dataset import Dataset, create_dataset_from_file
 from polaris.loader import load_dataset
-from polaris.utils import fs
 from polaris.utils.errors import PolarisChecksumError
 
 

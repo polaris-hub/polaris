@@ -16,6 +16,7 @@ from authlib.common.security import generate_token
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
+from datamol.utils import fs
 from httpx import HTTPStatusError
 from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
@@ -29,8 +30,8 @@ from polaris.dataset import Dataset
 from polaris.evaluate import BenchmarkResults
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
+from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
 from polaris.utils.types import AccessType, HubOwner, IOMode, TimeoutTypes
 
@@ -379,6 +380,7 @@ class PolarisHubClient(OAuth2Client):
         try:
             store = zarr.storage.FSStore(path, fs=polaris_fs)
             return zarr.open(store, mode=mode)
+
         except Exception as e:
             raise PolarisHubError("Error opening Zarr store") from e
 
@@ -511,6 +513,9 @@ class PolarisHubClient(OAuth2Client):
                 See also: https://www.python-httpx.org/advanced/#timeout-configuration
             owner: Which Hub user or organization owns the artifact. Takes precedence over `dataset.owner`.
         """
+        # Normalize timeout
+        if timeout is None:
+            timeout = self.settings.default_timeout
 
         # Get the serialized data-model
         # We exclude the table as it handled separately and we exclude the cache_dir as it is user-specific
@@ -548,6 +553,7 @@ class PolarisHubClient(OAuth2Client):
                 "access": access,
                 **dataset_json,
             },
+            timeout=timeout,
         )
 
         # Step 2: Upload the parquet file
@@ -558,6 +564,7 @@ class PolarisHubClient(OAuth2Client):
             headers={
                 "Content-type": "application/vnd.apache.parquet",
             },
+            timeout=timeout,
         )
 
         if hub_response.status_code == 307:
@@ -579,14 +586,17 @@ class PolarisHubClient(OAuth2Client):
 
         # Step 3: Upload any associated Zarr archive
         if dataset.zarr_root is not None:
-            source = dataset.zarr_root
-            dest = self.open_zarr_file(
-                owner=dataset.owner,
-                name=dataset.name,
-                path=zarr_fname,
-                mode="w",
-            )
-            zarr.copy_all(source=source, dest=dest)
+            with tmp_attribute_change(self.settings, "default_timeout", timeout):
+                # Copy the Zarr archive to the hub
+                # This does not copy the consolidated data
+                dest = self.open_zarr_file(
+                    owner=dataset.owner,
+                    name=dataset.name,
+                    path=zarr_fname,
+                    mode="w",
+                )
+                logger.info("Copying Zarr archive to the Hub. This may take a while.")
+                zarr.copy_all(source=dataset.zarr_root, dest=dest, log=logger.info)
 
         logger.success(
             "Your dataset has been successfully uploaded to the Hub. "

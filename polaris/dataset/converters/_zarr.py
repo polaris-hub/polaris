@@ -42,7 +42,7 @@ class ZarrConverter(Converter):
         data = defaultdict(dict)
         for col, arr in src.arrays():
             for i in range(len(arr)):
-                data[col][i] = self.get_pointer(arr.name, i)
+                data[col][i] = self.get_pointer(arr.name.removeprefix("/"), i)
 
         # Construct the dataset
         table = pd.DataFrame(data)

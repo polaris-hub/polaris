@@ -55,6 +55,18 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         self.prefix = f"dataset/{dataset_owner}/{dataset_name}/"
         self.base_path = f"/storage/{self.prefix.rstrip('/')}"
 
+    @staticmethod
+    def is_polarisfs_path(path: str) -> bool:
+        """Check if the given path is a PolarisFS path.
+
+        Args:
+            path: The path to check.
+
+        Returns:
+            True if the path is a PolarisFS path; otherwise, False.
+        """
+        return path.startswith(f"{PolarisFileSystem.protocol}://")
+
     def ls(
         self,
         path: str,
@@ -200,6 +212,3 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             timeout=timeout,
         )
         response.raise_for_status()
-
-
-fsspec.register_implementation("polarisfs", PolarisFileSystem)
