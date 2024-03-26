@@ -22,7 +22,6 @@ class Converter(abc.ABC):
         Creates a pointer.
 
         Args:
-            root: The root path of the zarr hierarchy.
             column: The name of the column. Each column has its own group in the root.
             index: The index or slice of the pointer.
         """
