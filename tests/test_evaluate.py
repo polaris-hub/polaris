@@ -2,7 +2,9 @@ import os
 
 import numpy as np
 import pandas as pd
+from packaging.version import Version
 
+import polaris as po
 from polaris.benchmark import MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
 from polaris.evaluate._metric import Metric
 from polaris.evaluate._results import BenchmarkResults
@@ -36,6 +38,7 @@ def test_result_to_json(tmpdir: str, test_user_owner: HubOwner):
     path = os.path.join(tmpdir, "result.json")
     result.to_json(path)
     BenchmarkResults.from_json(path)
+    assert Version(po.__version__) == result.version
 
 
 def test_metrics_singletask_reg(tmpdir: str, test_single_task_benchmark: SingleTaskBenchmarkSpecification):

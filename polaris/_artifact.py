@@ -2,17 +2,19 @@ import json
 from typing import Dict, Optional, Union
 
 import fsspec
+from loguru import logger
+from packaging.version import Version
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    PrivateAttr,
     computed_field,
     field_serializer,
     field_validator,
 )
 from pydantic.alias_generators import to_camel
 
+import polaris as po
 from polaris.utils.misc import sluggify
 from polaris.utils.types import HubOwner, SlugCompatibleStringType
 
@@ -35,7 +37,7 @@ class BaseArtifactModel(BaseModel):
         owner: A slug-compatible name for the owner of the dataset.
             If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
             Together with the name, this is used by the Hub to uniquely identify the benchmark.
-        _verified: Whether the benchmark has been verified through the Polaris Hub.
+        version: The version of the Polaris library that was used to create the artifact.
     """
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, arbitrary_types_allowed=True)
@@ -45,16 +47,30 @@ class BaseArtifactModel(BaseModel):
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
-    _verified: bool = PrivateAttr(False)
+    version: Union[str, Version] = Field(default_factory=lambda: Version(po.__version__))
 
     @computed_field
     @property
     def artifact_id(self) -> Optional[str]:
         return f"{self.owner}/{sluggify(self.name)}" if self.owner and self.name else None
 
-    @field_serializer("owner")
-    def _serialize_owner(self, value: HubOwner) -> Union[str, None]:
-        return self.owner.slug if self.owner else None
+    @field_validator("version")
+    @classmethod
+    def _validate_version(cls, value: Union[str, Version]):
+        current_version = Version(po.__version__)
+        if value is None:
+            value = current_version
+        elif isinstance(value, str):
+            value = Version(value)
+
+        if value != current_version:
+            logger.info(
+                f"The Polaris version that was used to create the artifact ({value}) is different from "
+                f"the currently installed version of Polaris ({current_version})."
+            )
+        if not isinstance(value, Version):
+            raise ValueError(f"Version must be a string or Version object. Got: {type(value)}")
+        return value
 
     @field_validator("owner", mode="before")
     @classmethod
@@ -62,6 +78,14 @@ class BaseArtifactModel(BaseModel):
         if isinstance(value, str):
             return HubOwner(slug=value)
         return value
+
+    @field_serializer("version")
+    def _serialize_version(self, value: Version) -> str:
+        return str(value)
+
+    @field_serializer("owner")
+    def _serialize_owner(self, value: HubOwner) -> Union[str, None]:
+        return value.slug if value else None
 
     @classmethod
     def from_json(cls, path: str):
