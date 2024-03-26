@@ -47,7 +47,9 @@ class BaseArtifactModel(BaseModel):
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
-    version: Union[str, Version] = Field(default_factory=lambda: Version(po.__version__))
+    version: Optional[Union[str, Version]] = Field(
+        default_factory=lambda: Version(po.__version__) if po.__version__ != "dev" else None
+    )
 
     @computed_field
     @property
@@ -61,9 +63,10 @@ class BaseArtifactModel(BaseModel):
         if value is None:
             value = current_version
         elif isinstance(value, str):
-            value = Version(value)
+            if value != "dev":
+                value = Version(value)
 
-        if value != current_version:
+        if value is not None and value != current_version:
             logger.info(
                 f"The Polaris version that was used to create the artifact ({value}) is different from "
                 f"the currently installed version of Polaris ({current_version})."
