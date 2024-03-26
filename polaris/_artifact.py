@@ -47,7 +47,7 @@ class BaseArtifactModel(BaseModel):
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
-    version: Optional[str] = Field(po.__version__)
+    version: str = Field(po.__version__)
 
     @computed_field
     @property
@@ -56,13 +56,12 @@ class BaseArtifactModel(BaseModel):
 
     @field_validator("version")
     @classmethod
-    def _validate_version(cls, value: Optional[str]) -> str:
-        current_version = po.__version__
-        if value is None:
-            value = current_version
-        elif isinstance(value, str) and value != "dev":
-            Version(value)  # Make sure it is a valid semantic version
+    def _validate_version(cls, value: str) -> str:
+        if value != "dev":
+            # Make sure it is a valid semantic version
+            Version(value)
 
+        current_version = po.__version__
         if value != current_version:
             logger.info(
                 f"The version of Polaris that was used to create the artifact ({value}) is different "
@@ -76,10 +75,6 @@ class BaseArtifactModel(BaseModel):
         if isinstance(value, str):
             return HubOwner(slug=value)
         return value
-
-    @field_serializer("version")
-    def _serialize_version(self, value: Version) -> str:
-        return str(value)
 
     @field_serializer("owner")
     def _serialize_owner(self, value: HubOwner) -> Union[str, None]:
