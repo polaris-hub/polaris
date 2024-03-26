@@ -359,6 +359,9 @@ class PolarisHubClient(OAuth2Client):
 
         try:
             store = zarr.storage.FSStore(path, fs=polaris_fs)
+            if mode in ["r", "r+"]:
+                zarr.consolidate_metadata(store)
+                return zarr.open_consolidated(store, mode=mode)
             return zarr.open(store, mode=mode)
         except Exception as e:
             raise PolarisHubError("Error opening Zarr store") from e
