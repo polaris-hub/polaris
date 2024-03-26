@@ -47,7 +47,7 @@ class BaseArtifactModel(BaseModel):
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
-    version: str = Field(po.__version__)
+    version: str = po.__version__
 
     @computed_field
     @property
