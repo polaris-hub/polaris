@@ -14,7 +14,7 @@ from polaris.utils.types import HubOwner, License
 
 
 def check_version(artifact):
-    assert po.__version__ == str(artifact.version)
+    assert po.__version__ == artifact.version
 
 
 @pytest.fixture(scope="module")
