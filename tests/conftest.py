@@ -4,12 +4,17 @@ import pytest
 import zarr
 from datamol.utils import fs
 
+import polaris as po
 from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
 from polaris.dataset import ColumnAnnotation, Dataset
 from polaris.utils.types import HubOwner, License
+
+
+def check_version(artifact):
+    assert po.__version__ == artifact.version
 
 
 @pytest.fixture(scope="module")
@@ -55,7 +60,7 @@ def test_user_owner():
 
 @pytest.fixture(scope="module")
 def test_dataset(test_data, test_org_owner):
-    return Dataset(
+    dataset = Dataset(
         table=test_data,
         name="test-dataset",
         source="https://www.example.com",
@@ -66,6 +71,8 @@ def test_dataset(test_data, test_org_owner):
         license=License(id="MIT"),
         curation_reference="https://www.example.com",
     )
+    check_version(dataset)
+    return dataset
 
 
 @pytest.fixture(scope="function")
@@ -81,7 +88,7 @@ def zarr_archive(tmp_path):
 def test_single_task_benchmark(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
-    return SingleTaskBenchmarkSpecification(
+    benchmark = SingleTaskBenchmarkSpecification(
         name="single-task-benchmark",
         dataset=test_dataset,
         metrics=[
@@ -97,13 +104,15 @@ def test_single_task_benchmark(test_dataset):
         target_cols="expt",
         input_cols="smiles",
     )
+    check_version(benchmark)
+    return benchmark
 
 
 @pytest.fixture(scope="function")
 def test_single_task_benchmark_clf(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
-    return SingleTaskBenchmarkSpecification(
+    benchmark = SingleTaskBenchmarkSpecification(
         name="single-task-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
@@ -112,13 +121,15 @@ def test_single_task_benchmark_clf(test_dataset):
         target_cols="CLASS_expt",
         input_cols="smiles",
     )
+    check_version(benchmark)
+    return benchmark
 
 
 @pytest.fixture(scope="function")
 def test_single_task_benchmark_multiple_test_sets(test_dataset):
     train_indices = list(range(90))
     test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
-    return SingleTaskBenchmarkSpecification(
+    benchmark = SingleTaskBenchmarkSpecification(
         name="single-task-benchmark",
         dataset=test_dataset,
         metrics=[
@@ -134,6 +145,8 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
         target_cols="expt",
         input_cols="smiles",
     )
+    check_version(benchmark)
+    return benchmark
 
 
 @pytest.fixture(scope="function")
@@ -141,7 +154,7 @@ def test_multi_task_benchmark(test_dataset):
     # For the sake of simplicity, just use a small set of indices
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
-    return MultiTaskBenchmarkSpecification(
+    benchmark = MultiTaskBenchmarkSpecification(
         name="multi-task-benchmark",
         dataset=test_dataset,
         main_metric="mean_absolute_error",
@@ -158,6 +171,8 @@ def test_multi_task_benchmark(test_dataset):
         input_cols="smiles",
         target_types={"expt": "regression"},
     )
+    check_version(benchmark)
+    return benchmark
 
 
 @pytest.fixture(scope="function")
@@ -165,7 +180,7 @@ def test_multi_task_benchmark_clf(test_dataset):
     # For the sake of simplicity, just use a small set of indices
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
-    return MultiTaskBenchmarkSpecification(
+    benchmark = MultiTaskBenchmarkSpecification(
         name="multi-task-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
@@ -174,3 +189,5 @@ def test_multi_task_benchmark_clf(test_dataset):
         target_cols=["CLASS_expt", "CLASS_calc"],
         input_cols="smiles",
     )
+    check_version(benchmark)
+    return benchmark
