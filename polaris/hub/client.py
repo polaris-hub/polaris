@@ -16,6 +16,7 @@ from authlib.common.security import generate_token
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
+from datamol.utils import fs
 from httpx import HTTPStatusError
 from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
@@ -29,8 +30,8 @@ from polaris.dataset import Dataset
 from polaris.evaluate import BenchmarkResults
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils import fs
 from polaris.utils.constants import DEFAULT_CACHE_DIR
+from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
 from polaris.utils.types import AccessType, HubOwner, IOMode, TimeoutTypes
 
@@ -151,6 +152,25 @@ class PolarisHubClient(OAuth2Client):
             pass
 
         return response
+
+    def _normalize_owner(
+        self,
+        artifact_owner: Optional[Union[str, HubOwner]] = None,
+        parameter_owner: Optional[Union[str, HubOwner]] = None,
+    ) -> HubOwner:
+        """
+        Normalize the owner of an artifact to a `HubOwner` instance.
+        The parameter owner takes precedence over the artifact owner.
+        """
+        if parameter_owner is not None:
+            artifact_owner = parameter_owner
+
+        if artifact_owner is None:
+            raise ValueError(
+                "Either specify the `owner` attribute for the artifact or pass the `owner` parameter."
+            )
+
+        return artifact_owner if isinstance(artifact_owner, HubOwner) else HubOwner(slug=artifact_owner)
 
     # =========================
     #     Overrides
@@ -363,6 +383,7 @@ class PolarisHubClient(OAuth2Client):
                 zarr.consolidate_metadata(store)
                 return zarr.open_consolidated(store, mode=mode)
             return zarr.open(store, mode=mode)
+
         except Exception as e:
             raise PolarisHubError("Error opening Zarr store") from e
 
@@ -446,19 +467,11 @@ class PolarisHubClient(OAuth2Client):
         Args:
             results: The results to upload.
             access: Grant public or private access to result
-            owner: Which Hub user or organization owns the artifact.
-                Optional if and only if the `benchmark.owner` attribute is set.
+            owner: Which Hub user or organization owns the artifact. Takes precedence over `results.owner`.
         """
 
         # Get the serialized model data-structure
-
-        if results.owner is None:
-            if owner is None:
-                raise ValueError(
-                    "The `owner` argument must be specified if the `results.owner` attribute is not set."
-                )
-            results.owner = owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
-
+        results.owner = self._normalize_owner(results.owner, owner)
         result_json = results.model_dump(by_alias=True, exclude_none=True)
 
         # Make a request to the hub
@@ -501,24 +514,24 @@ class PolarisHubClient(OAuth2Client):
                 tuple with (connect_timeout, write_timeout). The type of the the timout parameter comes from `httpx`.
                 Since datasets can get large, it might be needed to increase the write timeout for larger datasets.
                 See also: https://www.python-httpx.org/advanced/#timeout-configuration
-            owner: Which Hub user or organization owns the artifact.
-                Optional if and only if the `benchmark.owner` attribute is set.
+            owner: Which Hub user or organization owns the artifact. Takes precedence over `dataset.owner`.
         """
-
-        if dataset.owner is None:
-            if owner is None:
-                raise ValueError(
-                    "The `owner` argument must be specified if the `dataset.owner` attribute is not set."
-                )
-            dataset.owner = owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
+        # Normalize timeout
+        if timeout is None:
+            timeout = self.settings.default_timeout
 
         # Get the serialized data-model
-        # We exclude the table as it handled separately and the cache_dir as it is user-specific
+        # We exclude the table as it handled separately and we exclude the cache_dir as it is user-specific
+        dataset.owner = self._normalize_owner(dataset.owner, owner)
         dataset_json = dataset.model_dump(exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True)
 
-        # Uploading a dataset is a two-step process.
+        # We will save the Zarr archive to the Hub as well
+        dataset_json["zarrRootPath"] = f"{PolarisFileSystem.protocol}://data.zarr"
+
+        # Uploading a dataset is a three-step process.
         # 1. Upload the dataset meta data to the hub and prepare the hub to receive the parquet file
         # 2. Upload the parquet file to the hub
+        # 3. Upload the associated Zarr archive
         # TODO: Revert step 1 in case step 2 fails - Is this needed? Or should this be taken care of by the hub?
 
         # Write the parquet file directly to a buffer
@@ -542,6 +555,7 @@ class PolarisHubClient(OAuth2Client):
                 "access": access,
                 **dataset_json,
             },
+            timeout=timeout,
         )
 
         # Step 2: Upload the parquet file
@@ -552,6 +566,7 @@ class PolarisHubClient(OAuth2Client):
             headers={
                 "Content-type": "application/vnd.apache.parquet",
             },
+            timeout=timeout,
         )
 
         if hub_response.status_code == 307:
@@ -570,6 +585,20 @@ class PolarisHubClient(OAuth2Client):
 
         else:
             hub_response.raise_for_status()
+
+        # Step 3: Upload any associated Zarr archive
+        if dataset.zarr_root is not None:
+            with tmp_attribute_change(self.settings, "default_timeout", timeout):
+                # Copy the Zarr archive to the hub
+                # This does not copy the consolidated data
+                dest = self.open_zarr_file(
+                    owner=dataset.owner,
+                    name=dataset.name,
+                    path=dataset_json["zarrRootPath"],
+                    mode="w",
+                )
+                logger.info("Copying Zarr archive to the Hub. This may take a while.")
+                zarr.copy_all(source=dataset.zarr_root, dest=dest, log=logger.info)
 
         logger.success(
             "Your dataset has been successfully uploaded to the Hub. "
@@ -603,18 +632,11 @@ class PolarisHubClient(OAuth2Client):
         Args:
             benchmark: The benchmark to upload.
             access: Grant public or private access to result
-            owner: Which Hub user or organization owns the artifact.
-                Optional if and only if the `benchmark.owner` attribute is set.
+            owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
         """
-        if benchmark.owner is None:
-            if owner is None:
-                raise ValueError(
-                    "The `owner` argument must be specified if the `benchmark.owner` attribute is not set."
-                )
-            benchmark.owner = owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
-
         # Get the serialized data-model
         # We exclude the dataset as we expect it to exist on the hub already.
+        benchmark.owner = self._normalize_owner(benchmark.owner, owner)
         benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
         benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
         benchmark_json["access"] = access

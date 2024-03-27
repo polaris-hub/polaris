@@ -1,6 +1,4 @@
 import json
-import os.path
-from collections import defaultdict
 from hashlib import md5
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -8,9 +6,11 @@ import fsspec
 import numpy as np
 import pandas as pd
 import zarr
+from datamol.utils import fs
 from loguru import logger
 from pydantic import (
     Field,
+    PrivateAttr,
     computed_field,
     field_serializer,
     field_validator,
@@ -20,12 +20,10 @@ from pydantic import (
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
-from polaris.hub.settings import PolarisHubSettings
-from polaris.utils import fs
+from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
-from polaris.utils.io import get_zarr_root, robust_copy
 from polaris.utils.types import AccessType, HttpUrlString, HubOwner, License
 
 # Constants
@@ -51,6 +49,7 @@ class Dataset(BaseArtifactModel):
             path to a `.parquet` file or a `pandas.DataFrame`.
         default_adapters: The adapters that the Dataset recommends to use by default to change the format of the data
             for specific columns.
+        zarr_root_path: The data for any pointer column should be saved in the Zarr archive this path points to.
         md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
             raise an error if the specified checksum doesn't match the computed checksum.
         readme: Markdown text that can be used to provide a formatted description of the dataset.
@@ -72,6 +71,7 @@ class Dataset(BaseArtifactModel):
     # Data
     table: Union[pd.DataFrame, str]
     default_adapters: Dict[str, Adapter] = Field(default_factory=dict)
+    zarr_root_path: Optional[str] = None
     md5sum: Optional[str] = None
 
     # Additional meta-data
@@ -85,7 +85,8 @@ class Dataset(BaseArtifactModel):
     cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.
 
     # Private attributes
-    _path_to_hash: Dict[str, Dict[str, str]] = defaultdict(dict)
+    _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
+    _client = PrivateAttr(None)  # Optional[PolarisHubClient]
     _has_been_warned: bool = False
     _has_been_cached: bool = False
 
@@ -188,6 +189,42 @@ class Dataset(BaseArtifactModel):
         checksum = hash_fn.hexdigest()
         return checksum
 
+    @property
+    def client(self):
+        """The Polaris Hub client used to interact with the Polaris Hub."""
+
+        # Import it here to prevent circular imports
+        from polaris.hub.client import PolarisHubClient
+
+        if self._client is None:
+            self._client = PolarisHubClient()
+        return self._client
+
+    @property
+    def zarr_root(self):
+        """Open the zarr archive in read-write mode if it is not already open."""
+        if self.zarr_root_path is None or not any(anno.is_pointer for anno in self.annotations.values()):
+            return None
+
+        saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_root_path)
+        saved_remote = saved_on_hub or not fs.is_local_path(self.zarr_root_path)
+
+        if saved_remote and not self._has_been_warned:
+            logger.warning(
+                f"You're loading data from a remote location. "
+                f"To speed up this process, consider caching the dataset first "
+                f"using {self.__class__.__name__}.cache()"
+            )
+            self._has_been_warned = True
+
+        # We open the archive in read-only mode if it is saved on the Hub
+        if self._zarr_root is None:
+            if saved_on_hub:
+                self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_root_path, "r+")
+            else:
+                self._zarr_root = zarr.open(self.zarr_root_path, "r+")
+        return self._zarr_root
+
     @computed_field
     @property
     def n_rows(self) -> int:
@@ -228,64 +265,34 @@ class Dataset(BaseArtifactModel):
 
         adapters = adapters or self.default_adapters
 
-        def _load(p: str, index: Union[int, slice]) -> np.ndarray:
-            """Tiny helper function to reduce code repetition."""
-            arr = zarr.open(p, mode="r")
-            arr = arr[index]
-
-            if isinstance(index, slice):
-                arr = tuple(arr)
-
-            adapter = adapters.get(col)
-            if adapter is not None:
-                arr = adapter(arr)
-
-            return arr
-
+        # If not a pointer, we can just return here
         value = self.table.loc[row, col]
         if not self.annotations[col].is_pointer:
             return value
 
-        value, index = self._split_index_from_path(value)
+        # Load the data from the Zarr archive
+        path, index = self._split_index_from_path(value)
+        arr = self.zarr_root[path][index]
 
-        # In the case it is a pointer column, we need to load additional data into memory
-        # We first check if the data has been downloaded to the cache.
-        path = self._get_cache_path(column=col, value=value)
-        if fs.exists(path):
-            return _load(path, index)
+        # Change to tuple if a slice
+        if isinstance(index, slice):
+            arr = tuple(arr)
 
-        # If it doesn't exist, we load from the original path and warn if not local
-        if not fs.is_local_path(value) and not self._has_been_warned:
-            logger.warning(
-                f"You're loading data from a remote location. "
-                f"To speed up this process, consider caching the dataset first "
-                f"using {self.__class__.__name__}.cache()"
-            )
-            self._has_been_warned = True
-        return _load(value, index)
+        # Adapt the input
+        adapter = adapters.get(col)
+        if adapter is not None:
+            arr = adapter(arr)
+
+        return arr
 
     def upload_to_hub(
-        self,
-        env_file: Optional[Union[str, os.PathLike]] = None,
-        settings: Optional[PolarisHubSettings] = None,
-        cache_auth_token: bool = True,
-        access: Optional[AccessType] = "private",
-        owner: Optional[Union[HubOwner, str]] = None,
-        **kwargs: dict,
+        self, access: Optional[AccessType] = "private", owner: Optional[Union[HubOwner, str]] = None
     ):
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
         """
-        from polaris.hub.client import PolarisHubClient
-
-        with PolarisHubClient(
-            env_file=env_file,
-            settings=settings,
-            cache_auth_token=cache_auth_token,
-            **kwargs,
-        ) as client:
-            return client.upload_dataset(self, access=access, owner=owner)
+        self.client.upload_dataset(self, access=access, owner=owner)
 
     @classmethod
     def from_json(cls, path: str):
@@ -323,19 +330,19 @@ class Dataset(BaseArtifactModel):
         fs.mkdir(destination, exist_ok=True)
         table_path = fs.join(destination, "table.parquet")
         dataset_path = fs.join(destination, "dataset.json")
-        pointer_dir = fs.join(destination, "data")
-
-        # Save additional data
-        new_table = self._copy_and_update_pointers(pointer_dir, inplace=False)
+        zarr_archive = fs.join(destination, "data.zarr")
 
         # Lu: Avoid serilizing and sending None to hub app.
         serialized = self.model_dump(exclude={"cache_dir"}, exclude_none=True)
         serialized["table"] = table_path
 
-        # We need to recompute the checksum, as the pointer paths have changed
-        serialized["md5sum"] = self._compute_checksum(new_table)
+        # Copy over Zarr data to the destination
+        if self.zarr_root is not None:
+            dest = zarr.open(zarr_archive, "w")
+            zarr.copy_all(source=self.zarr_root, dest=dest)
+            serialized["zarr_root_path"] = zarr_archive
 
-        new_table.to_parquet(table_path)
+        self.table.to_parquet(table_path)
         with fsspec.open(dataset_path, "w") as f:
             json.dump(serialized, f)
 
@@ -355,31 +362,14 @@ class Dataset(BaseArtifactModel):
         if cache_dir is not None:
             self.cache_dir = cache_dir
 
+        self.to_json(self.cache_dir)
+
+        if self.zarr_root_path is not None:
+            self.zarr_root_path = fs.join(self.cache_dir, "data.zarr")
+
         if not self._has_been_cached:
-            self._copy_and_update_pointers(self.cache_dir, inplace=True)
             self._has_been_cached = True
         return self.cache_dir
-
-    def _get_cache_path(self, column: str, value: str) -> Optional[str]:
-        """
-        Returns where the data _would be_ cached for any entry in the pointer columns,
-        or None if the column is not a pointer column.
-        """
-        if not self.annotations[column].is_pointer:
-            return
-
-        if value not in self._path_to_hash[column]:
-            h = md5(value.encode("utf-8")).hexdigest()
-
-            value, _ = self._split_index_from_path(value)
-            ext = fs.get_extension(value)
-            dst = fs.join(self.cache_dir, column, f"{h}.{ext}")
-
-            # The reason for caching the path is to speed-up retrieval. Hashing can be slow and with large
-            # datasets this could become a bottleneck.
-            self._path_to_hash[column][value] = dst
-
-        return self._path_to_hash[column][value]
 
     def size(self):
         return self.rows, self.n_columns
@@ -401,39 +391,6 @@ class Dataset(BaseArtifactModel):
             else:
                 raise ValueError(f"Invalid index format: {index}")
         return path, index
-
-    def _copy_and_update_pointers(
-        self, save_dir: str, table: Optional[pd.DataFrame] = None, inplace: bool = False
-    ) -> pd.DataFrame:
-        """Copy and update the path in the table to the new destination"""
-
-        def fn(path):
-            """Helper function that can be used within Pandas apply to copy and update all files"""
-
-            # We copy the entire .zarr hierarchy
-            root = get_zarr_root(path)
-            if root is None:
-                raise NotImplementedError(
-                    "Only the .zarr file format is currently supported for pointer columns"
-                )
-
-            # We could introduce name collisions here and thus use a hash of the original path for the destination
-            dst = fs.join(save_dir, f"{md5(root.encode('utf-8')).hexdigest()}.zarr")
-            robust_copy(root, dst)
-
-            diff = os.path.relpath(path, root)
-            dst = fs.join(dst, diff)
-            return dst
-
-        if table is None:
-            table = self.table
-        if not inplace:
-            table = self.table.copy(deep=True)
-
-        for c in table.columns:
-            if self.annotations[c].is_pointer:
-                table[c] = table[c].apply(fn)
-        return table
 
     def __getitem__(self, item):
         """Allows for indexing the dataset directly"""
@@ -486,3 +443,8 @@ class Dataset(BaseArtifactModel):
         if not isinstance(other, Dataset):
             return False
         return self.md5sum == other.md5sum
+
+    def __del__(self):
+        """Close the connection of the client"""
+        if self._client is not None:
+            self._client.close()

@@ -34,17 +34,15 @@ class ZarrConverter(Converter):
         if v is not None:
             raise ValueError("The root of the zarr hierarchy should only contain arrays.")
 
+        # Copy to the source zarr, so everything is in one place
+        zarr.copy_all(source=src, dest=factory.zarr_root)
+
         # Construct the table
         # Parse any group into a column
         data = defaultdict(dict)
         for col, arr in src.arrays():
-            # Copy to the source zarr, so everything is in one place
-            dst = zarr.open_group("/".join([factory.zarr_root_path, col]), "w")
-            zarr.copy(arr, dst)
-
             for i in range(len(arr)):
-                # In case all data is saved in a single array, we construct a path with an index suffix.
-                data[col][i] = self.get_pointer(path, arr.name, i)
+                data[col][i] = self.get_pointer(arr.name.removeprefix("/"), i)
 
         # Construct the dataset
         table = pd.DataFrame(data)
