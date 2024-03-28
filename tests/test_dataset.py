@@ -47,6 +47,7 @@ def test_load_data(tmp_path, with_slice, with_caching):
 
     root = zarr.open(zarr_path, "w")
     root.array("A", data=arr)
+    zarr.consolidate_metadata(root.store)
 
     path = "A#0:5" if with_slice else "A#0"
     table = pd.DataFrame({"A": [path]}, index=[0])

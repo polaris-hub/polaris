@@ -219,15 +219,13 @@ class Dataset(BaseArtifactModel):
 
         # We open the archive in read-only mode if it is saved on the Hub
         if self._zarr_root is None:
-            if saved_on_hub:
-                self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_root_path, "r+")
-            else:
-                try:
-                    # Attempt to access .zmetadata to open consolidated file
-                    _ = self.zarr_root.store[".zmetadata"]
-                    self._zarr_root = zarr.open_consolidated(self.zarr_root.store, mode="r")
-                except KeyError:
-                    self._zarr_root = zarr.open(self.zarr_root.store, mode="r+")
+            try:
+                if saved_on_hub:
+                    self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_root_path, "r+")
+                else:
+                    self._zarr_root = zarr.open_consolidated(self.zarr_root_path, mode="r")
+            except KeyError as error:
+                raise InvalidDatasetError("A Zarr archive associated with a Polaris dataset has to be consolidated.") from error
         return self._zarr_root
 
     @computed_field

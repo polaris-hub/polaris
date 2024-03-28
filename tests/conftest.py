@@ -74,6 +74,11 @@ def zarr_archive(tmp_path):
     root = zarr.open_group(tmp_path, mode="w")
     root.array("A", data=np.random.random((100, 2048)))
     root.array("B", data=np.random.random((100, 2048)))
+
+    zarr.consolidate_metadata(root.store)
+    zmetadata_content = root.store[".zmetadata"]
+    root.store[".zmetadata"] = zmetadata_content
+
     return tmp_path
 
 
