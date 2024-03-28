@@ -383,7 +383,7 @@ class PolarisHubClient(OAuth2Client):
             if mode in ["r", "r+"] and as_consolidated:
                 return zarr.open_consolidated(store, mode=mode)
             return zarr.open(store, mode=mode)
-    
+
         except Exception as e:
             raise PolarisHubError("Error opening Zarr store") from e
 
@@ -598,12 +598,11 @@ class PolarisHubClient(OAuth2Client):
                 )
                 # Locally consolidate the archive metadata
                 zarr.consolidate_metadata(dataset.zarr_root.store)
-                zmetadata_content = dataset.zarr_root.store['.zmetadata']
-                dest.store['.zmetadata'] = zmetadata_content
-                
+                zmetadata_content = dataset.zarr_root.store[".zmetadata"]
+                dest.store[".zmetadata"] = zmetadata_content
+
                 logger.info("Copying Zarr archive to the Hub. This may take a while.")
-                zarr.copy_all(source=dataset.zarr_root, dest=dest, log=logger.info)    
-                                    
+                zarr.copy_all(source=dataset.zarr_root, dest=dest, log=logger.info)
 
         logger.success(
             "Your dataset has been successfully uploaded to the Hub. "

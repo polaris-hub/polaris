@@ -124,9 +124,9 @@ class License(BaseModel):
             Else it is required to manually specify this.
     """
 
-    SPDX_LICENSE_DATA_PATH: ClassVar[str] = (
-        "https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json"
-    )
+    SPDX_LICENSE_DATA_PATH: ClassVar[
+        str
+    ] = "https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json"
 
     id: str
     reference: Optional[HttpUrlString] = None
