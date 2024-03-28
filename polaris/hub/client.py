@@ -372,6 +372,9 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             The Zarr object representing the dataset.
         """
+        if as_consolidated and mode not in ["r", "r+"]:
+            raise ValueError("Consolidated archives can only be used with 'r' or 'r+' mode.")
+
         polaris_fs = PolarisFileSystem(
             polaris_client=self,
             dataset_owner=owner,
@@ -596,7 +599,10 @@ class PolarisHubClient(OAuth2Client):
                     path=dataset_json["zarrRootPath"],
                     mode="w",
                 )
-                # Locally consolidate the archive metadata
+
+                # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
+                # metadata based on Zarr developers' recommendations can be tracked at:
+                # https://github.com/zarr-developers/zarr-python/issues/1731
                 zarr.consolidate_metadata(dataset.zarr_root.store)
                 zmetadata_content = dataset.zarr_root.store[".zmetadata"]
                 dest.store[".zmetadata"] = zmetadata_content
