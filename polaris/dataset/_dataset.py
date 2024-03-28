@@ -222,7 +222,7 @@ class Dataset(BaseArtifactModel):
             if saved_on_hub:
                 self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_root_path, "r+")
             else:
-                self._zarr_root = zarr.open(self.zarr_root_path, "r+")
+                self._zarr_root = zarr.open_consolidated(self.zarr_root_path, "r+")
         return self._zarr_root
 
     @computed_field
