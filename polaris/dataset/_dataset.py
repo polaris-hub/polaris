@@ -222,7 +222,12 @@ class Dataset(BaseArtifactModel):
             if saved_on_hub:
                 self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_root_path, "r+")
             else:
-                self._zarr_root = zarr.open_consolidated(self.zarr_root_path, "r+")
+                try:
+                    # Attempt to access .zmetadata to open consolidated file
+                    _ = self.zarr_root.store[".zmetadata"]
+                    self._zarr_root = zarr.open_consolidated(self.zarr_root.store, mode="r")
+                except KeyError:
+                    self._zarr_root = zarr.open(self.zarr_root.store, mode="r+")
         return self._zarr_root
 
     @computed_field

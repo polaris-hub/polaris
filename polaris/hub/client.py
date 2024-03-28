@@ -598,6 +598,7 @@ class PolarisHubClient(OAuth2Client):
                     name=dataset.name,
                     path=dataset_json["zarrRootPath"],
                     mode="w",
+                    as_consolidated=False,
                 )
 
                 # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
