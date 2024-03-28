@@ -115,6 +115,7 @@ class PolarisHubClient(OAuth2Client):
             # httpx.Client
             base_url=settings.api_url,
             verify=verify,
+            timeout=self.settings.default_timeout,
             # Extra
             **kwargs,
         )

@@ -380,6 +380,7 @@ class Dataset(BaseArtifactModel):
 
         if self.zarr_root_path is not None:
             self.zarr_root_path = fs.join(self.cache_dir, "data.zarr")
+            self._zarr_root = None
 
         if not self._has_been_cached:
             self._has_been_cached = True
