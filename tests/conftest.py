@@ -70,15 +70,11 @@ def test_dataset(test_data, test_org_owner):
 
 @pytest.fixture(scope="function")
 def zarr_archive(tmp_path):
-    tmp_path = fs.join(str(tmp_path), "data.zarr")
-    root = zarr.open_group(tmp_path, mode="w")
+    tmp_path = fs.join(tmp_path, "data.zarr")
+    root = zarr.open(tmp_path, mode="w")
     root.array("A", data=np.random.random((100, 2048)))
     root.array("B", data=np.random.random((100, 2048)))
-
     zarr.consolidate_metadata(root.store)
-    zmetadata_content = root.store[".zmetadata"]
-    root.store[".zmetadata"] = zmetadata_content
-
     return tmp_path
 
 

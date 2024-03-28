@@ -215,6 +215,7 @@ class DatasetFactory:
 
     def build(self) -> Dataset:
         """Returns a Dataset based on the current state of the factory."""
+        zarr.consolidate_metadata(self.zarr_root.store)
         return Dataset(
             table=self._table,
             annotations=self._annotations,

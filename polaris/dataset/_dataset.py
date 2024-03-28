@@ -221,11 +221,15 @@ class Dataset(BaseArtifactModel):
         if self._zarr_root is None:
             try:
                 if saved_on_hub:
-                    self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_root_path, "r+")
+                    self._zarr_root = self.client.open_zarr_file(
+                        self.owner, self.name, self.zarr_root_path, "r+"
+                    )
                 else:
-                    self._zarr_root = zarr.open_consolidated(self.zarr_root_path, mode="r")
+                    self._zarr_root = zarr.open_consolidated(self.zarr_root_path, mode="r+")
             except KeyError as error:
-                raise InvalidDatasetError("A Zarr archive associated with a Polaris dataset has to be consolidated.") from error
+                raise InvalidDatasetError(
+                    "A Zarr archive associated with a Polaris dataset has to be consolidated."
+                ) from error
         return self._zarr_root
 
     @computed_field
@@ -343,6 +347,13 @@ class Dataset(BaseArtifactModel):
         if self.zarr_root is not None:
             dest = zarr.open(zarr_archive, "w")
             zarr.copy_all(source=self.zarr_root, dest=dest)
+
+            # Copy the .zmetadata file
+            # To track discussions on whether this should be done by copy_all()
+            # see https://github.com/zarr-developers/zarr-python/issues/1731
+            zmetadata_content = self.zarr_root.store.store[".zmetadata"]
+            dest.store[".zmetadata"] = zmetadata_content
+
             serialized["zarr_root_path"] = zarr_archive
 
         self.table.to_parquet(table_path)

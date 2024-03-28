@@ -605,7 +605,7 @@ class PolarisHubClient(OAuth2Client):
                 # metadata based on Zarr developers' recommendations can be tracked at:
                 # https://github.com/zarr-developers/zarr-python/issues/1731
                 zarr.consolidate_metadata(dataset.zarr_root.store)
-                zmetadata_content = dataset.zarr_root.store[".zmetadata"]
+                zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
                 dest.store[".zmetadata"] = zmetadata_content
 
                 logger.info("Copying Zarr archive to the Hub. This may take a while.")
