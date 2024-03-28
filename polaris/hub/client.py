@@ -358,7 +358,7 @@ class PolarisHubClient(OAuth2Client):
         return Dataset(**response)
 
     def open_zarr_file(
-        self, owner: Union[str, HubOwner], name: str, path: str, mode: IOMode
+        self, owner: Union[str, HubOwner], name: str, path: str, mode: IOMode, as_consolidated: bool = True
     ) -> zarr.hierarchy.Group:
         """Open a Zarr file from a Polaris dataset
 
@@ -367,10 +367,14 @@ class PolarisHubClient(OAuth2Client):
             name: Name of the dataset.
             path: Path to the Zarr file within the dataset.
             mode: The mode in which the file is opened.
+            as_consolidated: Whether to open the store with consolidated metadata for optimized reading. This is only applicable in 'r' and 'r+' modes.
 
         Returns:
             The Zarr object representing the dataset.
         """
+        if as_consolidated and mode not in ["r", "r+"]:
+            raise ValueError("Consolidated archives can only be used with 'r' or 'r+' mode.")
+
         polaris_fs = PolarisFileSystem(
             polaris_client=self,
             dataset_owner=owner,
@@ -379,6 +383,8 @@ class PolarisHubClient(OAuth2Client):
 
         try:
             store = zarr.storage.FSStore(path, fs=polaris_fs)
+            if mode in ["r", "r+"] and as_consolidated:
+                return zarr.open_consolidated(store, mode=mode)
             return zarr.open(store, mode=mode)
 
         except Exception as e:
@@ -587,13 +593,21 @@ class PolarisHubClient(OAuth2Client):
         if dataset.zarr_root is not None:
             with tmp_attribute_change(self.settings, "default_timeout", timeout):
                 # Copy the Zarr archive to the hub
-                # This does not copy the consolidated data
                 dest = self.open_zarr_file(
                     owner=dataset.owner,
                     name=dataset.name,
                     path=dataset_json["zarrRootPath"],
                     mode="w",
+                    as_consolidated=False,
                 )
+
+                # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
+                # metadata based on Zarr developers' recommendations can be tracked at:
+                # https://github.com/zarr-developers/zarr-python/issues/1731
+                zarr.consolidate_metadata(dataset.zarr_root.store)
+                zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
+                dest.store[".zmetadata"] = zmetadata_content
+
                 logger.info("Copying Zarr archive to the Hub. This may take a while.")
                 zarr.copy_all(source=dataset.zarr_root, dest=dest, log=logger.info)
 
