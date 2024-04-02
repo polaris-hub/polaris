@@ -154,7 +154,7 @@ class Dataset(BaseArtifactModel):
 
         return m
 
-    @field_validator("default_adapters", mode='before')
+    @field_validator("default_adapters", mode="before")
     def _validate_adapters(cls, value):
         """Validate the adapters"""
         return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
@@ -274,7 +274,7 @@ class Dataset(BaseArtifactModel):
         adapters = adapters or self.default_adapters
         adapter = adapters.get(col)
 
-        # If not a pointer, return it here. Apply adapter if specified. 
+        # If not a pointer, return it here. Apply adapter if specified.
         value = self.table.loc[row, col]
         if not self.annotations[col].is_pointer:
             if adapter is not None:
