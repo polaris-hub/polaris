@@ -1,7 +1,11 @@
 from enum import Enum
-
 import datamol as dm
 
+# Map of conversion operations which can be applied to dataset columns
+conversion_map = {
+    'SMILES_TO_MOL': dm.to_mol,
+    'BYTES_TO_MOL': dm.Mol
+}
 
 class Adapter(Enum):
     """
@@ -13,10 +17,10 @@ class Adapter(Enum):
         BYTES_TO_MOL: Convert a RDKit binary string to a RDKit molecule.
     """
 
-    SMILES_TO_MOL = dm.to_mol
-    BYTES_TO_MOL = dm.Mol
+    SMILES_TO_MOL = 'SMILES_TO_MOL'
+    BYTES_TO_MOL = 'BYTES_TO_MOL'
 
     def __call__(self, data):
         if isinstance(data, tuple):
-            return tuple(self.value(d) for d in data)
-        return self.value(data)
+            return tuple(conversion_map[self.name](d) for d in data)
+        return conversion_map[self.name](data)

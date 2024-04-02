@@ -154,9 +154,9 @@ class Dataset(BaseArtifactModel):
 
         return m
 
-    @field_validator("default_adapters")
+    @field_validator("default_adapters", mode='before')
     def _validate_adapters(cls, value):
-        """Serializes the adapters"""
+        """Validate the adapters"""
         return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
 
     @field_serializer("default_adapters")
@@ -270,11 +270,15 @@ class Dataset(BaseArtifactModel):
                 the content of the referenced file is loaded to memory.
         """
 
+        # Fetch adapters for dataset and a given column
         adapters = adapters or self.default_adapters
+        adapter = adapters.get(col)
 
-        # If not a pointer, we can just return here
+        # If not a pointer, return it here. Apply adapter if specified. 
         value = self.table.loc[row, col]
         if not self.annotations[col].is_pointer:
+            if adapter is not None:
+                return adapter(value)
             return value
 
         # Load the data from the Zarr archive
@@ -285,8 +289,7 @@ class Dataset(BaseArtifactModel):
         if isinstance(index, slice):
             arr = tuple(arr)
 
-        # Adapt the input
-        adapter = adapters.get(col)
+        # Adapt the input to the specified format
         if adapter is not None:
             arr = adapter(arr)
 

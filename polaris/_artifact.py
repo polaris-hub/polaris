@@ -37,7 +37,7 @@ class BaseArtifactModel(BaseModel):
         owner: A slug-compatible name for the owner of the dataset.
             If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
             Together with the name, this is used by the Hub to uniquely identify the benchmark.
-        version: The version of the Polaris library that was used to create the artifact.
+        polaris_version: The version of the Polaris library that was used to create the artifact.
     """
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, arbitrary_types_allowed=True)
@@ -47,14 +47,14 @@ class BaseArtifactModel(BaseModel):
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     owner: Optional[HubOwner] = None
-    version: str = po.__version__
+    polaris_version: str = po.__version__
 
     @computed_field
     @property
     def artifact_id(self) -> Optional[str]:
         return f"{self.owner}/{sluggify(self.name)}" if self.owner and self.name else None
 
-    @field_validator("version")
+    @field_validator("polaris_version")
     @classmethod
     def _validate_version(cls, value: str) -> str:
         if value != "dev":
