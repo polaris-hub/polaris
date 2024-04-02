@@ -40,7 +40,7 @@ def test_result_to_json(tmpdir: str, test_user_owner: HubOwner):
     path = os.path.join(tmpdir, "result.json")
     result.to_json(path)
     BenchmarkResults.from_json(path)
-    assert po.__version__ == result.version
+    assert po.__version__ == result.polaris_version
 
 
 def test_metrics_singletask_reg(tmpdir: str, test_single_task_benchmark: SingleTaskBenchmarkSpecification):

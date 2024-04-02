@@ -74,6 +74,6 @@ def test_license():
 
 def test_version():
     with pytest.raises(ValidationError):
-        BaseArtifactModel(version="invalid")
-    assert BaseArtifactModel().version == po.__version__
-    assert BaseArtifactModel(version="0.1.2")
+        BaseArtifactModel(polaris_version="invalid")
+    assert BaseArtifactModel().polaris_version == po.__version__
+    assert BaseArtifactModel(polaris_version="0.1.2")
