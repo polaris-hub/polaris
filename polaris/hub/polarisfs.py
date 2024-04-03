@@ -186,7 +186,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         pipe_path = self.sep.join([self.base_path, path])
 
         # PUT request to Polaris Hub to put object in path
-        response = self.polaris_client.put(pipe_path, timeout=timeout, content=content)
+        response = self.polaris_client.put(pipe_path, timeout=timeout)
 
         if response.status_code != 307:
             raise PolarisHubError("Could not get signed URL from Polaris Hub.")
