@@ -115,11 +115,21 @@ class HubOwner(BaseModel):
         return self.slug
 
 
+class SupportedLicenseType(Enum):
+    """Supported license types for dataset uploads"""
+
+    BY = "CC-BY-4.0"
+    BY_SA = "CC-BY-SA-4.0"
+    BY_NC = "CC-BY-NC-4.0"
+    BY_NC_SA = "CC-BY-NC-SA-4.0"
+    CC0 = "CC0-1.0"
+
+
 class License(BaseModel):
     """An artifact license.
 
     Attributes:
-        id: The license ID. Either from [SPDX](https://spdx.org/licenses/) or custom.
+        id: The license ID. Only some Creative Commons licenses are supported (https://creativecommons.org/share-your-work/cclicenses/).
         reference: A reference to the license text. If the ID is found in SPDX, this is automatically set.
             Else it is required to manually specify this.
     """
@@ -128,7 +138,7 @@ class License(BaseModel):
         "https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json"
     )
 
-    id: str
+    id: SupportedLicenseType | str
     reference: Optional[HttpUrlString] = None
 
     @model_validator(mode="after")  # type: ignore
