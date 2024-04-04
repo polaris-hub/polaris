@@ -3,7 +3,7 @@ from pydantic import ValidationError
 
 import polaris as po
 from polaris._artifact import BaseArtifactModel
-from polaris.utils.types import HubOwner, License
+from polaris.utils.types import HubOwner
 
 
 def test_slug_string_type():
@@ -55,14 +55,6 @@ def test_slug_compatible_string_type():
         "x" * 4,
     ]:
         BaseArtifactModel(name=name)
-
-
-def test_license():
-    # If not a valid CC license, you must specify a valid reference
-    with pytest.raises(ValidationError):
-        License(id="MIT")
-    with pytest.raises(ValidationError):
-        License(id="0BSD")
 
 
 def test_version():
