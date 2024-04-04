@@ -58,10 +58,6 @@ def test_slug_compatible_string_type():
 
 
 def test_license():
-    for license in ["CC-BY-4.0", "CC-BY-SA-4.0", "CC-BY-NC-4.0", "CC-BY-NC-SA-4.0", "CC0-1.0"]:
-        # If a valid SPDX license, the reference is automatically set
-        assert License(id=license).reference is not None
-
     # If not a valid CC license, you must specify a valid reference
     with pytest.raises(ValidationError):
         License(id="MIT")

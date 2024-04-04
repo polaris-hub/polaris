@@ -1,8 +1,6 @@
-import json
 from enum import Enum
-from typing import Annotated, Any, ClassVar, Literal, Optional, Tuple, Union
+from typing import Annotated, Any, Literal, Optional, Tuple, Union
 
-import fsspec
 import numpy as np
 from pydantic import (
     AfterValidator,
@@ -10,7 +8,6 @@ from pydantic import (
     ConfigDict,
     HttpUrl,
     StringConstraints,
-    computed_field,
 )
 from pydantic.alias_generators import to_camel
 from typing_extensions import TypeAlias
@@ -126,25 +123,9 @@ class License(BaseModel):
 
     Attributes:
         id: The license ID. Only some Creative Commons licenses are supported (https://creativecommons.org/share-your-work/cclicenses/).
-        reference: A reference to the license text. This value is automatically computed based on the specified license ID.
     """
 
-    SPDX_LICENSE_DATA_PATH: ClassVar[str] = (
-        "https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json"
-    )
-
     id: SupportedLicenseType
-
-    @computed_field
-    def reference(cls) -> str:
-        """
-        Fetch the reference from the SPDX database based on the provided license ID
-        """
-        with fsspec.open(cls.SPDX_LICENSE_DATA_PATH) as f:
-            data = json.load(f)
-        data = {license["licenseId"]: license for license in data["licenses"]}
-
-        return data[cls.id]["reference"]
 
 
 class TargetType(Enum):
