@@ -68,7 +68,7 @@ def test_dataset(test_data, test_org_owner):
         tags=["tagA", "tagB"],
         user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
         owner=test_org_owner,
-        license=License(id="MIT"),
+        license=License(id="CC-BY-4.0"),
         curation_reference="https://www.example.com",
     )
     check_version(dataset)
