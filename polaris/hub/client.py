@@ -4,7 +4,7 @@ import ssl
 import webbrowser
 from hashlib import md5
 from io import BytesIO
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Union, get_args
 from urllib.parse import urljoin
 
 import certifi
@@ -521,10 +521,10 @@ class PolarisHubClient(OAuth2Client):
             owner: Which Hub user or organization owns the artifact. Takes precedence over `dataset.owner`.
         """
 
-        # Check if the specified license for the dataset is supported
-        if dataset.license and dataset.license.id not in SupportedLicenseType:
+        # Check if a dataset license was specified prior to upload
+        if not dataset.license:
             raise InvalidDatasetError(
-                f"\nThe license type you have specified for this dataset is not supported by the Polaris Hub.\nOnly some Creative Commons licenses are supported - {[member.value for member in SupportedLicenseType]}. For more information, see https://creativecommons.org/share-your-work/cclicenses/"
+                f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some Creative Commons licenses are supported - {get_args(SupportedLicenseType)}. For more information, see https://creativecommons.org/share-your-work/cclicenses/"
             )
 
         # Normalize timeout
