@@ -118,16 +118,6 @@ class HubOwner(BaseModel):
         return self.slug
 
 
-class License(BaseModel):
-    """An artifact license.
-
-    Attributes:
-        id: The license ID. Only some Creative Commons licenses are supported (https://creativecommons.org/share-your-work/cclicenses/).
-    """
-
-    id: SupportedLicenseType
-
-
 class TargetType(Enum):
     """The high-level classification of different targets."""
 

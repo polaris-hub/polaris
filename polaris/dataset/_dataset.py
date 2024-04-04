@@ -24,7 +24,7 @@ from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
-from polaris.utils.types import AccessType, HttpUrlString, HubOwner, License
+from polaris.utils.types import AccessType, HttpUrlString, HubOwner, SupportedLicenseType
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -78,7 +78,7 @@ class Dataset(BaseArtifactModel):
     readme: str = ""
     annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
     source: Optional[HttpUrlString] = None
-    license: Optional[License] = None
+    license: Optional[SupportedLicenseType] = None
     curation_reference: Optional[HttpUrlString] = None
 
     # Config
