@@ -605,7 +605,7 @@ class PolarisHubClient(OAuth2Client):
                 # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
                 # metadata based on Zarr developers' recommendations can be tracked at:
                 # https://github.com/zarr-developers/zarr-python/issues/1731
-                zarr.consolidate_metadata(dataset.zarr_root.store)
+                zarr.consolidate_metadata(dataset.zarr_root.store.store)
                 zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
                 dest.store[".zmetadata"] = zmetadata_content
 
