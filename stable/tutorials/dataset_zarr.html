@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.14">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.10ba22f1.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.bcfcd587.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -262,7 +262,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../community/community.html" class="md-tabs__link">
+      <a href="https://discord.gg/vBFd8p6H7u" class="md-tabs__link">
         
   
     
@@ -1186,7 +1186,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../community/community.html" class="md-nav__link">
+      <a href="https://discord.gg/vBFd8p6H7u" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1903,13 +1903,13 @@ root.array(inp_col_name, images)</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># For performance reasons, Polaris expects all data related to a column to be saved in a single Zarr array. </span>
 <span class="c1"># To index a specific element in that array, the pointer path can have a suffix to specify the index. </span>
-<span class="n">train_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">inp_col_name</span><span class="si">}</span><span class="s2">#0"</span>
-<span class="n">test_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">inp_col_name</span><span class="si">}</span><span class="s2">#1"</span>
+<span class="n">train_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">inp_col_name</span><span class="si">}</span><span class="s2">#0"</span>
+<span class="n">test_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">inp_col_name</span><span class="si">}</span><span class="s2">#1"</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-3"># For performance reasons, Polaris expects all data related to a column to be saved in a single Zarr array. 
 # To index a specific element in that array, the pointer path can have a suffix to specify the index. 
-train_path = f"{base_path}/{inp_col_name}#0"
-test_path = f"{base_path}/{inp_col_name}#1"</div>
+train_path = f"{inp_col_name}#0"
+test_path = f"{inp_col_name}#1"</div>
 </div>
 </div>
 </div>
@@ -1982,6 +1982,8 @@ table = pd.DataFrame(
     <span class="c1"># To indicate that we are dealing with a pointer column here,</span>
     <span class="c1"># we need to annotate the column.</span>
     <span class="n">annotations</span><span class="o">=</span><span class="p">{</span><span class="s2">"images"</span><span class="p">:</span> <span class="n">ColumnAnnotation</span><span class="p">(</span><span class="n">is_pointer</span><span class="o">=</span><span class="kc">True</span><span class="p">)},</span>
+    <span class="c1"># We also need to specify the path to the root of the Zarr archive</span>
+    <span class="n">zarr_root_path</span><span class="o">=</span><span class="n">base_path</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-5">from polaris.dataset import Dataset, ColumnAnnotation
@@ -1991,6 +1993,8 @@ dataset = Dataset(
     # To indicate that we are dealing with a pointer column here,
     # we need to annotate the column.
     annotations={"images": ColumnAnnotation(is_pointer=True)},
+    # We also need to specify the path to the root of the Zarr archive
+    zarr_root_path=base_path,
 )</div>
 </div>
 </div>
@@ -2004,7 +2008,7 @@ dataset = Dataset(
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Note how the table does not contain the image data, but rather stores a path.</p>
+<p>Note how the table does not contain the image data, but rather stores a path relative to the root of the Zarr.</p>
 </div>
 </div>
 </div>
@@ -2041,7 +2045,7 @@ dataset = Dataset(
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>'/home/cas/.cache/polaris-tutorials/002/data.zarr/images#0'</pre>
+<pre>'images#0'</pre>
 </div>
 </div>
 </div>
@@ -2231,16 +2235,16 @@ for x, y in train:
 </thead>
 <tbody>
 <tr>
-<td>/path/to/root.zarr/column_a/array#1</td>
+<td>column_a/array#1</td>
 </tr>
 <tr>
-<td>/path/to/root.zarr/column_a/array#2</td>
+<td>column_a/array#2</td>
 </tr>
 <tr>
 <td>...</td>
 </tr>
 <tr>
-<td>/path/to/root.zarr/column_a/array#N</td>
+<td>column_a/array#N</td>
 </tr>
 </tbody>
 </table>
@@ -2368,17 +2372,10 @@ dataset.table.iloc[0][inp_col_name]</div>
 <div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>A
-</pre>
-</div>
-</div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[13]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>'/home/cas/.cache/polaris-tutorials/002/zarr/data.zarr//images#0'</pre>
+<pre>'images#0'</pre>
 </div>
 </div>
 </div>
@@ -2561,7 +2558,7 @@ fs.ls(SAVE_DIR)</div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-<table border="1"><tr><th>name</th><td>None</td></tr><tr><th>description</th><td></td></tr><tr><th>tags</th><td></td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>owner</th><td>None</td></tr><tr><th>default_adapters</th><td>None</td></tr><tr><th>md5sum</th><td>6ef8d23737aafcbf82c421e7f99e1d95</td></tr><tr><th>readme</th><td></td></tr><tr><th>annotations</th><td><table border="1"><tr><th>images</th><td><table border="1"><tr><th>is_pointer</th><td>True</td></tr><tr><th>modality</th><td>UNKNOWN</td></tr><tr><th>description</th><td>None</td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>dtype</th><td>object</td></tr></table></td></tr></table></td></tr><tr><th>source</th><td>None</td></tr><tr><th>license</th><td>None</td></tr><tr><th>curation_reference</th><td>None</td></tr><tr><th>cache_dir</th><td>/home/cas/.cache/polaris/datasets/None/6ef8d23737aafcbf82c421e7f99e1d95</td></tr><tr><th>artifact_id</th><td>None</td></tr><tr><th>n_rows</th><td>1000</td></tr><tr><th>n_columns</th><td>1</td></tr></table>
+<table border="1"><tr><th>name</th><td>None</td></tr><tr><th>description</th><td></td></tr><tr><th>tags</th><td></td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>owner</th><td>None</td></tr><tr><th>default_adapters</th><td></td></tr><tr><th>zarr_root_path</th><td>/home/cas/.cache/polaris-tutorials/002/json/data.zarr</td></tr><tr><th>md5sum</th><td>5488b4909fd67d3208624288e720e1b8</td></tr><tr><th>readme</th><td></td></tr><tr><th>annotations</th><td><table border="1"><tr><th>images</th><td><table border="1"><tr><th>is_pointer</th><td>True</td></tr><tr><th>modality</th><td>UNKNOWN</td></tr><tr><th>description</th><td>None</td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>dtype</th><td>object</td></tr></table></td></tr></table></td></tr><tr><th>source</th><td>None</td></tr><tr><th>license</th><td>None</td></tr><tr><th>curation_reference</th><td>None</td></tr><tr><th>cache_dir</th><td>/home/cas/.cache/polaris/datasets/None/5488b4909fd67d3208624288e720e1b8</td></tr><tr><th>artifact_id</th><td>None</td></tr><tr><th>n_rows</th><td>1000</td></tr><tr><th>n_columns</th><td>1</td></tr></table>
 </div>
 </div>
 </div>
@@ -2801,7 +2798,7 @@ fs.ls(SAVE_DIR)</div>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.bd41221c.min.js"></script>
+      <script src="../assets/javascripts/bundle.1e8ae164.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

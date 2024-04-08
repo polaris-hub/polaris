@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.14">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.10ba22f1.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.bcfcd587.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -262,7 +262,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../community/community.html" class="md-tabs__link">
+      <a href="https://discord.gg/vBFd8p6H7u" class="md-tabs__link">
         
   
     
@@ -794,6 +794,24 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.client" class="md-nav__link">
+    <span class="md-ellipsis">
+      client
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.zarr_root" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_root
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.n_rows" class="md-nav__link">
     <span class="md-ellipsis">
       n_rows
@@ -1231,7 +1249,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../community/community.html" class="md-nav__link">
+      <a href="https://discord.gg/vBFd8p6H7u" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1297,6 +1315,24 @@
   
     <nav class="md-nav" aria-label="Dataset">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.client" class="md-nav__link">
+    <span class="md-ellipsis">
+      client
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.zarr_root" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_root
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.n_rows" class="md-nav__link">
@@ -1477,6 +1513,17 @@ for specific columns.</p>
           </td>
         </tr>
         <tr>
+          <td><code><span title="polaris.dataset.Dataset.zarr_root_path">zarr_root_path</span></code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[str]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The data for any pointer column should be saved in the Zarr archive this path points to.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
           <td><code><span title="polaris.dataset.Dataset.md5sum">md5sum</span></code></td>
           <td>
                 <code><span title="typing.Optional">Optional</span>[str]</code>
@@ -1527,11 +1574,11 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
         <tr>
           <td><code><span title="polaris.dataset.Dataset.license">license</span></code></td>
           <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.License" href="utils.types.html#polaris.utils.types.License">License</a>]</code>
+                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.SupportedLicenseType" href="utils.types.html#polaris.utils.types.SupportedLicenseType">SupportedLicenseType</a>]</code>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>The dataset license</p>
+              <p>The dataset license. Polaris only supports some Creative Commons licenses. See <a class="autorefs autorefs-internal" href="utils.types.html#polaris.utils.types.SupportedLicenseType"><code>SupportedLicenseType</code></a> for accepted ID values.</p>
             </div>
           </td>
         </tr>
@@ -1594,6 +1641,52 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="polaris.dataset.Dataset.client" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">client</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">client</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The Polaris Hub client used to interact with the Polaris Hub.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="polaris.dataset.Dataset.zarr_root" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">zarr_root</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">zarr_root</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Open the zarr archive in read-write mode if it is not already open.</p>
+  </div>
+
+</div>
 
 <div class="doc doc-object doc-attribute">
 
@@ -1699,7 +1792,7 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">get_data</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Adapter</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_data</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Adapter</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1806,7 +1899,7 @@ the content of the referenced file is loaded to memory.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">upload_to_hub</span><span class="p">(</span><span class="n">env_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PolarisHubSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AccessType</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_to_hub</span><span class="p">(</span><span class="n">access</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AccessType</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1832,7 +1925,7 @@ the content of the referenced file is loaded to memory.</p>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">from_json</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">from_json</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1885,7 +1978,7 @@ as that should be user dependent.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">to_json</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1971,7 +2064,7 @@ as that should be user dependent.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">cache</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">cache</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -2363,7 +2456,7 @@ and while it does not affect logic in this library, it does affect the logic of 
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.bd41221c.min.js"></script>
+      <script src="../assets/javascripts/bundle.1e8ae164.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
