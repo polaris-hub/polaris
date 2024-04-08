@@ -24,7 +24,7 @@ from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
-from polaris.utils.types import AccessType, HttpUrlString, HubOwner, License
+from polaris.utils.types import AccessType, HttpUrlString, HubOwner, SupportedLicenseType
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -58,7 +58,7 @@ class Dataset(BaseArtifactModel):
         annotations: Each column _can be_ annotated with a [`ColumnAnnotation`][polaris.dataset.ColumnAnnotation] object.
             Importantly, this is used to annotate whether a column is a pointer column.
         source: The data source, e.g. a DOI, Github repo or URI.
-        license: The dataset license
+        license: The dataset license. Polaris only supports some Creative Commons licenses. See [`SupportedLicenseType`][polaris.utils.types.SupportedLicenseType] for accepted ID values.
         curation_reference: A reference to the curation process, e.g. a DOI, Github repo or URI.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
 
@@ -78,7 +78,7 @@ class Dataset(BaseArtifactModel):
     readme: str = ""
     annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
     source: Optional[HttpUrlString] = None
-    license: Optional[License] = None
+    license: Optional[SupportedLicenseType] = None
     curation_reference: Optional[HttpUrlString] = None
 
     # Config

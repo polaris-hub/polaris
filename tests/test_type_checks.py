@@ -3,7 +3,7 @@ from pydantic import ValidationError
 
 import polaris as po
 from polaris._artifact import BaseArtifactModel
-from polaris.utils.types import HubOwner, License
+from polaris.utils.types import HubOwner
 
 
 def test_slug_string_type():
@@ -55,21 +55,6 @@ def test_slug_compatible_string_type():
         "x" * 4,
     ]:
         BaseArtifactModel(name=name)
-
-
-def test_license():
-    for license in ["0BSD", "CC-BY-NC-4.0", "MIT"]:
-        # If a valid SPDX license, the reference is automatically set
-        assert License(id=license).reference is not None
-
-    # If not a valid SPDX license, you must specify a valid reference
-    with pytest.raises(ValidationError):
-        License(id="invalid")
-    with pytest.raises(ValidationError):
-        License(id="invalid", reference="invalid")
-
-    # If you specify a URL, we trust the user that this is a valid license
-    License(id="invalid", reference="https://example.com")
 
 
 def test_version():

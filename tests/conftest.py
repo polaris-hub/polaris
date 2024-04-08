@@ -10,7 +10,7 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.dataset import ColumnAnnotation, Dataset
-from polaris.utils.types import HubOwner, License
+from polaris.utils.types import HubOwner
 
 
 def check_version(artifact):
@@ -68,7 +68,7 @@ def test_dataset(test_data, test_org_owner):
         tags=["tagA", "tagB"],
         user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
         owner=test_org_owner,
-        license=License(id="MIT"),
+        license="CC-BY-4.0",
         curation_reference="https://www.example.com",
     )
     check_version(dataset)

@@ -1,17 +1,13 @@
-import json
 from enum import Enum
-from typing import Annotated, Any, ClassVar, Literal, Optional, Tuple, Union
+from typing import Annotated, Any, Literal, Optional, Tuple, Union
 
-import fsspec
 import numpy as np
-from loguru import logger
 from pydantic import (
     AfterValidator,
     BaseModel,
     ConfigDict,
     HttpUrl,
     StringConstraints,
-    model_validator,
 )
 from pydantic.alias_generators import to_camel
 from typing_extensions import TypeAlias
@@ -96,6 +92,13 @@ IOMode: TypeAlias = Literal["r", "r+", "a", "w", "w-"]
 Type to specify the mode for input/output operations (I/O) when interacting with a file or resource.
 """
 
+SupportedLicenseType: TypeAlias = Literal[
+    "CC-BY-4.0", "CC-BY-SA-4.0", "CC-BY-NC-4.0", "CC-BY-NC-SA-4.0", "CC0-1.0"
+]
+"""
+Supported license types for dataset uploads to Polaris Hub
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
@@ -113,48 +116,6 @@ class HubOwner(BaseModel):
 
     def __str__(self):
         return self.slug
-
-
-class License(BaseModel):
-    """An artifact license.
-
-    Attributes:
-        id: The license ID. Either from [SPDX](https://spdx.org/licenses/) or custom.
-        reference: A reference to the license text. If the ID is found in SPDX, this is automatically set.
-            Else it is required to manually specify this.
-    """
-
-    SPDX_LICENSE_DATA_PATH: ClassVar[str] = (
-        "https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json"
-    )
-
-    id: str
-    reference: Optional[HttpUrlString] = None
-
-    @model_validator(mode="after")  # type: ignore
-    @classmethod
-    def _validate_license_id(cls, m: "License"):
-        """
-        If a license ID exists in the SPDX database, we use the reference from there.
-        Otherwise, it is up to the user to specify the license.
-        """
-
-        # Load the ground truth references
-        with fsspec.open(cls.SPDX_LICENSE_DATA_PATH) as f:
-            data = json.load(f)
-        data = {license["licenseId"]: license for license in data["licenses"]}
-
-        if m.id in data:
-            if m.reference is not None and m.reference != data[m.id]["reference"]:
-                logger.warning(f"Found license ID {m.id} in SPDX, using the associated reference.")
-            m.reference = data[m.id]["reference"]
-
-        if m.id not in data and m.reference is None:
-            raise ValueError(
-                f"License with ID {m.id} not found in SPDX. "
-                "It is required to then also specify the name and reference."
-            )
-        return m
 
 
 class TargetType(Enum):

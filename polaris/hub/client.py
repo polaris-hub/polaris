@@ -4,7 +4,7 @@ import ssl
 import webbrowser
 from hashlib import md5
 from io import BytesIO
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Union, get_args
 from urllib.parse import urljoin
 
 import certifi
@@ -32,8 +32,8 @@ from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.context import tmp_attribute_change
-from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
-from polaris.utils.types import AccessType, HubOwner, IOMode, TimeoutTypes
+from polaris.utils.errors import InvalidDatasetError, PolarisHubError, PolarisUnauthorizedError
+from polaris.utils.types import AccessType, HubOwner, IOMode, SupportedLicenseType, TimeoutTypes
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -520,6 +520,13 @@ class PolarisHubClient(OAuth2Client):
                 See also: https://www.python-httpx.org/advanced/#timeout-configuration
             owner: Which Hub user or organization owns the artifact. Takes precedence over `dataset.owner`.
         """
+
+        # Check if a dataset license was specified prior to upload
+        if not dataset.license:
+            raise InvalidDatasetError(
+                f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some Creative Commons licenses are supported - {get_args(SupportedLicenseType)}. For more information, see https://creativecommons.org/share-your-work/cclicenses/"
+            )
+
         # Normalize timeout
         if timeout is None:
             timeout = self.settings.default_timeout
