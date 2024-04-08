@@ -1202,18 +1202,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#polaris.utils.types.HubOwner" class="md-nav__link">
+  <a href="#polaris.utils.types.SupportedLicenseType" class="md-nav__link">
     <span class="md-ellipsis">
-      HubOwner
+      SupportedLicenseType
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#polaris.utils.types.License" class="md-nav__link">
+  <a href="#polaris.utils.types.HubOwner" class="md-nav__link">
     <span class="md-ellipsis">
-      License
+      HubOwner
     </span>
   </a>
   
@@ -1434,18 +1434,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#polaris.utils.types.HubOwner" class="md-nav__link">
+  <a href="#polaris.utils.types.SupportedLicenseType" class="md-nav__link">
     <span class="md-ellipsis">
-      HubOwner
+      SupportedLicenseType
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#polaris.utils.types.License" class="md-nav__link">
+  <a href="#polaris.utils.types.HubOwner" class="md-nav__link">
     <span class="md-ellipsis">
-      License
+      HubOwner
     </span>
   </a>
   
@@ -1797,6 +1797,29 @@ This can be used to sort the metric score, indicate the optmization direction of
 
 </div>
 
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="polaris.utils.types.SupportedLicenseType" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">SupportedLicenseType</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">SupportedLicenseType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;CC-BY-4.0&#39;</span><span class="p">,</span> <span class="s1">&#39;CC-BY-SA-4.0&#39;</span><span class="p">,</span> <span class="s1">&#39;CC-BY-NC-4.0&#39;</span><span class="p">,</span> <span class="s1">&#39;CC-BY-NC-SA-4.0&#39;</span><span class="p">,</span> <span class="s1">&#39;CC0-1.0&#39;</span><span class="p">]</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Supported license types for dataset uploads to Polaris Hub</p>
+  </div>
+
+</div>
+
 
 <div class="doc doc-object doc-class">
 
@@ -1817,84 +1840,6 @@ This can be used to sort the metric score, indicate the optmization direction of
       <p>An owner of an artifact on the Polaris Hub</p>
 <p>The slug is most important as it is the user-facing part of this data model.
 The externalId and type are added to be consistent with the model returned by the Polaris Hub .</p>
-
-
-  
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-  </div>
-
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h3 id="polaris.utils.types.License" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">License</span>
-
-
-</h3>
-
-
-  <div class="doc doc-contents ">
-          <p class="doc doc-class-bases">
-            Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
-
-  
-      <p>An artifact license.</p>
-
-
-
-  <p><strong>Attributes:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td><code><span title="polaris.utils.types.License.id">id</span></code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The license ID. Either from <a href="https://spdx.org/licenses/">SPDX</a> or custom.</p>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td><code><span title="polaris.utils.types.License.reference">reference</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A reference to the license text. If the ID is found in SPDX, this is automatically set.
-Else it is required to manually specify this.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
 
 
   
