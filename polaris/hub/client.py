@@ -532,10 +532,10 @@ class PolarisHubClient(OAuth2Client):
         """
 
         # Check if a dataset license was specified prior to upload
-        if not dataset.license:
-            raise InvalidDatasetError(
-                f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some Creative Commons licenses are supported - {get_args(SupportedLicenseType)}. For more information, see https://creativecommons.org/share-your-work/cclicenses/"
-            )
+        # if not dataset.license:
+        #     raise InvalidDatasetError(
+        #         f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some Creative Commons licenses are supported - {get_args(SupportedLicenseType)}. For more information, see https://creativecommons.org/share-your-work/cclicenses/"
+        #     )
 
         # Normalize timeout
         if timeout is None:
@@ -610,26 +610,22 @@ class PolarisHubClient(OAuth2Client):
         # Step 3: Upload any associated Zarr archive
         if dataset.zarr_root is not None:
             with tmp_attribute_change(self.settings, "default_timeout", timeout):
-                # Copy the Zarr archive to the hub
-                dest = self.open_zarr_file(
-                    owner=dataset.owner,
-                    name=dataset.name,
-                    path=dataset_json["zarrRootPath"],
-                    mode="w",
-                    as_consolidated=False,
+                polaris_fs = PolarisFileSystem(
+                    polaris_client=self,
+                    dataset_owner=dataset.owner,
+                    dataset_name=dataset.name,
                 )
+                dest = zarr.storage.FSStore(url=dataset_json["zarrRootPath"], fs=polaris_fs, mode="w")
 
                 # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
                 # metadata based on Zarr developers' recommendations can be tracked at:
                 # https://github.com/zarr-developers/zarr-python/issues/1731
                 zarr.consolidate_metadata(dataset.zarr_root.store.store)
-                zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
-                dest.store[".zmetadata"] = zmetadata_content
 
                 logger.info("Copying Zarr archive to the Hub. This may take a while.")
                 zarr.copy_store(
                     source=dataset.zarr_root.store.store,
-                    dest=dest.store,
+                    dest=dest,
                     log=logger.info,
                     if_exists=if_exists,
                 )
