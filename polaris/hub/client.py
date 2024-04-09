@@ -617,8 +617,8 @@ class PolarisHubClient(OAuth2Client):
                 dest.store[".zmetadata"] = zmetadata_content
 
                 logger.info("Copying Zarr archive to the Hub. This may take a while.")
-                zarr.copy_all(source=dataset.zarr_root, dest=dest, log=logger.info)
-
+                zarr.copy_store(source=dataset.zarr_root.store.store, dest=dest.store, log=logger.info, if_exists='replace')
+                
         logger.success(
             "Your dataset has been successfully uploaded to the Hub. "
             f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
