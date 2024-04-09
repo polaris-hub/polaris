@@ -624,7 +624,7 @@ class PolarisHubClient(OAuth2Client):
                 zarr.consolidate_metadata(dataset.zarr_root.store.store)
                 zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
                 dest.store[".zmetadata"] = zmetadata_content
-            
+
                 logger.info("Copying Zarr archive to the Hub. This may take a while.")
                 zarr.copy_store(
                     source=dataset.zarr_root.store.store,
