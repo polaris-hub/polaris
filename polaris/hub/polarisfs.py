@@ -46,7 +46,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         dataset_name: str,
         **kwargs: dict,
     ):
-        super().__init__(**kwargs)
+        super().__init__(use_listing_cache=True, listings_expiry_time=None, max_paths=None, **kwargs)
 
         self.polaris_client = polaris_client
         self.default_timeout = self.polaris_client.settings.default_timeout
@@ -87,16 +87,17 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         if timeout is None:
             timeout = self.default_timeout
 
+        cached_listings = self._ls_from_cache(path)
+        if cached_listings is not None:
+            return cached_listings if detail else [d["name"] for d in cached_listings]
+
         ls_path = self.sep.join([self.base_path, "ls", path])
 
         # GET request to Polaris Hub to list objects in path
         response = self.polaris_client.get(ls_path.rstrip("/"), timeout=timeout)
         response.raise_for_status()
 
-        if not detail:
-            return [p["name"].removeprefix(self.prefix) for p in response.json()]
-
-        return [
+        detailed_listings = [
             {
                 "name": p["name"].removeprefix(self.prefix),
                 "size": p["size"],
@@ -104,6 +105,13 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             }
             for p in response.json()
         ]
+
+        self.dircache[path] = detailed_listings
+
+        if not detail:
+            return [p["name"] for p in detailed_listings]
+
+        return detailed_listings
 
     def cat_file(
         self,
@@ -212,3 +220,15 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             timeout=timeout,
         )
         response.raise_for_status()
+
+        new_listing = [{"name": path, "type": "file", "size": len(content)}]
+        try:
+            current_listings = self._ls_from_cache(self._parent(path))
+            new_listing.extend(current_listings)
+        except FileNotFoundError:
+            # self._ls_from_cache() raises FileNotFoundError when no listings
+            # are found within a path. We can then assume it's a new directory
+            # and new_listing can be used as is.
+            pass
+
+        self.dircache[self._parent(path)] = new_listing
