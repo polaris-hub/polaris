@@ -617,9 +617,6 @@ class PolarisHubClient(OAuth2Client):
                 )
                 dest = zarr.storage.FSStore(url=dataset_json["zarrRootPath"], fs=polaris_fs, mode="w")
 
-                # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
-                # metadata based on Zarr developers' recommendations can be tracked at:
-                # https://github.com/zarr-developers/zarr-python/issues/1731
                 zarr.consolidate_metadata(dataset.zarr_root.store.store)
 
                 logger.info("Copying Zarr archive to the Hub. This may take a while.")
