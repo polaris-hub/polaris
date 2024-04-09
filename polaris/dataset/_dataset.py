@@ -348,8 +348,15 @@ class Dataset(BaseArtifactModel):
 
         # Copy over Zarr data to the destination
         if self.zarr_root is not None:
-            dest = zarr.DirectoryStore(zarr_archive)
-            zarr.copy_store(source=self.zarr_root.store.store, dest=dest)
+            dest = zarr.open(zarr_archive, "w")
+            zarr.copy_all(source=self.zarr_root, dest=dest)
+
+            # Copy the .zmetadata file
+            # To track discussions on whether this should be done by copy_all()
+            # see https://github.com/zarr-developers/zarr-python/issues/1731
+            zmetadata_content = self.zarr_root.store.store[".zmetadata"]
+            dest.store[".zmetadata"] = zmetadata_content
+
             serialized["zarr_root_path"] = zarr_archive
 
         self.table.to_parquet(table_path)
