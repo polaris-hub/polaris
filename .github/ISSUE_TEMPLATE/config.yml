@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ❓ Discuss something on GitHub Discussions
+    url: https://github.com/polaris-hub/polaris/discussions
+    about: For questions like "How do I do X with Polaris?", you can move to GitHub Discussions.
+  - name: ❓ Discuss something on Discord
+    url: https://discord.gg/vBFd8p6H7u
+    about: For more interactive discussions, you can join our Discord server.
