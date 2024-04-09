@@ -46,12 +46,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         dataset_name: str,
         **kwargs: dict,
     ):
-        super().__init__(
-            use_listing_cache = True, 
-            listings_expiry_time = None,
-            max_paths = None,
-            **kwargs
-        )
+        super().__init__(use_listing_cache=True, listings_expiry_time=None, max_paths=None, **kwargs)
 
         self.polaris_client = polaris_client
         self.default_timeout = self.polaris_client.settings.default_timeout
@@ -59,8 +54,6 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         # Prefix to remove from ls entries
         self.prefix = f"dataset/{dataset_owner}/{dataset_name}/"
         self.base_path = f"/storage/{self.prefix.rstrip('/')}"
-
-        self.refresh = False
 
     @staticmethod
     def is_polarisfs_path(path: str) -> bool:
@@ -96,11 +89,6 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
 
         cached_listings = self._ls_from_cache(path)
         if cached_listings is not None:
-            return cached_listings if detail else [d["name"] for d in cached_listings]
-
-        cached_listings = self._ls_from_cache(self._parent(path))
-        if cached_listings is not None:
-            self.dircache[path] = []
             return cached_listings if detail else [d["name"] for d in cached_listings]
 
         ls_path = self.sep.join([self.base_path, "ls", path])
