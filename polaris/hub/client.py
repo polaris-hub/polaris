@@ -33,7 +33,14 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import InvalidDatasetError, PolarisHubError, PolarisUnauthorizedError
-from polaris.utils.types import AccessType, HubOwner, IOMode, SupportedLicenseType, TimeoutTypes, ZarrConflictResolution
+from polaris.utils.types import (
+    AccessType,
+    HubOwner,
+    IOMode,
+    SupportedLicenseType,
+    TimeoutTypes,
+    ZarrConflictResolution,
+)
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -520,7 +527,7 @@ class PolarisHubClient(OAuth2Client):
                 Since datasets can get large, it might be needed to increase the write timeout for larger datasets.
                 See also: https://www.python-httpx.org/advanced/#timeout-configuration
             owner: Which Hub user or organization owns the artifact. Takes precedence over `dataset.owner`.
-            on_upload_conflict: Action for handling existing files in the Zarr archive. Options are 'raise' to throw 
+            on_conflict: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
         """
 
@@ -620,8 +627,13 @@ class PolarisHubClient(OAuth2Client):
                 dest.store[".zmetadata"] = zmetadata_content
 
                 logger.info("Copying Zarr archive to the Hub. This may take a while.")
-                zarr.copy_store(source=dataset.zarr_root.store.store, dest=dest.store, log=logger.info, if_exists=on_conflict)
-                
+                zarr.copy_store(
+                    source=dataset.zarr_root.store.store,
+                    dest=dest.store,
+                    log=logger.info,
+                    if_exists=on_conflict,
+                )
+
         logger.success(
             "Your dataset has been successfully uploaded to the Hub. "
             f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
