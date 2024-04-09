@@ -1,6 +1,6 @@
 ---
 name: Default Template
-about: Default issue template
+about: Default, generic issue template
 title: ''
 labels: ''
 assignees: ''
