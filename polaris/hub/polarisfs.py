@@ -45,18 +45,14 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         polaris_client: "PolarisHubClient",
         dataset_owner: str,
         dataset_name: str,
-        use_listings_cache: bool = True,
-        listings_expiry_time=None,
-        max_paths=None,
         **kwargs: dict,
     ):
-        super().__init__(**kwargs)
-
-        self.use_listings_cache = use_listings_cache
-        if self.use_listings_cache:
-            self.dircache = DirCache(listings_expiry_time=listings_expiry_time, max_paths=max_paths)
-        else:
-            self.dircache = None
+        super().__init__(
+            use_listing_cache = True, 
+            listings_expiry_time = None,
+            max_paths = None,
+            **kwargs
+        )
 
         self.polaris_client = polaris_client
         self.default_timeout = self.polaris_client.settings.default_timeout
@@ -99,17 +95,16 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         if timeout is None:
             timeout = self.default_timeout
 
+        cached_listings = self._ls_from_cache(path)
+        if cached_listings is not None:
+            return cached_listings if detail else [d["name"] for d in cached_listings]
+
+        cached_listings = self._ls_from_cache(self._parent(path))
+        if cached_listings is not None:
+            self.dircache[path] = []
+            return cached_listings if detail else [d["name"] for d in cached_listings]
+
         ls_path = self.sep.join([self.base_path, "ls", path])
-
-        if self.use_listings_cache and not self.refresh:
-            cached_listings = self.dircache.get(path, None)
-            if cached_listings is not None:
-                return cached_listings if detail else [d["name"] for d in cached_listings]
-
-            cached_listings = self.dircache.get(self._parent(path), None)
-            if cached_listings is not None:
-                self.dircache[path] = []
-                return cached_listings if detail else [d["name"] for d in cached_listings]
 
         # GET request to Polaris Hub to list objects in path
         response = self.polaris_client.get(ls_path.rstrip("/"), timeout=timeout)
@@ -124,11 +119,10 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             for p in response.json()
         ]
 
-        if self.use_listings_cache:
-            self.dircache[path] = detailed_listings
+        self.dircache[path] = detailed_listings
 
         if not detail:
-            return [p["name"].removeprefix(self.prefix) for p in response.json()]
+            return [p["name"] for p in detailed_listings]
 
         return detailed_listings
 
@@ -240,29 +234,14 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         )
         response.raise_for_status()
 
-        if self.use_listings_cache:
-            new_listing = [{"name": path, "type": "file", "size": len(content)}]
-            current_listings = self.dircache.get(self._parent(path), None)
-            if current_listings is not None:
-                new_listing.extend(current_listings)
-                self.dircache[self._parent(path)] = new_listing
-            else:
-                self.dircache[self._parent(path)] = new_listing
+        new_listing = [{"name": path, "type": "file", "size": len(content)}]
+        try:
+            current_listings = self._ls_from_cache(self._parent(path))
+            new_listing.extend(current_listings)
+        except FileNotFoundError:
+            # self._ls_from_cache() raises FileNotFoundError when no listings
+            # are found within a path. We can then assume it's a new directory
+            # and new_listing can be used as is.
+            pass
 
-    def info(self, path, **kwargs):
-        path = self._strip_protocol(path)
-        out = self.ls(self._parent(path), detail=True, **kwargs)
-        out = [o for o in out if o["name"].rstrip("/") == path]
-        if out:
-            return out[0]
-        out = self.ls(path, detail=True, **kwargs)
-        path = path.rstrip("/")
-        out1 = [o for o in out if o["name"].rstrip("/") == path]
-        if len(out1) == 1:
-            if "size" not in out1[0]:
-                out1[0]["size"] = None
-            return out1[0]
-        elif len(out1) > 1:
-            return {"name": path, "size": 0, "type": "directory"}
-        else:
-            raise FileNotFoundError(path)
+        self.dircache[self._parent(path)] = new_listing
