@@ -1,15 +1,9 @@
 from enum import Enum
-from typing import List, TypeVar, Union
+from typing import TypeVar, Union
 import numpy as np
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from scipy import stats
 
-from sklearn.base import (
-    BaseEstimator,
-    OneToOneFeatureMixin,
-    TransformerMixin,
-    _fit_context,
-)
 from sklearn.covariance import EllipticEnvelope
 from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
@@ -93,77 +87,6 @@ def discretizer(
     return X
 
 
-class Discretizer(OneToOneFeatureMixin, TransformerMixin, BaseEstimator, BaseModel):
-    """Discretizer continuous data according to a list thresholds e.g. [threshold_1, threshold_2].
-
-       In the above example, values falls in left of threshold_1 are mapped to 0, values fall in
-       the interval between threshold_1 and threshold_2 are mapped to 1, while values fall on the right
-       threshold_2 are mapped to 2. The threshold values must be in ascending or descending order.
-       To reverse the label order, set `label_order` to `descending`.
-
-    Args:
-        thresholds : np.ndarray, default=0.0
-            Feature values below or equal to this are replaced by 0, above it by 1.
-            Threshold may not be less than 0 for operations on sparse matrices.
-
-        copy : bool, default=True
-            Set to False to perform inplace discretization and avoid a copy (if
-            the input is already a numpy array or a scipy.sparse CSR matrix).
-
-    See Also:
-        discretizer : Equivalent function without the estimator API.
-    """
-
-    thresholds: List = Field(default=[0])
-    copy_object: bool = Field(default=True, alias="copy")
-    label_order: LabelOrder = Field(default=LabelOrder.acs)
-
-    @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y=None):
-        """Only validates estimator's parameters.
-
-        This method allows to: (i) validate the estimator's parameters and
-        (ii) be consistent with the scikit-learn transformer API.
-
-        Args:
-            X : {array-like, sparse matrix} of shape (n_samples, n_features)
-                The data.
-
-            y : None
-                Ignored.
-
-        Returns:
-            self : object
-                Fitted transformer.
-        """
-        self._validate_data(X, accept_sparse="csr")
-        return self
-
-    def transform(self, X, copy=None):
-        """Convert each element of X to multiclass label.
-
-        Args:
-            X : {array-like, sparse matrix} of shape (n_samples, n_features)
-                The data to binarize, element by element.
-                scipy.sparse matrices should be in CSR format to avoid an
-                un-necessary copy.
-
-            copy : bool
-                Copy the input X or not.
-
-        Returns
-            X_tr : {ndarray, sparse matrix} of shape (n_samples, n_features)
-                Transformed array.
-        """
-        copy = copy if copy is not None else self.copy
-        # check_array
-        X = self._validate_data(X, accept_sparse=["csr", "csc"], copy=copy, reset=False)
-        return discretizer(X, thresholds=self.thresholds, copy=False, label_order=self.label_order)
-
-    def _more_tags(self):
-        return {"stateless": True}
-
-
 def modified_zscore(data: np.ndarray, consistency_correction: float = 1.4826):
     """
     The modified z score is calculated from the median absolute deviation (MAD).
@@ -242,7 +165,9 @@ def outlier_detection(X: np.ndarray, method="zscore", **kwargs) -> np.ndarray:
         outlier_index: Index of detected outliers in the input data X.
     """
     if method not in OUTLIER_METHOD:
-        raise ValueError("The detection name must be in 'iso', 'lof', 'svm', 'ee' and 'zscore'.")
+        raise ValueError(
+            "The detection name must be in 'iso', 'lof', 'svm', 'ee' and 'zscore'."
+        )
     detector = OUTLIER_METHOD.get(method)(**kwargs)
     pred = detector.fit_predict(X)
     outlier_index = np.argwhere(pred == -1)

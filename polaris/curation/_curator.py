@@ -25,6 +25,7 @@ class MolecularCurator(BaseModel):
         class_thresholds: Dictionary of bioactivity column names and the thresholds for discretizing
             the continuous data.
         outlier_params: Parameters for automatic outlier detection.
+        keep_all_rows: Keep all the duplicatred rows in the dataset.
         progress: Whether show progress of the parallelization process.
 
     See Also:
@@ -35,12 +36,14 @@ class MolecularCurator(BaseModel):
     data: PandasDataFrame
     mol_col: str = "smiles"
     data_cols: List[str]
+    data_types: List[str] = None
     mask_stereo_undefined_mols: bool = False
     ignore_stereo: bool = False
     class_thresholds: Optional[dict] = None
     outlier_params: Optional[dict] = None
     activity_cliff_params: Optional[dict] = None
     progress: bool = False
+    keep_all_rows: bool = False
 
     def __call__(self):
         # copy the original data columns
@@ -60,11 +63,13 @@ class MolecularCurator(BaseModel):
         data = run_data_curation(
             data=data,
             data_cols=self.data_cols,
+            data_types=self.data_types,
             mask_stereo_undefined_mols=self.mask_stereo_undefined_mols,
             ignore_stereo=self.ignore_stereo,
             class_thresholds=self.class_thresholds,
             outlier_params=self.outlier_params,
             activity_cliff_params=self.activity_cliff_params,
+            keep_all_rows=self.keep_all_rows,
         )
 
         data = data.reset_index(drop=True)

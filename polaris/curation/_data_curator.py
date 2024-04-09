@@ -13,7 +13,11 @@ CLASS_PREFIX = "CLASS_"
 
 
 def _identify_stereoisomers_with_activity_cliff(
-    data: pd.DataFrame, data_col: str, threshold: float = 1, groupby_col: str = NO_STEREO_UNIQUE_ID
+    data: pd.DataFrame,
+    data_col: str,
+    data_type: str,
+    threshold: float = 1,
+    groupby_col: str = NO_STEREO_UNIQUE_ID,
 ) -> List:
     """Identify the stereoisomers which show activity cliff.
        For continuous data, the activity cliff is defined by the `zscore` difference greater than 1.
@@ -32,10 +36,11 @@ def _identify_stereoisomers_with_activity_cliff(
         mol_hash_ids_with_cliff: A list mol hash ids for the stereoisomer molecules which show activity cliff.
 
     """
-    data_type = type_of_target(data[data_col].dropna().values, input_name=data_col)
 
     if data_type is None:
         raise ValueError(f"The column {data_col} contains less than 2 unique values.")
+    if CLASS_PREFIX in data_col:
+        data_type = CATEGORIES[0]
 
     mol_hash_ids_with_cliff = []
     if data_type in CONTINUOUS:
@@ -46,10 +51,11 @@ def _identify_stereoisomers_with_activity_cliff(
         if group_df.shape[0] > 1:
             if data_type in CONTINUOUS:
                 has_cliff = (
-                    group_df[f"{data_col}_zscore"].max() - group_df[f"{data_col}_zscore"].min()
+                    group_df[f"{data_col}_zscore"].max()
+                    - group_df[f"{data_col}_zscore"].min()
                 ) > threshold
             else:
-                has_cliff = len(group_df[data_col].unique()) > 1
+                has_cliff = len(group_df[data_col].dropna().unique()) > 1
 
             if has_cliff:
                 mol_hash_ids_with_cliff.append(hashmol_id)
@@ -58,7 +64,11 @@ def _identify_stereoisomers_with_activity_cliff(
 
 
 def _process_stereoisomer_with_activity_cliff(
-    data: pd.DataFrame, data_cols: List[str], mask_stereo_undefined_mols: bool = True, **kwargs
+    data: pd.DataFrame,
+    data_cols: List[str],
+    data_types: List[str],
+    mask_stereo_undefined_mols: bool = True,
+    **kwargs,
 ):
     """Identify and discard the stereoisomers which the stereocenter are not well-defined but show activity cliff.
 
@@ -69,22 +79,29 @@ def _process_stereoisomer_with_activity_cliff(
                                     but stereo information not defined in the molecule representation.
         kwargs: Parameters for identify the activity cliff between the stereoisomers.
     """
-    for data_col in data_cols:
+    for data_col, data_type in zip(data_cols, data_types):
         data_col_mask = (
-            [data_col, data_col[len(CLASS_PREFIX) :]] if data_col.startswith(CLASS_PREFIX) else data_col
+            [data_col, data_col[len(CLASS_PREFIX) :]]
+            if data_col.startswith(CLASS_PREFIX)
+            else data_col
         )
-        mol_with_cliff = _identify_stereoisomers_with_activity_cliff(data=data, data_col=data_col, **kwargs)
-        data.loc[data[NO_STEREO_UNIQUE_ID].isin(mol_with_cliff), f"{data_col}_stereo_cliff"] = True
+
+        mol_with_cliff = _identify_stereoisomers_with_activity_cliff(
+            data=data, data_col=data_col, data_type=data_type, **kwargs
+        )
+        data.loc[
+            data[NO_STEREO_UNIQUE_ID].isin(mol_with_cliff), f"{data_col}_stereo_cliff"
+        ] = True
         if len(mol_with_cliff) > 0 and mask_stereo_undefined_mols:
-            mol_ids = data.query(f"`{data_col}_stereo_cliff`==True & (`{UNDEF_ED}` | `{UNDEF_EZ}`) ")[
-                UNIQUE_ID
-            ].values
+            mol_ids = data.query(
+                f"`{data_col}_stereo_cliff`==True & (`{UNDEF_ED}` | `{UNDEF_EZ}`) "
+            )[UNIQUE_ID].values
             data.loc[data[UNIQUE_ID].isin(mol_ids), data_col_mask] = None
     return data
 
 
 def _merge_duplicates(
-    data: pd.DataFrame, data_cols: List[str], merge_on=None, keep_all_rows: bool = False
+    data: pd.DataFrame, data_cols: List[str], merge_on=None
 ) -> pd.DataFrame:
     """Merge molecules with multiple measurements.
        To be robust to the outliers, `median` is used to compute the average value cross all measurements.
@@ -101,13 +118,14 @@ def _merge_duplicates(
 
     df_list = []
     # Include 'molhash without stereo information' additionally for easily tracking the stereoisomers
-    for uid, df in data.groupby(by=merge_on):
+    for _, df in data.groupby(by=merge_on):
         data_vals = df[data_cols].median(axis=0, skipna=True).tolist()
         df.loc[:, data_cols] = data_vals
         df_list.append(df)
     merged_df = pd.concat(df_list).sort_values(by=merge_on)
-    if not keep_all_rows:
-        merged_df = merged_df.drop_duplicates(subset=merge_on, keep="first").reset_index(drop=True)
+    merged_df = merged_df.drop_duplicates(subset=merge_on, keep="first").reset_index(
+        drop=True
+    )
     return merged_df
 
 
@@ -142,11 +160,15 @@ def _class_conversion(
     for data_col in data_cols:
         thresholds = conversion_params.get(data_col, None)
         if thresholds is not None:
-            data[f"{prefix}{data_col}"] = discretizer(X=data[data_col].values, allow_nan=True, **thresholds)
+            data[f"{prefix}{data_col}"] = discretizer(
+                X=data[data_col].values, allow_nan=True, **thresholds
+            )
     return data
 
 
-def check_outliers(data, data_cols, method: str = "zscore", prefix="OUTLIER", **kwargs) -> pd.DataFrame:
+def check_outliers(
+    data, data_cols, data_types, method: str = "zscore", prefix="OUTLIER", **kwargs
+) -> pd.DataFrame:
     """Automatic detection of outliers of bioactivity
 
     Args:
@@ -173,13 +195,18 @@ def check_outliers(data, data_cols, method: str = "zscore", prefix="OUTLIER", **
         <polaris.curation.util.ZscoreOutlier>
 
     """
-    for data_col in data_cols:
+    for data_col, data_type in zip(data_cols, data_types):
+        if data_type not in CONTINUOUS:
+            logger.info(f"Outlier detection is omit for categorical data {data_col}.")
+            continue
         outlier_col = f"{prefix}_{data_col}"
         data[f"{prefix}_{data_col}"] = None
         ind = data.index.values
         notna_ind = ind[data[data_col].notna()]
         data.loc[notna_ind, outlier_col] = False
-        outlier_ind = outlier_detection(X=data[data_col].dropna().values, method=method, **kwargs)[:, 0]
+        outlier_ind = outlier_detection(
+            X=data[data_col].dropna().values, method=method, **kwargs
+        )[:, 0]
         outlier_ind = notna_ind[outlier_ind]
 
         data.loc[outlier_ind, outlier_col] = True
@@ -195,11 +222,13 @@ def check_outliers(data, data_cols, method: str = "zscore", prefix="OUTLIER", **
 def run_data_curation(
     data: pd.DataFrame,
     data_cols: List[str],
+    data_types: List[str],
     mask_stereo_undefined_mols: bool = False,
     ignore_stereo: bool = False,
     class_thresholds: Dict = None,
     outlier_params: Dict = None,
     activity_cliff_params: Dict = None,
+    keep_all_rows: bool = True,
 ) -> pd.DataFrame:
     """Perform curation on the measured values from biological assay
 
@@ -215,14 +244,34 @@ def run_data_curation(
     See Also:
 
     """
-    data = check_outliers(data, data_cols, **outlier_params if outlier_params is not None else {})
+    if data_types is None:
+        logger.warning(
+            "Data types are not provides. We will try our best to determine the types"
+        )
+        data_types = [
+            type_of_target(data[data_col].dropna().values, input_name=data_col)
+            for data_col in data_cols
+        ]
+
+    data = check_outliers(
+        data,
+        data_cols,
+        data_types,
+        **outlier_params if outlier_params is not None else {},
+    )
 
     # User should deal with scaling and normalization on their end
-    data = _merge_duplicates(
-        data=data,
-        data_cols=data_cols,
-        merge_on=[NO_STEREO_UNIQUE_ID] if ignore_stereo else [UNIQUE_ID],
-    )
+    # only perform merging for continuous data
+    if not keep_all_rows:
+        data = _merge_duplicates(
+            data=data,
+            data_cols=[
+                data_col
+                for data_col, data_type in zip(data_cols, data_types)
+                if data_type in CONTINUOUS
+            ],
+            merge_on=[NO_STEREO_UNIQUE_ID] if ignore_stereo else [UNIQUE_ID],
+        )
     # class conversion
     if class_thresholds:
         data = _class_conversion(data, data_cols, class_thresholds, prefix=CLASS_PREFIX)
@@ -232,12 +281,17 @@ def run_data_curation(
             data=data,
             data_cols=(
                 [
-                    f"{CLASS_PREFIX}{data_col}" if f"{CLASS_PREFIX}{data_col}" in data.columns else data_col
+                    (
+                        f"{CLASS_PREFIX}{data_col}"
+                        if f"{CLASS_PREFIX}{data_col}" in data.columns
+                        else data_col
+                    )
                     for data_col in data_cols
                 ]
                 if class_thresholds
                 else data_cols
             ),
+            data_types=data_types,
             mask_stereo_undefined_mols=mask_stereo_undefined_mols,
             **activity_cliff_params if activity_cliff_params is not None else {},
         )
