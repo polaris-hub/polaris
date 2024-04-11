@@ -104,6 +104,11 @@ StorageTypes: TypeAlias = Literal["in-memory", "local-storage", "remote-storage"
 Supported categories when optimizing the storage of Polaris datasets.
 """
 
+ZarrConflictResolution: TypeAlias = Literal["raise", "replace", "skip"]
+"""
+Type to specify which action to take when encountering existing files within a Zarr archive.
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
