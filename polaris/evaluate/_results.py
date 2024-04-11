@@ -200,7 +200,7 @@ class BenchmarkResults(BaseArtifactModel):
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
         repr_dict = self.model_dump(exclude=["results"])
 
-        df = self.results.copy()
+        df = self.results.copy(deep=True)
         df["Metric"] = df["Metric"].apply(lambda x: x.name if isinstance(x, Metric) else x)
         repr_dict["results"] = json.loads(df.to_json(orient="records"))
 
