@@ -269,9 +269,9 @@ class Dataset(BaseArtifactModel):
 
         Args:
             for_storage: Either "in-memory", "local-storage" or "remote-storage".
-                The storage target should depend on the size of the dataset. Storing a dataset
-                in memory is always fastest, but as datasets get large this might no longer
-                be possible.
+                The storage target should depend on the **uncompressed** size of the dataset.
+                Storing a dataset in memory is always fastest, but as datasets get large this
+                might no longer be possible.
         """
         root = self.zarr_root
 
