@@ -268,7 +268,7 @@ class Dataset(BaseArtifactModel):
             optimize things further for a specific use case if needed.
 
         Args:
-            storage_target: Either "in-memory", "local-storage" or "remote-storage".
+            for_storage: Either "in-memory", "local-storage" or "remote-storage".
                 The storage target should depend on the size of the dataset. Storing a dataset
                 in memory is always fastest, but as datasets get large this might no longer
                 be possible.
