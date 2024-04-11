@@ -113,7 +113,7 @@ class Subset:
 
     def _get_single(
         self,
-        row: str | int,
+        row: int,
         cols: List[str],
         featurization_fn: Optional[Callable],
     ):
@@ -128,10 +128,10 @@ class Subset:
         """
         # Load the data-point
         # Also handles loading data stored in external files for pointer columns
-        ret = {col: self.dataset.get_data(row, col, adapters=self._adapters) for col in cols}
-
-        if len(ret) == 1:
-            ret = ret[cols[0]]
+        if len(cols) > 1:
+            ret = {col: self.dataset.get_data(row, col, adapters=self._adapters) for col in cols}
+        else:
+            ret = self.dataset.get_data(row, cols[0], adapters=self._adapters)
 
         # Featurize
         if featurization_fn is not None:
@@ -139,11 +139,11 @@ class Subset:
 
         return ret
 
-    def _get_single_input(self, row: str | int):
+    def _get_single_input(self, row: int):
         """Get a single input for a specific data-point and given the benchmark specification."""
         return self._get_single(row, self.input_cols, self._featurization_fn)
 
-    def _get_single_output(self, row: str | int):
+    def _get_single_output(self, row: int):
         """Get a single output for a specific data-point and given the benchmark specification."""
         return self._get_single(row, self.target_cols, None)
 
@@ -159,10 +159,12 @@ class Subset:
         if data_type == "y" and self._hide_targets:
             raise TestAccessError("Within Polaris you should not need to access the targets of the test set")
 
+        # We reset the index of the Pandas Table during Dataset class validation.
+        # We can thus always assume that .iloc[idx] is the same as .loc[idx].
         if data_type == "x":
-            ret = [self._get_single_input(self.dataset.table.iloc[idx].name) for idx in self.indices]
+            ret = [self._get_single_input(idx) for idx in self.indices]
         else:
-            ret = [self._get_single_output(self.dataset.table.iloc[idx].name) for idx in self.indices]
+            ret = [self._get_single_output(idx) for idx in self.indices]
 
         if not ((self.is_multi_input and data_type == "x") or (self.is_multi_task and data_type == "y")):
             # If the target format is not a dict, we can just create the array directly.
@@ -196,11 +198,8 @@ class Subset:
 
         idx = self.indices[item]
 
-        # Get the row from the base table
-        row = self.dataset.table.iloc[idx]
-
         # Load the input modalities
-        ins = self._get_single_input(row.name)
+        ins = self._get_single_input(idx)
 
         if self._hide_targets:
             # If we are not allowed to access the targets, we return the inputs only.
@@ -208,7 +207,7 @@ class Subset:
             return ins
 
         # Retrieve the targets
-        outs = self._get_single_output(row.name)
+        outs = self._get_single_output(idx)
         return ins, outs
 
     def __iter__(self):

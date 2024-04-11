@@ -99,6 +99,11 @@ SupportedLicenseType: TypeAlias = Literal[
 Supported license types for dataset uploads to Polaris Hub
 """
 
+StorageTypes: TypeAlias = Literal["in-memory", "local-storage", "remote-storage"]
+"""
+Supported categories when optimizing the storage of Polaris datasets.
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub

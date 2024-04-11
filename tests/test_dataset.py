@@ -1,3 +1,5 @@
+from time import perf_counter
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -5,7 +7,7 @@ import zarr
 from datamol.utils import fs
 from pydantic import ValidationError
 
-from polaris.dataset import Dataset, create_dataset_from_file
+from polaris.dataset import Dataset, Subset, create_dataset_from_file
 from polaris.loader import load_dataset
 from polaris.utils.errors import PolarisChecksumError
 
@@ -168,3 +170,31 @@ def test_dataset_caching(zarr_archive, tmpdir):
     assert cached_dataset.zarr_root_path.startswith(cache_dir)
 
     assert _equality_test(cached_dataset, original_dataset)
+
+
+def test_dataset_index():
+    """Small test to check whether the dataset resets its index."""
+    df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]}, index=["X", "Y", "Z"])
+    dataset = Dataset(table=df)
+    assert dataset.table.index.tolist() == [0, 1, 2]
+    assert dataset.get_data(row=0, col="A") == 1
+
+
+def test_dataset_in_memory_optimization(zarr_archive, tmpdir):
+    """Check if optimization makes a default Zarr archive faster."""
+    dataset = create_dataset_from_file(zarr_archive, tmpdir.join("dataset"))
+    subset = Subset(dataset=dataset, indices=range(100), input_cols=["A"], target_cols=["B"])
+
+    t1 = perf_counter()
+    for x in subset:
+        pass
+    d1 = perf_counter() - t1
+
+    dataset.optimize(for_storage="in-memory")
+
+    t2 = perf_counter()
+    for x in subset:
+        pass
+    d2 = perf_counter() - t2
+
+    assert d2 < d1

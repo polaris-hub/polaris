@@ -24,7 +24,7 @@ from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
-from polaris.utils.types import AccessType, HttpUrlString, HubOwner, SupportedLicenseType
+from polaris.utils.types import AccessType, HttpUrlString, HubOwner, StorageTypes, SupportedLicenseType
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -87,8 +87,6 @@ class Dataset(BaseArtifactModel):
     # Private attributes
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
-    _has_been_warned: bool = False
-    _has_been_cached: bool = False
 
     @field_validator("table")
     def _validate_table(cls, v):
@@ -127,6 +125,14 @@ class Dataset(BaseArtifactModel):
         # Verify that all adapters are for columns that exist
         if any(k not in m.table.columns for k in m.default_adapters.keys()):
             raise InvalidDatasetError("There are default adapters for columns that do not exist")
+
+        has_pointers = any(anno.is_pointer for anno in m.annotations.values())
+        if has_pointers and m.zarr_root_path is None:
+            raise InvalidDatasetError("A zarr_root_path needs to be specified when there are pointer columns")
+        if not has_pointers and m.zarr_root_path is not None:
+            raise InvalidDatasetError(
+                "The zarr_root_path should only be specified when there are pointer columns"
+            )
 
         # Set a default for missing annotations and convert strings to Modality
         for c in m.table.columns:
@@ -203,22 +209,21 @@ class Dataset(BaseArtifactModel):
     @property
     def zarr_root(self):
         """Open the zarr archive in read-write mode if it is not already open."""
-        if self.zarr_root_path is None or not any(anno.is_pointer for anno in self.annotations.values()):
+        if self.zarr_root_path is None:
             return None
-
-        saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_root_path)
-        saved_remote = saved_on_hub or not fs.is_local_path(self.zarr_root_path)
-
-        if saved_remote and not self._has_been_warned:
-            logger.warning(
-                f"You're loading data from a remote location. "
-                f"To speed up this process, consider caching the dataset first "
-                f"using {self.__class__.__name__}.cache()"
-            )
-            self._has_been_warned = True
 
         # We open the archive in read-only mode if it is saved on the Hub
         if self._zarr_root is None:
+            saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_root_path)
+            saved_remote = saved_on_hub or not fs.is_local_path(self.zarr_root_path)
+
+            if saved_remote:
+                logger.warning(
+                    f"You're loading data from a remote location. "
+                    f"To speed up this process, consider caching the dataset first "
+                    f"using {self.__class__.__name__}.cache()"
+                )
+
             try:
                 if saved_on_hub:
                     self._zarr_root = self.client.open_zarr_file(
@@ -254,6 +259,42 @@ class Dataset(BaseArtifactModel):
         """Return all columns for the dataset"""
         return self.table.columns.tolist()
 
+    def optimize(self, for_storage: StorageTypes):
+        """Optimize the organization of the storage.
+
+        Note: General purpose dataloader.
+            The goal with Polaris is to provide general purpose datasets that serve as good
+            options for a _wide variety of use cases_. This also implies you should be able to
+            optimize things further for a specific use case if needed.
+
+        Args:
+            storage_target: Either "in-memory", "local-storage" or "remote-storage".
+                The storage target should depend on the size of the dataset. Storing a dataset
+                in memory is always fastest, but as datasets get large this might no longer
+                be possible.
+        """
+        root = self.zarr_root
+
+        if for_storage == "in-memory":
+            if not isinstance(root, zarr.Group):
+                raise TypeError(
+                    "The dataset zarr_root is not a valid Zarr archive. "
+                    "Did you call Dataset.optimize() twice?"
+                )
+
+            # NOTE (cwognum): If the dataset fits in memory, we are best of using plain NumPy arrays.
+            # Even if we disable chunking and compression in Zarr.
+            # For more information, see https://github.com/zarr-developers/zarr-python/issues/1395
+            self._zarr_root = {k: root[k][:] for k in root.array_keys()}
+
+        elif for_storage == "local-storage":
+            raise NotImplementedError("Local storage optimization is not yet implemented.")
+
+        elif for_storage == "remote-storage":
+            raise NotImplementedError("Remote storage optimization is not yet implemented.")
+
+        return self
+
     def get_data(self, row: int, col: str, adapters: Optional[List[Adapter]] = None) -> np.ndarray:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
         than just indexing the `table` attribute. This method provides an end-point for seamlessly
@@ -275,7 +316,7 @@ class Dataset(BaseArtifactModel):
         adapter = adapters.get(col)
 
         # If not a pointer, return it here. Apply adapter if specified.
-        value = self.table.loc[row, col]
+        value = self.table.at[row, col]
         if not self.annotations[col].is_pointer:
             if adapter is not None:
                 return adapter(value)
@@ -385,8 +426,6 @@ class Dataset(BaseArtifactModel):
             self.zarr_root_path = fs.join(self.cache_dir, "data.zarr")
             self._zarr_root = None
 
-        if not self._has_been_cached:
-            self._has_been_cached = True
         return self.cache_dir
 
     def size(self):
