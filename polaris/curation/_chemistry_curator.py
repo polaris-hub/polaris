@@ -40,9 +40,7 @@ def _num_stereo_centers(mol: Mol) -> Tuple[int]:
 
     """
     num_all_centers = len(FindMolChiralCenters(mol, force=True, includeUnassigned=True))
-    num_defined_centers = len(
-        FindMolChiralCenters(mol, force=True, includeUnassigned=False)
-    )
+    num_defined_centers = len(FindMolChiralCenters(mol, force=True, includeUnassigned=False))
     if num_all_centers == 0:
         return 0, 0, 0
     nun_undefined_centers = num_all_centers - num_defined_centers
@@ -87,6 +85,7 @@ def _curate_mol(
                 stereo=not remove_stereo,
             )
             # remove salts
+            # but don't remove everything if the molecule is salt or solvent itself
             mol = dm.remove_salts_solvents(mol, dont_remove_everything=True)
 
         # remove stereochemistry information
@@ -114,9 +113,7 @@ def _curate_mol(
         )
 
         # number of stereocenters
-        num_all_centers, num_defined_centers, num_undefined_centers = (
-            _num_stereo_centers(mol)
-        )
+        num_all_centers, num_defined_centers, num_undefined_centers = _num_stereo_centers(mol)
 
         mol_dict = {
             SMILES_COL: dm.to_smiles(mol, canonical=True),

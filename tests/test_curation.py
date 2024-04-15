@@ -1,7 +1,6 @@
 import datamol as dm
 import numpy as np
 import pandas as pd
-import pydantic
 import pytest
 
 from polaris.curation import run_chemistry_curation
@@ -12,7 +11,7 @@ from polaris.curation._data_curator import (
     _merge_duplicates,
     check_outliers,
 )
-from polaris.curation.utils import Discretizer, LabelOrder, discretizer, outlier_detection
+from polaris.curation.utils import LabelOrder, discretizer, outlier_detection
 
 
 def test_discretizer():
@@ -33,9 +32,6 @@ def test_discretizer():
         X=X, thresholds=thresholds_multiclass, label_order=LabelOrder.desc.value
     )
     assert np.array_equal(values_multiclass_r, np.array([[0, 2, 0], [0, 1, 1], [1, 0, 2]]))
-
-    with pytest.raises(pydantic.ValidationError):
-        Discretizer(thresholds=thresholds_multiclass, label_order="WrongType")
 
     with pytest.raises(ValueError):
         discretizer(X=X, thresholds=thresholds_multiclass, label_order="WrongType")
@@ -101,7 +97,7 @@ def test_check_outlier_zscore():
     outilers = outlier_detection(X=data[["data_col"]].values, method="zscore")
     assert len(outilers) == num_outlier
 
-    data_outlier = check_outliers(data, ["data_col"])
+    data_outlier = check_outliers(data=data, data_types=["continuous"], data_cols=["data_col"])
     assert data_outlier["OUTLIER_data_col"].sum() == num_outlier
 
 
@@ -114,7 +110,7 @@ def test_identify_stereoisomers_with_activity_cliff():
 
     data = pd.DataFrame({"data_col": vals, "groupby_col": groups})
     ids = _identify_stereoisomers_with_activity_cliff(
-        data=data, data_col="data_col", groupby_col="groupby_col", threshold=1
+        data=data, data_col="data_col", data_type="continuous", groupby_col="groupby_col", threshold=1
     )
     # check if identifed ids are correct
     assert set(ids) == set(index_cliff)

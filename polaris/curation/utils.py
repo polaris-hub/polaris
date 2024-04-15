@@ -165,9 +165,7 @@ def outlier_detection(X: np.ndarray, method="zscore", **kwargs) -> np.ndarray:
         outlier_index: Index of detected outliers in the input data X.
     """
     if method not in OUTLIER_METHOD:
-        raise ValueError(
-            "The detection name must be in 'iso', 'lof', 'svm', 'ee' and 'zscore'."
-        )
+        raise ValueError("The detection name must be in 'iso', 'lof', 'svm', 'ee' and 'zscore'.")
     detector = OUTLIER_METHOD.get(method)(**kwargs)
     pred = detector.fit_predict(X)
     outlier_index = np.argwhere(pred == -1)

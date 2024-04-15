@@ -1,12 +1,13 @@
 from loguru import logger
-from typing import List, Optional
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
+from typing import List, Optional, Dict, Tuple, Callable
+
 from scipy import stats
-import datamol as dm
+import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
 import umap
+
+import datamol as dm
 
 from .utils import PandasDataFrame
 from ._chemistry_curator import (
@@ -95,9 +96,7 @@ def verify_stereoisomers(
             legends = (
                 to_plot[fig_cols]
                 .apply(
-                    lambda x: "\n".join(
-                        [f"{fig_col}: {x[i]}" for i, fig_col in enumerate(fig_cols)]
-                    ),
+                    lambda x: "\n".join([f"{fig_col}: {x[i]}" for i, fig_col in enumerate(fig_cols)]),
                     axis=1,
                 )
                 .tolist()
@@ -129,9 +128,7 @@ def check_undefined_stereocenters(dataset: PandasDataFrame):
                          Please run the <polaris.curation.run_chemistry_curation> first."
         )
     dataset = dataset.query(f"{NUM_STEREOISOMERS} > 0 & {NUM_UNDEF_STEREO_CENTER} >0")
-    to_plot = dataset[
-        dataset[[NUM_UNDEF_STEREO_CENTER, NUM_DEF_STEREO_CENTER]].notna().any(axis=1)
-    ]
+    to_plot = dataset[dataset[[NUM_UNDEF_STEREO_CENTER, NUM_DEF_STEREO_CENTER]].notna().any(axis=1)]
     legends = (
         to_plot[[NUM_UNDEF_STEREO_CENTER, NUM_DEF_STEREO_CENTER]]
         .apply(
@@ -146,44 +143,47 @@ def check_undefined_stereocenters(dataset: PandasDataFrame):
 
 def visualize_chemspace(
     data: pd.DataFrame,
-    split_names: List[str],
     mol_col: str = "smiles",
     size_col=None,
     seed=1428,
     umap_metric="jaccard",
+    hue_names: List[str] = None,
 ):
     """
     Visualize the chemical space by doing a dimensionality reduction with UMAP.
-    -- Inputs --
+
+    Args:
         data: a dataframe
         split_names: names of the types of splits, should be found in columns of the "data" dataframe
         mol_col: string column where we will look for a molecule to featurize
         size_col: used for setting the style of the resulting scatterplot
         seed: int, random seed to use for reproducibility
         umap_metric: similarity metric to use for constructing the UMAP representation
-    -- Outputs --
+        hue_names: List of grouping variable that will produce points with different colors for the same UMAP plotting.
+
+    Returns:
         figs, figures for each kind of split specified in split_names
     """
     figs = plt.figure(num=3)
-    features = [
-        dm.to_fp(mol) for mol in data[mol_col]
-    ]  # Convert molecules to fingerprint
+    features = [dm.to_fp(mol) for mol in data[mol_col]]  # Convert molecules to fingerprint
     embedding = umap.UMAP(metric=umap_metric, random_state=seed).fit_transform(
         features
     )  # Embed the features with UMAP using a similarity metric
     data["UMAP_0"], data["UMAP_1"] = embedding[:, 0], embedding[:, 1]
-    for split_name in split_names:
+
+    hue_names = [None] if hue_names is None else hue_names
+    for hue in hue_names:
         plt.figure()
         fig = sns.scatterplot(
             data=data,
             x="UMAP_0",
             y="UMAP_1",
             style=size_col,
-            hue=split_name,
+            hue=hue,
             alpha=0.7,
             palette="colorblind",
         )
-        fig.set_title(f"UMAP embedding of compounds for {split_name}")
+        fig.set_title(f"UMAP embedding {hue}")
     return figs
 
 
@@ -243,9 +243,7 @@ def detailed_distributions_plots(
     # Check all columns are numeric
     numerics = df.apply(lambda x: x.dtype.kind in "biufc")
     if not numerics.all():
-        raise ValueError(
-            f"Not all columns are numeric: {numerics[~numerics].to_dict()}"
-        )
+        raise ValueError(f"Not all columns are numeric: {numerics[~numerics].to_dict()}")
 
     if seaborn_theme is not None:
         sns.set_theme(style=seaborn_theme)
@@ -321,9 +319,7 @@ def detailed_distributions_plots(
             )
 
             # Active ratio text box
-            positive_ratio = (
-                threshold_fn(values, threshold_value).sum() / len(values) * 100
-            )
+            positive_ratio = threshold_fn(values, threshold_value).sum() / len(values) * 100
             ax.text(
                 0.85,
                 0.95,
@@ -339,66 +335,4 @@ def detailed_distributions_plots(
     # Remove unused axes
     _ = [fig.delaxes(a) for a in axes[n_plots:]]
 
-    return fig
-
-
-def display_chemspace(
-    data: pd.DataFrame,
-    mol_col: str,
-    split: tuple = None,
-    split_name: str = None,
-    data_cols: list = None,
-    method: Literal["tsne", "umap"] = "tsne",
-    nrows: int = 2,
-):
-    """Show chemical space of molecule, optionally between traint/test split"""
-    mols = data[mol_col].apply(dm.to_mol)
-    features = np.array([dm.to_fp(mol) for mol in mols])
-    if method == "umap":
-        embedding = umap.UMAP().fit_transform(features)
-    elif method == "tsne":
-        embedding = TSNE(n_components=2).fit_transform(features)
-    else:
-        raise ValueError("Specify the embedding method")
-    data[f"{method}_0"], data[f"{method}_1"] = embedding[:, 0], embedding[:, 1]
-    if split is not None and split_name is not None:
-        data.loc[split[0], split_name] = "train"
-        data.loc[split[1], split_name] = "test"
-
-    ncols = 1
-    nrows = 1 if data_cols is None else nrows
-
-    if data_cols is not None:
-        if split_name is not None:
-            ncols += len(data_cols)
-        else:
-            ncols = len(data_cols)
-        ncols = np.ceil(ncols / nrows).astype(int)
-    fig, axes = plt.subplots(ncols=ncols, nrows=nrows, figsize=(ncols * 6, 5 * nrows))
-    if data_cols is not None:
-        axes = axes.flatten()
-        for i, col in enumerate(data_cols):
-            sns.scatterplot(
-                data=data,
-                x=f"{method}_0",
-                y=f"{method}_1",
-                hue=data[data_cols[i]].values,
-                ax=axes[i],
-                s=20,
-            )
-            axes[i].set_title(f"{method} embedding\n{col}")
-        ax = axes[-1]
-    else:
-        ax = axes
-    if split_name is not None:
-        sns.scatterplot(
-            data=data,
-            x=f"{method}_0",
-            y=f"{method}_1",
-            hue=data[split_name].values,
-            ax=ax,
-            s=20,
-        )
-        ax.set_title(f"{method} embedding of compounds for {split_name}")
-    fig.tight_layout()
     return fig
