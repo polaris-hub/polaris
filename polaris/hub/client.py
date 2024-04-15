@@ -487,9 +487,6 @@ class PolarisHubClient(OAuth2Client):
         # Get the serialized model data-structure
         results.owner = self._normalize_owner(results.owner, owner)
         result_json = results.model_dump(by_alias=True, exclude_none=True)
-        
-        # Check if result is from an existing benchmark (and not a competition)
-        res = self.get_benchmark
 
         # Make a request to the hub
         response = self._base_request_to_hub(
@@ -513,7 +510,7 @@ class PolarisHubClient(OAuth2Client):
         if_exists: ZarrConflictResolution = "replace"
     ):
         """Wrapper method for uploading non-competition datasets to Polaris Hub"""
-        return self._upload_dataset(dataset, ArtifactType.BENCHMARK, access, timeout, owner, if_exists)
+        return self._upload_dataset(dataset, ArtifactType.BENCHMARK.value, access, timeout, owner, if_exists)
         
     def _upload_dataset(
         self,
@@ -581,7 +578,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Step 1: Upload meta-data
         # Instead of directly uploading the table, we announce to the hub that we intend to upload one.
-        url = f"/dataset/{dataset.artifact_id}" if artifactType == ArtifactType.BENCHMARK else f"/dataset/competition/{dataset.artifact_id}"
+        url = f"/dataset/{dataset.artifact_id}" if artifactType == ArtifactType.BENCHMARK.value else f"/dataset/competition/{dataset.artifact_id}"
         response = self._base_request_to_hub(
             url=url,
             method="PUT",
@@ -652,9 +649,9 @@ class PolarisHubClient(OAuth2Client):
                     if_exists=if_exists,
                 )
 
-        base_artifact_url = 'datasets' if artifactType == ArtifactType.BENCHMARK else f"/dataset/competition"
+        base_artifact_url = 'datasets' if artifactType == ArtifactType.BENCHMARK.value else f"/dataset/competition"
         logger.success(
-            f"Your {artifactType }dataset has been successfully uploaded to the Hub. "
+            f"Your {artifactType} dataset has been successfully uploaded to the Hub. "
             f"View it here: {urljoin(self.settings.hub_url, f'{base_artifact_url}/{dataset.owner}/{dataset.name}')}"
         )
 
@@ -667,7 +664,7 @@ class PolarisHubClient(OAuth2Client):
         owner: Optional[Union[HubOwner, str]] = None
     ):
         """Wrapper method for uploading non-competition benchmarks to Polaris Hub"""
-        return self._upload_benchmark(benchmark, ArtifactType.BENCHMARK, access, owner)
+        return self._upload_benchmark(benchmark, ArtifactType.BENCHMARK.value, access, owner)
     
 
     def _upload_benchmark(
@@ -719,17 +716,19 @@ class PolarisHubClient(OAuth2Client):
         self, 
         dataset: Dataset, 
         benchmark: CompetitionSpecification, 
-        access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
         owner: Optional[Union[HubOwner, str]] = None,
         if_exists: ZarrConflictResolution = "replace"
     ) -> Dict[str, Response]:
+        ACCESS = 'private'
+        
+        # HARD CODE ACCESS TO PRIVATE ON BACKEND
         
         # Upload competition dataset
-        dataset_response = self._upload_dataset(dataset, ArtifactType.COMPETITION, access, timeout, owner, if_exists)
+        dataset_response = self._upload_dataset(dataset, ArtifactType.COMPETITION.value, ACCESS, timeout, owner, if_exists)
         
         # Upload competition benchmark
-        benchmark_response = self._upload_benchmark(benchmark, ArtifactType.COMPETITION, access, owner)
+        benchmark_response = self._upload_benchmark(benchmark, ArtifactType.COMPETITION.value, ACCESS, owner)
         
         return {"dataset_response": dataset_response, "benchmark_response": benchmark_response}
 
