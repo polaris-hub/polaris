@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Annotated, Any, Literal, Optional, Tuple, TypedDict, Union
+from typing import Annotated, Any, Literal, Optional, Tuple, Union
+from typing_extensions import TypedDict
 
 import numpy as np
 from pydantic import (
@@ -99,9 +100,12 @@ SupportedLicenseType: TypeAlias = Literal[
 Supported license types for dataset uploads to Polaris Hub
 """
 
+
 class LicenseTypeObject(TypedDict):
     id: SupportedLicenseType
     reference: str
+
+
 """
 Object structure of supported license types for datasets on Polaris Hub
 """
