@@ -24,7 +24,12 @@ from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
-from polaris.utils.types import AccessType, HttpUrlString, HubOwner, SupportedLicenseType
+from polaris.utils.types import (
+    AccessType,
+    HttpUrlString,
+    HubOwner,
+    SupportedLicenseType,
+)
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -296,7 +301,9 @@ class Dataset(BaseArtifactModel):
         return arr
 
     def upload_to_hub(
-        self, access: Optional[AccessType] = "private", owner: Optional[Union[HubOwner, str]] = None
+        self,
+        access: Optional[AccessType] = "private",
+        owner: Optional[Union[HubOwner, str]] = None,
     ):
         """
         Very light, convenient wrapper around the
@@ -424,7 +431,7 @@ class Dataset(BaseArtifactModel):
             elif len(ret) == self.n_rows:
                 # Returning a row, the indices are columns
                 ret = {
-                    k: self.get_data(k, ret.name) if self.annotations[ret.name].is_pointer else ret[k]
+                    k: (self.get_data(k, ret.name) if self.annotations[ret.name].is_pointer else ret[k])
                     for k in ret.index
                 }
 

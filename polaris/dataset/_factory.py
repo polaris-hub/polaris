@@ -54,7 +54,9 @@ class DatasetFactory:
     """
 
     def __init__(
-        self, zarr_root_path: Optional[str] = None, converters: Optional[Dict[str, Converter]] = None
+        self,
+        zarr_root_path: Optional[str] = None,
+        converters: Optional[Dict[str, Converter]] = None,
     ) -> None:
         """
         Create a new factory object.

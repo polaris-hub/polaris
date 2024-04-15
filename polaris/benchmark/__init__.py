@@ -4,4 +4,8 @@ from polaris.benchmark._definitions import (
     SingleTaskBenchmarkSpecification,
 )
 
-__all__ = ["BenchmarkSpecification", "SingleTaskBenchmarkSpecification", "MultiTaskBenchmarkSpecification"]
+__all__ = [
+    "BenchmarkSpecification",
+    "SingleTaskBenchmarkSpecification",
+    "MultiTaskBenchmarkSpecification",
+]

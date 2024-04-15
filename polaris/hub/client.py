@@ -32,7 +32,11 @@ from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.context import tmp_attribute_change
-from polaris.utils.errors import InvalidDatasetError, PolarisHubError, PolarisUnauthorizedError
+from polaris.utils.errors import (
+    InvalidDatasetError,
+    PolarisHubError,
+    PolarisUnauthorizedError,
+)
 from polaris.utils.types import (
     AccessType,
     HubOwner,
@@ -212,7 +216,9 @@ class PolarisHubClient(OAuth2Client):
     def fetch_token(self, **kwargs):
         """Light wrapper to automatically pass in the right URL"""
         return super().fetch_token(
-            url=self.settings.token_fetch_url, code_verifier=self.code_verifier, **kwargs
+            url=self.settings.token_fetch_url,
+            code_verifier=self.code_verifier,
+            **kwargs,
         )
 
     def request(self, method, url, withhold_token=False, auth=httpx.USE_CLIENT_DEFAULT, **kwargs):
@@ -231,7 +237,12 @@ class PolarisHubClient(OAuth2Client):
                     "SSL verification by setting the POLARIS_CA_BUNDLE environment variable to `false`."
                 ) from error
             raise error
-        except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError, OAuthError) as error:
+        except (
+            MissingTokenError,
+            InvalidTokenError,
+            httpx.HTTPStatusError,
+            OAuthError,
+        ) as error:
             if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:
                 raise
             raise PolarisUnauthorizedError from error
@@ -366,7 +377,12 @@ class PolarisHubClient(OAuth2Client):
         return Dataset(**response)
 
     def open_zarr_file(
-        self, owner: Union[str, HubOwner], name: str, path: str, mode: IOMode, as_consolidated: bool = True
+        self,
+        owner: Union[str, HubOwner],
+        name: str,
+        path: str,
+        mode: IOMode,
+        as_consolidated: bool = True,
     ) -> zarr.hierarchy.Group:
         """Open a Zarr file from a Polaris dataset
 
@@ -597,7 +613,10 @@ class PolarisHubClient(OAuth2Client):
             bucket_response = self.request(
                 url=hub_response_body["url"],
                 method=hub_response_body["method"],
-                headers={"Content-type": "application/vnd.apache.parquet", **hub_response_body["headers"]},
+                headers={
+                    "Content-type": "application/vnd.apache.parquet",
+                    **hub_response_body["headers"],
+                },
                 content=buffer.getvalue(),
                 auth=None,
                 timeout=timeout,  # required for large size dataset
