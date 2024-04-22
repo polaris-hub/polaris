@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import fsspec
+from fsspec.asyn import AsyncFileSystem, sync_wrapper
 
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import TimeoutTypes
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
     from polaris.hub.client import PolarisHubClient
 
 
-class PolarisFileSystem(fsspec.AbstractFileSystem):
+class PolarisFileSystem(AsyncFileSystem):
     """
     A file system interface for accessing datasets on the Polaris platform.
 
@@ -37,7 +38,6 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
 
     sep = "/"
     protocol = "polarisfs"
-    async_impl = False
 
     def __init__(
         self,
@@ -46,7 +46,11 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         dataset_name: str,
         **kwargs: dict,
     ):
-        super().__init__(use_listing_cache=True, listings_expiry_time=None, max_paths=None, **kwargs)
+        super().__init__(
+            use_listing_cache=True, 
+            listings_expiry_time=None, 
+            max_paths=None, 
+            **kwargs)
 
         self.polaris_client = polaris_client
         self.default_timeout = self.polaris_client.settings.default_timeout
@@ -67,7 +71,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         """
         return path.startswith(f"{PolarisFileSystem.protocol}://")
 
-    def ls(
+    async def _ls(
         self,
         path: str,
         detail: bool = False,
@@ -84,6 +88,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         Returns:
             A list of dictionaries if detail is True; otherwise, a list of object names.
         """
+
         if timeout is None:
             timeout = self.default_timeout
 
@@ -94,7 +99,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         ls_path = self.sep.join([self.base_path, "ls", path])
 
         # GET request to Polaris Hub to list objects in path
-        response = self.polaris_client.get(ls_path.rstrip("/"), timeout=timeout)
+        response = await self.polaris_client.get(ls_path.rstrip("/"), timeout=timeout)
         response.raise_for_status()
 
         detailed_listings = [
@@ -112,8 +117,8 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             return [p["name"] for p in detailed_listings]
 
         return detailed_listings
-
-    def cat_file(
+    
+    async def _cat_file(
         self,
         path: str,
         start: Union[int, None] = None,
@@ -139,8 +144,8 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         cat_path = self.sep.join([self.base_path, path])
 
         # GET request to Polaris Hub for signed URL of file
-        response = self.polaris_client.get(cat_path)
-
+        response = await self.polaris_client.get(cat_path)
+        
         # This should be a 307 redirect with the signed URL
         if response.status_code != 307:
             raise PolarisHubError("Could not get signed URL from Polaris Hub.")
@@ -151,7 +156,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             data = f.read()
         return data[start:end]
 
-    def rm(self, path: str, recursive: bool = False, maxdepth: Optional[int] = None) -> None:
+    async def _rm(self, path: str, recursive: bool = False, maxdepth: Optional[int] = None) -> None:
         """Remove a file or directory from the Polaris dataset.
 
         This method is provided for compatibility with the Zarr storage interface.
@@ -171,38 +176,27 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         """
         raise NotImplementedError("PolarisFS does not currently support the file removal operation.")
 
-    def pipe_file(
+    async def _pipe_file(
         self,
         path: str,
         content: Union[bytes, str],
-        timeout: Optional[TimeoutTypes] = None,
-        **kwargs: dict,
-    ) -> None:
-        """Pipes the content of a file to the Polaris dataset.
-
-        Args:
-            path: The path to the file within the dataset.
-            content: The content to be piped into the file.
-            timeout: Maximum time (in seconds) to wait for the request to complete.
-
-        Returns:
-            None
-        """
+        timeout: Optional[int] = None,
+        **kwargs,) -> None:
+        """Asynchronously pipes the content of a file to the Polaris dataset."""
+        
         if timeout is None:
             timeout = self.default_timeout
 
-        pipe_path = self.sep.join([self.base_path, path])
+        pipe_path = f"{self.base_path}/{path}".rstrip("/")
 
-        # PUT request to Polaris Hub to put object in path
-        response = self.polaris_client.put(pipe_path, timeout=timeout)
-
+        response = await self.polaris_client.put(pipe_path, timeout=timeout)
         if response.status_code != 307:
-            raise PolarisHubError("Could not get signed URL from Polaris Hub.")
-
+            raise Exception("Could not get signed URL from Polaris Hub.")
+        
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
 
-        sha256_hash = hashlib.sha256(content).hexdigest()
+        sha256_hash = hashlib.sha256(content.encode() if isinstance(content, str) else content).hexdigest()
 
         headers = {
             "Content-Type": "application/octet-stream",
@@ -211,14 +205,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             **hub_response_body["headers"],
         }
 
-        response = self.polaris_client.request(
-            url=signed_url,
-            method="PUT",
-            auth=None,
-            content=content,
-            headers=headers,
-            timeout=timeout,
-        )
+        response = await self.polaris_client.request(signed_url, content=content, headers=headers, timeout=timeout)
         response.raise_for_status()
 
         new_listing = [{"name": path, "type": "file", "size": len(content)}]
@@ -226,9 +213,6 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             current_listings = self._ls_from_cache(self._parent(path))
             new_listing.extend(current_listings)
         except FileNotFoundError:
-            # self._ls_from_cache() raises FileNotFoundError when no listings
-            # are found within a path. We can then assume it's a new directory
-            # and new_listing can be used as is.
             pass
-
+    
         self.dircache[self._parent(path)] = new_listing
