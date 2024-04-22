@@ -1,7 +1,8 @@
 from loguru import logger
-from typing import List, Optional, Dict, Tuple, Callable
+from typing import List, Optional, Dict, Tuple, Callable, Iterable
 
 from scipy import stats
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -269,10 +270,10 @@ def detailed_distributions_plots(
         constrained_layout=True,
         dpi=dpi,
     )
-    if isinstance(axes, list):
-        axes = list(axes.flatten())
-    else:
-        axes = [axes]
+    if not isinstance(axes, Iterable):
+        axes = np.array([axes])
+    
+    axes = axes.flatten()
 
     for ax, readout, label_name in zip(axes, df.columns, label_names):
         values = df[readout].dropna()
