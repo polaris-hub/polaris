@@ -15,6 +15,7 @@ from sklearn.metrics import (
     mean_squared_error,
     r2_score,
     roc_auc_score,
+    balanced_accuracy_score,
 )
 
 from polaris.utils.types import DirectionType
@@ -28,6 +29,28 @@ def pearsonr(y_true: np.ndarray, y_pred: np.ndarray):
 def spearman(y_true: np.ndarray, y_pred: np.ndarray):
     """Calculate a Spearman correlation"""
     return stats.spearmanr(y_true, y_pred).statistic
+
+
+def absolute_average_fold_error(y_true: np.ndarray, y_pred: np.ndarray):
+    """
+    Calculate the Absolute Average Fold Error (AAFE) metric.
+
+    Parameters:
+    y_true : array-like of shape (n_samples,)
+        The true target values.
+    y_pred : array-like of shape (n_samples,)
+        The predicted target values.
+
+    Returns:
+    aafe : float
+        The Absolute Average Fold Error.
+    """
+    if len(y_true) != len(y_pred):
+        raise ValueError("Length of y_true and y_pred must be the same.")
+
+    aafe = np.mean(np.abs(y_pred) / np.abs(y_true))
+
+    return aafe
 
 
 class MetricInfo(BaseModel):
@@ -65,6 +88,7 @@ class Metric(Enum):
     pearsonr = MetricInfo(fn=pearsonr, direction="max")
     spearmanr = MetricInfo(fn=spearman, direction="max")
     explained_var = MetricInfo(fn=explained_variance_score, direction="max")
+    aafe = MetricInfo(fn=absolute_average_fold_error, direction="max")
 
     # classification
     accuracy = MetricInfo(fn=accuracy_score, direction="max")
@@ -75,7 +99,9 @@ class Metric(Enum):
     pr_auc = MetricInfo(fn=average_precision_score, direction="max")
     mcc = MetricInfo(fn=matthews_corrcoef, direction="max")
     cohen_kappa = MetricInfo(fn=cohen_kappa_score, direction="max")
+
     # TODO: adding metrics for multiclass tasks
+    ba = MetricInfo(fn=balanced_accuracy_score, direction="max")
 
     @property
     def fn(self) -> Callable:
