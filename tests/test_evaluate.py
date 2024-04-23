@@ -78,6 +78,16 @@ def test_metrics_singletask_clf(
         assert metric in result.results.Metric.tolist()
 
 
+def test_metrics_singletask_multicls_clf(
+    tmpdir: str, test_single_task_benchmark_multi_clf: SingleTaskBenchmarkSpecification
+):
+    _, test = test_single_task_benchmark_multi_clf.get_train_test_split()
+    predictions = np.random.randint(4, size=test.inputs.shape[0])
+    result = test_single_task_benchmark_multi_clf.evaluate(predictions)
+    for metric in test_single_task_benchmark_multi_clf.metrics:
+        assert metric in result.results.Metric.tolist()
+
+
 def test_metrics_multitask_clf(tmpdir: str, test_multi_task_benchmark_clf: MultiTaskBenchmarkSpecification):
     train, test = test_multi_task_benchmark_clf.get_train_test_split()
     predictions = {

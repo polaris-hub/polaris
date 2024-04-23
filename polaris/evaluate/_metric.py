@@ -92,18 +92,21 @@ class Metric(Enum):
     explained_var = MetricInfo(fn=explained_variance_score, direction="max")
     absolute_average_fold_error = MetricInfo(fn=absolute_average_fold_error, direction="max")
 
-    # classification
+    # binary and multiclass classification
     accuracy = MetricInfo(fn=accuracy_score, direction="max")
-    f1 = MetricInfo(fn=f1_score, kwargs={"average": "binary"}, direction="max")
-    f1_macro = MetricInfo(fn=f1_score, kwargs={"average": "macro"}, direction="max")
-    f1_micro = MetricInfo(fn=f1_score, kwargs={"average": "micro"}, direction="max")
-    roc_auc = MetricInfo(fn=roc_auc_score, direction="max")
-    pr_auc = MetricInfo(fn=average_precision_score, direction="max")
+    balanced_accuracy = MetricInfo(fn=balanced_accuracy_score, direction="max")
     mcc = MetricInfo(fn=matthews_corrcoef, direction="max")
     cohen_kappa = MetricInfo(fn=cohen_kappa_score, direction="max")
 
+    # binary only
+    f1 = MetricInfo(fn=f1_score, kwargs={"average": "binary"}, direction="max")
+    # note: At the moment, multi-dimension inputs for classification are not supported
+    roc_auc = MetricInfo(fn=roc_auc_score, direction="max")
+    pr_auc = MetricInfo(fn=average_precision_score, direction="max")
+
     # multiclass tasks
-    balanced_accuracy = MetricInfo(fn=balanced_accuracy_score, direction="max")
+    f1_macro = MetricInfo(fn=f1_score, kwargs={"average": "macro"}, direction="max")
+    f1_micro = MetricInfo(fn=f1_score, kwargs={"average": "micro"}, direction="max")
 
     @property
     def fn(self) -> Callable:
