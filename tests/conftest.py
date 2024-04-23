@@ -24,7 +24,7 @@ def test_data():
     data["CLASS_expt"] = data["expt"].gt(0).astype(int).values
     data["CLASS_calc"] = data["calc"].gt(0).astype(int).values
     data["MULTICLASS_expt"] = np.random.randint(low=0, high=3, size=data.shape[0])
-    data["MULTICLASS_calc"] =np.random.randint(low=0, high=3, size=data.shape[0])
+    data["MULTICLASS_calc"] = np.random.randint(low=0, high=3, size=data.shape[0])
     return data
 
 
@@ -101,7 +101,7 @@ def test_single_task_benchmark(test_dataset):
             "spearmanr",
             "pearsonr",
             "explained_var",
-            "absolute_average_fold_error"
+            "absolute_average_fold_error",
         ],
         main_metric="mean_absolute_error",
         split=(train_indices, test_indices),
@@ -128,6 +128,7 @@ def test_single_task_benchmark_clf(test_dataset):
     check_version(benchmark)
     return benchmark
 
+
 @pytest.fixture(scope="function")
 def test_single_task_benchmark_multi_clf(test_dataset):
     train_indices = list(range(90))
@@ -137,13 +138,14 @@ def test_single_task_benchmark_multi_clf(test_dataset):
         name="single-task-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
-        metrics=["accuracy", "balanced_accuracy", "mcc", "cohen_kappa" , "f1_macro",  "f1_micro"],
+        metrics=["accuracy", "balanced_accuracy", "mcc", "cohen_kappa", "f1_macro", "f1_micro"],
         split=(train_indices, test_indices),
         target_cols="MULTICLASS_expt",
         input_cols="smiles",
     )
     check_version(benchmark)
     return benchmark
+
 
 @pytest.fixture(scope="function")
 def test_single_task_benchmark_multiple_test_sets(test_dataset):
@@ -159,7 +161,7 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
             "spearmanr",
             "pearsonr",
             "explained_var",
-            "absolute_average_fold_error"
+            "absolute_average_fold_error",
         ],
         main_metric="r2",
         split=(train_indices, test_indices),
@@ -186,7 +188,7 @@ def test_multi_task_benchmark(test_dataset):
             "spearmanr",
             "pearsonr",
             "explained_var",
-            "absolute_average_fold_error"
+            "absolute_average_fold_error",
         ],
         split=(train_indices, test_indices),
         target_cols=["expt", "calc"],
