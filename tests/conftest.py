@@ -131,14 +131,27 @@ def test_single_task_benchmark_clf(test_dataset):
 
 @pytest.fixture(scope="function")
 def test_single_task_benchmark_multi_clf(test_dataset):
-    train_indices = list(range(90))
-    test_indices = list(range(90, 100))
+    np.random.seed(111)
+    indices = np.arange(100)
+    np.random.shuffle(indices)
+    train_indices = indices[:80]
+    test_indices = indices[80:]
 
     benchmark = SingleTaskBenchmarkSpecification(
         name="single-task-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
-        metrics=["accuracy", "balanced_accuracy", "mcc", "cohen_kappa", "f1_macro", "f1_micro"],
+        metrics=[
+            "accuracy",
+            "balanced_accuracy",
+            "mcc",
+            "cohen_kappa",
+            "f1_macro",
+            "f1_micro",
+            "roc_auc_ovr",
+            "roc_auc_ovo",
+            "pr_auc",
+        ],
         split=(train_indices, test_indices),
         target_cols="MULTICLASS_expt",
         input_cols="smiles",
