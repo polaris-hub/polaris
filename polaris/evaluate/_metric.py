@@ -38,14 +38,11 @@ def absolute_average_fold_error(y_true: np.ndarray, y_pred: np.ndarray):
     The implementation is based on [this paper](https://pubs.acs.org/doi/10.1021/acs.chemrestox.3c00305).
 
     Args:
-        y_true : array-like of shape (n_samples,)
-            The true target values.
-        y_pred : array-like of shape (n_samples,)
-            The predicted target values.
+        y_true: The true target values of shape (n_samples,)
+        y_pred: The predicted target values of shape (n_samples,).
 
     Returns:
-        aafe : float
-            The Absolute Average Fold Error.
+        aafe: The Absolute Average Fold Error.
     """
     if len(y_true) != len(y_pred):
         raise ValueError("Length of y_true and y_pred must be the same.")
