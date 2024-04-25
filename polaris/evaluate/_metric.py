@@ -35,7 +35,7 @@ def absolute_average_fold_error(y_true: np.ndarray, y_pred: np.ndarray):
     """
     Calculate the Absolute Average Fold Error (AAFE) metric.
     It measures the fold change between predicted values and observed values.
-    The implementation is based on https://pubs.acs.org/doi/10.1021/acs.chemrestox.3c00305.
+    The implementation is based on [this paper](https://pubs.acs.org/doi/10.1021/acs.chemrestox.3c00305).
 
     Args:
         y_true : array-like of shape (n_samples,)
@@ -49,6 +49,9 @@ def absolute_average_fold_error(y_true: np.ndarray, y_pred: np.ndarray):
     """
     if len(y_true) != len(y_pred):
         raise ValueError("Length of y_true and y_pred must be the same.")
+
+    if np.any(y_true == 0):
+        raise ValueError("`y_true` contains zero which will result `Inf` value.")
 
     aafe = np.mean(np.abs(y_pred) / np.abs(y_true))
 
@@ -70,6 +73,7 @@ class MetricInfo(BaseModel):
     is_multitask: bool = False
     kwargs: dict = Field(default_factory=dict)
     direction: DirectionType
+    needs_probs: bool = False
 
 
 class Metric(Enum):
@@ -90,23 +94,29 @@ class Metric(Enum):
     pearsonr = MetricInfo(fn=pearsonr, direction="max")
     spearmanr = MetricInfo(fn=spearman, direction="max")
     explained_var = MetricInfo(fn=explained_variance_score, direction="max")
-    absolute_average_fold_error = MetricInfo(fn=absolute_average_fold_error, direction="max")
+    absolute_average_fold_error = MetricInfo(fn=absolute_average_fold_error, direction=1)
 
     # binary and multiclass classification
     accuracy = MetricInfo(fn=accuracy_score, direction="max")
     balanced_accuracy = MetricInfo(fn=balanced_accuracy_score, direction="max")
     mcc = MetricInfo(fn=matthews_corrcoef, direction="max")
     cohen_kappa = MetricInfo(fn=cohen_kappa_score, direction="max")
+    pr_auc = MetricInfo(fn=average_precision_score, direction="max", needs_probs=True)
 
     # binary only
     f1 = MetricInfo(fn=f1_score, kwargs={"average": "binary"}, direction="max")
     # note: At the moment, multi-dimension inputs for classification are not supported
-    roc_auc = MetricInfo(fn=roc_auc_score, direction="max")
-    pr_auc = MetricInfo(fn=average_precision_score, direction="max")
+    roc_auc = MetricInfo(fn=roc_auc_score, direction="max", needs_probs=True)
 
-    # multiclass tasks
+    # multiclass tasks only
     f1_macro = MetricInfo(fn=f1_score, kwargs={"average": "macro"}, direction="max")
     f1_micro = MetricInfo(fn=f1_score, kwargs={"average": "micro"}, direction="max")
+    roc_auc_ovr = MetricInfo(
+        fn=roc_auc_score, kwargs={"multi_class": "ovr"}, direction="max", needs_probs=True
+    )
+    roc_auc_ovo = MetricInfo(
+        fn=roc_auc_score, kwargs={"multi_class": "ovo"}, direction="max", needs_probs=True
+    )
 
     @property
     def fn(self) -> Callable:
@@ -117,6 +127,11 @@ class Metric(Enum):
     def is_multitask(self) -> bool:
         """Whether the metric expects a single set of predictions or a dict of predictions."""
         return self.value.is_multitask
+
+    @property
+    def needs_probs(self) -> bool:
+        """Whether the metric expects preditive probablities."""
+        return self.value.needs_probs
 
     def score(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         """Endpoint for computing the metric.
