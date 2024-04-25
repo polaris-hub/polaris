@@ -145,4 +145,4 @@ def test_absolute_average_fold_error():
 
     # undershoot
     with pytest.raises(ValueError):
-        aafe_4 = Metric.absolute_average_fold_error(y_true=y_zero, y_pred=y_pred_3)
+        Metric.absolute_average_fold_error(y_true=y_zero, y_pred=y_pred_3)
