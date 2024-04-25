@@ -31,7 +31,7 @@ def spearman(y_true: np.ndarray, y_pred: np.ndarray):
     return stats.spearmanr(y_true, y_pred).statistic
 
 
-def absolute_average_fold_error(y_true: np.ndarray, y_pred: np.ndarray):
+def absolute_average_fold_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """
     Calculate the Absolute Average Fold Error (AAFE) metric.
     It measures the fold change between predicted values and observed values.
