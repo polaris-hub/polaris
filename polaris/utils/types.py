@@ -93,7 +93,7 @@ Type to specify the mode for input/output operations (I/O) when interacting with
 """
 
 SupportedLicenseType: TypeAlias = Literal[
-    "CC-BY-4.0", "CC-BY-SA-4.0", "CC-BY-NC-4.0", "CC-BY-NC-SA-4.0", "CC0-1.0"
+    "CC-BY-4.0", "CC-BY-SA-4.0", "CC-BY-NC-4.0", "CC-BY-NC-SA-4.0", "CC0-1.0", "MIT"
 ]
 """
 Supported license types for dataset uploads to Polaris Hub

@@ -549,7 +549,7 @@ class PolarisHubClient(OAuth2Client):
         # Check if a dataset license was specified prior to upload
         if not dataset.license:
             raise InvalidDatasetError(
-                f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some Creative Commons licenses are supported - {get_args(SupportedLicenseType)}. For more information, see https://creativecommons.org/share-your-work/cclicenses/"
+                f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some licenses are supported - {get_args(SupportedLicenseType)}."
             )
 
         # Normalize timeout
