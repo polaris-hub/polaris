@@ -335,7 +335,7 @@ class PolarisHubClient(OAuth2Client):
         dataset_list = [bm["artifactId"] for bm in response["data"]]
         return dataset_list
 
-    def get_dataset(self, owner: Union[str, HubOwner], name: str, verify_checksum: bool = True) -> Dataset:
+    def get_dataset(self, owner: Union[str, HubOwner], name: str, artifact_type: ArtifactType, verify_checksum: bool = True) -> Dataset:
         """Load a dataset from the Polaris Hub.
 
         Args:
@@ -347,7 +347,9 @@ class PolarisHubClient(OAuth2Client):
             A `Dataset` instance, if it exists.
         """
 
-        response = self._base_request_to_hub(url=f"/dataset/{owner}/{name}", method="GET")
+        url = f"/dataset/{owner}/{name}" if artifact_type == ArtifactType.STANDARD.value else f"/competition/dataset/{owner}/{name}"
+        response = self._base_request_to_hub(url=url, method="GET")
+        
         storage_response = self.get(response["tableContent"]["url"])
 
         # This should be a 307 redirect with the signed URL
@@ -438,7 +440,7 @@ class PolarisHubClient(OAuth2Client):
         # TODO (cwognum): Currently, the benchmark endpoints do not return the owner info for the underlying dataset.
         # TODO (jstlaurent): Use the same owner for now, until the benchmark returns a better dataset entity
         response["dataset"] = self.get_dataset(
-            owner, response["dataset"]["name"], verify_checksum=verify_checksum
+            owner, response["dataset"]["name"], ArtifactType.STANDARD, verify_checksum=verify_checksum
         )
 
         # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
@@ -515,7 +517,7 @@ class PolarisHubClient(OAuth2Client):
     def _upload_dataset(
         self,
         dataset: Dataset,
-        artifactType: ArtifactType,
+        artifact_type: ArtifactType,
         access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
         owner: Optional[Union[HubOwner, str]] = None,
@@ -578,7 +580,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Step 1: Upload meta-data
         # Instead of directly uploading the table, we announce to the hub that we intend to upload one.
-        url = f"/dataset/{dataset.artifact_id}" if artifactType == ArtifactType.STANDARD.value else f"/competition/dataset/{dataset.artifact_id}"
+        url = f"/dataset/{dataset.artifact_id}" if artifact_type == ArtifactType.STANDARD.value else f"/competition/dataset/{dataset.artifact_id}"
         response = self._base_request_to_hub(
             url=url,
             method="PUT",
@@ -603,7 +605,7 @@ class PolarisHubClient(OAuth2Client):
                 "Content-type": "application/vnd.apache.parquet",
             },
             timeout=timeout,
-            json={"artifactType": artifactType}
+            json={"artifactType": artifact_type}
         )
 
         if hub_response.status_code == 307:
@@ -650,9 +652,9 @@ class PolarisHubClient(OAuth2Client):
                     if_exists=if_exists,
                 )
 
-        base_artifact_url = 'datasets' if artifactType == ArtifactType.STANDARD.value else f"/dataset/competition"
+        base_artifact_url = 'datasets' if artifact_type == ArtifactType.STANDARD.value else f"/dataset/competition"
         logger.success(
-            f"Your {artifactType} dataset has been successfully uploaded to the Hub. "
+            f"Your {artifact_type} dataset has been successfully uploaded to the Hub. "
             f"View it here: {urljoin(self.settings.hub_url, f'{base_artifact_url}/{dataset.owner}/{dataset.name}')}"
         )
 
@@ -671,7 +673,7 @@ class PolarisHubClient(OAuth2Client):
     def _upload_benchmark(
         self,
         benchmark: BenchmarkSpecification | CompetitionSpecification,
-        artifactType: ArtifactType,
+        artifact_type: ArtifactType,
         access: AccessType = "private",
         owner: Optional[Union[HubOwner, str]] = None,
     ):
@@ -703,14 +705,12 @@ class PolarisHubClient(OAuth2Client):
         benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
         benchmark_json["access"] = access
         
-        print(benchmark_json, '<<<<')
-
-        url = f"/{artifactType}/{benchmark.owner}/{benchmark.name}"
+        url = f"/{artifact_type}/{benchmark.owner}/{benchmark.name}"
         response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
         logger.success(
-            f"Your {artifactType} has been successfully uploaded to the Hub. "
-            f"View it here: {urljoin(self.settings.hub_url, f'{artifactType}/{benchmark.owner}/{benchmark.name}')}"
+            f"Your {artifact_type} has been successfully uploaded to the Hub. "
+            f"View it here: {urljoin(self.settings.hub_url, f'{artifact_type}/{benchmark.owner}/{benchmark.name}')}"
         )
         return response
 
@@ -724,9 +724,7 @@ class PolarisHubClient(OAuth2Client):
         if_exists: ZarrConflictResolution = "replace"
     ) -> Dict[str, Response]:
         ACCESS = 'private'
-        
-        # HARD CODE ACCESS TO PRIVATE ON BACKEND
-        
+                
         # Upload competition dataset
         dataset_response = self._upload_dataset(dataset, ArtifactType.COMPETITION.value, ACCESS, timeout, owner, if_exists)
         
@@ -749,12 +747,12 @@ class PolarisHubClient(OAuth2Client):
             A `CompetitionSpecification` instance, if it exists.
         """
 
-        response = self._base_request_to_hub(url=f"/benchmark/{owner}/{name}", method="GET")
+        response = self._base_request_to_hub(url=f"/competition/{owner}/{name}", method="GET")
 
         # TODO (cwognum): Currently, the benchmark endpoints do not return the owner info for the underlying dataset.
         # TODO (jstlaurent): Use the same owner for now, until the benchmark returns a better dataset entity
         response["dataset"] = self.get_dataset(
-            owner, response["dataset"]["name"], verify_checksum=verify_checksum
+            owner, response["dataset"]["name"], ArtifactType.COMPETITION, verify_checksum=verify_checksum
         )
 
         if not verify_checksum:
