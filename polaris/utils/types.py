@@ -139,5 +139,5 @@ class TaskType(Enum):
 class ArtifactType(Enum):
     """The major artifact types which Polaris supports"""
 
-    BENCHMARK = "benchmark"
+    STANDARD = "standard"
     COMPETITION = "competition"

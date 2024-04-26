@@ -16,8 +16,8 @@ class CompetitionSpecification(BenchmarkSpecification):
     """
     
     # Additional properties specific to Competitions
-    start_time: datetime
-    scheduled_end_time: datetime
+    start_time: datetime = None
+    scheduled_end_time: datetime = None
     
     def evaluate(self, predictions):
         """Wrapper method which ultimately triggers an evaluation service to assess and score user predictions

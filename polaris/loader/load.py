@@ -76,3 +76,39 @@ def load_benchmark(path: str, verify_checksum: bool = True):
     is_single_task = isinstance(data["target_cols"], str) or len(data["target_cols"]) == 1
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
     return cls.from_json(path)
+
+# def load_competition(path: str, verify_checksum: bool = True):
+#     """
+#     Loads a Polaris competition.
+
+#     In Polaris, a competition wraps a dataset with additional meta-data to specify the evaluation logic.
+#     In Polaris, a benchmark wraps a dataset with additional meta-data to specify the evaluation logic.
+
+#     The Polaris benchmark can be loaded from the Hub or from a local or remote directory.
+
+#     Note: Dataset is automatically loaded
+#         The dataset underlying the benchmark is automatically loaded when loading the benchmark.
+
+#     - **Hub** (recommended): When loading the benchmark from the Hub, you can simply
+#         provide the `owner/name` slug. This can be easily copied from the relevant benchmark
+#         page on the Hub.
+#     - **Directory**: When loading the benchmark from a directory, you should provide the path
+#         as returned by [`BenchmarkSpecification.to_json`][polaris.benchmark._base.BenchmarkSpecification.to_json].
+#         The path can be local or remote.
+#     """
+
+#     is_file = fs.is_file(path) or fs.get_extension(path) == "zarr"
+
+#     if not is_file:
+#         # Load from the Hub
+#         client = PolarisHubClient()
+#         return client.get_benchmark(*path.split("/"), verify_checksum=verify_checksum)
+
+#     with fsspec.open(path, "r") as fd:
+#         data = json.load(fd)
+
+#     # TODO (cwognum): As this gets more complex, how do we effectivly choose which class we should use?
+#     #  e.g. we might end up with a single class per benchmark.
+#     is_single_task = isinstance(data["target_cols"], str) or len(data["target_cols"]) == 1
+#     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
+#     return cls.from_json(path)
