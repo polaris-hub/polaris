@@ -330,13 +330,13 @@ class PolarisHubClient(OAuth2Client):
             A list of dataset names in the format `owner/dataset_name`.
         """
         response = self._base_request_to_hub(
-            url="/dataset", method="GET", params={"limit": limit, "offset": offset}
+            url="/v1/dataset", method="GET", params={"limit": limit, "offset": offset}
         )
         dataset_list = [bm["artifactId"] for bm in response["data"]]
         return dataset_list
-
-    def get_dataset(self, owner: Union[str, HubOwner], name: str, artifact_type: ArtifactType, verify_checksum: bool = True) -> Dataset:
-        """Load a dataset from the Polaris Hub.
+    
+    def get_dataset(self, owner: Union[str, HubOwner], name: str, verify_checksum: bool = True) -> Dataset:
+        """Load a standard dataset from the Polaris Hub.
 
         Args:
             owner: The owner of the dataset. Can be either a user or organization from the Polaris Hub.
@@ -346,8 +346,23 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `Dataset` instance, if it exists.
         """
+        
+        return self._get_dataset(owner, name, ArtifactType.STANDARD.value, verify_checksum)
 
-        url = f"/dataset/{owner}/{name}" if artifact_type == ArtifactType.STANDARD.value else f"/competition/dataset/{owner}/{name}"
+    def _get_dataset(self, owner: Union[str, HubOwner], name: str, artifact_type: ArtifactType, verify_checksum: bool = True) -> Dataset:
+        """Loads either a standard or competition dataset from Polaris Hub
+        
+        Args:
+            owner: The owner of the dataset. Can be either a user or organization from the Polaris Hub.
+            name: The name of the dataset.
+            artifact_type: indicates whether the artifact is of the standard or competition type.
+            verify_checksum: Whether to use the checksum to verify the integrity of the dataset.
+
+        Returns:
+            A `Dataset` instance, if it exists.
+        """
+
+        url = f"/v1/dataset/{owner}/{name}" if artifact_type == ArtifactType.STANDARD.value else f"/v2/competition/dataset/{owner}/{name}"
         response = self._base_request_to_hub(url=url, method="GET")
         
         storage_response = self.get(response["tableContent"]["url"])
@@ -416,7 +431,7 @@ class PolarisHubClient(OAuth2Client):
 
         # TODO (cwognum): What to do with pagination, i.e. limit and offset?
         response = self._base_request_to_hub(
-            url="/benchmark", method="GET", params={"limit": limit, "offset": offset}
+            url="/v1/benchmark", method="GET", params={"limit": limit, "offset": offset}
         )
         benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
         return benchmarks_list
@@ -435,12 +450,12 @@ class PolarisHubClient(OAuth2Client):
             A `BenchmarkSpecification` instance, if it exists.
         """
 
-        response = self._base_request_to_hub(url=f"/benchmark/{owner}/{name}", method="GET")
+        response = self._base_request_to_hub(url=f"/v1/benchmark/{owner}/{name}", method="GET")
 
         # TODO (cwognum): Currently, the benchmark endpoints do not return the owner info for the underlying dataset.
         # TODO (jstlaurent): Use the same owner for now, until the benchmark returns a better dataset entity
         response["dataset"] = self.get_dataset(
-            owner, response["dataset"]["name"], ArtifactType.STANDARD, verify_checksum=verify_checksum
+            owner, response["dataset"]["name"], verify_checksum=verify_checksum
         )
 
         # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
@@ -492,13 +507,13 @@ class PolarisHubClient(OAuth2Client):
 
         # Make a request to the hub
         response = self._base_request_to_hub(
-            url="/result", method="POST", json={"access": access, **result_json}
+            url="/v1/result", method="POST", json={"access": access, **result_json}
         )
 
         # Inform the user about where to find their newly created artifact.
         result_url = urljoin(
             self.settings.hub_url,
-            f"benchmarks/{results.benchmark_owner}/{results.benchmark_name}/{response['id']}",
+            f"/v1/benchmarks/{results.benchmark_owner}/{results.benchmark_name}/{response['id']}",
         )
         logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
         return response
@@ -511,7 +526,7 @@ class PolarisHubClient(OAuth2Client):
         owner: Optional[Union[HubOwner, str]] = None,
         if_exists: ZarrConflictResolution = "replace"
     ):
-        """Wrapper method for uploading non-competition datasets to Polaris Hub"""
+        """Wrapper method for uploading standard datasets to Polaris Hub"""
         return self._upload_dataset(dataset, ArtifactType.STANDARD.value, access, timeout, owner, if_exists)
         
     def _upload_dataset(
@@ -580,7 +595,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Step 1: Upload meta-data
         # Instead of directly uploading the table, we announce to the hub that we intend to upload one.
-        url = f"/dataset/{dataset.artifact_id}" if artifact_type == ArtifactType.STANDARD.value else f"/competition/dataset/{dataset.artifact_id}"
+        url = f"/v1/dataset/{dataset.artifact_id}" if artifact_type == ArtifactType.STANDARD.value else f"/v2/competition/dataset/{dataset.artifact_id}"
         response = self._base_request_to_hub(
             url=url,
             method="PUT",
@@ -652,7 +667,7 @@ class PolarisHubClient(OAuth2Client):
                     if_exists=if_exists,
                 )
 
-        base_artifact_url = 'datasets' if artifact_type == ArtifactType.STANDARD.value else f"/dataset/competition"
+        base_artifact_url = 'datasets' if artifact_type == ArtifactType.STANDARD.value else f"/competition/datasets"
         logger.success(
             f"Your {artifact_type} dataset has been successfully uploaded to the Hub. "
             f"View it here: {urljoin(self.settings.hub_url, f'{base_artifact_url}/{dataset.owner}/{dataset.name}')}"
@@ -665,17 +680,6 @@ class PolarisHubClient(OAuth2Client):
         benchmark: BenchmarkSpecification,
         access: AccessType = "private",
         owner: Optional[Union[HubOwner, str]] = None
-    ):
-        """Wrapper method for uploading non-competition benchmarks to Polaris Hub"""
-        return self._upload_benchmark(benchmark, ArtifactType.STANDARD.value, access, owner)
-    
-
-    def _upload_benchmark(
-        self,
-        benchmark: BenchmarkSpecification | CompetitionSpecification,
-        artifact_type: ArtifactType,
-        access: AccessType = "private",
-        owner: Optional[Union[HubOwner, str]] = None,
     ):
         """Upload the benchmark to the Polaris Hub.
 
@@ -698,6 +702,38 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
         """
+        return self._upload_benchmark(benchmark, ArtifactType.STANDARD.value, access, owner)
+    
+
+    def _upload_benchmark(
+        self,
+        benchmark: BenchmarkSpecification | CompetitionSpecification,
+        artifact_type: ArtifactType,
+        access: AccessType = "private",
+        owner: Optional[Union[HubOwner, str]] = None,
+    ):
+        """Upload a standard or competition benchmark to the Polaris Hub.
+
+        Info: Owner
+            You have to manually specify the owner in the benchmark data model. Because the owner could
+            be a user or an organization, we cannot automatically infer this from the logged-in user.
+
+        Note: Required meta-data
+            The Polaris client and hub maintain different requirements as to which meta-data is required.
+            The requirements by the hub are stricter, so when uploading to the hub you might
+            get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
+            before uploading.
+
+        Note: Non-existent datasets
+            The client will _not_ upload the associated dataset to the hub if it does not yet exist.
+            Make sure to specify an existing dataset or upload the dataset first.
+
+        Args:
+            benchmark: The benchmark to upload.
+            artifact_type: indicates whether the artifact is of the standard or competition type.
+            access: Grant public or private access to result
+            owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
+        """
         # Get the serialized data-model
         # We exclude the dataset as we expect it to exist on the hub already.
         benchmark.owner = self._normalize_owner(benchmark.owner, owner)
@@ -705,7 +741,8 @@ class PolarisHubClient(OAuth2Client):
         benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
         benchmark_json["access"] = access
         
-        url = f"/{artifact_type}/{benchmark.owner}/{benchmark.name}"
+        path_params = 'v1/benchmark' if artifact_type == ArtifactType.STANDARD.value else 'v2/competition'
+        url = f"/{path_params}/{benchmark.owner}/{benchmark.name}"
         response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
         logger.success(
@@ -723,6 +760,23 @@ class PolarisHubClient(OAuth2Client):
         owner: Optional[Union[HubOwner, str]] = None,
         if_exists: ZarrConflictResolution = "replace"
     ) -> Dict[str, Response]:
+        """Upload a competition to the Polaris Hub.
+
+        Args:
+            dataset: The dataset to upload.
+            competition: The competition to upload.
+            timeout: Request timeout values. User can modify the value when uploading large dataset as needed.
+                This can be a single value with the timeout in seconds for all IO operations, or a more granular
+                tuple with (connect_timeout, write_timeout). The type of the the timout parameter comes from `httpx`.
+                Since datasets can get large, it might be needed to increase the write timeout for larger datasets.
+                See also: https://www.python-httpx.org/advanced/#timeout-configuration
+            owner: Which Hub user or organization owns the artifact. Takes precedence over `dataset.owner`.
+            if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
+                an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
+
+        Returns:
+            A object containing responses from the Polaris Hub regarding both the dataset and benchmark upload.
+        """
         ACCESS = 'private'
                 
         # Upload competition dataset
@@ -747,11 +801,11 @@ class PolarisHubClient(OAuth2Client):
             A `CompetitionSpecification` instance, if it exists.
         """
 
-        response = self._base_request_to_hub(url=f"/competition/{owner}/{name}", method="GET")
+        response = self._base_request_to_hub(url=f"/v2/competition/{owner}/{name}", method="GET")
 
-        # TODO (cwognum): Currently, the benchmark endpoints do not return the owner info for the underlying dataset.
-        # TODO (jstlaurent): Use the same owner for now, until the benchmark returns a better dataset entity
-        response["dataset"] = self.get_dataset(
+        # TODO (cwognum): Currently, the competition endpoints do not return the owner info for the underlying dataset.
+        # TODO (jstlaurent): Use the same owner for now, until the competition returns a better dataset entity
+        response["dataset"] = self._get_dataset(
             owner, response["dataset"]["name"], ArtifactType.COMPETITION, verify_checksum=verify_checksum
         )
 
@@ -774,7 +828,7 @@ class PolarisHubClient(OAuth2Client):
 
         # TODO (cwognum): What to do with pagination, i.e. limit and offset?
         response = self._base_request_to_hub(
-            url="/competition", method="GET", params={"limit": limit, "offset": offset}
+            url="/v2/competition", method="GET", params={"limit": limit, "offset": offset}
         )
         benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
         return benchmarks_list
