@@ -74,7 +74,7 @@ def test_metrics_singletask_clf(
     _, test = test_single_task_benchmark_clf.get_train_test_split()
     predictions = np.random.randint(2, size=test.inputs.shape[0])
     probabilities = np.random.uniform(size=test.inputs.shape[0])
-    result = test_single_task_benchmark_clf.evaluate(predictions, probabilities)
+    result = test_single_task_benchmark_clf.evaluate(y_pred=predictions, y_prob=probabilities)
     for metric in test_single_task_benchmark_clf.metrics:
         assert metric in result.results.Metric.tolist()
 
@@ -86,7 +86,7 @@ def test_metrics_singletask_multicls_clf(
     predictions = np.random.randint(3, size=test.inputs.shape[0])
     probablities = np.random.random(size=(test.inputs.shape[0], 3))
     probablities = probablities / probablities.sum(axis=1, keepdims=True)
-    result = test_single_task_benchmark_multi_clf.evaluate(predictions, probablities)
+    result = test_single_task_benchmark_multi_clf.evaluate(y_pred=predictions, y_prob=probablities)
     for metric in test_single_task_benchmark_multi_clf.metrics:
         assert metric in result.results.Metric.tolist()
 
@@ -99,7 +99,7 @@ def test_metrics_multitask_clf(tmpdir: str, test_multi_task_benchmark_clf: Multi
     probabilities = {
         target_col: np.random.uniform(size=test.inputs.shape[0]) for target_col in train.target_cols
     }
-    result = test_multi_task_benchmark_clf.evaluate(predictions, probabilities)
+    result = test_multi_task_benchmark_clf.evaluate(y_pred=predictions, y_prob=probabilities)
     assert isinstance(result.results, pd.DataFrame)
     assert set(result.results.columns) == {
         "Test set",

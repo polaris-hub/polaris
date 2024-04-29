@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Callable
+from typing import Callable, Literal, Optional
 
 import numpy as np
 from pydantic import BaseModel, Field
@@ -7,7 +7,7 @@ from scipy import stats
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
-    cohen_kappa_score,
+    cohen_kappa_score as sk_cohen_kappa_score,
     explained_variance_score,
     f1_score,
     matthews_corrcoef,
@@ -55,6 +55,11 @@ def absolute_average_fold_error(y_true: np.ndarray, y_pred: np.ndarray) -> float
     return aafe
 
 
+def cohen_kappa_score(y_true, y_pred, **kwargs):
+    """Scikit learn cohen_kappa_score wraper with renamed arguments"""
+    return sk_cohen_kappa_score(y1=y_true, y2=y_pred, **kwargs)
+
+
 class MetricInfo(BaseModel):
     """
     Metric metadata
@@ -70,7 +75,7 @@ class MetricInfo(BaseModel):
     is_multitask: bool = False
     kwargs: dict = Field(default_factory=dict)
     direction: DirectionType
-    needs_probs: bool = False
+    y_type: Literal["y_pred", "y_prob", "y_score"] = "y_pred"
 
 
 class Metric(Enum):
@@ -98,21 +103,20 @@ class Metric(Enum):
     balanced_accuracy = MetricInfo(fn=balanced_accuracy_score, direction="max")
     mcc = MetricInfo(fn=matthews_corrcoef, direction="max")
     cohen_kappa = MetricInfo(fn=cohen_kappa_score, direction="max")
-    pr_auc = MetricInfo(fn=average_precision_score, direction="max", needs_probs=True)
+    pr_auc = MetricInfo(fn=average_precision_score, direction="max", y_type="y_score")
 
     # binary only
     f1 = MetricInfo(fn=f1_score, kwargs={"average": "binary"}, direction="max")
-    # note: At the moment, multi-dimension inputs for classification are not supported
-    roc_auc = MetricInfo(fn=roc_auc_score, direction="max", needs_probs=True)
+    roc_auc = MetricInfo(fn=roc_auc_score, direction="max", y_type="y_score")
 
     # multiclass tasks only
     f1_macro = MetricInfo(fn=f1_score, kwargs={"average": "macro"}, direction="max")
     f1_micro = MetricInfo(fn=f1_score, kwargs={"average": "micro"}, direction="max")
     roc_auc_ovr = MetricInfo(
-        fn=roc_auc_score, kwargs={"multi_class": "ovr"}, direction="max", needs_probs=True
+        fn=roc_auc_score, kwargs={"multi_class": "ovr"}, direction="max", y_type="y_score"
     )
     roc_auc_ovo = MetricInfo(
-        fn=roc_auc_score, kwargs={"multi_class": "ovo"}, direction="max", needs_probs=True
+        fn=roc_auc_score, kwargs={"multi_class": "ovo"}, direction="max", y_type="y_score"
     )
 
     @property
@@ -126,11 +130,11 @@ class Metric(Enum):
         return self.value.is_multitask
 
     @property
-    def needs_probs(self) -> bool:
+    def y_type(self) -> bool:
         """Whether the metric expects preditive probablities."""
-        return self.value.needs_probs
+        return self.value.y_type
 
-    def score(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    def score(self, y_true: np.ndarray, y_pred: np.ndarray, y_prob: Optional[np.ndarray] = None) -> float:
         """Endpoint for computing the metric.
 
         For convenience, calling a `Metric` will result in this method being called.
@@ -140,8 +144,18 @@ class Metric(Enum):
         assert metric.score(y_true=first, y_pred=second) == metric(y_true=first, y_pred=second)
         ```
         """
-        return self.fn(y_true, y_pred, **self.value.kwargs)
+        # return self.fn(y_true, y_pred, **self.value.kwargs)
+        if y_pred is None and y_prob is None:
+            raise ValueError("Neither `y_pred` nor `y_prob` is specified.")
 
-    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        if self.y_type == "y_pred":
+            pred = y_pred
+        else:
+            pred = y_prob
+
+        kwargs = {"y_true": y_true, self.y_type: pred}
+        return self.fn(**kwargs, **self.value.kwargs)
+
+    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray, y_prob: np.ndarray = None) -> float:
         """For convenience, make metrics callable"""
-        return self.score(y_true, y_pred)
+        return self.score(y_true, y_pred, y_prob)

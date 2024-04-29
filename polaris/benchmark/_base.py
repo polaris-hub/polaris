@@ -446,17 +446,19 @@ class BenchmarkSpecification(BaseArtifactModel):
         for test_label, y_true_subset in y_true.items():
             # For every metric...
             for metric in self.metrics:
-                y_pred_eval = y_prob if metric.needs_probs else y_pred
-
                 if metric.is_multitask:
                     # Multi-task but with a metric across targets
-                    score = metric(y_true=y_true_subset, y_pred=y_pred_eval[test_label])
+                    score = metric(
+                        y_true=y_true_subset, y_pred=y_pred[test_label], y_prob=y_prob.get(test_label, None)
+                    )
                     scores.loc[len(scores)] = (test_label, "aggregated", metric, score)
                     continue
 
                 if not isinstance(y_true_subset, dict):
                     # Single task
-                    score = metric(y_true=y_true_subset, y_pred=y_pred_eval[test_label])
+                    score = metric(
+                        y_true=y_true_subset, y_pred=y_pred[test_label], y_prob=y_prob.get(test_label, None)
+                    )
                     scores.loc[len(scores)] = (
                         test_label,
                         self.target_cols[0],
@@ -472,7 +474,10 @@ class BenchmarkSpecification(BaseArtifactModel):
                     mask = ~np.isnan(y_true_target)
                     score = metric(
                         y_true=y_true_target[mask],
-                        y_pred=y_pred_eval[test_label][target_label][mask],
+                        y_pred=y_pred[test_label][target_label][mask],
+                        y_prob=y_prob[test_label][target_label][mask]
+                        if y_prob[test_label] is not None
+                        else None,
                     )
                     scores.loc[len(scores)] = (test_label, target_label, metric, score)
 
