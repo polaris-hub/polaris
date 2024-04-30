@@ -1,7 +1,6 @@
 import datamol as dm
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-from sklearn.svm import SVC
 
 from polaris.evaluate import BenchmarkResults
 
