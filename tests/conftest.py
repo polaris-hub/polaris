@@ -186,6 +186,26 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
 
 
 @pytest.fixture(scope="function")
+def test_single_task_benchmark_clf_multiple_test_sets(test_dataset):
+    np.random.seed(111)  # make sure two classes in `y_true`
+    indices = np.arange(100)
+    np.random.shuffle(indices)
+    train_indices = indices[:80]
+    test_indices = {"test_1": indices[80:90], "test_2": indices[90:]}
+    benchmark = SingleTaskBenchmarkSpecification(
+        name="single-task-benchmark-clf",
+        dataset=test_dataset,
+        metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
+        main_metric="pr_auc",
+        split=(train_indices, test_indices),
+        target_cols="CLASS_calc",
+        input_cols="smiles",
+    )
+    check_version(benchmark)
+    return benchmark
+
+
+@pytest.fixture(scope="function")
 def test_multi_task_benchmark(test_dataset):
     # For the sake of simplicity, just use a small set of indices
     train_indices = list(range(90))
