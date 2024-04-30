@@ -136,7 +136,7 @@ class Metric(Enum):
         return self.value.y_type
 
     def score(
-        self, y_true: np.ndarray, y_pred: np.ndarray = None, y_prob: Optional[np.ndarray] = None
+        self, y_true: np.ndarray, y_pred: Optional[np.ndarray] = None, y_prob: Optional[np.ndarray] = None
     ) -> float:
         """Endpoint for computing the metric.
 
@@ -162,6 +162,8 @@ class Metric(Enum):
         kwargs = {"y_true": y_true, self.y_type: pred}
         return self.fn(**kwargs, **self.value.kwargs)
 
-    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray = None, y_prob: np.ndarray = None) -> float:
+    def __call__(
+        self, y_true: np.ndarray, y_pred: Optional[np.ndarray] = None, y_prob: Optional[np.ndarray] = None
+    ) -> float:
         """For convenience, make metrics callable"""
         return self.score(y_true, y_pred, y_prob)

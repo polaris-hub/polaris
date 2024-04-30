@@ -175,9 +175,9 @@ def test_metric_y_types(
     # If y_type != "y_pred" and y_pred is not None and y_prob is not None, it uses y_prob as expected!
     test_single_task_benchmark_clf.metrics = [Metric.roc_auc]
     result = test_single_task_benchmark_clf.evaluate(y_pred=predictions, y_prob=probabilities)
-    assert result.results.Score.values[0] == Metric.roc_auc(y_true=test_y, y_prob=probabilities)
+    assert result.results.Score.values[0] == Metric.roc_auc.fn(y_true=test_y, y_score=probabilities)
 
     # If y_type == "y_pred" and y_pred is not None and y_prob is not None, it uses y_pred as expected!
     test_single_task_benchmark_clf.metrics = [Metric.f1]
     result = test_single_task_benchmark_clf.evaluate(y_pred=predictions, y_prob=probabilities)
-    assert result.results.Score.values[0] == Metric.f1(y_true=test_y, y_pred=predictions)
+    assert result.results.Score.values[0] == Metric.f1.fn(y_true=test_y, y_pred=predictions)
