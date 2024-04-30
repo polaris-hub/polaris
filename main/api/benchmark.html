@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.18">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
     
     
       
@@ -1924,7 +1924,7 @@ an associated name. The targets of the test set can not be accessed.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">evaluate</span><span class="p">(</span><span class="n">y_pred</span><span class="p">:</span> <span class="n">PredictionsType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BenchmarkResults</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">evaluate</span><span class="p">(</span><span class="n">y_pred</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PredictionsType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y_prob</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PredictionsType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BenchmarkResults</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1960,7 +1960,7 @@ the predictions. This reduces the chance of accidentally using the test targets 
         <tr class="doc-section-item">
           <td><code>y_pred</code></td>
           <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.PredictionsType" href="utils.types.html#polaris.utils.types.PredictionsType">PredictionsType</a></code>
+                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.PredictionsType" href="utils.types.html#polaris.utils.types.PredictionsType">PredictionsType</a>]</code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -1971,7 +1971,21 @@ If there are multiple test sets, the predictions should be further wrapped in a 
             </div>
           </td>
           <td>
-              <em>required</em>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr class="doc-section-item">
+          <td><code>y_prob</code></td>
+          <td>
+                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.PredictionsType" href="utils.types.html#polaris.utils.types.PredictionsType">PredictionsType</a>]</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The predicted probabilities for the test set, as NumPy arrays.</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
           </td>
         </tr>
     </tbody>
@@ -2464,7 +2478,7 @@ this class verifies that there are multiple target-columns.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.3220b9d7.min.js"></script>
+      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
