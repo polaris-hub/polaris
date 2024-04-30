@@ -88,7 +88,7 @@ class Metric(Enum):
 
     # TODO (cwognum):
     #  - Any preprocessing needed? For example changing the shape / dtype? Converting from torch tensors or lists?
-
+    
     # regression
     mean_absolute_error = MetricInfo(fn=mean_absolute_error, direction="min")
     mean_squared_error = MetricInfo(fn=mean_squared_error, direction="min")
@@ -118,6 +118,7 @@ class Metric(Enum):
     roc_auc_ovo = MetricInfo(
         fn=roc_auc_score, kwargs={"multi_class": "ovo"}, direction="max", y_type="y_score"
     )
+    # TODO: add metrics to handle multitask multiclass predictions. 
 
     @property
     def fn(self) -> Callable:

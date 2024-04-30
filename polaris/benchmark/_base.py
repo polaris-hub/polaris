@@ -409,7 +409,6 @@ class BenchmarkSpecification(BaseArtifactModel):
                 If there are multiple test sets, the predictions should be further wrapped in a dictionary
                     with the test subset labels as keys.
             y_prob: The predicted probabilities for the test set, as NumPy arrays.
-                Currently only multiclass in singletask setting is supported.
 
         Returns:
             A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
