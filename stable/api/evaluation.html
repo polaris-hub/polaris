@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.18">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
     
     
       
@@ -880,6 +880,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#polaris.evaluate._metric.absolute_average_fold_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      absolute_average_fold_error
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#polaris.evaluate.Metric" class="md-nav__link">
     <span class="md-ellipsis">
       Metric
@@ -1274,6 +1283,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#polaris.evaluate._metric.absolute_average_fold_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      absolute_average_fold_error
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#polaris.evaluate.Metric" class="md-nav__link">
     <span class="md-ellipsis">
       Metric
@@ -1619,6 +1637,97 @@ Together with the benchmark name, this uniquely identifies the benchmark on the 
   </div>
 
 
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="polaris.evaluate._metric.absolute_average_fold_error" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">polaris.evaluate._metric.absolute_average_fold_error</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">absolute_average_fold_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents first">
+  
+      <p>Calculate the Absolute Average Fold Error (AAFE) metric.
+It measures the fold change between predicted values and observed values.
+The implementation is based on <a href="https://pubs.acs.org/doi/10.1021/acs.chemrestox.3c00305">this paper</a>.</p>
+
+
+
+  <p><span class="doc-section-title">Parameters:</span></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr class="doc-section-item">
+          <td><code>y_true</code></td>
+          <td>
+                <code><span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The true target values of shape (n_samples,)</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr class="doc-section-item">
+          <td><code>y_pred</code></td>
+          <td>
+                <code><span title="numpy.ndarray">ndarray</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The predicted target values of shape (n_samples,).</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><span class="doc-section-title">Returns:</span></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr class="doc-section-item">
+<td><code>aafe</code></td>          <td>
+                <code>float</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The Absolute Average Fold Error.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
 </div><hr />
 
 
@@ -1665,7 +1774,7 @@ and is associated with additional metadata in a <code>MetricInfo</code> instance
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">score</span><span class="p">(</span><span class="n">y_true</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">score</span><span class="p">(</span><span class="n">y_true</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y_prob</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1903,7 +2012,7 @@ and is associated with additional metadata in a <code>MetricInfo</code> instance
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.3220b9d7.min.js"></script>
+      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
