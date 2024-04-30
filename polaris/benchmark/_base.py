@@ -448,7 +448,7 @@ class BenchmarkSpecification(BaseArtifactModel):
                 if metric.is_multitask:
                     # Multi-task but with a metric across targets
                     score = metric(
-                        y_true=y_true_subset, y_pred=y_pred[test_label], y_prob=y_prob.get(test_label, None)
+                        y_true=y_true_subset, y_pred=y_pred[test_label], y_prob=y_prob.get(test_label)
                     )
                     scores.loc[len(scores)] = (test_label, "aggregated", metric, score)
                     continue
