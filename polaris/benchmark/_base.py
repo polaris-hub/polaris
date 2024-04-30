@@ -388,7 +388,7 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         return train, test
 
-    def evaluate(self, y_pred: PredictionsType, y_prob: PredictionsType = None) -> BenchmarkResults:
+    def evaluate(self, y_pred: PredictionsType = None, y_prob: PredictionsType = None) -> BenchmarkResults:
         """Execute the evaluation protocol for the benchmark, given a set of predictions.
 
         info: What about `y_true`?

@@ -135,7 +135,9 @@ class Metric(Enum):
         """Whether the metric expects preditive probablities."""
         return self.value.y_type
 
-    def score(self, y_true: np.ndarray, y_pred: np.ndarray, y_prob: Optional[np.ndarray] = None) -> float:
+    def score(
+        self, y_true: np.ndarray, y_pred: np.ndarray = None, y_prob: Optional[np.ndarray] = None
+    ) -> float:
         """Endpoint for computing the metric.
 
         For convenience, calling a `Metric` will result in this method being called.
@@ -145,18 +147,21 @@ class Metric(Enum):
         assert metric.score(y_true=first, y_pred=second) == metric(y_true=first, y_pred=second)
         ```
         """
-        # return self.fn(y_true, y_pred, **self.value.kwargs)
         if y_pred is None and y_prob is None:
             raise ValueError("Neither `y_pred` nor `y_prob` is specified.")
 
         if self.y_type == "y_pred":
+            if y_pred is None:
+                raise ValueError(f"{self} requires `y_pred` input. ")
             pred = y_pred
         else:
+            if y_prob is None:
+                raise ValueError(f"{self} requires `y_prob` input. ")
             pred = y_prob
 
         kwargs = {"y_true": y_true, self.y_type: pred}
         return self.fn(**kwargs, **self.value.kwargs)
 
-    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray, y_prob: np.ndarray = None) -> float:
+    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray = None, y_prob: np.ndarray = None) -> float:
         """For convenience, make metrics callable"""
         return self.score(y_true, y_pred, y_prob)
