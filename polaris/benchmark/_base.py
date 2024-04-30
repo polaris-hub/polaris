@@ -388,7 +388,9 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         return train, test
 
-    def evaluate(self, y_pred: PredictionsType) -> BenchmarkResults:
+    def evaluate(
+        self, y_pred: Optional[PredictionsType] = None, y_prob: Optional[PredictionsType] = None
+    ) -> BenchmarkResults:
         """Execute the evaluation protocol for the benchmark, given a set of predictions.
 
         info: What about `y_true`?
@@ -408,6 +410,7 @@ class BenchmarkSpecification(BaseArtifactModel):
                 If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
                 If there are multiple test sets, the predictions should be further wrapped in a dictionary
                     with the test subset labels as keys.
+            y_prob: The predicted probabilities for the test set, as NumPy arrays.
 
         Returns:
             A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
@@ -429,7 +432,10 @@ class BenchmarkSpecification(BaseArtifactModel):
         if not isinstance(y_pred, dict) or all(k in self.target_cols for k in y_pred):
             y_pred = {"test": y_pred}
 
-        if any(k not in y_pred for k in test.keys()):
+        if not isinstance(y_prob, dict) or all(k in self.target_cols for k in y_prob):
+            y_prob = {"test": y_prob}
+
+        if any(k not in y_pred for k in test.keys()) and any(k not in y_prob for k in test.keys()):
             raise KeyError(
                 f"Missing keys for at least one of the test sets. Expecting: {sorted(test.keys())}"
             )
@@ -443,13 +449,17 @@ class BenchmarkSpecification(BaseArtifactModel):
             for metric in self.metrics:
                 if metric.is_multitask:
                     # Multi-task but with a metric across targets
-                    score = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
+                    score = metric(
+                        y_true=y_true_subset, y_pred=y_pred.get(test_label), y_prob=y_prob.get(test_label)
+                    )
                     scores.loc[len(scores)] = (test_label, "aggregated", metric, score)
                     continue
 
                 if not isinstance(y_true_subset, dict):
                     # Single task
-                    score = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
+                    score = metric(
+                        y_true=y_true_subset, y_pred=y_pred.get(test_label), y_prob=y_prob.get(test_label)
+                    )
                     scores.loc[len(scores)] = (
                         test_label,
                         self.target_cols[0],
@@ -465,7 +475,12 @@ class BenchmarkSpecification(BaseArtifactModel):
                     mask = ~np.isnan(y_true_target)
                     score = metric(
                         y_true=y_true_target[mask],
-                        y_pred=y_pred[test_label][target_label][mask],
+                        y_pred=y_pred[test_label][target_label][mask]
+                        if y_pred[test_label] is not None
+                        else None,
+                        y_prob=y_prob[test_label][target_label][mask]
+                        if y_prob[test_label] is not None
+                        else None,
                     )
                     scores.loc[len(scores)] = (test_label, target_label, metric, score)
 
