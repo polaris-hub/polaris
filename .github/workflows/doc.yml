@@ -27,7 +27,7 @@ jobs:
         with:
           environment-file: env.yml
           environment-name: my_env
-          cache-environment: true
+          cache-environment: false
           cache-downloads: true
 
       - name: Install library
