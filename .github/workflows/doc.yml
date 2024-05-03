@@ -27,11 +27,15 @@ jobs:
         with:
           environment-file: env.yml
           environment-name: my_env
-          cache-environment: false
+          cache-environment: true
           cache-downloads: true
 
       - name: Install library
-        run: python -m pip install --no-deps .
+        run: |
+          python -m pip install --no-deps .
+          # Note: Temporarily upgrade mkdocs-jupyter through PyPi
+          # See https://github.com/conda-forge/mkdocs-jupyter-feedstock/pull/30
+          python -m pip install mkdocs-jupyter -U
 
       - name: Configure git
         run: |
