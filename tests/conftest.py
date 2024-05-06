@@ -23,6 +23,8 @@ def test_data():
     # set an abitrary threshold for testing purpose.
     data["CLASS_expt"] = data["expt"].gt(0).astype(int).values
     data["CLASS_calc"] = data["calc"].gt(0).astype(int).values
+    data["MULTICLASS_expt"] = np.random.randint(low=0, high=3, size=data.shape[0])
+    data["MULTICLASS_calc"] = np.random.randint(low=0, high=3, size=data.shape[0])
     return data
 
 
@@ -99,6 +101,7 @@ def test_single_task_benchmark(test_dataset):
             "spearmanr",
             "pearsonr",
             "explained_var",
+            "absolute_average_fold_error",
         ],
         main_metric="mean_absolute_error",
         split=(train_indices, test_indices),
@@ -117,9 +120,40 @@ def test_single_task_benchmark_clf(test_dataset):
         name="single-task-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
-        metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
+        metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa", "balanced_accuracy"],
         split=(train_indices, test_indices),
         target_cols="CLASS_expt",
+        input_cols="smiles",
+    )
+    check_version(benchmark)
+    return benchmark
+
+
+@pytest.fixture(scope="function")
+def test_single_task_benchmark_multi_clf(test_dataset):
+    np.random.seed(111)
+    indices = np.arange(100)
+    np.random.shuffle(indices)
+    train_indices = indices[:80]
+    test_indices = indices[80:]
+
+    benchmark = SingleTaskBenchmarkSpecification(
+        name="single-task-benchmark",
+        dataset=test_dataset,
+        main_metric="accuracy",
+        metrics=[
+            "accuracy",
+            "balanced_accuracy",
+            "mcc",
+            "cohen_kappa",
+            "f1_macro",
+            "f1_micro",
+            "roc_auc_ovr",
+            "roc_auc_ovo",
+            "pr_auc",
+        ],
+        split=(train_indices, test_indices),
+        target_cols="MULTICLASS_expt",
         input_cols="smiles",
     )
     check_version(benchmark)
@@ -140,10 +174,31 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
             "spearmanr",
             "pearsonr",
             "explained_var",
+            "absolute_average_fold_error",
         ],
         main_metric="r2",
         split=(train_indices, test_indices),
         target_cols="expt",
+        input_cols="smiles",
+    )
+    check_version(benchmark)
+    return benchmark
+
+
+@pytest.fixture(scope="function")
+def test_single_task_benchmark_clf_multiple_test_sets(test_dataset):
+    np.random.seed(111)  # make sure two classes in `y_true`
+    indices = np.arange(100)
+    np.random.shuffle(indices)
+    train_indices = indices[:80]
+    test_indices = {"test_1": indices[80:90], "test_2": indices[90:]}
+    benchmark = SingleTaskBenchmarkSpecification(
+        name="single-task-benchmark-clf",
+        dataset=test_dataset,
+        metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
+        main_metric="pr_auc",
+        split=(train_indices, test_indices),
+        target_cols="CLASS_calc",
         input_cols="smiles",
     )
     check_version(benchmark)
@@ -166,6 +221,7 @@ def test_multi_task_benchmark(test_dataset):
             "spearmanr",
             "pearsonr",
             "explained_var",
+            "absolute_average_fold_error",
         ],
         split=(train_indices, test_indices),
         target_cols=["expt", "calc"],

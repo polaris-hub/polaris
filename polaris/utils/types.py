@@ -71,7 +71,7 @@ A validated URL that will be turned into a string.
 This is useful for interactions with httpx and authlib, who have their own URL types.
 """
 
-DirectionType: TypeAlias = Literal["min", "max"]
+DirectionType: TypeAlias = float | Literal["min", "max"]
 """
 The direction of any variable to be sorted.
 This can be used to sort the metric score, indicate the optmization direction of endpoint.
@@ -93,7 +93,7 @@ Type to specify the mode for input/output operations (I/O) when interacting with
 """
 
 SupportedLicenseType: TypeAlias = Literal[
-    "CC-BY-4.0", "CC-BY-SA-4.0", "CC-BY-NC-4.0", "CC-BY-NC-SA-4.0", "CC0-1.0"
+    "CC-BY-4.0", "CC-BY-SA-4.0", "CC-BY-NC-4.0", "CC-BY-NC-SA-4.0", "CC0-1.0", "MIT"
 ]
 """
 Supported license types for dataset uploads to Polaris Hub
