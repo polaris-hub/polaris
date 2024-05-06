@@ -198,7 +198,6 @@ class Subset:
         """
 
         idx = self.indices[item]
-        print(item, idx)
 
         # Load the input modalities
         ins = self._get_single_input(self._iloc_to_loc[idx])
