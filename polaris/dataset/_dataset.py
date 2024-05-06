@@ -1,6 +1,6 @@
 import json
 from hashlib import md5
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, MutableMapping, Optional, Tuple, Union
 
 import fsspec
 import numpy as np
@@ -20,11 +20,12 @@ from pydantic import (
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
+from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
-from polaris.utils.types import AccessType, HttpUrlString, HubOwner, StorageTypes, SupportedLicenseType
+from polaris.utils.types import AccessType, HttpUrlString, HubOwner, SupportedLicenseType
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -86,6 +87,7 @@ class Dataset(BaseArtifactModel):
 
     # Private attributes
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
+    _zarr_data: Optional[MutableMapping[str, np.ndarray]] = PrivateAttr(None)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
 
     @field_validator("table")
@@ -207,34 +209,60 @@ class Dataset(BaseArtifactModel):
         return self._client
 
     @property
+    def zarr_data(self):
+        """Get the Zarr data.
+
+        This is different from the Zarr Root, because to optimize the efficiency of
+        data loading, a user can choose to load the data into memory as a numpy array
+
+        Note: General purpose dataloader.
+            The goal with Polaris is to provide general purpose datasets that serve as good
+            options for a _wide variety of use cases_. This also implies you should be able to
+            optimize things further for a specific use case if needed.
+        """
+        if self._zarr_data is not None:
+            return self._zarr_data
+        return self.zarr_root
+
+    @property
     def zarr_root(self):
-        """Open the zarr archive in read-write mode if it is not already open."""
+        """Get the zarr Group object corresponding to the root.
+
+        Opens the zarr archive in read-write mode if it is not already open.
+
+        Note: Different to `zarr_data`
+            The `zarr_data` attribute references either to the Zarr archive or to a in-memory copy of the data.
+            See also [`Dataset.load_to_memory`][polaris.dataset.Dataset.load_to_memory].
+        """
+
+        if self._zarr_root is not None:
+            return self._zarr_root
+
         if self.zarr_root_path is None:
             return None
 
         # We open the archive in read-only mode if it is saved on the Hub
-        if self._zarr_root is None:
-            saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_root_path)
-            saved_remote = saved_on_hub or not fs.is_local_path(self.zarr_root_path)
+        saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_root_path)
+        saved_remote = saved_on_hub or not fs.is_local_path(self.zarr_root_path)
 
-            if saved_remote:
-                logger.warning(
-                    f"You're loading data from a remote location. "
-                    f"To speed up this process, consider caching the dataset first "
-                    f"using {self.__class__.__name__}.cache()"
-                )
+        if saved_remote:
+            logger.warning(
+                f"You're loading data from a remote location. "
+                f"To speed up this process, consider caching the dataset first "
+                f"using {self.__class__.__name__}.cache()"
+            )
 
-            try:
-                if saved_on_hub:
-                    self._zarr_root = self.client.open_zarr_file(
-                        self.owner, self.name, self.zarr_root_path, "r+"
-                    )
-                else:
-                    self._zarr_root = zarr.open_consolidated(self.zarr_root_path, mode="r+")
-            except KeyError as error:
-                raise InvalidDatasetError(
-                    "A Zarr archive associated with a Polaris dataset has to be consolidated."
-                ) from error
+        try:
+            if saved_on_hub:
+                self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_root_path, "r+")
+            else:
+                # We use memory mapping by default because our experiments show that it's consistently faster
+                store = MemoryMappedDirectoryStore(self.zarr_root_path)
+                self._zarr_root = zarr.open_consolidated(store, mode="r+")
+        except KeyError as error:
+            raise InvalidDatasetError(
+                "A Zarr archive associated with a Polaris dataset has to be consolidated."
+            ) from error
         return self._zarr_root
 
     @computed_field
@@ -259,41 +287,25 @@ class Dataset(BaseArtifactModel):
         """Return all columns for the dataset"""
         return self.table.columns.tolist()
 
-    def optimize(self, for_storage: StorageTypes):
-        """Optimize the organization of the storage.
+    def load_to_memory(self):
+        """Pre-load the entire dataset into RAM memory.
 
-        Note: General purpose dataloader.
-            The goal with Polaris is to provide general purpose datasets that serve as good
-            options for a _wide variety of use cases_. This also implies you should be able to
-            optimize things further for a specific use case if needed.
-
-        Args:
-            for_storage: Either "in-memory", "local-storage" or "remote-storage".
-                The storage target should depend on the **uncompressed** size of the dataset.
-                Storing a dataset in memory is always fastest, but as datasets get large this
-                might no longer be possible.
+        Warning: Make sure the uncompressed dataset fits in-memory.
+            This method will load the **uncompressed** dataset into RAM memory. Make
+            sure you actually have enough memory to store the dataset.
         """
-        root = self.zarr_root
+        data = self.zarr_data
 
-        if for_storage == "in-memory":
-            if not isinstance(root, zarr.Group):
-                raise TypeError(
-                    "The dataset zarr_root is not a valid Zarr archive. "
-                    "Did you call Dataset.optimize() twice?"
-                )
+        if not isinstance(data, zarr.Group):
+            raise TypeError(
+                "The dataset zarr_root is not a valid Zarr archive. "
+                "Did you call Dataset.load_to_memory() twice?"
+            )
 
-            # NOTE (cwognum): If the dataset fits in memory, we are best of using plain NumPy arrays.
-            # Even if we disable chunking and compression in Zarr.
-            # For more information, see https://github.com/zarr-developers/zarr-python/issues/1395
-            self._zarr_root = {k: root[k][:] for k in root.array_keys()}
-
-        elif for_storage == "local-storage":
-            raise NotImplementedError("Local storage optimization is not yet implemented.")
-
-        elif for_storage == "remote-storage":
-            raise NotImplementedError("Remote storage optimization is not yet implemented.")
-
-        return self
+        # NOTE (cwognum): If the dataset fits in memory, we are best of using plain NumPy arrays.
+        # Even if we disable chunking and compression in Zarr.
+        # For more information, see https://github.com/zarr-developers/zarr-python/issues/1395
+        self._zarr_data = {k: data[k][:] for k in data.array_keys()}
 
     def get_data(self, row: int, col: str, adapters: Optional[List[Adapter]] = None) -> np.ndarray:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
@@ -324,7 +336,7 @@ class Dataset(BaseArtifactModel):
 
         # Load the data from the Zarr archive
         path, index = self._split_index_from_path(value)
-        arr = self.zarr_root[path][index]
+        arr = self.zarr_data[path][index]
 
         # Change to tuple if a slice
         if isinstance(index, slice):

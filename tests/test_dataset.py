@@ -190,7 +190,7 @@ def test_dataset_in_memory_optimization(zarr_archive, tmpdir):
         pass
     d1 = perf_counter() - t1
 
-    dataset.optimize(for_storage="in-memory")
+    dataset.load_to_memory()
 
     t2 = perf_counter()
     for x in subset:

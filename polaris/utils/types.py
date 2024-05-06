@@ -99,11 +99,6 @@ SupportedLicenseType: TypeAlias = Literal[
 Supported license types for dataset uploads to Polaris Hub
 """
 
-StorageTypes: TypeAlias = Literal["in-memory", "local-storage", "remote-storage"]
-"""
-Supported categories when optimizing the storage of Polaris datasets.
-"""
-
 ZarrConflictResolution: TypeAlias = Literal["raise", "replace", "skip"]
 """
 Type to specify which action to take when encountering existing files within a Zarr archive.
