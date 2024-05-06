@@ -176,8 +176,8 @@ def test_dataset_index():
     """Small test to check whether the dataset resets its index."""
     df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]}, index=["X", "Y", "Z"])
     dataset = Dataset(table=df)
-    assert dataset.table.index.tolist() == [0, 1, 2]
-    assert dataset.get_data(row=0, col="A") == 1
+    subset = Subset(dataset=dataset, indices=[1], input_cols=["A"], target_cols=["B"])
+    assert next(iter(subset)) == (np.array([2]), np.array([5]))
 
 
 def test_dataset_in_memory_optimization(zarr_archive, tmpdir):

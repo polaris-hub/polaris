@@ -108,8 +108,6 @@ class Dataset(BaseArtifactModel):
         # Check if there are any unnamed columns
         if not all(isinstance(c, str) for c in v.columns):
             raise InvalidDatasetError("The table contains unnamed columns")
-        # Make sure the index is contiguous and starts at 0
-        v = v.reset_index(drop=True)
         return v
 
     @model_validator(mode="after")
@@ -307,7 +305,7 @@ class Dataset(BaseArtifactModel):
         # For more information, see https://github.com/zarr-developers/zarr-python/issues/1395
         self._zarr_data = {k: data[k][:] for k in data.array_keys()}
 
-    def get_data(self, row: int, col: str, adapters: Optional[List[Adapter]] = None) -> np.ndarray:
+    def get_data(self, row: str | int, col: str, adapters: Optional[List[Adapter]] = None) -> np.ndarray:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
         than just indexing the `table` attribute. This method provides an end-point for seamlessly
         accessing the underlying data.
