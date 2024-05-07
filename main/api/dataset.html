@@ -609,6 +609,27 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/optimization.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Optimization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -803,6 +824,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.zarr_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.zarr_root" class="md-nav__link">
     <span class="md-ellipsis">
       zarr_root
@@ -842,6 +872,15 @@
   <a href="#polaris.dataset.Dataset.columns" class="md-nav__link">
     <span class="md-ellipsis">
       columns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.load_to_memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_to_memory
     </span>
   </a>
   
@@ -1326,6 +1365,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.zarr_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.zarr_root" class="md-nav__link">
     <span class="md-ellipsis">
       zarr_root
@@ -1365,6 +1413,15 @@
   <a href="#polaris.dataset.Dataset.columns" class="md-nav__link">
     <span class="md-ellipsis">
       columns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.load_to_memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_to_memory
     </span>
   </a>
   
@@ -1669,6 +1726,37 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 
+<h4 id="polaris.dataset.Dataset.zarr_data" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">zarr_data</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">zarr_data</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Get the Zarr data.</p>
+<p>This is different from the Zarr Root, because to optimize the efficiency of
+data loading, a user can choose to load the data into memory as a numpy array</p>
+
+<details class="note" open>
+  <summary>General purpose dataloader.</summary>
+  <p>The goal with Polaris is to provide general purpose datasets that serve as good
+options for a <em>wide variety of use cases</em>. This also implies you should be able to
+optimize things further for a specific use case if needed.</p>
+</details>  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h4 id="polaris.dataset.Dataset.zarr_root" class="doc doc-heading">
           <span class="doc doc-object-name doc-attribute-name">zarr_root</span>
 
@@ -1683,8 +1771,14 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
   <div class="doc doc-contents ">
   
-      <p>Open the zarr archive in read-write mode if it is not already open.</p>
-  </div>
+      <p>Get the zarr Group object corresponding to the root.</p>
+<p>Opens the zarr archive in read-write mode if it is not already open.</p>
+
+<details class="note" open>
+  <summary>Different to <code>zarr_data</code></summary>
+  <p>The <code>zarr_data</code> attribute references either to the Zarr archive or to a in-memory copy of the data.
+See also <a class="autorefs autorefs-internal" href="#polaris.dataset.Dataset.load_to_memory"><code>Dataset.load_to_memory</code></a>.</p>
+</details>  </div>
 
 </div>
 
@@ -1787,12 +1881,38 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 
+<h4 id="polaris.dataset.Dataset.load_to_memory" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">load_to_memory</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">load_to_memory</span><span class="p">()</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Pre-load the entire dataset into memory.</p>
+
+<details class="warning" open>
+  <summary>Make sure the uncompressed dataset fits in-memory.</summary>
+  <p>This method will load the <strong>uncompressed</strong> dataset into memory. Make
+sure you actually have enough memory to store the dataset.</p>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
 <h4 id="polaris.dataset.Dataset.get_data" class="doc doc-heading">
           <span class="doc doc-object-name doc-function-name">get_data</span>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_data</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Adapter</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_data</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Adapter</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 </span></code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1817,7 +1937,7 @@ accessing the underlying data.</p>
         <tr class="doc-section-item">
           <td><code>row</code></td>
           <td>
-                <code>int</code>
+                <code>str | int</code>
           </td>
           <td>
             <div class="doc-md-description">

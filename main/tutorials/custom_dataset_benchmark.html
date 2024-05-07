@@ -689,6 +689,27 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="optimization.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Optimization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1958,7 +1979,7 @@ annotations = {
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span>
-<span class="kn">from</span> <span class="nn">polaris.utils.types</span> <span class="kn">import</span> <span class="n">HubOwner</span><span class="p">,</span> <span class="n">License</span>
+<span class="kn">from</span> <span class="nn">polaris.utils.types</span> <span class="kn">import</span> <span class="n">HubOwner</span>
 
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span>
     <span class="c1"># The table is the core data-structure required to construct a dataset</span>
@@ -1970,12 +1991,12 @@ annotations = {
     <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">,</span>
     <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">"DMPK"</span><span class="p">,</span> <span class="s2">"ADME"</span><span class="p">],</span>
     <span class="n">owner</span><span class="o">=</span><span class="n">HubOwner</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="s2">"cwognum"</span><span class="p">,</span> <span class="n">slug</span><span class="o">=</span><span class="s2">"cwognum"</span><span class="p">),</span>
-    <span class="n">license</span><span class="o">=</span><span class="n">License</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">"MIT"</span><span class="p">),</span>
+    <span class="n">license</span><span class="o">=</span><span class="s2">"CC-BY-4.0"</span><span class="p">,</span>
     <span class="n">user_attributes</span><span class="o">=</span><span class="p">{</span><span class="s2">"year"</span><span class="p">:</span> <span class="s2">"2023"</span><span class="p">},</span>
 <span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-3">from polaris.dataset import Dataset
-from polaris.utils.types import HubOwner, License
+from polaris.utils.types import HubOwner
 
 dataset = Dataset(
     # The table is the core data-structure required to construct a dataset
@@ -1987,7 +2008,7 @@ dataset = Dataset(
     annotations=annotations,
     tags=["DMPK", "ADME"],
     owner=HubOwner(user_id="cwognum", slug="cwognum"),
-    license=License(id="MIT"),
+    license="CC-BY-4.0",
     user_attributes={"year": "2023"},
 )</div>
 </div>
