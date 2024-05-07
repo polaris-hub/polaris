@@ -289,7 +289,7 @@ class Dataset(BaseArtifactModel):
         """Pre-load the entire dataset into memory.
 
         Warning: Make sure the uncompressed dataset fits in-memory.
-            This method will load the **uncompressed** dataset into RAM memory. Make
+            This method will load the **uncompressed** dataset into memory. Make
             sure you actually have enough memory to store the dataset.
         """
         data = self.zarr_data
