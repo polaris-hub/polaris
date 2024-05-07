@@ -9,7 +9,7 @@ class MemoryMappedDirectoryStore(zarr.DirectoryStore):
     See https://github.com/zarr-developers/zarr-python/issues/1245
 
     Memory mapping leverages low-level OS functionality to reduce the time it takes
-    to read the content of a file by directly mapping RAM memory to physical memory.
+    to read the content of a file by directly mapping to memory.
     """
 
     def _fromfile(self, fn):
