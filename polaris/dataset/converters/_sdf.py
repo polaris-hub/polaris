@@ -1,5 +1,5 @@
 import uuid
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Sequence
 
 import datamol as dm
 import pandas as pd
@@ -44,6 +44,7 @@ class SDFConverter(Converter):
         mol_prop_as_cols: bool = True,
         groupby_key: Optional[str] = None,
         n_jobs: int = 1,
+        zarr_chunks: Sequence[Optional[int]] = (1,),
     ) -> None:
         super().__init__()
         self.mol_column = mol_column
@@ -53,6 +54,7 @@ class SDFConverter(Converter):
         self.mol_prop_as_cols = mol_prop_as_cols
         self.groupby_key = groupby_key
         self.n_jobs = n_jobs
+        self.chunks = zarr_chunks
 
     def convert(self, path: str, factory: "DatasetFactory") -> FactoryProduct:
         tmp_col = uuid.uuid4().hex
@@ -105,7 +107,7 @@ class SDFConverter(Converter):
         df.drop(columns=[tmp_col], inplace=True)
 
         # Create the zarr array
-        factory.zarr_root.array(self.mol_column, bytes_data, dtype=bytes)
+        factory.zarr_root.array(self.mol_column, bytes_data, dtype=bytes, chunks=self.chunks)
 
         # Add a pointer column to the table
         # We support grouping by a key, to allow inputs of variable length
