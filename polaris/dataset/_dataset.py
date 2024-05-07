@@ -286,7 +286,7 @@ class Dataset(BaseArtifactModel):
         return self.table.columns.tolist()
 
     def load_to_memory(self):
-        """Pre-load the entire dataset into RAM memory.
+        """Pre-load the entire dataset into memory.
 
         Warning: Make sure the uncompressed dataset fits in-memory.
             This method will load the **uncompressed** dataset into RAM memory. Make
