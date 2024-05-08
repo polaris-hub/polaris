@@ -12,30 +12,6 @@ from polaris.loader import load_dataset
 from polaris.utils.errors import PolarisChecksumError
 
 
-def _equality_test(dataset_1, dataset_2):
-    """
-    Utility function.
-
-    When saving a dataset to a different location, it should be considered the same dataset
-    but currently the dataset checksum is used for equality and with pointer columns,
-    the checksum uses the file path, not the file content (which thus changes when saving).
-
-    See also: https://github.com/polaris-hub/polaris/issues/16
-    """
-    if dataset_1 == dataset_2:
-        return True
-    if len(dataset_1) != len(dataset_2):
-        return False
-    if (dataset_1.table.columns != dataset_2.table.columns).all():
-        return False
-
-    for i in range(len(dataset_1)):
-        for col in dataset_1.table.columns:
-            if (dataset_1.get_data(row=i, col=col) != dataset_2.get_data(row=i, col=col)).all():
-                return False
-    return True
-
-
 @pytest.mark.parametrize("with_caching", [True, False])
 @pytest.mark.parametrize("with_slice", [True, False])
 def test_load_data(tmp_path, with_slice, with_caching):
