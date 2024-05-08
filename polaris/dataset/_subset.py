@@ -230,4 +230,4 @@ class Subset:
 
         item = self[self._pointer]
         self._pointer += 1
-        return item  #
+        return item

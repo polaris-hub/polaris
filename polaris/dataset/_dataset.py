@@ -181,7 +181,7 @@ class Dataset(BaseArtifactModel):
 
         1. Is not sensitive to the ordering of the columns or rows in the table.
         2. Purposefully does not include the meta-data (source, description, name, annotations).
-        3. Includes a hash for the Zarr column
+        3. Includes a hash for the Zarr archive.
         """
         hash_fn = md5()
 
