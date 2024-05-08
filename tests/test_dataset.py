@@ -132,10 +132,10 @@ def test_dataset_from_json(test_dataset, tmpdir):
     path = fs.join(str(tmpdir), "dataset.json")
 
     new_dataset = Dataset.from_json(path)
-    assert _equality_test(test_dataset, new_dataset)
+    assert test_dataset == new_dataset
 
     new_dataset = load_dataset(path)
-    assert _equality_test(test_dataset, new_dataset)
+    assert test_dataset == new_dataset
 
 
 def test_dataset_from_zarr_to_json_and_back(zarr_archive, tmpdir):
@@ -152,24 +152,23 @@ def test_dataset_from_zarr_to_json_and_back(zarr_archive, tmpdir):
     path = dataset.to_json(json_dir)
 
     new_dataset = Dataset.from_json(path)
-    assert _equality_test(dataset, new_dataset)
+    assert dataset == new_dataset
 
     new_dataset = load_dataset(path)
-    assert _equality_test(dataset, new_dataset)
+    assert dataset == new_dataset
 
 
 def test_dataset_caching(zarr_archive, tmpdir):
     """Test whether the dataset remains the same after caching."""
-    archive = zarr_archive
 
-    original_dataset = create_dataset_from_file(archive, tmpdir.join("original1"))
-    cached_dataset = create_dataset_from_file(archive, tmpdir.join("original2"))
+    original_dataset = create_dataset_from_file(zarr_archive, tmpdir.join("original1"))
+    cached_dataset = create_dataset_from_file(zarr_archive, tmpdir.join("original2"))
     assert original_dataset == cached_dataset
 
     cache_dir = cached_dataset.cache(tmpdir.join("cached").strpath)
     assert cached_dataset.zarr_root_path.startswith(cache_dir)
 
-    assert _equality_test(cached_dataset, original_dataset)
+    assert cached_dataset == original_dataset
 
 
 def test_dataset_index():
