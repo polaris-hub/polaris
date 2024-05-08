@@ -6,7 +6,7 @@ import zarr
 class MemoryMappedDirectoryStore(zarr.DirectoryStore):
     """
     A Zarr Store to open chunks as memory-mapped files.
-    See also [this Github issue](https://github.com/zarr-developers/zarr-python/issues/1245).
+    See https://github.com/zarr-developers/zarr-python/issues/1245
 
     Memory mapping leverages low-level OS functionality to reduce the time it takes
     to read the content of a file by directly mapping to memory.

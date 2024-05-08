@@ -9,9 +9,3 @@
         filters: ["!^_"]
 
 ---
-
-::: polaris.dataset.zarr
-    options:
-        filters: ["!^_"]
-
----

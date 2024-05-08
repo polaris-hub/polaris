@@ -20,7 +20,7 @@ from pydantic import (
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
-from polaris.dataset.zarr import MemoryMappedDirectoryStore, compute_zarr_checksum
+from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
@@ -143,7 +143,7 @@ class Dataset(BaseArtifactModel):
         # Verify the checksum
         # NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
         actual = m.md5sum
-        expected = cls._compute_checksum(m.table, m.zarr_root_path)
+        expected = cls._compute_checksum(m.table)
 
         if actual is None:
             m.md5sum = expected
@@ -171,17 +171,16 @@ class Dataset(BaseArtifactModel):
         return {k: v.name for k, v in value.items()}
 
     @staticmethod
-    def _compute_checksum(
-        table: pd.DataFrame,
-        zarr_root_path: Optional[str] = None,
-    ):
+    def _compute_checksum(table):
         """Computes a hash of the dataset.
 
         This is meant to uniquely identify the dataset and can be used to verify the version.
 
         1. Is not sensitive to the ordering of the columns or rows in the table.
         2. Purposefully does not include the meta-data (source, description, name, annotations).
-        3. Includes a hash for the Zarr column
+        3. For any pointer column, it uses a hash of the path instead of the file contents.
+            This is a limitation, but probably a reasonable assumption that helps practicality.
+            A big downside is that as the dataset is saved elsewhere, the hash changes.
         """
         hash_fn = md5()
 
@@ -192,14 +191,6 @@ class Dataset(BaseArtifactModel):
         # Use the sum of the row-wise hashes s.t. the hash is insensitive to the row-ordering
         table_hash = pd.util.hash_pandas_object(df, index=False).sum()
         hash_fn.update(table_hash)
-        print(hash_fn.hexdigest())
-
-        # If the Zarr arhive exists, we hash its contents too.
-        if zarr_root_path is not None:
-            zarr_hash = compute_zarr_checksum(zarr_root_path)
-            hash_fn.update(zarr_hash.encode())
-            print(zarr_root_path, zarr_hash)
-        print(hash_fn.hexdigest())
 
         checksum = hash_fn.hexdigest()
         return checksum
