@@ -3,10 +3,10 @@ import os
 from typing import Optional, Union
 
 from pydantic import field_serializer
+import numpy as np
 from polaris.benchmark import BenchmarkSpecification
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.types import AccessType, HubOwner, TimeoutTypes, ZarrConflictResolution
-
+from polaris.utils.types import AccessType, HubOwner, PredictionsType, TimeoutTypes, ZarrConflictResolution
 
 class CompetitionSpecification(BenchmarkSpecification):
     """This class extends the [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] to
@@ -23,13 +23,31 @@ class CompetitionSpecification(BenchmarkSpecification):
     scheduled_end_time: datetime | None = None
     actual_end_time: datetime | None = None
 
-    def evaluate(self, predictions):
-        """Wrapper method which ultimately triggers an evaluation service to assess and score user predictions
-        for a given competition
+    def evaluate(
+        self,
+        y_pred: PredictionsType,
+        env_file: Optional[Union[str, os.PathLike]] = None,
+        settings: Optional[PolarisHubSettings] = None,
+        cache_auth_token: bool = True,
+        **kwargs: dict
+    ):
+        """Light convenience wrapper around
+        [`PolarisHubClient.evaluate_competition`][polaris.hub.client.PolarisHubClient.evaluate_competition].
         """
+        from polaris.hub.client import PolarisHubClient
 
-        # TODO validate that the number of predictions supplied matches the number of test set rows
-        pass
+        with PolarisHubClient(
+            env_file=env_file,
+            settings=settings,
+            cache_auth_token=cache_auth_token,
+            **kwargs,
+        ) as client:
+            return client.evaluate_competition(self, access, owner)
+
+    def _hub_evaluate(self, y_pred: np.ndarray, test: np.ndarray):
+        """Method called only by Polaris Hub to evaluate competitions. Labels are provided after being downloaded from R2 on the hub.
+        """
+        return "Internal hub evaluation.."
 
     def upload_to_hub(
         self,

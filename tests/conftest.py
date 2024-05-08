@@ -9,6 +9,7 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
+from polaris.competition import CompetitionSpecification
 from polaris.dataset import ColumnAnnotation, Dataset
 from polaris.utils.types import HubOwner
 
