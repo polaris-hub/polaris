@@ -945,6 +945,39 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="zarr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr.MemoryMappedDirectoryStore" class="md-nav__link">
+    <span class="md-ellipsis">
+      MemoryMappedDirectoryStore
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr.compute_zarr_checksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      compute_zarr_checksum
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1483,6 +1516,39 @@
       ColumnAnnotation
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="zarr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr.MemoryMappedDirectoryStore" class="md-nav__link">
+    <span class="md-ellipsis">
+      MemoryMappedDirectoryStore
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr.compute_zarr_checksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      compute_zarr_checksum
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2359,6 +2425,129 @@ and while it does not affect logic in this library, it does affect the logic of 
 
   </div>
 
+
+</div><hr />
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h3 id="polaris.dataset.zarr" class="doc doc-heading">
+          <span class="doc doc-object-name doc-module-name">polaris.dataset.zarr</span>
+
+
+</h3>
+
+  <div class="doc doc-contents first">
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="polaris.dataset.zarr.MemoryMappedDirectoryStore" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">MemoryMappedDirectoryStore</span>
+
+
+</h4>
+
+
+  <div class="doc doc-contents ">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="zarr.DirectoryStore">DirectoryStore</span></code></p>
+
+  
+      <p>A Zarr Store to open chunks as memory-mapped files.
+See also <a href="https://github.com/zarr-developers/zarr-python/issues/1245">this Github issue</a>.</p>
+<p>Memory mapping leverages low-level OS functionality to reduce the time it takes
+to read the content of a file by directly mapping to memory.</p>
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h4 id="polaris.dataset.zarr.compute_zarr_checksum" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">compute_zarr_checksum</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_zarr_checksum</span><span class="p">(</span><span class="n">zarr_root_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbstractFileSystem</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Implements an algorithm to compute the Zarr checksum.</p>
+
+<details class="warning" open>
+  <summary>This checksum is sensitive to Zarr configuration.</summary>
+  <p>This checksum is not insensitive to change in the Zarr structure. For example, if you change the chunk size, 
+the checksum will also change.</p>
+</details>      <p>To understand how this works, consider the following directory structure:</p>
+<div class="language-text highlight"><pre><span></span><code>       . (root)
+      / \
+     a   c
+    /
+   b
+</code></pre></div>
+<p>Within zarr, this would for example be:</p>
+<ul>
+<li><code>root</code>: A Zarr Group with a single Array.</li>
+<li><code>a</code>: A Zarr Array</li>
+<li><code>b</code>: A single chunk of the Zarr Array</li>
+<li><code>c</code>: A metadata file (i.e. .zarray, .zattrs or .zgroup) </li>
+</ul>
+<p>To compute the checksum, we first find all the trees in the node, in this case b and c. 
+We compute the hash of the content (the raw bytes) for each of these files.</p>
+<p>We then work our way up the tree. For any node (directory), we find all children of that node.
+In an sorted order, we then serialize a list with - for each of the children - the checksum, size, and number of children.
+The hash of the directory is then equal to the hash of the serialized JSON.</p>
+<p>The Polaris implementation is heavily based on the <a href="https://github.com/dandi/zarr_checksum"><code>zarr-checksum</code> package</a>.
+This method is the biggest deviation of the original code.</p>
+
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
 
 </div><hr />
 
