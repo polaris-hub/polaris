@@ -192,14 +192,11 @@ class Dataset(BaseArtifactModel):
         # Use the sum of the row-wise hashes s.t. the hash is insensitive to the row-ordering
         table_hash = pd.util.hash_pandas_object(df, index=False).sum()
         hash_fn.update(table_hash)
-        print(hash_fn.hexdigest())
 
         # If the Zarr arhive exists, we hash its contents too.
         if zarr_root_path is not None:
             zarr_hash = compute_zarr_checksum(zarr_root_path)
             hash_fn.update(zarr_hash.encode())
-            print(zarr_root_path, zarr_hash)
-        print(hash_fn.hexdigest())
 
         checksum = hash_fn.hexdigest()
         return checksum
