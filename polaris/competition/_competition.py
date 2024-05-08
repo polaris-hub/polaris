@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import numpy as np
 from typing import Optional, Union
 
 from pydantic import field_serializer
@@ -20,7 +21,7 @@ class CompetitionSpecification(BenchmarkSpecification):
 
     Currently, these entities will primarily differ at how user predictions are evaluated.
     """
-    
+
     # Additional properties specific to Competitions
     start_time: datetime | None = None
     scheduled_end_time: datetime | None = None

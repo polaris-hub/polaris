@@ -867,7 +867,7 @@ class PolarisHubClient(OAuth2Client):
              A `BenchmarkResults` object.
         """
         return self._base_request_to_hub(
-            url="/v2/competition/evaluate",
+            url=f"/v2/competition/evaluate",
             method="PUT",
             json={
                 "competition": competition.model_dump(exclude_none=True,
