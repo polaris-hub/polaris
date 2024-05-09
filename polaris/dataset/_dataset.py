@@ -193,7 +193,7 @@ class Dataset(BaseArtifactModel):
         table_hash = pd.util.hash_pandas_object(df, index=False).sum()
         hash_fn.update(table_hash)
 
-        # If the Zarr arhive exists, we hash its contents too.
+        # If the Zarr archive exists, we hash its contents too.
         if zarr_root_path is not None:
             zarr_hash = compute_zarr_checksum(zarr_root_path)
             hash_fn.update(zarr_hash.encode())
