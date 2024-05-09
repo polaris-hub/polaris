@@ -56,7 +56,7 @@ def compute_zarr_checksum(zarr_root_path: str, fs: Optional[AbstractFileSystem] 
     Implements an algorithm to compute the Zarr checksum.
 
     Warning: This checksum is sensitive to Zarr configuration. 
-        This checksum is not insensitive to change in the Zarr structure. For example, if you change the chunk size, 
+        This checksum is sensitive to change in the Zarr structure. For example, if you change the chunk size, 
         the checksum will also change.
 
     To understand how this works, consider the following directory structure:
