@@ -4,7 +4,10 @@ from typing import Optional, Union
 
 from pydantic import field_serializer
 import numpy as np
+import pandas as pd
 from polaris.benchmark import BenchmarkSpecification
+from polaris.dataset import Dataset, Subset
+from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.types import AccessType, HubOwner, PredictionsType, TimeoutTypes, ZarrConflictResolution
 
@@ -42,12 +45,37 @@ class CompetitionSpecification(BenchmarkSpecification):
             cache_auth_token=cache_auth_token,
             **kwargs,
         ) as client:
-            return client.evaluate_competition(self, access, owner)
+            client.evaluate_competition(self, y_pred=y_pred)
 
-    def _hub_evaluate(self, y_pred: np.ndarray, test: np.ndarray):
-        """Method called only by Polaris Hub to evaluate competitions. Labels are provided after being downloaded from R2 on the hub.
+    def _hub_evaluate(self, y_pred: PredictionsType, test: PredictionsType):
+        """Executes the evaluation logic for a competition, given a set of predictions.
+        Called only by Polaris Hub to evaluate competitions after labels are
+        downloaded from R2 on the hub. Evalutaion logic is the same as for regular benchmarks.
+
+        Args:
+            y_pred: The predictions for the test set, as NumPy arrays.
+                If there are multiple targets, the predictions should be wrapped in a
+                dictionary with the target labels as keys.
+
+            test: The test set. If there are multiple targets, the target columns should
+                be wrapped in a dictionary with the target labels as keys.
+
+        Returns:
+            A `BenchmarkResults` object containing the evaluation results.
         """
-        return "Internal hub evaluation.."
+        dataset = Dataset(
+            table=pd.DataFrame(test, columns=self.target_cols),
+            name=f'{self.name}_test_set',
+            description=f"Target labels for competition {self.name}. Used internally to evaluate competition predictions."
+        )
+        test_subset = Subset(
+            dataset=dataset,
+            indices=list(range(len(self.split[1]))),
+            input_cols=self.input_cols,
+            target_cols=self.target_cols,
+            hide_targets=False
+        )
+        return evaluate_benchmark(self, y_pred, test_subset)
 
     def upload_to_hub(
         self,
