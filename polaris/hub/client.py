@@ -358,7 +358,7 @@ class PolarisHubClient(OAuth2Client):
         verify_checksum: bool = True,
     ) -> Dataset:
         """Loads either a standard or competition dataset from Polaris Hub
-
+        
         Args:
             owner: The owner of the dataset. Can be either a user or organization from the Polaris Hub.
             name: The name of the dataset.
@@ -876,5 +876,3 @@ class PolarisHubClient(OAuth2Client):
                                                       by_alias=True),
                 "predictions": y_pred
             })
-
-
