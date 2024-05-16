@@ -1,12 +1,16 @@
 import pandas as pd
 import numpy as np
 
+from polaris.dataset import Subset
 from polaris.utils.context import tmp_attribute_change
 from polaris.evaluate import BenchmarkResults, ResultsType
+from polaris.utils.types import PredictionsType
 
-def evaluate_benchmark(model, y_pred, test):
-    if not isinstance(test, dict):
-        test = {"test": test}
+def evaluate_benchmark(model,
+                       y_pred: PredictionsType,
+                       test_set: Subset):
+    if not isinstance(test_set, dict):
+        test = {"test": test_set}
 
     y_true = {}
     for k, test_subset in test.items():
