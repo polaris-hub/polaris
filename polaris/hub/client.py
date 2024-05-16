@@ -358,7 +358,7 @@ class PolarisHubClient(OAuth2Client):
         verify_checksum: bool = True,
     ) -> Dataset:
         """Loads either a standard or competition dataset from Polaris Hub
-        
+
         Args:
             owner: The owner of the dataset. Can be either a user or organization from the Polaris Hub.
             name: The name of the dataset.
@@ -867,7 +867,7 @@ class PolarisHubClient(OAuth2Client):
              A `BenchmarkResults` object.
         """
         return self._base_request_to_hub(
-            url=f"/v2/competition/evaluate",
+            url="/v2/competition/evaluate",
             method="PUT",
             json={
                 "competition": competition.model_dump(exclude_none=True,
