@@ -1,6 +1,8 @@
 from datetime import datetime
 import os
 from typing import Optional, Union
+
+from pydantic import field_serializer
 from polaris.benchmark import BenchmarkSpecification
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.types import AccessType, HubOwner, TimeoutTypes, ZarrConflictResolution
@@ -49,3 +51,8 @@ class CompetitionSpecification(BenchmarkSpecification):
             cache_auth_token=cache_auth_token,
         ) as client:
             return client.upload_competition(self.dataset, self, access, timeout, owner, if_exists)
+        
+    @field_serializer("start_time", "scheduled_end_time")
+    def _serialize_start_date(self, v):
+        """Convert from datetime to string to make sure it's serializable"""
+        return v.isoformat()
