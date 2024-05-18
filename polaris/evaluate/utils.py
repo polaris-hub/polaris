@@ -7,25 +7,29 @@ from polaris.evaluate import BenchmarkResults, ResultsType
 from polaris.utils.types import PredictionsType
 from polaris.evaluate import Metric
 
+def is_multi_task_single_test_set(vals: PredictionsType, target_cols: list[str]):
+    """Check if the given values are for a multiple-task benchmark with a single
+    test set. This is inferred by comparing the target names with the keys of the
+    given data. If all keys in the given data match the target column names, we
+    assume they are target names (as opposed to test set names for a single-task,
+    multiple test set benchmark)."""
+    return not isinstance(vals, dict) or set(vals.keys()) == set(target_cols)
+
 def evaluate_benchmark(y_pred: PredictionsType,
-                       test_vals: Subset,
+                       y_true: PredictionsType,
                        target_cols: list[str],
                        benchmark_name: str,
                        benchmark_owner: str,
                        metrics: Union[str, Metric, list[Union[str, Metric]]]):
-    if not isinstance(test_vals, dict):
-        test = {"test": test_vals}
-    else:
-        test = test_vals
+    if is_multi_task_single_test_set(y_true, target_cols):
+        y_true = {"test": y_true}
 
-    y_true = {k: test_subset.targets for k, test_subset in test.items()}
-
-    if not isinstance(y_pred, dict) or all(k in target_cols for k in y_pred):
+    if is_multi_task_single_test_set(y_pred, target_cols):
         y_pred = {"test": y_pred}
 
-    if any(k not in y_pred for k in test.keys()):
+    if set(y_true.keys()) != set(y_pred.keys()):
         raise KeyError(
-            f"Missing keys for at least one of the test sets. Expecting: {sorted(test.keys())}"
+            f"Missing keys for at least one of the test sets. Expecting: {sorted(y_true.keys())}"
         )
 
     # Results are saved in a tabular format. For more info, see the BenchmarkResults docs.

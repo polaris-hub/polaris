@@ -401,7 +401,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         """
 
         train = self._get_subset(self.split[0], hide_targets=False, featurization_fn=featurization_fn)
-        test = self._get_test_set(featurization_fn)
+        test = self._get_test_set(hide_targets=True, featurization_fn=featurization_fn)
 
         return train, test
 
@@ -435,7 +435,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         # See also the `hide_targets` parameter in the `Subset` class.
         test = self._get_test_set(hide_targets=False)
 
-        return evaluate_benchmark(y_pred, test, self.target_cols,
+        return evaluate_benchmark(y_pred, test.targets, self.target_cols,
                                   self.name, self.owner, self.metrics)
 
     def upload_to_hub(

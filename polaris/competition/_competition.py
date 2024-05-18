@@ -75,7 +75,7 @@ class CompetitionSpecification(BenchmarkSpecification):
             target_cols=self.target_cols,
             hide_targets=False
         )
-        return evaluate_benchmark(y_pred, test_subset, self.target_cols,
+        return evaluate_benchmark(y_pred, test_subset.targets, self.target_cols,
                                   self.name, self.owner, self.metrics)
 
     def upload_to_hub(
