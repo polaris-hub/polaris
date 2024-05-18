@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from typing import Union
 
-from polaris.dataset import Subset
 from polaris.evaluate import BenchmarkResults, ResultsType
 from polaris.utils.types import PredictionsType
 from polaris.evaluate import Metric
@@ -18,8 +17,6 @@ def is_multi_task_single_test_set(vals: PredictionsType, target_cols: list[str])
 def evaluate_benchmark(y_pred: PredictionsType,
                        y_true: PredictionsType,
                        target_cols: list[str],
-                       benchmark_name: str,
-                       benchmark_owner: str,
                        metrics: Union[str, Metric, list[Union[str, Metric]]]):
     if is_multi_task_single_test_set(y_true, target_cols):
         y_true = {"test": y_true}
@@ -48,12 +45,7 @@ def evaluate_benchmark(y_pred: PredictionsType,
             if not isinstance(y_true_subset, dict):
                 # Single task
                 score = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
-                scores.loc[len(scores)] = (
-                    test_label,
-                    target_cols[0],
-                    metric,
-                    score,
-                )
+                scores.loc[len(scores)] = (test_label, target_cols[0], metric, score)
                 continue
 
             # Otherwise, for every target...
@@ -67,6 +59,4 @@ def evaluate_benchmark(y_pred: PredictionsType,
                 )
                 scores.loc[len(scores)] = (test_label, target_label, metric, score)
 
-    return BenchmarkResults(results=scores,
-                            benchmark_name=benchmark_name,
-                            benchmark_owner=benchmark_owner)
+    return scores

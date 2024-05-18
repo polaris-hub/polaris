@@ -434,9 +434,12 @@ class BenchmarkSpecification(BaseArtifactModel):
         # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
         # See also the `hide_targets` parameter in the `Subset` class.
         test = self._get_test_set(hide_targets=False)
+        y_true = test.targets
+        scores = evaluate_benchmark(y_pred, y_true, self.target_cols, self.metrics)
 
-        return evaluate_benchmark(y_pred, test.targets, self.target_cols,
-                                  self.name, self.owner, self.metrics)
+        return BenchmarkResults(results=scores,
+                                benchmark_name=self.name,
+                                benchmark_owner=self.owner)
 
     def upload_to_hub(
         self,

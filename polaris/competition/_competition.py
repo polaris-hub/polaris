@@ -6,7 +6,7 @@ from pydantic import field_serializer
 import numpy as np
 import pandas as pd
 from polaris.benchmark import BenchmarkSpecification
-from polaris.dataset import Dataset, Subset
+from polaris.evaluate import BenchmarkResults
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.types import AccessType, HubOwner, PredictionsType, TimeoutTypes, ZarrConflictResolution
@@ -47,7 +47,7 @@ class CompetitionSpecification(BenchmarkSpecification):
         ) as client:
             client.evaluate_competition(self, y_pred=y_pred)
 
-    def _hub_evaluate(self, y_pred: PredictionsType, test: PredictionsType):
+    def _hub_evaluate(self, y_pred: PredictionsType, y_true: PredictionsType):
         """Executes the evaluation logic for a competition, given a set of predictions.
         Called only by Polaris Hub to evaluate competitions after labels are
         downloaded from R2 on the hub. Evalutaion logic is the same as for regular benchmarks.
@@ -63,20 +63,10 @@ class CompetitionSpecification(BenchmarkSpecification):
         Returns:
             A `BenchmarkResults` object containing the evaluation results.
         """
-        dataset = Dataset(
-            table=pd.DataFrame(test, columns=self.target_cols),
-            name=f'{self.name}_test_set',
-            description=f"Target labels for competition {self.name}. Used internally to evaluate competition predictions."
-        )
-        test_subset = Subset(
-            dataset=dataset,
-            indices=list(range(len(self.split[1]))),
-            input_cols=self.input_cols,
-            target_cols=self.target_cols,
-            hide_targets=False
-        )
-        return evaluate_benchmark(y_pred, test_subset.targets, self.target_cols,
-                                  self.name, self.owner, self.metrics)
+        scores = evaluate_benchmark(y_pred, y_true, self.target_cols, self.metrics)
+        return BenchmarkResults(results=scores,
+                                benchmark_name=self.name,
+                                benchmark_owner=self.owner)
 
     def upload_to_hub(
         self,
