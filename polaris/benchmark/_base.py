@@ -350,6 +350,37 @@ class BenchmarkSpecification(BaseArtifactModel):
         v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
         return v.value
 
+    def _get_subset(self, indices, hide_targets=True, featurization_fn=None):
+        """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
+        internally to construct the train and test sets."""
+        return Subset(
+            dataset=self.dataset,
+            indices=indices,
+            input_cols=self.input_cols,
+            target_cols=self.target_cols,
+            hide_targets=hide_targets,
+            featurization_fn=featurization_fn,
+        )
+
+    def _get_test_set(
+        self, hide_targets=True, featurization_fn: Optional[Callable] = None
+    ) -> Union["Subset", dict[str, Subset]]:
+        """Construct the test set(s), given the split in the benchmark specification. Used
+        internally to construct the test set for client use and evaluation.
+        """
+        def make_test_subset(vals):
+            return self._get_subset(vals,
+                                    hide_targets=hide_targets,
+                                    featurization_fn=featurization_fn)
+
+        test_split = self.split[1]
+        if isinstance(test_split, dict):
+            test = {k: make_test_subset(v) for k, v in test_split.items()}
+        else:
+            test = make_test_subset(test_split)
+
+        return test
+
     def get_train_test_split(
         self, featurization_fn: Optional[Callable] = None
     ) -> tuple[Subset, Union["Subset", dict[str, Subset]]]:
@@ -365,25 +396,12 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         Returns:
             A tuple with the train `Subset` and test `Subset` objects.
-                If there are multiple test sets, these are returned in a dictionary and each test set has
-                an associated name. The targets of the test set can not be accessed.
+            If there are multiple test sets, these are returned in a dictionary and each test set has
+            an associated name. The targets of the test set can not be accessed.
         """
 
-        def _get_subset(indices, hide_targets):
-            return Subset(
-                dataset=self.dataset,
-                indices=indices,
-                input_cols=self.input_cols,
-                target_cols=self.target_cols,
-                hide_targets=hide_targets,
-                featurization_fn=featurization_fn,
-            )
-
-        train = _get_subset(self.split[0], hide_targets=False)
-        if isinstance(self.split[1], dict):
-            test = {k: _get_subset(v, hide_targets=True) for k, v in self.split[1].items()}
-        else:
-            test = _get_subset(self.split[1], hide_targets=True)
+        train = self._get_subset(self.split[0], hide_targets=False, featurization_fn=featurization_fn)
+        test = self._get_test_set(featurization_fn)
 
         return train, test
 
@@ -415,9 +433,10 @@ class BenchmarkSpecification(BaseArtifactModel):
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
         # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
         # See also the `hide_targets` parameter in the `Subset` class.
-        test = self.get_train_test_split()[1]
+        test = self._get_test_set(hide_targets=False)
 
-        return evaluate_benchmark(self, y_pred, test)
+        return evaluate_benchmark(y_pred, test, self.target_cols,
+                                  self.name, self.owner, self.metrics)
 
     def upload_to_hub(
         self,

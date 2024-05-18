@@ -1,23 +1,26 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
+from typing import Union
 
 from polaris.dataset import Subset
-from polaris.utils.context import tmp_attribute_change
 from polaris.evaluate import BenchmarkResults, ResultsType
 from polaris.utils.types import PredictionsType
+from polaris.evaluate import Metric
 
-def evaluate_benchmark(model,
-                       y_pred: PredictionsType,
-                       test_set: Subset):
-    if not isinstance(test_set, dict):
-        test = {"test": test_set}
+def evaluate_benchmark(y_pred: PredictionsType,
+                       test_vals: Subset,
+                       target_cols: list[str],
+                       benchmark_name: str,
+                       benchmark_owner: str,
+                       metrics: Union[str, Metric, list[Union[str, Metric]]]):
+    if not isinstance(test_vals, dict):
+        test = {"test": test_vals}
+    else:
+        test = test_vals
 
-    y_true = {}
-    for k, test_subset in test.items():
-        with tmp_attribute_change(test_subset, "_hide_targets", False):
-            y_true[k] = test_subset.targets
+    y_true = {k: test_subset.targets for k, test_subset in test.items()}
 
-    if not isinstance(y_pred, dict) or all(k in model.target_cols for k in y_pred):
+    if not isinstance(y_pred, dict) or all(k in target_cols for k in y_pred):
         y_pred = {"test": y_pred}
 
     if any(k not in y_pred for k in test.keys()):
@@ -31,7 +34,7 @@ def evaluate_benchmark(model,
     # For every test set...
     for test_label, y_true_subset in y_true.items():
         # For every metric...
-        for metric in model.metrics:
+        for metric in metrics:
             if metric.is_multitask:
                 # Multi-task but with a metric across targets
                 score = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
@@ -43,7 +46,7 @@ def evaluate_benchmark(model,
                 score = metric(y_true=y_true_subset, y_pred=y_pred[test_label])
                 scores.loc[len(scores)] = (
                     test_label,
-                    model.target_cols[0],
+                    target_cols[0],
                     metric,
                     score,
                 )
@@ -60,4 +63,6 @@ def evaluate_benchmark(model,
                 )
                 scores.loc[len(scores)] = (test_label, target_label, metric, score)
 
-    return BenchmarkResults(results=scores, benchmark_name=model.name, benchmark_owner=model.owner)
+    return BenchmarkResults(results=scores,
+                            benchmark_name=benchmark_name,
+                            benchmark_owner=benchmark_owner)
