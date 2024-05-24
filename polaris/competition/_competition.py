@@ -11,10 +11,16 @@ from polaris.benchmark import BenchmarkSpecification
 from polaris.evaluate import BenchmarkResults
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.types import AccessType, HubOwner, PredictionsType, TimeoutTypes, ZarrConflictResolution
+from polaris.utils.types import AccessType, HubOwner, TimeoutTypes, ZarrConflictResolution
+
 
 class CompetitionSpecification(BenchmarkSpecification):
     """This class extends the [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] to
+    facilitate interactions with Polaris Competitions.
+
+    Much of the underlying data model and logic is shared across Benchmarks and Competitions, and
+    anything within this class serves as a point of differentiation between the two.
+
     facilitate interactions with Polaris Competitions.
 
     Much of the underlying data model and logic is shared across Benchmarks and Competitions, and
