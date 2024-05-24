@@ -102,4 +102,3 @@ class CompetitionSpecification(BenchmarkSpecification):
         """Convert from datetime to string to make sure it's serializable"""
         if v:
             return v.isoformat()
-
