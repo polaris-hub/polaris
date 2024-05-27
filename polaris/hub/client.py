@@ -870,9 +870,6 @@ class PolarisHubClient(OAuth2Client):
             url=f"/v2/competition/evaluate",
             method="PUT",
             json={
-                "competition": competition.model_dump(exclude_none=True,
-                                                      exclude=["dataset",
-                                                               "split"],
-                                                      by_alias=True),
+                "competition": competition.artifact_id,
                 "predictions": y_pred
             })
