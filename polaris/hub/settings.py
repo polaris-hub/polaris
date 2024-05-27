@@ -30,12 +30,12 @@ class PolarisHubSettings(BaseSettings):
 
     hub_url: HttpUrlString = "https://polarishub.io/"
     api_url: Optional[HttpUrlString] = None
-    authorize_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/authorize"
+    authorize_url: HttpUrlString = "https://clerk.polarishub.io/oauth/authorize"
     callback_url: HttpUrlString = "https://polarishub.io/oauth2/callback"
-    token_fetch_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/token"
-    user_info_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/userinfo"
+    token_fetch_url: HttpUrlString = "https://clerk.polarishub.io/oauth/token"
+    user_info_url: HttpUrlString = "https://clerk.polarishub.io/oauth/userinfo"
     scopes: str = "profile email"
-    client_id: str = "QJg8zadGwjnr6nbN"
+    client_id: str = "agQP2xVM6JqMHvGc"
     ca_bundle: Optional[Union[str, bool]] = None
 
     default_timeout: TimeoutTypes = (10, 200)
