@@ -9,6 +9,7 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
+from polaris.competition import CompetitionSpecification
 from polaris.dataset import ColumnAnnotation, Dataset
 from polaris.utils.types import HubOwner
 
@@ -192,3 +193,26 @@ def test_multi_task_benchmark_clf(test_dataset):
     )
     check_version(benchmark)
     return benchmark
+
+@pytest.fixture(scope="function")
+def test_competition(test_dataset):
+    train_indices = list(range(90))
+    test_indices = list(range(90, 100))
+    competition = CompetitionSpecification(
+        name="test-competition",
+        dataset=test_dataset,
+        metrics=[
+            "mean_absolute_error",
+            "mean_squared_error",
+            "r2",
+            "spearmanr",
+            "pearsonr",
+            "explained_var",
+        ],
+        main_metric="mean_absolute_error",
+        split=(train_indices, test_indices),
+        target_cols="expt",
+        input_cols="smiles",
+    )
+    check_version(competition)
+    return competition

@@ -1,15 +1,22 @@
 from datetime import datetime
 import os
+import numpy as np
 from typing import Optional, Union
 
 from pydantic import field_serializer
 from polaris.benchmark import BenchmarkSpecification
+from polaris.evaluate import BenchmarkResults
+from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.types import AccessType, HubOwner, TimeoutTypes, ZarrConflictResolution
-
+from polaris.utils.types import AccessType, HubOwner, PredictionsType, TimeoutTypes, ZarrConflictResolution
 
 class CompetitionSpecification(BenchmarkSpecification):
     """This class extends the [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] to
+    facilitate interactions with Polaris Competitions.
+
+    Much of the underlying data model and logic is shared across Benchmarks and Competitions, and
+    anything within this class serves as a point of differentiation between the two.
+
     facilitate interactions with Polaris Competitions.
 
     Much of the underlying data model and logic is shared across Benchmarks and Competitions, and
@@ -23,13 +30,47 @@ class CompetitionSpecification(BenchmarkSpecification):
     scheduled_end_time: datetime | None = None
     actual_end_time: datetime | None = None
 
-    def evaluate(self, predictions):
-        """Wrapper method which ultimately triggers an evaluation service to assess and score user predictions
-        for a given competition
+    def evaluate(
+        self,
+        y_pred: PredictionsType,
+        env_file: Optional[Union[str, os.PathLike]] = None,
+        settings: Optional[PolarisHubSettings] = None,
+        cache_auth_token: bool = True,
+        **kwargs: dict
+    ):
+        """Light convenience wrapper around
+        [`PolarisHubClient.evaluate_competition`][polaris.hub.client.PolarisHubClient.evaluate_competition].
         """
+        from polaris.hub.client import PolarisHubClient
 
-        # TODO validate that the number of predictions supplied matches the number of test set rows
-        pass
+        with PolarisHubClient(
+            env_file=env_file,
+            settings=settings,
+            cache_auth_token=cache_auth_token,
+            **kwargs,
+        ) as client:
+            client.evaluate_competition(self, y_pred=y_pred)
+
+    def _hub_evaluate(self, y_pred: PredictionsType, y_true: PredictionsType):
+        """Executes the evaluation logic for a competition, given a set of predictions.
+        Called only by Polaris Hub to evaluate competitions after labels are
+        downloaded from R2 on the hub. Evalutaion logic is the same as for regular benchmarks.
+
+        Args:
+            y_pred: The predictions for the test set, as NumPy arrays.
+                If there are multiple targets, the predictions should be wrapped in a
+                dictionary with the target labels as keys.
+
+            test: The test set. If there are multiple targets, the target columns should
+                be wrapped in a dictionary with the target labels as keys.
+
+        Returns:
+            A `BenchmarkResults` object containing the evaluation results.
+        """
+        scores = evaluate_benchmark(y_pred, y_true, self.target_cols, self.metrics)
+        return BenchmarkResults(results=scores,
+                                benchmark_name=self.name,
+                                benchmark_owner=self.owner)
 
     def upload_to_hub(
         self,

@@ -40,6 +40,7 @@ from polaris.utils.types import (
     ArtifactType,
     HubOwner,
     IOMode,
+    PredictionsType,
     SupportedLicenseType,
     TimeoutTypes,
     ZarrConflictResolution,
@@ -776,7 +777,6 @@ class PolarisHubClient(OAuth2Client):
         """Upload a competition to the Polaris Hub.
 
         Args:
-            dataset: The dataset to upload.
             competition: The competition to upload.
             timeout: Request timeout values. User can modify the value when uploading large dataset as needed.
                 This can be a single value with the timeout in seconds for all IO operations, or a more granular
@@ -796,7 +796,6 @@ class PolarisHubClient(OAuth2Client):
         dataset_response = self._upload_dataset(
             competition.dataset, ArtifactType.COMPETITION.value, ACCESS, timeout, owner, if_exists
         )
-
         # Upload competition benchmark
         competition_response = self._upload_benchmark(
             competition, ArtifactType.COMPETITION.value, ACCESS, owner
@@ -851,3 +850,26 @@ class PolarisHubClient(OAuth2Client):
         )
         benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
         return benchmarks_list
+
+    def evaluate_competition(
+        self,
+        competition: CompetitionSpecification,
+        y_pred: PredictionsType
+    ) -> BenchmarkResults:
+        """Evaluate the predictions for a competition on the Polaris Hub.
+
+        Args:
+            competition: The competition to evaluate the predictions for.
+            y_pred: The predictions for the test set, as NumPy arrays.
+                If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
+
+        Returns:
+             A `BenchmarkResults` object.
+        """
+        return self._base_request_to_hub(
+            url=f"/v2/competition/evaluate",
+            method="PUT",
+            json={
+                "competition": competition.artifact_id,
+                "predictions": y_pred
+            })
