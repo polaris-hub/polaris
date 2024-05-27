@@ -82,6 +82,7 @@ def test_http_url_string():
     assert isinstance(m.url, str)
 
     with warnings.catch_warnings():
+        # Crash if any warnings are raised
         warnings.simplefilter("error")
         m.model_dump()
 
