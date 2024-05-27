@@ -4,8 +4,6 @@ import numpy as np
 from typing import Optional, Union
 
 from pydantic import field_serializer
-import numpy as np
-import pandas as pd
 from polaris.benchmark import BenchmarkSpecification
 from polaris.evaluate import BenchmarkResults
 from polaris.evaluate.utils import evaluate_benchmark
