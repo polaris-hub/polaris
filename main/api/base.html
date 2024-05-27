@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.24">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1295,18 +1295,19 @@
 
 
 <h3 id="polaris._artifact.BaseArtifactModel" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris._artifact.BaseArtifactModel</span>
+            <span class="doc doc-object-name doc-class-name">polaris._artifact.BaseArtifactModel</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
 
-  
+
       <p>Base class for all artifacts on the Hub. Specifies meta-data that is used by the Hub.</p>
+
 
 <details class="info" open>
   <summary>Optional</summary>
@@ -1315,91 +1316,90 @@ This ensures the library can be used without the Polaris Hub.
 Only when uploading to the Hub, some of the attributes are required.</p>
 </details>
 
-
-  <p><span class="doc-section-title">Attributes:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris._artifact.BaseArtifactModel.name">name</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.SlugCompatibleStringType" href="utils.types.html#polaris.utils.types.SlugCompatibleStringType">SlugCompatibleStringType</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A slug-compatible name for the dataset.
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris._artifact.BaseArtifactModel.name">name</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.SlugCompatibleStringType" href="utils.types.html#polaris.utils.types.SlugCompatibleStringType">SlugCompatibleStringType</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A slug-compatible name for the dataset.
 Together with the owner, this is used by the Hub to uniquely identify the benchmark.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris._artifact.BaseArtifactModel.description">description</span></code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A beginner-friendly, short description of the dataset.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris._artifact.BaseArtifactModel.tags">tags</span></code></td>
-          <td>
-                <code>list[str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A list of tags to categorize the benchmark by. This is used by the hub to search over benchmarks.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris._artifact.BaseArtifactModel.user_attributes">user_attributes</span></code></td>
-          <td>
-                <code><span title="typing.Dict">Dict</span>[str, str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A dict with additional, textual user attributes.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris._artifact.BaseArtifactModel.owner">owner</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A slug-compatible name for the owner of the dataset.
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris._artifact.BaseArtifactModel.description">description</span></code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A beginner-friendly, short description of the dataset.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris._artifact.BaseArtifactModel.tags">tags</span></code></td>
+            <td>
+                  <code>list[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A list of tags to categorize the benchmark by. This is used by the hub to search over benchmarks.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris._artifact.BaseArtifactModel.user_attributes">user_attributes</span></code></td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[str, str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A dict with additional, textual user attributes.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris._artifact.BaseArtifactModel.owner">owner</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A slug-compatible name for the owner of the dataset.
 If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
 Together with the name, this is used by the Hub to uniquely identify the benchmark.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris._artifact.BaseArtifactModel.polaris_version">polaris_version</span></code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The version of the Polaris library that was used to create the artifact.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris._artifact.BaseArtifactModel.polaris_version">polaris_version</span></code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The version of the Polaris library that was used to create the artifact.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1411,15 +1411,13 @@ Together with the name, this is used by the Hub to uniquely identify the benchma
 
 
 
-
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris._artifact.BaseArtifactModel.from_json" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">from_json</span>
+            <span class="doc doc-object-name doc-function-name">from_json</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
   </span>
@@ -1428,92 +1426,88 @@ Together with the name, this is used by the Hub to uniquely identify the benchma
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">from_json</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Loads a benchmark from a JSON file.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>path</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Loads a benchmark specification from a JSON file.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>path</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Loads a benchmark specification from a JSON file.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris._artifact.BaseArtifactModel.to_json" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">to_json</span>
+            <span class="doc doc-object-name doc-function-name">to_json</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Saves the benchmark to a JSON file.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>path</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Saves the benchmark specification to a JSON file.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>path</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Saves the benchmark specification to a JSON file.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  </div>
+    </div>
 
 </div>
 
@@ -1521,8 +1515,7 @@ Together with the name, this is used by the Hub to uniquely identify the benchma
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 
@@ -1740,7 +1733,7 @@ Together with the name, this is used by the Hub to uniquely identify the benchma
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      <script src="../assets/javascripts/bundle.081f42fc.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

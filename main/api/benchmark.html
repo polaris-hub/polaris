@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.24">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1554,17 +1554,17 @@
 
 
 <h3 id="polaris.benchmark.BenchmarkSpecification" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.benchmark.BenchmarkSpecification</span>
+            <span class="doc doc-object-name doc-class-name">polaris.benchmark.BenchmarkSpecification</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><a class="autorefs autorefs-internal" title="polaris._artifact.BaseArtifactModel" href="base.html#polaris._artifact.BaseArtifactModel">BaseArtifactModel</a></code></p>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris._artifact.BaseArtifactModel" href="base.html#polaris._artifact.BaseArtifactModel">BaseArtifactModel</a></code></p>
 
-  
+
       <p>This class wraps a <a class="autorefs autorefs-internal" href="dataset.html#polaris.dataset.Dataset"><code>Dataset</code></a> with additional data
  to specify the evaluation logic.</p>
 <p>Specifically, it specifies:</p>
@@ -1575,12 +1575,12 @@
 <li>A predefined, static train-test split to use during evaluation.</li>
 </ol>
 
+
 <details class="info" open>
   <summary>Subclasses</summary>
   <p>Polaris includes various subclasses of the <code>BenchmarkSpecification</code> that provide a more precise data-model or
  additional logic, e.g. <a class="autorefs autorefs-internal" href="#polaris.benchmark.SingleTaskBenchmarkSpecification"><code>SingleTaskBenchmarkSpecification</code></a>.</p>
 </details>
-
 
 <p><span class="doc-section-title">Examples:</span></p>
     <p>Basic API usage:
@@ -1609,125 +1609,124 @@
 </span></code></pre></div></p>
 
 
-
-  <p><span class="doc-section-title">Attributes:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.benchmark.BenchmarkSpecification.dataset">dataset</span></code></td>
-          <td>
-                <code><span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Dataset" href="dataset.html#polaris.dataset.Dataset">Dataset</a>, str, dict[str, <span title="typing.Any">Any</span>]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The dataset the benchmark specification is based on.</p>
-            </div>
-          </td>
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.benchmark.BenchmarkSpecification.target_cols">target_cols</span></code></td>
-          <td>
-                <code><span title="polaris.benchmark._base.ColumnsType">ColumnsType</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The column(s) of the original dataset that should be used as target.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.benchmark.BenchmarkSpecification.input_cols">input_cols</span></code></td>
-          <td>
-                <code><span title="polaris.benchmark._base.ColumnsType">ColumnsType</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The column(s) of the original dataset that should be used as input.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.benchmark.BenchmarkSpecification.split">split</span></code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.SplitType" href="utils.types.html#polaris.utils.types.SplitType">SplitType</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The predefined train-test split to use for evaluation.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.benchmark.BenchmarkSpecification.metrics">metrics</span></code></td>
-          <td>
-                <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.evaluate.Metric" href="evaluation.html#polaris.evaluate.Metric">Metric</a>, list[<span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.evaluate.Metric" href="evaluation.html#polaris.evaluate.Metric">Metric</a>]]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The metrics to use for evaluating performance</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.benchmark.BenchmarkSpecification.main_metric">main_metric</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.evaluate.Metric" href="evaluation.html#polaris.evaluate.Metric">Metric</a>]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The main metric used to rank methods. If <code>None</code>, the first of the <code>metrics</code> field.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.benchmark.BenchmarkSpecification.md5sum">md5sum</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The checksum is used to verify the version of the dataset specification. If specified, it will
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.benchmark.BenchmarkSpecification.dataset">dataset</span></code></td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Dataset" href="dataset.html#polaris.dataset.Dataset">Dataset</a>, str, dict[str, <span title="typing.Any">Any</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The dataset the benchmark specification is based on.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.benchmark.BenchmarkSpecification.target_cols">target_cols</span></code></td>
+            <td>
+                  <code><span title="polaris.benchmark._base.ColumnsType">ColumnsType</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The column(s) of the original dataset that should be used as target.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.benchmark.BenchmarkSpecification.input_cols">input_cols</span></code></td>
+            <td>
+                  <code><span title="polaris.benchmark._base.ColumnsType">ColumnsType</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The column(s) of the original dataset that should be used as input.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.benchmark.BenchmarkSpecification.split">split</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.SplitType" href="utils.types.html#polaris.utils.types.SplitType">SplitType</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The predefined train-test split to use for evaluation.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.benchmark.BenchmarkSpecification.metrics">metrics</span></code></td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.evaluate.Metric" href="evaluation.html#polaris.evaluate.Metric">Metric</a>, list[<span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.evaluate.Metric" href="evaluation.html#polaris.evaluate.Metric">Metric</a>]]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The metrics to use for evaluating performance</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.benchmark.BenchmarkSpecification.main_metric">main_metric</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.evaluate.Metric" href="evaluation.html#polaris.evaluate.Metric">Metric</a>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The main metric used to rank methods. If <code>None</code>, the first of the <code>metrics</code> field.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.benchmark.BenchmarkSpecification.md5sum">md5sum</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The checksum is used to verify the version of the dataset specification. If specified, it will
 raise an error if the specified checksum doesn't match the computed checksum.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.benchmark.BenchmarkSpecification.readme">readme</span></code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Markdown text that can be used to provide a formatted description of the benchmark.
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.benchmark.BenchmarkSpecification.readme">readme</span></code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Markdown text that can be used to provide a formatted description of the benchmark.
 If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
 as it provides a rich text editor for writing markdown.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.benchmark.BenchmarkSpecification.target_types">target_types</span></code></td>
-          <td>
-                <code>dict[str, <span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.TargetType" href="utils.types.html#polaris.utils.types.TargetType">TargetType</a>, str]]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A dictionary that maps target columns to their type. If not specified, this is automatically inferred.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.benchmark.BenchmarkSpecification.target_types">target_types</span></code></td>
+            <td>
+                  <code>dict[str, <span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.TargetType" href="utils.types.html#polaris.utils.types.TargetType">TargetType</a>, str]]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A dictionary that maps target columns to their type. If not specified, this is automatically inferred.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
       <p>For additional meta-data attributes, see the <a class="autorefs autorefs-internal" href="base.html#polaris._artifact.BaseArtifactModel"><code>BaseArtifactModel</code></a> class.</p>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1742,9 +1741,9 @@ as it provides a rich text editor for writing markdown.</p>
 
 
 <h4 id="polaris.benchmark.BenchmarkSpecification.n_train_datapoints" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">n_train_datapoints</span>
+            <span class="doc doc-object-name doc-attribute-name">n_train_datapoints</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1753,10 +1752,10 @@ as it provides a rich text editor for writing markdown.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">n_train_datapoints</span><span class="p">:</span> <span class="nb">int</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>The size of the train set.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1765,9 +1764,9 @@ as it provides a rich text editor for writing markdown.</p>
 
 
 <h4 id="polaris.benchmark.BenchmarkSpecification.n_test_sets" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">n_test_sets</span>
+            <span class="doc doc-object-name doc-attribute-name">n_test_sets</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1776,10 +1775,10 @@ as it provides a rich text editor for writing markdown.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">n_test_sets</span><span class="p">:</span> <span class="nb">int</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>The number of test sets</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1788,9 +1787,9 @@ as it provides a rich text editor for writing markdown.</p>
 
 
 <h4 id="polaris.benchmark.BenchmarkSpecification.n_test_datapoints" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">n_test_datapoints</span>
+            <span class="doc doc-object-name doc-attribute-name">n_test_datapoints</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1799,10 +1798,10 @@ as it provides a rich text editor for writing markdown.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">n_test_datapoints</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>The size of (each of) the test set(s).</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1811,9 +1810,9 @@ as it provides a rich text editor for writing markdown.</p>
 
 
 <h4 id="polaris.benchmark.BenchmarkSpecification.n_classes" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">n_classes</span>
+            <span class="doc doc-object-name doc-attribute-name">n_classes</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1822,10 +1821,10 @@ as it provides a rich text editor for writing markdown.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">n_classes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>The number of classes for each of the target columns.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1834,123 +1833,118 @@ as it provides a rich text editor for writing markdown.</p>
 
 
 <h4 id="polaris.benchmark.BenchmarkSpecification.task_type" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">task_type</span>
+            <span class="doc doc-object-name doc-attribute-name">task_type</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">task_type</span><span class="p">:</span> <span class="n">TaskType</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">task_type</span><span class="p">:</span> <span class="nb">str</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>The high-level task type of the benchmark.</p>
-  </div>
+    </div>
 
 </div>
-
 
 
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.benchmark.BenchmarkSpecification.get_train_test_split" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">get_train_test_split</span>
+            <span class="doc doc-object-name doc-function-name">get_train_test_split</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_train_test_split</span><span class="p">(</span><span class="n">featurization_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Subset</span><span class="p">]]]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Construct the train and test sets, given the split in the benchmark specification.</p>
 <p>Returns <a class="autorefs autorefs-internal" href="subset.html#polaris.dataset.Subset"><code>Subset</code></a> objects, which offer several ways of accessing the data
 and can thus easily serve as a basis to build framework-specific (e.g. PyTorch, Tensorflow)
 data-loaders on top of.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>featurization_fn</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<span title="typing.Callable">Callable</span>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A function to apply to the input data. If a multi-input benchmark, this function
-expects an input in the format specified by the <code>input_format</code> parameter.</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>featurization_fn</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Callable">Callable</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A function to apply to the input data. If a multi-input benchmark, this function
+expects an input in the format specified by the <code>input_format</code> parameter.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code>tuple[<a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>, <span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>, dict[str, <a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>]]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A tuple with the train <code>Subset</code> and test <code>Subset</code> objects.
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>tuple[<a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>, <span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>, dict[str, <a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>]]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A tuple with the train <code>Subset</code> and test <code>Subset</code> objects.
 If there are multiple test sets, these are returned in a dictionary and each test set has
 an associated name. The targets of the test set can not be accessed.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.benchmark.BenchmarkSpecification.evaluate" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">evaluate</span>
+            <span class="doc doc-object-name doc-function-name">evaluate</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">evaluate</span><span class="p">(</span><span class="n">y_pred</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PredictionsType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y_prob</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PredictionsType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BenchmarkResults</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Execute the evaluation protocol for the benchmark, given a set of predictions.</p>
+
 
 <details class="info" open>
   <summary>What about <code>y_true</code>?</summary>
@@ -1966,118 +1960,113 @@ the predictions. This reduces the chance of accidentally using the test targets 
 </ol>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>y_pred</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.PredictionsType" href="utils.types.html#polaris.utils.types.PredictionsType">PredictionsType</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The predictions for the test set, as NumPy arrays.
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>y_pred</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.PredictionsType" href="utils.types.html#polaris.utils.types.PredictionsType">PredictionsType</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The predictions for the test set, as NumPy arrays.
 If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
 If there are multiple test sets, the predictions should be further wrapped in a dictionary
     with the test subset labels as keys.</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>y_prob</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.PredictionsType" href="utils.types.html#polaris.utils.types.PredictionsType">PredictionsType</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The predicted probabilities for the test set, as NumPy arrays.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>y_prob</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.PredictionsType" href="utils.types.html#polaris.utils.types.PredictionsType">PredictionsType</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The predicted probabilities for the test set, as NumPy arrays.</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.evaluate.BenchmarkResults" href="evaluation.html#polaris.evaluate.BenchmarkResults">BenchmarkResults</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A <code>BenchmarkResults</code> object. This object can be directly submitted to the Polaris Hub.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.evaluate.BenchmarkResults" href="evaluation.html#polaris.evaluate.BenchmarkResults">BenchmarkResults</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A <code>BenchmarkResults</code> object. This object can be directly submitted to the Polaris Hub.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.benchmark.BenchmarkSpecification.upload_to_hub" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">upload_to_hub</span>
+            <span class="doc doc-object-name doc-function-name">upload_to_hub</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_to_hub</span><span class="p">(</span><span class="n">env_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PolarisHubSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AccessType</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Very light, convenient wrapper around the
 <a class="autorefs autorefs-internal" href="hub.client.html#polaris.hub.client.PolarisHubClient.upload_benchmark"><code>PolarisHubClient.upload_benchmark</code></a> method.</p>
 
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.benchmark.BenchmarkSpecification.to_json" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">to_json</span>
+            <span class="doc doc-object-name doc-function-name">to_json</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Save the benchmark to a destination directory as a JSON file.</p>
+
 
 <details class="warning" open>
   <summary>Multiple files</summary>
@@ -2086,60 +2075,58 @@ the dataset it is based on to the specified destination.
 See the docstring of <a class="autorefs autorefs-internal" href="dataset.html#polaris.dataset.Dataset.to_json"><code>Dataset.to_json</code></a> for more information.</p>
 </details>
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>destination</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The <em>directory</em> to save the associated data to.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>destination</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The <em>directory</em> to save the associated data to.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The path to the JSON file.</p>
-            </div>
-          </td>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the JSON file.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  </div>
+    </div>
 
 </div>
 
@@ -2147,8 +2134,7 @@ See the docstring of <a class="autorefs autorefs-internal" href="dataset.html#po
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 <h2 id="subclasses">Subclasses</h2>
@@ -2159,23 +2145,23 @@ See the docstring of <a class="autorefs autorefs-internal" href="dataset.html#po
 
 
 <h3 id="polaris.benchmark.SingleTaskBenchmarkSpecification" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.benchmark.SingleTaskBenchmarkSpecification</span>
+            <span class="doc doc-object-name doc-class-name">polaris.benchmark.SingleTaskBenchmarkSpecification</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><a class="autorefs autorefs-internal" title="polaris.benchmark._base.BenchmarkSpecification" href="#polaris.benchmark.BenchmarkSpecification">BenchmarkSpecification</a></code></p>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris.benchmark._base.BenchmarkSpecification" href="#polaris.benchmark.BenchmarkSpecification">BenchmarkSpecification</a></code></p>
 
-  
+
       <p>Subclass for any single-task benchmark specification</p>
 <p>In addition to the data-model and logic of the base-class,
 this class verifies that there is just a single target-column.</p>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -2190,21 +2176,21 @@ this class verifies that there is just a single target-column.</p>
 
 
 <h4 id="polaris.benchmark.SingleTaskBenchmarkSpecification.task_type" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">task_type</span>
+            <span class="doc doc-object-name doc-attribute-name">task_type</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">task_type</span><span class="p">:</span> <span class="n">TaskType</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">task_type</span><span class="p">:</span> <span class="nb">str</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>The high-level task type of the benchmark.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -2214,8 +2200,7 @@ this class verifies that there is just a single target-column.</p>
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 
@@ -2225,23 +2210,23 @@ this class verifies that there is just a single target-column.</p>
 
 
 <h3 id="polaris.benchmark.MultiTaskBenchmarkSpecification" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.benchmark.MultiTaskBenchmarkSpecification</span>
+            <span class="doc doc-object-name doc-class-name">polaris.benchmark.MultiTaskBenchmarkSpecification</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><a class="autorefs autorefs-internal" title="polaris.benchmark._base.BenchmarkSpecification" href="#polaris.benchmark.BenchmarkSpecification">BenchmarkSpecification</a></code></p>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris.benchmark._base.BenchmarkSpecification" href="#polaris.benchmark.BenchmarkSpecification">BenchmarkSpecification</a></code></p>
 
-  
+
       <p>Subclass for any multi-task benchmark specification</p>
 <p>In addition to the data-model and logic of the base-class,
 this class verifies that there are multiple target-columns.</p>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -2256,21 +2241,21 @@ this class verifies that there are multiple target-columns.</p>
 
 
 <h4 id="polaris.benchmark.MultiTaskBenchmarkSpecification.task_type" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">task_type</span>
+            <span class="doc doc-object-name doc-attribute-name">task_type</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">task_type</span><span class="p">:</span> <span class="n">TaskType</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">task_type</span><span class="p">:</span> <span class="nb">str</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>The high-level task type of the benchmark.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -2280,8 +2265,7 @@ this class verifies that there are multiple target-columns.</p>
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 
@@ -2499,7 +2483,7 @@ this class verifies that there are multiple target-columns.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      <script src="../assets/javascripts/bundle.081f42fc.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

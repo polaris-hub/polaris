@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.24">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1247,22 +1247,24 @@
 
 
 <h3 id="polaris.dataset.Subset" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.dataset.Subset</span>
+            <span class="doc doc-object-name doc-class-name">polaris.dataset.Subset</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents first">
+    <div class="doc doc-contents first">
 
-  
+
       <p>The <code>Subset</code> class provides easy access to a single partition of a split dataset.</p>
+
 
 <details class="info" open>
   <summary>No need to create this class manually</summary>
   <p>You should not have to create this class manually. In most use-cases, you can create a <code>Subset</code> through the
 <code>get_train_test_split</code> method of a <code>BenchmarkSpecification</code> object.</p>
 </details>
+
 <details class="tip" open>
   <summary>Featurize your inputs</summary>
   <p>Not all datasets are already featurized. For example, a small-molecule task might simply provide the SMILES string.
@@ -1280,7 +1282,6 @@ To easily build framework-specific data-loaders, a <code>Subset</code> supports 
 <li><strong>List</strong>: Index the subset like a list, this style is accessible through the <code>subset[idx]</code> syntax.</li>
 <li><strong>Iterator</strong>: Iterate over the subset, this style is accessible through the <code>iter(subset)</code> syntax.</li>
 </ol>
-
 
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -1303,31 +1304,30 @@ To easily build framework-specific data-loaders, a <code>Subset</code> supports 
 </span></code></pre></div>
 
 
-
-  <p><span class="doc-section-title">Raises:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code><span title="polaris.utils.errors.TestAccessError">TestAccessError</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>When trying to access the targets of the test set (specified by the <code>hide_targets</code> attribute).</p>
-            </div>
-          </td>
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="polaris.utils.errors.TestAccessError">TestAccessError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>When trying to access the targets of the test set (specified by the <code>hide_targets</code> attribute).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1343,8 +1343,7 @@ To easily build framework-specific data-loaders, a <code>Subset</code> supports 
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 
@@ -1562,7 +1561,7 @@ To easily build framework-specific data-loaders, a <code>Subset</code> supports 
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      <script src="../assets/javascripts/bundle.081f42fc.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
