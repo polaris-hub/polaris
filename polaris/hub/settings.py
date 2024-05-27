@@ -1,7 +1,7 @@
 from typing import Optional, Union
 from urllib.parse import urljoin
 
-from pydantic import FieldValidationInfo, field_validator
+from pydantic import ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from polaris.utils.types import HttpUrlString, TimeoutTypes
@@ -44,7 +44,7 @@ class PolarisHubSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="POLARIS_")
 
     @field_validator("api_url", mode="before")
-    def validate_api_url(cls, v, info: FieldValidationInfo):
+    def validate_api_url(cls, v, info: ValidationInfo):
         if v is None:
             v = urljoin(str(info.data["hub_url"]), "/api/v1")
         return v
