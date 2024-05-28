@@ -30,18 +30,18 @@ class PolarisHubSettings(BaseSettings):
 
     hub_url: HttpUrlString = "https://polarishub.io/"
     api_url: Optional[HttpUrlString] = None
-    authorize_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/authorize"
+    authorize_url: HttpUrlString = "https://clerk.polarishub.io/oauth/authorize"
     callback_url: HttpUrlString = "https://polarishub.io/oauth2/callback"
-    token_fetch_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/token"
-    user_info_url: HttpUrlString = "https://pure-whippet-77.clerk.accounts.dev/oauth/userinfo"
+    token_fetch_url: HttpUrlString = "https://clerk.polarishub.io/oauth/token"
+    user_info_url: HttpUrlString = "https://clerk.polarishub.io/oauth/userinfo"
     scopes: str = "profile email"
-    client_id: str = "QJg8zadGwjnr6nbN"
+    client_id: str = "agQP2xVM6JqMHvGc"
     ca_bundle: Optional[Union[str, bool]] = None
 
     default_timeout: TimeoutTypes = (10, 200)
 
     # Configuration of the pydantic model
-    model_config = SettingsConfigDict(env_prefix="POLARIS_")
+    model_config = SettingsConfigDict(env_file=".env", env_prefix="POLARIS_")
 
     @field_validator("api_url", mode="before")
     def validate_api_url(cls, v, info: ValidationInfo):
