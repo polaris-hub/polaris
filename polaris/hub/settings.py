@@ -41,7 +41,10 @@ class PolarisHubSettings(BaseSettings):
     default_timeout: TimeoutTypes = (10, 200)
 
     # Configuration of the pydantic model
-    model_config = SettingsConfigDict(env_prefix="POLARIS_")
+    model_config = SettingsConfigDict(
+        env_file='.env',
+        env_prefix="POLARIS_"
+    )
 
     @field_validator("api_url", mode="before")
     def validate_api_url(cls, v, info: ValidationInfo):
