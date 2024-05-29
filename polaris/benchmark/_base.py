@@ -1,5 +1,4 @@
 import json
-import os
 from hashlib import md5
 from typing import Any, Callable, Optional, Union
 
@@ -488,7 +487,6 @@ class BenchmarkSpecification(BaseArtifactModel):
 
     def upload_to_hub(
         self,
-        env_file: Optional[Union[str, os.PathLike]] = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         access: Optional[AccessType] = "private",
@@ -502,7 +500,6 @@ class BenchmarkSpecification(BaseArtifactModel):
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient(
-            env_file=env_file,
             settings=settings,
             cache_auth_token=cache_auth_token,
             **kwargs,
