@@ -874,6 +874,6 @@ class PolarisHubClient(OAuth2Client):
                 "competition": competition.artifact_id,
                 "predictions": y_pred
             })
-        return BenchmarkResults(results=response["scores"],
+        return BenchmarkResults(results=pd.read_json(response["scores"]),
                                 benchmark_name=competition.name,
                                 benchmark_owner=competition.owner)
