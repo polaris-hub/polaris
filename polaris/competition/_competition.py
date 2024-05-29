@@ -5,8 +5,6 @@ from typing import Optional, Union
 
 from pydantic import field_serializer
 from polaris.benchmark import BenchmarkSpecification
-from polaris.evaluate import BenchmarkResults
-from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.types import AccessType, HubOwner, PredictionsType, TimeoutTypes, ZarrConflictResolution
 
