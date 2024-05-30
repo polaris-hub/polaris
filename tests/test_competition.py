@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 
 from polaris.competition import CompetitionSpecification
@@ -11,17 +10,3 @@ def test_competition_from_json(test_competition, tmpdir):
     path = test_competition.to_json(str(tmpdir))
     new_competition = CompetitionSpecification.from_json(path)
     assert new_competition == test_competition
-
-def test_competition_evaluation(test_competition):
-    """Test whether we can successfully evaluate a competition."""
-    competition = test_competition
-    result = competition._hub_evaluate(predictions, test)
-    assert isinstance(result.results, pd.DataFrame)
-    assert set(result.results.columns) == {
-        "Test set",
-        "Target label",
-        "Metric",
-        "Score",
-    }
-    for metric in competition.metrics:
-        assert metric in result.results.Metric.tolist()

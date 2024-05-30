@@ -5,8 +5,6 @@ from typing import Optional, Union
 
 from pydantic import field_serializer
 from polaris.benchmark import BenchmarkSpecification
-from polaris.evaluate import BenchmarkResults
-from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.types import AccessType, HubOwner, PredictionsType, TimeoutTypes, ZarrConflictResolution
 
@@ -50,27 +48,6 @@ class CompetitionSpecification(BenchmarkSpecification):
             **kwargs,
         ) as client:
             client.evaluate_competition(self, y_pred=y_pred)
-
-    def _hub_evaluate(self, y_pred: PredictionsType, y_true: PredictionsType):
-        """Executes the evaluation logic for a competition, given a set of predictions.
-        Called only by Polaris Hub to evaluate competitions after labels are
-        downloaded from R2 on the hub. Evalutaion logic is the same as for regular benchmarks.
-
-        Args:
-            y_pred: The predictions for the test set, as NumPy arrays.
-                If there are multiple targets, the predictions should be wrapped in a
-                dictionary with the target labels as keys.
-
-            test: The test set. If there are multiple targets, the target columns should
-                be wrapped in a dictionary with the target labels as keys.
-
-        Returns:
-            A `BenchmarkResults` object containing the evaluation results.
-        """
-        scores = evaluate_benchmark(y_pred, y_true, self.target_cols, self.metrics)
-        return BenchmarkResults(results=scores,
-                                benchmark_name=self.name,
-                                benchmark_owner=self.owner)
 
     def upload_to_hub(
         self,
