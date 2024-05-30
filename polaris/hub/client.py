@@ -107,14 +107,14 @@ class PolarisHubClient(OAuth2Client):
 
         super().__init__(
             # OAuth2Client
-            client_id=settings.client_id,
-            redirect_uri=settings.callback_url,
-            scope=settings.scopes,
+            client_id=self.settings.client_id,
+            redirect_uri=self.settings.callback_url,
+            scope=self.settings.scopes,
             token=token,
             token_endpoint=self.settings.token_fetch_url,
             code_challenge_method="S256",
             # httpx.Client
-            base_url=settings.api_url,
+            base_url=self.settings.api_url,
             verify=verify,
             timeout=self.settings.default_timeout,
             # Extra
