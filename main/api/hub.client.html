@@ -1640,7 +1640,7 @@ Allows for custom SSL certificates to be used.</p>
 
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">PolarisHubClient</span><span class="p">(</span><span class="n">env_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PolarisHubSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">PolarisHubClient</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PolarisHubSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -1692,28 +1692,13 @@ we are sticking to the sync client - at least for now.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>env_file</code></td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[str, <span title="os.PathLike">PathLike</span>]]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Path to a <code>.env</code> file containing the settings, used to initialize
-a <code>PolarisHubSettings</code> instance. If not provided, the default settings are used.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
             <td><code>settings</code></td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.hub.settings.PolarisHubSettings" href="#polaris.hub.settings.PolarisHubSettings">PolarisHubSettings</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A <code>PolarisHubSettings</code> instance. If provided, takes precedence over <code>env_file</code>.</p>
+                <p>A <code>PolarisHubSettings</code> instance.</p>
               </div>
             </td>
             <td>
