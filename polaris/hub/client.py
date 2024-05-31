@@ -852,9 +852,7 @@ class PolarisHubClient(OAuth2Client):
         return benchmarks_list
 
     def evaluate_competition(
-        self,
-        competition: CompetitionSpecification,
-        y_pred: PredictionsType
+        self, competition: CompetitionSpecification, y_pred: PredictionsType
     ) -> BenchmarkResults:
         """Evaluate the predictions for a competition on the Polaris Hub. Target labels are fetched
         by Polaris Hub and used only internally.
@@ -868,12 +866,12 @@ class PolarisHubClient(OAuth2Client):
              A `BenchmarkResults` object.
         """
         response = self._base_request_to_hub(
-            url=f"/v2/competition/evaluate",
+            url="/v2/competition/evaluate",
             method="PUT",
-            json={
-                "competition": competition.artifact_id,
-                "predictions": y_pred
-            })
-        return BenchmarkResults(results=pd.read_json(response["scores"]),
-                                benchmark_name=competition.name,
-                                benchmark_owner=competition.owner)
+            json={"competition": competition.artifact_id, "predictions": y_pred},
+        )
+        return BenchmarkResults(
+            results=pd.read_json(response["scores"]),
+            benchmark_name=competition.name,
+            benchmark_owner=competition.owner,
+        )
