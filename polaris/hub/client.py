@@ -852,7 +852,10 @@ class PolarisHubClient(OAuth2Client):
         return benchmarks_list
 
     def evaluate_competition(
-        self, competition: CompetitionSpecification, y_pred: PredictionsType
+        self,
+        competition: CompetitionSpecification,
+        y_pred: PredictionsType,
+        access: AccessType = "private",
     ) -> BenchmarkResults:
         """Evaluate the predictions for a competition on the Polaris Hub. Target labels are fetched
         by Polaris Hub and used only internally.
@@ -866,12 +869,15 @@ class PolarisHubClient(OAuth2Client):
              A `BenchmarkResults` object.
         """
         response = self._base_request_to_hub(
-            url="/v2/competition/evaluate",
+            url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
             method="PUT",
-            json={"competition": competition.artifact_id, "predictions": y_pred},
+            json={"competition": competition.artifact_id, "predictions": y_pred, "access": access},
         )
-        return BenchmarkResults(
-            results=pd.read_json(response["scores"]),
-            benchmark_name=competition.name,
-            benchmark_owner=competition.owner,
+
+        # Inform the user about where to find their newly created artifact.
+        result_url = urljoin(
+            self.settings.hub_url,
+            f"/v2/competition/{competition.owner}/{competition.name}/{response['id']}",
         )
+        logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
+        return response
