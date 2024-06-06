@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.26">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -162,7 +162,7 @@
       
     </form>
     <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
             Initializing search
@@ -600,6 +600,27 @@
   
   <span class="md-ellipsis">
     Dataset Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/optimization.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Optimization
   </span>
   
 
@@ -1310,19 +1331,19 @@
 
 
 <h3 id="polaris.dataset.converters.Converter" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.dataset.converters.Converter</span>
+            <span class="doc doc-object-name doc-class-name">polaris.dataset.converters.Converter</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><span title="abc.ABC">ABC</span></code></p>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
 
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1334,15 +1355,13 @@
 
 
 
-
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.dataset.converters.Converter.convert" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">convert</span>
+            <span class="doc doc-object-name doc-function-name">convert</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
   </span>
@@ -1351,23 +1370,21 @@
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">convert</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FactoryProduct</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>This converts a file into a table and possibly annotations</p>
 
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.dataset.converters.Converter.get_pointer" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">get_pointer</span>
+            <span class="doc doc-object-name doc-function-name">get_pointer</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
   </span>
@@ -1376,55 +1393,54 @@
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_pointer</span><span class="p">(</span><span class="n">column</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Creates a pointer.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>column</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The name of the column. Each column has its own group in the root.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>index</code></td>
-          <td>
-                <code><span title="typing.Union">Union</span>[int, slice]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The index or slice of the pointer.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>column</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The name of the column. Each column has its own group in the root.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>index</code></td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[int, slice]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The index or slice of the pointer.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  </div>
+    </div>
 
 </div>
 
@@ -1432,8 +1448,7 @@
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 
@@ -1443,18 +1458,19 @@
 
 
 <h3 id="polaris.dataset.converters.SDFConverter" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.dataset.converters.SDFConverter</span>
+            <span class="doc doc-object-name doc-class-name">polaris.dataset.converters.SDFConverter</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><a class="autorefs autorefs-internal" title="polaris.dataset.converters._base.Converter" href="#polaris.dataset.converters.Converter">Converter</a></code></p>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris.dataset.converters._base.Converter" href="#polaris.dataset.converters.Converter">Converter</a></code></p>
 
-  
+
       <p>Converts a SDF file into a Polaris dataset.</p>
+
 
 <details class="info" open>
   <summary>Binary strings for serialization</summary>
@@ -1465,108 +1481,107 @@ See this <a href="https://github.com/rdkit/rdkit/discussions/7235">Github Discus
 or can be kept in the molecule object.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>mol_column</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The name of the column that will contain the pointers to the molecules.</p>
-            </div>
-          </td>
-          <td>
-                <code>&#39;molecule&#39;</code>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>smiles_column</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The name of the column that will contain the SMILES strings.</p>
-            </div>
-          </td>
-          <td>
-                <code>&#39;smiles&#39;</code>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>use_isomeric_smiles</code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Whether to use isomeric SMILES.</p>
-            </div>
-          </td>
-          <td>
-                <code>True</code>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>mol_id_column</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The name of the column that will contain the molecule names.</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>mol_prop_as_cols</code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Whether to extract properties defined on the molecule level in the SDF file into separate columns.</p>
-            </div>
-          </td>
-          <td>
-                <code>True</code>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>groupby_key</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The name of the column to group by. If set, the dataset can combine multiple pointers
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>mol_column</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The name of the column that will contain the pointers to the molecules.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;molecule&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>smiles_column</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The name of the column that will contain the SMILES strings.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;smiles&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>use_isomeric_smiles</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to use isomeric SMILES.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>mol_id_column</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The name of the column that will contain the molecule names.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>mol_prop_as_cols</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to extract properties defined on the molecule level in the SDF file into separate columns.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>groupby_key</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The name of the column to group by. If set, the dataset can combine multiple pointers
 to the molecules into a single datapoint.</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1582,8 +1597,7 @@ to the molecules into a single datapoint.</p>
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 
@@ -1593,24 +1607,26 @@ to the molecules into a single datapoint.</p>
 
 
 <h3 id="polaris.dataset.converters.ZarrConverter" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.dataset.converters.ZarrConverter</span>
+            <span class="doc doc-object-name doc-class-name">polaris.dataset.converters.ZarrConverter</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><a class="autorefs autorefs-internal" title="polaris.dataset.converters._base.Converter" href="#polaris.dataset.converters.Converter">Converter</a></code></p>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris.dataset.converters._base.Converter" href="#polaris.dataset.converters.Converter">Converter</a></code></p>
 
-  
+
       <p>Parse a <a href="https://zarr.readthedocs.io/en/stable/index.html">.zarr</a> archive into a Polaris <code>Dataset</code>.</p>
+
 
 <details class="tip" open>
   <summary>Tutorial</summary>
   <p>To learn more about the zarr format, see the
 <a href="../tutorials/dataset_zarr.html">tutorial</a>.</p>
 </details>
+
 <details class="warning" open>
   <summary>Loading from <code>.zarr</code></summary>
   <p>Loading and saving datasets from and to <code>.zarr</code> is still experimental and currently not
@@ -1620,7 +1636,7 @@ Within Polaris, the Zarr archive is expected to have a flat hierarchy where each
 to a single column and each array contains the values for all datapoints in that column.</p>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1636,8 +1652,7 @@ to a single column and each array contains the values for all datapoints in that
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 
@@ -1855,7 +1870,7 @@ to a single column and each array contains the values for all datapoints in that
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      <script src="../assets/javascripts/bundle.ad660dcc.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

@@ -2,102 +2,107 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/index.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/quickstart.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/adapters.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/base.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/benchmark.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/converters.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/dataset.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/evaluation.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/factory.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/hub.client.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/hub.polarisfs.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/load.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/subset.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/api/utils.types.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/community/community.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/tutorials/basics.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/tutorials/custom_dataset_benchmark.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/tutorials/data_curation.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/tutorials/dataset_factory.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://github.com/polaris-hub/polaris/stable/tutorials/dataset_zarr.html</loc>
-         <lastmod>2024-04-30</lastmod>
+         <lastmod>2024-06-06</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://github.com/polaris-hub/polaris/stable/tutorials/optimization.html</loc>
+         <lastmod>2024-06-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.26">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -162,7 +162,7 @@
       
     </form>
     <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
             Initializing search
@@ -609,6 +609,27 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/optimization.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Optimization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -803,6 +824,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.zarr_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.zarr_root" class="md-nav__link">
     <span class="md-ellipsis">
       zarr_root
@@ -842,6 +872,15 @@
   <a href="#polaris.dataset.Dataset.columns" class="md-nav__link">
     <span class="md-ellipsis">
       columns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.load_to_memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_to_memory
     </span>
   </a>
   
@@ -1326,6 +1365,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.zarr_data" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.zarr_root" class="md-nav__link">
     <span class="md-ellipsis">
       zarr_root
@@ -1365,6 +1413,15 @@
   <a href="#polaris.dataset.Dataset.columns" class="md-nav__link">
     <span class="md-ellipsis">
       columns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.load_to_memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_to_memory
     </span>
   </a>
   
@@ -1454,21 +1511,22 @@
 
 
 <h3 id="polaris.dataset.Dataset" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.dataset.Dataset</span>
+            <span class="doc doc-object-name doc-class-name">polaris.dataset.Dataset</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><a class="autorefs autorefs-internal" title="polaris._artifact.BaseArtifactModel" href="base.html#polaris._artifact.BaseArtifactModel">BaseArtifactModel</a></code></p>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris._artifact.BaseArtifactModel" href="base.html#polaris._artifact.BaseArtifactModel">BaseArtifactModel</a></code></p>
 
-  
+
       <p>Basic data-model for a Polaris dataset, implemented as a <a href="https://docs.pydantic.dev/latest/">Pydantic</a> model.</p>
 <p>At its core, a dataset in Polaris is a tabular data structure that stores data-points in a row-wise manner.
 A Dataset can have multiple modalities or targets, can be sparse and can be part of one or multiple
  <a class="autorefs autorefs-internal" href="benchmark.html#polaris.benchmark.BenchmarkSpecification"><code>BenchmarkSpecification</code></a> objects.</p>
+
 
 <details class="info" open>
   <summary>Pointer columns</summary>
@@ -1477,162 +1535,160 @@ For complex data, such as images, we support storing the content in external blo
 In that case, the table contains <em>pointers</em> to these blobs that are dynamically loaded when needed.</p>
 </details>
 
-
-  <p><span class="doc-section-title">Attributes:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.Dataset.table">table</span></code></td>
-          <td>
-                <code><span title="typing.Union">Union</span>[<span title="pandas.DataFrame">DataFrame</span>, str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The core data-structure, storing data-points in a row-wise manner. Can be specified as either a
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.Dataset.table">table</span></code></td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[<span title="pandas.DataFrame">DataFrame</span>, str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The core data-structure, storing data-points in a row-wise manner. Can be specified as either a
 path to a <code>.parquet</code> file or a <code>pandas.DataFrame</code>.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.Dataset.default_adapters">default_adapters</span></code></td>
-          <td>
-                <code><span title="typing.Dict">Dict</span>[str, <a class="autorefs autorefs-internal" title="polaris.dataset._adapters.Adapter" href="adapters.html#polaris.dataset._adapters.Adapter">Adapter</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The adapters that the Dataset recommends to use by default to change the format of the data
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.Dataset.default_adapters">default_adapters</span></code></td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[str, <a class="autorefs autorefs-internal" title="polaris.dataset._adapters.Adapter" href="adapters.html#polaris.dataset._adapters.Adapter">Adapter</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The adapters that the Dataset recommends to use by default to change the format of the data
 for specific columns.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.Dataset.zarr_root_path">zarr_root_path</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The data for any pointer column should be saved in the Zarr archive this path points to.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.Dataset.md5sum">md5sum</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The checksum is used to verify the version of the dataset specification. If specified, it will
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.Dataset.zarr_root_path">zarr_root_path</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The data for any pointer column should be saved in the Zarr archive this path points to.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.Dataset.md5sum">md5sum</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The checksum is used to verify the version of the dataset specification. If specified, it will
 raise an error if the specified checksum doesn't match the computed checksum.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.Dataset.readme">readme</span></code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Markdown text that can be used to provide a formatted description of the dataset.
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.Dataset.readme">readme</span></code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Markdown text that can be used to provide a formatted description of the dataset.
 If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
 as it provides a rich text editor for writing markdown.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.Dataset.annotations">annotations</span></code></td>
-          <td>
-                <code><span title="typing.Dict">Dict</span>[str, <a class="autorefs autorefs-internal" title="polaris.dataset._column.ColumnAnnotation" href="#polaris.dataset.ColumnAnnotation">ColumnAnnotation</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Each column <em>can be</em> annotated with a <a class="autorefs autorefs-internal" href="#polaris.dataset.ColumnAnnotation"><code>ColumnAnnotation</code></a> object.
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.Dataset.annotations">annotations</span></code></td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[str, <a class="autorefs autorefs-internal" title="polaris.dataset._column.ColumnAnnotation" href="#polaris.dataset.ColumnAnnotation">ColumnAnnotation</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Each column <em>can be</em> annotated with a <a class="autorefs autorefs-internal" href="#polaris.dataset.ColumnAnnotation"><code>ColumnAnnotation</code></a> object.
 Importantly, this is used to annotate whether a column is a pointer column.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.Dataset.source">source</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The data source, e.g. a DOI, Github repo or URI.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.Dataset.license">license</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.SupportedLicenseType" href="utils.types.html#polaris.utils.types.SupportedLicenseType">SupportedLicenseType</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The dataset license. Polaris only supports some Creative Commons licenses. See <a class="autorefs autorefs-internal" href="utils.types.html#polaris.utils.types.SupportedLicenseType"><code>SupportedLicenseType</code></a> for accepted ID values.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.Dataset.curation_reference">curation_reference</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A reference to the curation process, e.g. a DOI, Github repo or URI.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.Dataset.source">source</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The data source, e.g. a DOI, Github repo or URI.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.Dataset.license">license</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.SupportedLicenseType" href="utils.types.html#polaris.utils.types.SupportedLicenseType">SupportedLicenseType</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The dataset license. Polaris only supports some Creative Commons licenses. See <a class="autorefs autorefs-internal" href="utils.types.html#polaris.utils.types.SupportedLicenseType"><code>SupportedLicenseType</code></a> for accepted ID values.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.Dataset.curation_reference">curation_reference</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A reference to the curation process, e.g. a DOI, Github repo or URI.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
       <p>For additional meta-data attributes, see the <a class="autorefs autorefs-internal" href="base.html#polaris._artifact.BaseArtifactModel"><code>BaseArtifactModel</code></a> class.</p>
 
 
-
-  <p><span class="doc-section-title">Raises:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code><span title="polaris.utils.errors.InvalidDatasetError">InvalidDatasetError</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>If the dataset does not conform to the Pydantic data-model specification.</p>
-            </div>
-          </td>
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-        <tr class="doc-section-item">
-          <td>
-                <code><span title="polaris.utils.errors.PolarisChecksumError">PolarisChecksumError</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>If the specified checksum does not match the computed checksum.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="polaris.utils.errors.InvalidDatasetError">InvalidDatasetError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the dataset does not conform to the Pydantic data-model specification.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="polaris.utils.errors.PolarisChecksumError">PolarisChecksumError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the specified checksum does not match the computed checksum.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1647,9 +1703,9 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 <h4 id="polaris.dataset.Dataset.client" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">client</span>
+            <span class="doc doc-object-name doc-attribute-name">client</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1658,10 +1714,42 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">client</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>The Polaris Hub client used to interact with the Polaris Hub.</p>
-  </div>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="polaris.dataset.Dataset.zarr_data" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">zarr_data</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">zarr_data</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+      <p>Get the Zarr data.</p>
+<p>This is different from the Zarr Root, because to optimize the efficiency of
+data loading, a user can choose to load the data into memory as a numpy array</p>
+
+
+<details class="note" open>
+  <summary>General purpose dataloader.</summary>
+  <p>The goal with Polaris is to provide general purpose datasets that serve as good
+options for a <em>wide variety of use cases</em>. This also implies you should be able to
+optimize things further for a specific use case if needed.</p>
+</details>    </div>
 
 </div>
 
@@ -1670,9 +1758,9 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 <h4 id="polaris.dataset.Dataset.zarr_root" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">zarr_root</span>
+            <span class="doc doc-object-name doc-attribute-name">zarr_root</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1681,10 +1769,17 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">zarr_root</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
-      <p>Open the zarr archive in read-write mode if it is not already open.</p>
-  </div>
+    <div class="doc doc-contents ">
+
+      <p>Get the zarr Group object corresponding to the root.</p>
+<p>Opens the zarr archive in read-write mode if it is not already open.</p>
+
+
+<details class="note" open>
+  <summary>Different to <code>zarr_data</code></summary>
+  <p>The <code>zarr_data</code> attribute references either to the Zarr archive or to a in-memory copy of the data.
+See also <a class="autorefs autorefs-internal" href="#polaris.dataset.Dataset.load_to_memory"><code>Dataset.load_to_memory</code></a>.</p>
+</details>    </div>
 
 </div>
 
@@ -1693,9 +1788,9 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 <h4 id="polaris.dataset.Dataset.n_rows" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">n_rows</span>
+            <span class="doc doc-object-name doc-attribute-name">n_rows</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1704,10 +1799,10 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">n_rows</span><span class="p">:</span> <span class="nb">int</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>The number of rows in the dataset.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1716,9 +1811,9 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 <h4 id="polaris.dataset.Dataset.n_columns" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">n_columns</span>
+            <span class="doc doc-object-name doc-attribute-name">n_columns</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1727,10 +1822,10 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">n_columns</span><span class="p">:</span> <span class="nb">int</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>The number of columns in the dataset.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1739,9 +1834,9 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 <h4 id="polaris.dataset.Dataset.rows" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">rows</span>
+            <span class="doc doc-object-name doc-attribute-name">rows</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1750,10 +1845,10 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">rows</span><span class="p">:</span> <span class="nb">list</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Return all row indices for the dataset</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1762,9 +1857,9 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 <h4 id="polaris.dataset.Dataset.columns" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">columns</span>
+            <span class="doc doc-object-name doc-attribute-name">columns</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1773,153 +1868,170 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">columns</span><span class="p">:</span> <span class="nb">list</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Return all columns for the dataset</p>
-  </div>
+    </div>
 
 </div>
-
 
 
 
 <div class="doc doc-object doc-function">
 
 
-
-<h4 id="polaris.dataset.Dataset.get_data" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">get_data</span>
+<h4 id="polaris.dataset.Dataset.load_to_memory" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">load_to_memory</span>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_data</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Adapter</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">load_to_memory</span><span class="p">()</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
+      <p>Pre-load the entire dataset into memory.</p>
+
+
+<details class="warning" open>
+  <summary>Make sure the uncompressed dataset fits in-memory.</summary>
+  <p>This method will load the <strong>uncompressed</strong> dataset into memory. Make
+sure you actually have enough memory to store the dataset.</p>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.dataset.Dataset.get_data" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_data</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_data</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Adapter</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
       <p>Since the dataset might contain pointers to external files, data retrieval is more complicated
 than just indexing the <code>table</code> attribute. This method provides an end-point for seamlessly
 accessing the underlying data.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>row</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The row index in the <code>Dataset.table</code> attribute</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>col</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The column index in the <code>Dataset.table</code> attribute</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>adapters</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="polaris.dataset._adapters.Adapter" href="adapters.html#polaris.dataset._adapters.Adapter">Adapter</a>]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The adapters to apply to the data before returning it.
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>row</code></td>
+            <td>
+                  <code>str | int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The row index in the <code>Dataset.table</code> attribute</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>col</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The column index in the <code>Dataset.table</code> attribute</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>adapters</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="polaris.dataset._adapters.Adapter" href="adapters.html#polaris.dataset._adapters.Adapter">Adapter</a>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The adapters to apply to the data before returning it.
 If None, will use the default adapters specified for the dataset.</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
-
-
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code><span title="numpy.ndarray">ndarray</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A numpy array with the data at the specified indices. If the column is a pointer column,
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A numpy array with the data at the specified indices. If the column is a pointer column,
 the content of the referenced file is loaded to memory.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.dataset.Dataset.upload_to_hub" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">upload_to_hub</span>
+            <span class="doc doc-object-name doc-function-name">upload_to_hub</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_to_hub</span><span class="p">(</span><span class="n">access</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AccessType</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Very light, convenient wrapper around the
 <a class="autorefs autorefs-internal" href="hub.client.html#polaris.hub.client.PolarisHubClient.upload_dataset"><code>PolarisHubClient.upload_dataset</code></a> method.</p>
 
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.dataset.Dataset.from_json" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">from_json</span>
+            <span class="doc doc-object-name doc-function-name">from_json</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
   </span>
@@ -1928,62 +2040,60 @@ the content of the referenced file is loaded to memory.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">from_json</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Loads a benchmark from a JSON file.
 Overrides the method from the base class to remove the caching dir from the file to load from,
 as that should be user dependent.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>path</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Loads a benchmark specification from a JSON file.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>path</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Loads a benchmark specification from a JSON file.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.dataset.Dataset.to_json" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">to_json</span>
+            <span class="doc doc-object-name doc-function-name">to_json</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Save the dataset to a destination directory as a JSON file.</p>
+
 
 <details class="warning" open>
   <summary>Multiple files</summary>
@@ -1997,136 +2107,130 @@ as that should be user dependent.</p>
 </ol>
 </details>
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>destination</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The <em>directory</em> to save the associated data to.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>destination</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The <em>directory</em> to save the associated data to.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The path to the JSON file.</p>
-            </div>
-          </td>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the JSON file.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.dataset.Dataset.cache" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">cache</span>
+            <span class="doc doc-object-name doc-function-name">cache</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">cache</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Caches the dataset by downloading all additional data for pointer columns to a local directory.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>cache_dir</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The directory to cache the data to. If not provided,
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>cache_dir</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The directory to cache the data to. If not provided,
 this will fall back to the <code>Dataset.cache_dir</code> attribute</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the cache directory.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The path to the cache directory.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
+    </div>
 
 </div>
 
@@ -2134,8 +2238,7 @@ this will fall back to the <code>Dataset.cache_dir</code> attribute</p>
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 
@@ -2145,83 +2248,82 @@ this will fall back to the <code>Dataset.cache_dir</code> attribute</p>
 
 
 <h3 id="polaris.dataset.ColumnAnnotation" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.dataset.ColumnAnnotation</span>
+            <span class="doc doc-object-name doc-class-name">polaris.dataset.ColumnAnnotation</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
 
-  
+
       <p>The <code>ColumnAnnotation</code> class is used to annotate the columns of the <a class="autorefs autorefs-internal" href="#polaris.dataset.Dataset"><code>Dataset</code></a> object.
 This mostly just stores meta-data and does not affect the logic. The exception is the <code>is_pointer</code> attribute.</p>
 
 
-
-  <p><span class="doc-section-title">Attributes:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.ColumnAnnotation.is_pointer">is_pointer</span></code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Annotates whether a column is a pointer column. If so, it does not contain data,
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.ColumnAnnotation.is_pointer">is_pointer</span></code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Annotates whether a column is a pointer column. If so, it does not contain data,
 but rather contains references to blobs of data from which the data is loaded.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.ColumnAnnotation.modality">modality</span></code></td>
-          <td>
-                <code><span title="typing.Union">Union</span>[str, <span title="polaris.dataset._column.Modality">Modality</span>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The data modality describes the data type and is used to categorize datasets on the hub
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.ColumnAnnotation.modality">modality</span></code></td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[str, <span title="polaris.dataset._column.Modality">Modality</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The data modality describes the data type and is used to categorize datasets on the hub
 and while it does not affect logic in this library, it does affect the logic of the hub.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.ColumnAnnotation.description">description</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Describes how the data was generated.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.dataset.ColumnAnnotation.user_attributes">user_attributes</span></code></td>
-          <td>
-                <code><span title="typing.Dict">Dict</span>[str, str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Any additional meta-data can be stored in the user attributes.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.ColumnAnnotation.description">description</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Describes how the data was generated.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.ColumnAnnotation.user_attributes">user_attributes</span></code></td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[str, str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Any additional meta-data can be stored in the user attributes.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -2237,8 +2339,7 @@ and while it does not affect logic in this library, it does affect the logic of 
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 
@@ -2456,7 +2557,7 @@ and while it does not affect logic in this library, it does affect the logic of 
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      <script src="../assets/javascripts/bundle.ad660dcc.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

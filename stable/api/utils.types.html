@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.26">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -160,7 +160,7 @@
       
     </form>
     <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
             Initializing search
@@ -598,6 +598,27 @@
   
   <span class="md-ellipsis">
     Dataset Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/optimization.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Optimization
   </span>
   
 
@@ -1512,9 +1533,9 @@
 
 
 
-  <div class="doc doc-contents first">
+    <div class="doc doc-contents first">
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1529,9 +1550,9 @@
 
 
 <h3 id="polaris.utils.types.SplitIndicesType" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">SplitIndicesType</span>
+            <span class="doc doc-object-name doc-attribute-name">SplitIndicesType</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1540,10 +1561,10 @@
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">SplitIndicesType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>A split is defined by a sequence of integers.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1552,9 +1573,9 @@
 
 
 <h3 id="polaris.utils.types.SplitType" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">SplitType</span>
+            <span class="doc doc-object-name doc-attribute-name">SplitType</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1563,11 +1584,11 @@
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">SplitType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SplitIndicesType</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">SplitIndicesType</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SplitIndicesType</span><span class="p">]]]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>A split is a pair of which the first item is always assumed to be the train set.
 The second item can either be a single test set or a dictionary with multiple, named test sets.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1576,9 +1597,9 @@ The second item can either be a single test set or a dictionary with multiple, n
 
 
 <h3 id="polaris.utils.types.PredictionsType" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">PredictionsType</span>
+            <span class="doc doc-object-name doc-attribute-name">PredictionsType</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1587,15 +1608,15 @@ The second item can either be a single test set or a dictionary with multiple, n
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">PredictionsType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">]]]]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>A prediction is one of three things:</p>
 <ul>
 <li>A single array (single-task, single test set)</li>
 <li>A dictionary of arrays (single-task, multiple test sets) </li>
 <li>A dictionary of dictionaries of arrays (multi-task, multiple test sets)</li>
 </ul>
-  </div>
+    </div>
 
 </div>
 
@@ -1604,9 +1625,9 @@ The second item can either be a single test set or a dictionary with multiple, n
 
 
 <h3 id="polaris.utils.types.DatapointType" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">DatapointType</span>
+            <span class="doc doc-object-name doc-attribute-name">DatapointType</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1615,14 +1636,14 @@ The second item can either be a single test set or a dictionary with multiple, n
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">DatapointType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DatapointPartType</span><span class="p">,</span> <span class="n">DatapointPartType</span><span class="p">]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>A datapoint has:</p>
 <ul>
 <li>A single input or multiple inputs (either as dict or tuple)</li>
 <li>No target, a single target or a multiple targets (either as dict or tuple)</li>
 </ul>
-  </div>
+    </div>
 
 </div>
 
@@ -1631,9 +1652,9 @@ The second item can either be a single test set or a dictionary with multiple, n
 
 
 <h3 id="polaris.utils.types.SlugStringType" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">SlugStringType</span>
+            <span class="doc doc-object-name doc-attribute-name">SlugStringType</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1642,10 +1663,10 @@ The second item can either be a single test set or a dictionary with multiple, n
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">SlugStringType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">StringConstraints</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;^[a-z0-9-]+$&#39;</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>A URL-compatible string that can serve as slug on the hub.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1654,9 +1675,9 @@ The second item can either be a single test set or a dictionary with multiple, n
 
 
 <h3 id="polaris.utils.types.SlugCompatibleStringType" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">SlugCompatibleStringType</span>
+            <span class="doc doc-object-name doc-attribute-name">SlugCompatibleStringType</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1665,12 +1686,12 @@ The second item can either be a single test set or a dictionary with multiple, n
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">SlugCompatibleStringType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">StringConstraints</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;^[A-Za-z0-9_-]+$&#39;</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>A URL-compatible string that can be turned into a slug by the hub.</p>
 <p>Can only use alpha-numeric characters, underscores and dashes. 
 The string must be at least 4 and at most 64 characters long.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1679,9 +1700,9 @@ The string must be at least 4 and at most 64 characters long.</p>
 
 
 <h3 id="polaris.utils.types.HubUser" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">HubUser</span>
+            <span class="doc doc-object-name doc-attribute-name">HubUser</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1690,11 +1711,11 @@ The string must be at least 4 and at most 64 characters long.</p>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">HubUser</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">SlugCompatibleStringType</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>A user on the Polaris Hub is identified by a username, 
 which is a <a class="autorefs autorefs-internal" href="#polaris.utils.types.SlugCompatibleStringType"><code>SlugCompatibleStringType</code></a>.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1703,22 +1724,22 @@ which is a <a class="autorefs autorefs-internal" href="#polaris.utils.types.Slug
 
 
 <h3 id="polaris.utils.types.HttpUrlString" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">HttpUrlString</span>
+            <span class="doc doc-object-name doc-attribute-name">HttpUrlString</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">HttpUrlString</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">HttpUrl</span><span class="p">,</span> <span class="n">AfterValidator</span><span class="p">(</span><span class="nb">str</span><span class="p">)]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">HttpUrlString</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BeforeValidator</span><span class="p">(</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">validate_python</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span><span class="p">)]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>A validated URL that will be turned into a string.
 This is useful for interactions with httpx and authlib, who have their own URL types.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1727,9 +1748,9 @@ This is useful for interactions with httpx and authlib, who have their own URL t
 
 
 <h3 id="polaris.utils.types.DirectionType" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">DirectionType</span>
+            <span class="doc doc-object-name doc-attribute-name">DirectionType</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1738,11 +1759,11 @@ This is useful for interactions with httpx and authlib, who have their own URL t
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">DirectionType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>The direction of any variable to be sorted.
 This can be used to sort the metric score, indicate the optmization direction of endpoint.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1751,9 +1772,9 @@ This can be used to sort the metric score, indicate the optmization direction of
 
 
 <h3 id="polaris.utils.types.AccessType" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">AccessType</span>
+            <span class="doc doc-object-name doc-attribute-name">AccessType</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1762,10 +1783,10 @@ This can be used to sort the metric score, indicate the optmization direction of
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">AccessType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;public&#39;</span><span class="p">,</span> <span class="s1">&#39;private&#39;</span><span class="p">]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Type to specify access to a dataset, benchmark or result in the Hub.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1774,9 +1795,9 @@ This can be used to sort the metric score, indicate the optmization direction of
 
 
 <h3 id="polaris.utils.types.TimeoutTypes" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">TimeoutTypes</span>
+            <span class="doc doc-object-name doc-attribute-name">TimeoutTypes</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1785,10 +1806,10 @@ This can be used to sort the metric score, indicate the optmization direction of
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">TimeoutTypes</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;timeout&#39;</span><span class="p">,</span> <span class="s1">&#39;never&#39;</span><span class="p">]]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Timeout types for specifying maximum wait times.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1797,9 +1818,9 @@ This can be used to sort the metric score, indicate the optmization direction of
 
 
 <h3 id="polaris.utils.types.IOMode" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">IOMode</span>
+            <span class="doc doc-object-name doc-attribute-name">IOMode</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1808,10 +1829,10 @@ This can be used to sort the metric score, indicate the optmization direction of
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">IOMode</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;r+&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;w-&#39;</span><span class="p">]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Type to specify the mode for input/output operations (I/O) when interacting with a file or resource.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1820,9 +1841,9 @@ This can be used to sort the metric score, indicate the optmization direction of
 
 
 <h3 id="polaris.utils.types.SupportedLicenseType" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">SupportedLicenseType</span>
+            <span class="doc doc-object-name doc-attribute-name">SupportedLicenseType</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1831,10 +1852,10 @@ This can be used to sort the metric score, indicate the optmization direction of
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">SupportedLicenseType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;CC-BY-4.0&#39;</span><span class="p">,</span> <span class="s1">&#39;CC-BY-SA-4.0&#39;</span><span class="p">,</span> <span class="s1">&#39;CC-BY-NC-4.0&#39;</span><span class="p">,</span> <span class="s1">&#39;CC-BY-NC-SA-4.0&#39;</span><span class="p">,</span> <span class="s1">&#39;CC0-1.0&#39;</span><span class="p">,</span> <span class="s1">&#39;MIT&#39;</span><span class="p">]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Supported license types for dataset uploads to Polaris Hub</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1843,9 +1864,9 @@ This can be used to sort the metric score, indicate the optmization direction of
 
 
 <h3 id="polaris.utils.types.ZarrConflictResolution" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">ZarrConflictResolution</span>
+            <span class="doc doc-object-name doc-attribute-name">ZarrConflictResolution</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
   </span>
@@ -1854,10 +1875,10 @@ This can be used to sort the metric score, indicate the optmization direction of
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ZarrConflictResolution</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;raise&#39;</span><span class="p">,</span> <span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="s1">&#39;skip&#39;</span><span class="p">]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Type to specify which action to take when encountering existing files within a Zarr archive.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1867,23 +1888,23 @@ This can be used to sort the metric score, indicate the optmization direction of
 
 
 <h3 id="polaris.utils.types.HubOwner" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">HubOwner</span>
+            <span class="doc doc-object-name doc-class-name">HubOwner</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents ">
-          <p class="doc doc-class-bases">
-            Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
 
-  
+
       <p>An owner of an artifact on the Polaris Hub</p>
 <p>The slug is most important as it is the user-facing part of this data model.
 The externalId and type are added to be consistent with the model returned by the Polaris Hub .</p>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1899,8 +1920,7 @@ The externalId and type are added to be consistent with the model returned by th
 
   </div>
 
-  </div>
-
+    </div>
 
 </div>
 
@@ -1909,21 +1929,21 @@ The externalId and type are added to be consistent with the model returned by th
 
 
 <h3 id="polaris.utils.types.TargetType" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">TargetType</span>
+            <span class="doc doc-object-name doc-class-name">TargetType</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents ">
-          <p class="doc doc-class-bases">
-            Bases: <code><span title="enum.Enum">Enum</span></code></p>
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="enum.Enum">Enum</span></code></p>
 
-  
+
       <p>The high-level classification of different targets.</p>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1939,8 +1959,7 @@ The externalId and type are added to be consistent with the model returned by th
 
   </div>
 
-  </div>
-
+    </div>
 
 </div>
 
@@ -1949,21 +1968,21 @@ The externalId and type are added to be consistent with the model returned by th
 
 
 <h3 id="polaris.utils.types.TaskType" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">TaskType</span>
+            <span class="doc doc-object-name doc-class-name">TaskType</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents ">
-          <p class="doc doc-class-bases">
-            Bases: <code><span title="enum.Enum">Enum</span></code></p>
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="enum.Enum">Enum</span></code></p>
 
-  
+
       <p>The high-level classification of different tasks.</p>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1979,8 +1998,7 @@ The externalId and type are added to be consistent with the model returned by th
 
   </div>
 
-  </div>
-
+    </div>
 
 </div>
 
@@ -1989,7 +2007,7 @@ The externalId and type are added to be consistent with the model returned by th
 
   </div>
 
-  </div>
+    </div>
 
 </div><hr />
 
@@ -2191,7 +2209,7 @@ The externalId and type are added to be consistent with the model returned by th
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      <script src="../assets/javascripts/bundle.ad660dcc.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

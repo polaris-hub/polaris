@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.26">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -162,7 +162,7 @@
       
     </form>
     <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
             Initializing search
@@ -600,6 +600,27 @@
   
   <span class="md-ellipsis">
     Dataset Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/optimization.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Optimization
   </span>
   
 
@@ -1454,18 +1475,19 @@
 
 
 <h3 id="polaris.hub.settings.PolarisHubSettings" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.hub.settings.PolarisHubSettings</span>
+            <span class="doc doc-object-name doc-class-name">polaris.hub.settings.PolarisHubSettings</span>
 
 
 </h3>
 
 
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><span title="pydantic_settings.BaseSettings">BaseSettings</span></code></p>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic_settings.BaseSettings">BaseSettings</span></code></p>
 
-  
+
       <p>Settings for the OAuth2 Polaris Hub API Client.</p>
+
 
 <details class="info" open>
   <summary>Secrecy of these settings</summary>
@@ -1474,122 +1496,121 @@ these values thus do not have to be kept secret.
 See <a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a> for more info.</p>
 </details>
 
-
-  <p><span class="doc-section-title">Attributes:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.hub.settings.PolarisHubSettings.hub_url">hub_url</span></code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The URL to the main page of the Polaris Hub.</p>
-            </div>
-          </td>
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.hub.settings.PolarisHubSettings.api_url">api_url</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The URL to the main entrypoint of the Polaris API.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.hub.settings.PolarisHubSettings.authorize_url">authorize_url</span></code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The URL of the OAuth2 authorization endpoint.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.hub.settings.PolarisHubSettings.callback_url">callback_url</span></code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The URL to which the user is redirected after authorization.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.hub.settings.PolarisHubSettings.token_fetch_url">token_fetch_url</span></code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The URL of the OAuth2 token endpoint.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.hub.settings.PolarisHubSettings.user_info_url">user_info_url</span></code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The URL of the OAuth2 user info endpoint.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.hub.settings.PolarisHubSettings.scopes">scopes</span></code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The OAuth2 scopes that are requested.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.hub.settings.PolarisHubSettings.client_id">client_id</span></code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The OAuth2 client ID.</p>
-            </div>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code><span title="polaris.hub.settings.PolarisHubSettings.ca_bundle">ca_bundle</span></code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[str, bool]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The path to a CA bundle file for requests.
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.hub_url">hub_url</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The URL to the main page of the Polaris Hub.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.api_url">api_url</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The URL to the main entrypoint of the Polaris API.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.authorize_url">authorize_url</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The URL of the OAuth2 authorization endpoint.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.callback_url">callback_url</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The URL to which the user is redirected after authorization.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.token_fetch_url">token_fetch_url</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The URL of the OAuth2 token endpoint.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.user_info_url">user_info_url</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The URL of the OAuth2 user info endpoint.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.scopes">scopes</span></code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The OAuth2 scopes that are requested.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.client_id">client_id</span></code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The OAuth2 client ID.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.ca_bundle">ca_bundle</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[str, bool]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to a CA bundle file for requests.
 Allows for custom SSL certificates to be used.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1605,8 +1626,7 @@ Allows for custom SSL certificates to be used.</p>
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 
@@ -1616,23 +1636,24 @@ Allows for custom SSL certificates to be used.</p>
 
 
 <h3 id="polaris.hub.client.PolarisHubClient" class="doc doc-heading">
-          <span class="doc doc-object-name doc-class-name">polaris.hub.client.PolarisHubClient</span>
+            <span class="doc doc-object-name doc-class-name">polaris.hub.client.PolarisHubClient</span>
 
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">PolarisHubClient</span><span class="p">(</span><span class="n">env_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PolarisHubSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">PolarisHubClient</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PolarisHubSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents first">
-          <p class="doc doc-class-bases">
-            Bases: <code><span title="authlib.integrations.httpx_client.OAuth2Client">OAuth2Client</span></code></p>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="authlib.integrations.httpx_client.OAuth2Client">OAuth2Client</span></code></p>
 
-  
+
       <p>A client for the Polaris Hub API. The Polaris Hub is a central repository of datasets, benchmarks and results.
 Visit it here: <a href="https://polarishub.io/">https://polarishub.io/</a>.</p>
 <p>Bases the <a href="https://docs.authlib.org/en/latest/client/api.html#authlib.integrations.httpx_client.OAuth2Client"><code>authlib</code> client</a>,
 which in turns bases the <a href="https://www.python-httpx.org/advanced/#client-instances"><code>httpx</code> client</a>.
 See the relevant docs to learn more about how to use these clients outside of the integration with the Polaris Hub.</p>
+
 
 <details class="note" open>
   <summary>Closing the client</summary>
@@ -1649,89 +1670,74 @@ the client has been closed, it cannot be used anymore.</p>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </span></code></pre></div>
 </details>
+
 <details class="info" open>
   <summary>Async Client</summary>
   <p><code>authlib</code> also supports an <a href="https://docs.authlib.org/en/latest/client/httpx.html#async-oauth-2-0">async client</a>.
 Since we don't expect to make multiple requests to the Hub in parallel
 and due to the added complexity stemming from using the Python asyncio API,
 we are sticking to the sync client - at least for now.</p>
-</details>  
+</details>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>env_file</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[str, <span title="os.PathLike">PathLike</span>]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Path to a <code>.env</code> file containing the settings, used to initialize
-a <code>PolarisHubSettings</code> instance. If not provided, the default settings are used.</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>settings</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.hub.settings.PolarisHubSettings" href="#polaris.hub.settings.PolarisHubSettings">PolarisHubSettings</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A <code>PolarisHubSettings</code> instance. If provided, takes precedence over <code>env_file</code>.</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>cache_auth_token</code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Whether to cache the auth token to a file.</p>
-            </div>
-          </td>
-          <td>
-                <code>True</code>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>**kwargs</code></td>
-          <td>
-                <code>dict</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Additional keyword arguments passed to the authlib <code>OAuth2Client</code> constructor.</p>
-            </div>
-          </td>
-          <td>
-                <code>{}</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>settings</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.hub.settings.PolarisHubSettings" href="#polaris.hub.settings.PolarisHubSettings">PolarisHubSettings</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A <code>PolarisHubSettings</code> instance.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>cache_auth_token</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to cache the auth token to a file.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>**kwargs</code></td>
+            <td>
+                  <code>dict</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional keyword arguments passed to the authlib <code>OAuth2Client</code> constructor.</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-  
+
 
   <div class="doc doc-children">
 
@@ -1746,9 +1752,9 @@ a <code>PolarisHubSettings</code> instance. If not provided, the default setting
 
 
 <h4 id="polaris.hub.client.PolarisHubClient.user_info" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">user_info</span>
+            <span class="doc doc-object-name doc-attribute-name">user_info</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1757,10 +1763,10 @@ a <code>PolarisHubSettings</code> instance. If not provided, the default setting
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">user_info</span><span class="p">:</span> <span class="nb">dict</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Get information about the currently logged in user through the OAuth2 User Info flow.</p>
-  </div>
+    </div>
 
 </div>
 
@@ -1769,9 +1775,9 @@ a <code>PolarisHubSettings</code> instance. If not provided, the default setting
 
 
 <h4 id="polaris.hub.client.PolarisHubClient.user_as_owner" class="doc doc-heading">
-          <span class="doc doc-object-name doc-attribute-name">user_as_owner</span>
+            <span class="doc doc-object-name doc-attribute-name">user_as_owner</span>
 
-  
+
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
@@ -1780,31 +1786,30 @@ a <code>PolarisHubSettings</code> instance. If not provided, the default setting
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">user_as_owner</span><span class="p">:</span> <span class="n">HubOwner</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Easily get the currently logged-in user a <code>HubOwner</code> instance.</p>
-  </div>
+    </div>
 
 </div>
-
 
 
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.hub.client.PolarisHubClient.login" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">login</span>
+            <span class="doc doc-object-name doc-function-name">login</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">login</span><span class="p">(</span><span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">auto_open_browser</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Login to the Polaris Hub using the OAuth2 protocol.</p>
+
 
 <details class="warning" open>
   <summary>Headless authentication</summary>
@@ -1812,584 +1817,562 @@ a <code>PolarisHubSettings</code> instance. If not provided, the default setting
 See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue</a> for more info.</p>
 </details>
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>overwrite</code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Whether to overwrite the current token if the user is already logged in.</p>
-            </div>
-          </td>
-          <td>
-                <code>False</code>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>auto_open_browser</code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Whether to automatically open the browser to visit the authorization URL.</p>
-            </div>
-          </td>
-          <td>
-                <code>True</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>overwrite</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to overwrite the current token if the user is already logged in.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>auto_open_browser</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to automatically open the browser to visit the authorization URL.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.hub.client.PolarisHubClient.list_datasets" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">list_datasets</span>
+            <span class="doc doc-object-name doc-function-name">list_datasets</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">list_datasets</span><span class="p">(</span><span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>List all available datasets on the Polaris Hub.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>limit</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The maximum number of datasets to return.</p>
-            </div>
-          </td>
-          <td>
-                <code>100</code>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>offset</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The offset from which to start returning datasets.</p>
-            </div>
-          </td>
-          <td>
-                <code>0</code>
-          </td>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>limit</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The maximum number of datasets to return.</p>
+              </div>
+            </td>
+            <td>
+                  <code>100</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>offset</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The offset from which to start returning datasets.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>list[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A list of dataset names in the format <code>owner/dataset_name</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code>list[str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A list of dataset names in the format <code>owner/dataset_name</code>.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.hub.client.PolarisHubClient.get_dataset" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">get_dataset</span>
+            <span class="doc doc-object-name doc-function-name">get_dataset</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_dataset</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HubOwner</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Load a dataset from the Polaris Hub.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>owner</code></td>
-          <td>
-                <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The owner of the dataset. Can be either a user or organization from the Polaris Hub.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>name</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The name of the dataset.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>owner</code></td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The owner of the dataset. Can be either a user or organization from the Polaris Hub.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>name</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The name of the dataset.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>verify_checksum</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to use the checksum to verify the integrity of the dataset.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>verify_checksum</code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Whether to use the checksum to verify the integrity of the dataset.</p>
-            </div>
-          </td>
-          <td>
-                <code>True</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.dataset.Dataset" href="dataset.html#polaris.dataset.Dataset">Dataset</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A <code>Dataset</code> instance, if it exists.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.dataset.Dataset" href="dataset.html#polaris.dataset.Dataset">Dataset</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A <code>Dataset</code> instance, if it exists.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.hub.client.PolarisHubClient.open_zarr_file" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">open_zarr_file</span>
+            <span class="doc doc-object-name doc-function-name">open_zarr_file</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">open_zarr_file</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HubOwner</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">IOMode</span><span class="p">,</span> <span class="n">as_consolidated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">zarr</span><span class="o">.</span><span class="n">hierarchy</span><span class="o">.</span><span class="n">Group</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Open a Zarr file from a Polaris dataset</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>owner</code></td>
-          <td>
-                <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Which Hub user or organization owns the artifact.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>name</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Name of the dataset.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>path</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Path to the Zarr file within the dataset.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>mode</code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.IOMode" href="utils.types.html#polaris.utils.types.IOMode">IOMode</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The mode in which the file is opened.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>as_consolidated</code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Whether to open the store with consolidated metadata for optimized reading. This is only applicable in 'r' and 'r+' modes.</p>
-            </div>
-          </td>
-          <td>
-                <code>True</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>owner</code></td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Which Hub user or organization owns the artifact.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>name</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the dataset.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>path</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the Zarr file within the dataset.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>mode</code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.IOMode" href="utils.types.html#polaris.utils.types.IOMode">IOMode</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The mode in which the file is opened.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>as_consolidated</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to open the store with consolidated metadata for optimized reading. This is only applicable in 'r' and 'r+' modes.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code><span title="zarr.hierarchy.Group">Group</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The Zarr object representing the dataset.</p>
-            </div>
-          </td>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="zarr.hierarchy.Group">Group</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The Zarr object representing the dataset.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.hub.client.PolarisHubClient.list_benchmarks" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">list_benchmarks</span>
+            <span class="doc doc-object-name doc-function-name">list_benchmarks</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">list_benchmarks</span><span class="p">(</span><span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>List all available benchmarks on the Polaris Hub.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>limit</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The maximum number of benchmarks to return.</p>
-            </div>
-          </td>
-          <td>
-                <code>100</code>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>offset</code></td>
-          <td>
-                <code>int</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The offset from which to start returning benchmarks.</p>
-            </div>
-          </td>
-          <td>
-                <code>0</code>
-          </td>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>limit</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The maximum number of benchmarks to return.</p>
+              </div>
+            </td>
+            <td>
+                  <code>100</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>offset</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The offset from which to start returning benchmarks.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>list[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A list of benchmark names in the format <code>owner/benchmark_name</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code>list[str]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A list of benchmark names in the format <code>owner/benchmark_name</code>.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.hub.client.PolarisHubClient.get_benchmark" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">get_benchmark</span>
+            <span class="doc doc-object-name doc-function-name">get_benchmark</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_benchmark</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HubOwner</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BenchmarkSpecification</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Load a benchmark from the Polaris Hub.</p>
 
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>owner</code></td>
-          <td>
-                <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The owner of the benchmark. Can be either a user or organization from the Polaris Hub.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>name</code></td>
-          <td>
-                <code>str</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The name of the benchmark.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>owner</code></td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The owner of the benchmark. Can be either a user or organization from the Polaris Hub.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>name</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The name of the benchmark.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>verify_checksum</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to use the checksum to verify the integrity of the dataset.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>verify_checksum</code></td>
-          <td>
-                <code>bool</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Whether to use the checksum to verify the integrity of the dataset.</p>
-            </div>
-          </td>
-          <td>
-                <code>True</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.benchmark.BenchmarkSpecification" href="benchmark.html#polaris.benchmark.BenchmarkSpecification">BenchmarkSpecification</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A <code>BenchmarkSpecification</code> instance, if it exists.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.benchmark.BenchmarkSpecification" href="benchmark.html#polaris.benchmark.BenchmarkSpecification">BenchmarkSpecification</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A <code>BenchmarkSpecification</code> instance, if it exists.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.hub.client.PolarisHubClient.upload_results" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">upload_results</span>
+            <span class="doc doc-object-name doc-function-name">upload_results</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_results</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="n">BenchmarkResults</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Upload the results to the Polaris Hub.</p>
+
 
 <details class="info" open>
   <summary>Owner</summary>
@@ -2397,6 +2380,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
 Contrary to other artifact types, an organization cannot own a set of results.
 However, you can specify the <code>BenchmarkResults.contributors</code> field to share credit with other hub users.</p>
 </details>
+
 <details class="note" open>
   <summary>Required meta-data</summary>
   <p>The Polaris client and hub maintain different requirements as to which meta-data is required.
@@ -2404,6 +2388,7 @@ The requirements by the hub are stricter, so when uploading to the hub you might
 get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
 before uploading.</p>
 </details>
+
 <details class="note" open>
   <summary>Benchmark name and owner</summary>
   <p>Importantly, <code>results.benchmark_name</code> and <code>results.benchmark_owner</code> must be specified
@@ -2411,89 +2396,88 @@ and match an existing benchmark on the Polaris Hub. If these results were genera
 <code>benchmark.evaluate(...)</code>, this is done automatically.</p>
 </details>
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>results</code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.evaluate.BenchmarkResults" href="evaluation.html#polaris.evaluate.BenchmarkResults">BenchmarkResults</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The results to upload.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>access</code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Grant public or private access to result</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;private&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>owner</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>, str]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Which Hub user or organization owns the artifact. Takes precedence over <code>results.owner</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>results</code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.evaluate.BenchmarkResults" href="evaluation.html#polaris.evaluate.BenchmarkResults">BenchmarkResults</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The results to upload.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>access</code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Grant public or private access to result</p>
-            </div>
-          </td>
-          <td>
-                <code>&#39;private&#39;</code>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>owner</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>, str]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Which Hub user or organization owns the artifact. Takes precedence over <code>results.owner</code>.</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.hub.client.PolarisHubClient.upload_dataset" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">upload_dataset</span>
+            <span class="doc doc-object-name doc-function-name">upload_dataset</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeoutTypes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">)</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Upload the dataset to the Polaris Hub.</p>
+
 
 <details class="info" open>
   <summary>Owner</summary>
   <p>You have to manually specify the owner in the dataset data model. Because the owner could
 be a user or an organization, we cannot automatically infer this from just the logged-in user.</p>
 </details>
+
 <details class="note" open>
   <summary>Required meta-data</summary>
   <p>The Polaris client and hub maintain different requirements as to which meta-data is required.
@@ -2502,122 +2486,121 @@ get some errors on missing meta-data. Make sure to fill-in as much of the meta-d
 before uploading.</p>
 </details>
 
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>dataset</code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.dataset.Dataset" href="dataset.html#polaris.dataset.Dataset">Dataset</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The dataset to upload.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-        <tr class="doc-section-item">
-          <td><code>access</code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Grant public or private access to result</p>
-            </div>
-          </td>
-          <td>
-                <code>&#39;private&#39;</code>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>timeout</code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.TimeoutTypes" href="utils.types.html#polaris.utils.types.TimeoutTypes">TimeoutTypes</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Request timeout values. User can modify the value when uploading large dataset as needed.
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>dataset</code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.dataset.Dataset" href="dataset.html#polaris.dataset.Dataset">Dataset</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The dataset to upload.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>access</code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Grant public or private access to result</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;private&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>timeout</code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.TimeoutTypes" href="utils.types.html#polaris.utils.types.TimeoutTypes">TimeoutTypes</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Request timeout values. User can modify the value when uploading large dataset as needed.
 This can be a single value with the timeout in seconds for all IO operations, or a more granular
 tuple with (connect_timeout, write_timeout). The type of the the timout parameter comes from <code>httpx</code>.
 Since datasets can get large, it might be needed to increase the write timeout for larger datasets.
 See also: https://www.python-httpx.org/advanced/#timeout-configuration</p>
-            </div>
-          </td>
-          <td>
-                <code>(10, 200)</code>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>owner</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>, str]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Which Hub user or organization owns the artifact. Takes precedence over <code>dataset.owner</code>.</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>if_exists</code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.ZarrConflictResolution" href="utils.types.html#polaris.utils.types.ZarrConflictResolution">ZarrConflictResolution</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Action for handling existing files in the Zarr archive. Options are 'raise' to throw
+              </div>
+            </td>
+            <td>
+                  <code>(10, 200)</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>owner</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>, str]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Which Hub user or organization owns the artifact. Takes precedence over <code>dataset.owner</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>if_exists</code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.ZarrConflictResolution" href="utils.types.html#polaris.utils.types.ZarrConflictResolution">ZarrConflictResolution</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Action for handling existing files in the Zarr archive. Options are 'raise' to throw
 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.</p>
-            </div>
-          </td>
-          <td>
-                <code>&#39;replace&#39;</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;replace&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  </div>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h4 id="polaris.hub.client.PolarisHubClient.upload_benchmark" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">upload_benchmark</span>
+            <span class="doc doc-object-name doc-function-name">upload_benchmark</span>
 
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_benchmark</span><span class="p">(</span><span class="n">benchmark</span><span class="p">:</span> <span class="n">BenchmarkSpecification</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Upload the benchmark to the Polaris Hub.</p>
+
 
 <details class="info" open>
   <summary>Owner</summary>
   <p>You have to manually specify the owner in the benchmark data model. Because the owner could
 be a user or an organization, we cannot automatically infer this from the logged-in user.</p>
 </details>
+
 <details class="note" open>
   <summary>Required meta-data</summary>
   <p>The Polaris client and hub maintain different requirements as to which meta-data is required.
@@ -2625,70 +2608,70 @@ The requirements by the hub are stricter, so when uploading to the hub you might
 get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
 before uploading.</p>
 </details>
+
 <details class="note" open>
   <summary>Non-existent datasets</summary>
   <p>The client will <em>not</em> upload the associated dataset to the hub if it does not yet exist.
 Make sure to specify an existing dataset or upload the dataset first.</p>
 </details>
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>benchmark</code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.benchmark.BenchmarkSpecification" href="benchmark.html#polaris.benchmark.BenchmarkSpecification">BenchmarkSpecification</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The benchmark to upload.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>access</code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Grant public or private access to result</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;private&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>owner</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>, str]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Which Hub user or organization owns the artifact. Takes precedence over <code>benchmark.owner</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>benchmark</code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.benchmark.BenchmarkSpecification" href="benchmark.html#polaris.benchmark.BenchmarkSpecification">BenchmarkSpecification</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The benchmark to upload.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>access</code></td>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Grant public or private access to result</p>
-            </div>
-          </td>
-          <td>
-                <code>&#39;private&#39;</code>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>owner</code></td>
-          <td>
-                <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>, str]]</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Which Hub user or organization owns the artifact. Takes precedence over <code>benchmark.owner</code>.</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
+    </div>
 
 </div>
 
@@ -2696,8 +2679,7 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
 
   </div>
 
-  </div>
-
+    </div>
 
 </div><hr />
 
@@ -2915,7 +2897,7 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      <script src="../assets/javascripts/bundle.ad660dcc.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
