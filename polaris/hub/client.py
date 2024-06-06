@@ -855,7 +855,7 @@ class PolarisHubClient(OAuth2Client):
         self,
         competition: CompetitionSpecification,
         y_pred: PredictionsType,
-        access: AccessType = "private",
+        results_access: AccessType = "private",
     ) -> BenchmarkResults:
         """Evaluate the predictions for a competition on the Polaris Hub. Target labels are fetched
         by Polaris Hub and used only internally.
