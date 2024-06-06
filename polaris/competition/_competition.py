@@ -48,7 +48,7 @@ class CompetitionSpecification(BenchmarkSpecification):
             cache_auth_token=cache_auth_token,
             **kwargs,
         ) as client:
-            client.evaluate_competition(self, y_pred=y_pred)
+            return client.evaluate_competition(self, y_pred=y_pred)
 
     def upload_to_hub(
         self,

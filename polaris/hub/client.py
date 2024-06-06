@@ -28,7 +28,7 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.dataset import Dataset
-from polaris.evaluate import BenchmarkResults
+from polaris.evaluate import BenchmarkResults, CompetitionResults
 from polaris.competition import CompetitionSpecification
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
@@ -856,7 +856,7 @@ class PolarisHubClient(OAuth2Client):
         competition: CompetitionSpecification,
         y_pred: PredictionsType,
         results_access: AccessType = "private",
-    ) -> BenchmarkResults:
+    ) -> CompetitionResults:
         """Evaluate the predictions for a competition on the Polaris Hub. Target labels are fetched
         by Polaris Hub and used only internally.
 
@@ -866,12 +866,12 @@ class PolarisHubClient(OAuth2Client):
                 If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
 
         Returns:
-             A `BenchmarkResults` object.
+             A `CompetitionResults` object.
         """
         response = self._base_request_to_hub(
             url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
             method="PUT",
-            json={"competition": competition.artifact_id, "predictions": y_pred, "access": access},
+            json={"predictions": y_pred, "access": results_access},
         )
 
         # Inform the user about where to find their newly created artifact.
@@ -880,4 +880,5 @@ class PolarisHubClient(OAuth2Client):
             f"/v2/competition/{competition.owner}/{competition.name}/{response['id']}",
         )
         logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
-        return response
+
+        return CompetitionResults(response)
