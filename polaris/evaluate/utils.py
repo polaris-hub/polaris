@@ -14,15 +14,21 @@ def is_multi_task_single_test_set(vals: PredictionsType, target_cols: list[str])
     multiple test set benchmark)."""
     return not isinstance(vals, dict) or set(vals.keys()) == set(target_cols)
 
+def normalize_predictions_type(vals: np.array, target_cols: list[str]):
+    if is_multi_task_single_test_set(vals, target_cols):
+        if isinstance(vals, dict):
+            return {"test": vals}
+        else:
+            return {"test": {target_cols[0]: vals}}
+    else:
+        return vals
+
 def evaluate_benchmark(y_pred: PredictionsType,
                        y_true: PredictionsType,
                        target_cols: list[str],
                        metrics: Union[str, Metric, list[Union[str, Metric]]]):
-    if is_multi_task_single_test_set(y_true, target_cols):
-        y_true = {"test": y_true}
-
-    if is_multi_task_single_test_set(y_pred, target_cols):
-        y_pred = {"test": y_pred}
+    y_true = normalize_predictions_type(y_true, target_cols)
+    y_pred = normalize_predictions_type(y_pred, target_cols)
 
     if set(y_true.keys()) != set(y_pred.keys()):
         raise KeyError(
