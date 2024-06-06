@@ -10,8 +10,8 @@ def test_competition_from_json(test_competition, tmpdir):
     new_competition = CompetitionSpecification.from_json(path)
     assert new_competition == test_competition
 
-def test_competition_evaluation(test_competition):
-    """Test that multi-task competitions will be evaluated properly when when
+def test_multi_col_competition_evaluation(test_competition):
+    """Test that multi-column competitions will be evaluated properly when when
     target labels are read as a pandas dataframe from a file."""
     data = np.random.randint(2, size=(6, 3))
     labels = pd.DataFrame(data, columns=['Column1', 'Column2', 'Column3'])
@@ -23,6 +23,29 @@ def test_competition_evaluation(test_competition):
     result = evaluate_benchmark(predictions,
                                 labels_as_from_hub,
                                 ['Column1', 'Column2', 'Column3'],
+                                test_competition.metrics)
+
+    assert isinstance(result, pd.DataFrame)
+    assert set(result.columns) == {
+        "Test set",
+        "Target label",
+        "Metric",
+        "Score",
+    }
+
+def test_single_col_competition_evaluation(test_competition):
+    """Test that multi-column competitions will be evaluated properly when when
+    target labels are read as a pandas dataframe from a file."""
+    data = np.random.randint(2, size=6)
+    labels = pd.DataFrame(data, columns=['Column1'])
+    labels_as_from_hub = {col: np.array(labels[col]) for col in labels.columns}
+    predictions = {
+        target_col: np.random.randint(2, size=labels.shape[0]) for target_col in labels.columns
+    }
+
+    result = evaluate_benchmark(predictions,
+                                labels_as_from_hub,
+                                ['Column1'],
                                 test_competition.metrics)
 
     assert isinstance(result, pd.DataFrame)

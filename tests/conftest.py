@@ -195,12 +195,13 @@ def test_multi_task_benchmark_clf(test_dataset):
     return benchmark
 
 @pytest.fixture(scope="function")
-def test_competition(test_dataset):
+def test_competition(test_dataset, test_org_owner):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     competition = CompetitionSpecification(
         name="test-competition",
         dataset=test_dataset,
+        owner=test_org_owner,
         metrics=[
             "mean_absolute_error",
             "mean_squared_error",
