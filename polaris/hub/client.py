@@ -45,6 +45,7 @@ from polaris.utils.types import (
     TimeoutTypes,
     ZarrConflictResolution,
 )
+from polaris.evaluate.utils import serialize_predictions
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -868,6 +869,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
              A `CompetitionResults` object.
         """
+        y_pred = serialize_predictions(y_pred)
         response = self._base_request_to_hub(
             url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
             method="PUT",
