@@ -434,7 +434,11 @@ class BenchmarkSpecification(BaseArtifactModel):
         # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
         # See also the `hide_targets` parameter in the `Subset` class.
         test = self._get_test_set(hide_targets=False)
-        y_true = test.targets
+        if isinstance(test, dict):
+            y_true = {k: v.targets for k, v in test.items()}
+        else:
+            y_true = test.targets
+
         scores = evaluate_benchmark(y_pred, y_true, self.target_cols, self.metrics)
 
         return BenchmarkResults(results=scores,
