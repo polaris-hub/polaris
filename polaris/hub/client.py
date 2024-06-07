@@ -883,4 +883,7 @@ class PolarisHubClient(OAuth2Client):
         )
         logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
 
-        return CompetitionResults(response)
+        scores = response["results"]
+        return CompetitionResults(
+            results=scores, competition_name=competition.name, competition_owner=competition.owner
+        )
