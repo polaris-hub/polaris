@@ -21,6 +21,7 @@ from datamol.utils import fs
 from httpx import HTTPStatusError
 from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
+import polaris as po
 
 from polaris.benchmark import (
     BenchmarkSpecification,
@@ -38,7 +39,9 @@ from polaris.utils.errors import InvalidDatasetError, PolarisHubError, PolarisUn
 from polaris.utils.types import (
     AccessType,
     ArtifactType,
+    HttpUrlString,
     HubOwner,
+    HubUser,
     IOMode,
     PredictionsType,
     SupportedLicenseType,
@@ -856,6 +859,13 @@ class PolarisHubClient(OAuth2Client):
         self,
         competition: CompetitionSpecification,
         y_pred: PredictionsType,
+        result_name: str = "",
+        description: str = "",
+        tags: list[str] = [],
+        user_attributes: Dict[str, str] = {},
+        github_url: HttpUrlString | None = "",
+        paper_url: HttpUrlString | None = "",
+        contributors: list[HubUser] | None = [],
         results_access: AccessType = "private",
     ) -> CompetitionResults:
         """Evaluate the predictions for a competition on the Polaris Hub. Target labels are fetched
@@ -869,11 +879,23 @@ class PolarisHubClient(OAuth2Client):
         Returns:
              A `CompetitionResults` object.
         """
+
         y_pred = serialize_predictions(y_pred)
         response = self._base_request_to_hub(
             url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
             method="PUT",
-            json={"predictions": y_pred, "access": results_access},
+            json={
+                "predictions": y_pred,
+                "access": results_access,
+                "polaris_version": po.__version__,
+                "name": result_name,
+                "description": description,
+                "tags": tags,
+                "user_attributes": user_attributes,
+                "github_url": github_url,
+                "paper_url": paper_url,
+                "contributors": contributors,
+            },
         )
 
         # Inform the user about where to find their newly created artifact.
