@@ -21,6 +21,7 @@ from datamol.utils import fs
 from httpx import HTTPStatusError
 from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
+import polaris as po
 
 from polaris.benchmark import (
     BenchmarkSpecification,
@@ -28,7 +29,7 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.dataset import Dataset
-from polaris.evaluate import BenchmarkResults
+from polaris.evaluate import BenchmarkResults, CompetitionResults
 from polaris.competition import CompetitionSpecification
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
@@ -38,13 +39,16 @@ from polaris.utils.errors import InvalidDatasetError, PolarisHubError, PolarisUn
 from polaris.utils.types import (
     AccessType,
     ArtifactType,
+    HttpUrlString,
     HubOwner,
+    HubUser,
     IOMode,
     PredictionsType,
     SupportedLicenseType,
     TimeoutTypes,
     ZarrConflictResolution,
 )
+from polaris.evaluate.utils import serialize_predictions
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -852,8 +856,18 @@ class PolarisHubClient(OAuth2Client):
         return benchmarks_list
 
     def evaluate_competition(
-        self, competition: CompetitionSpecification, y_pred: PredictionsType
-    ) -> BenchmarkResults:
+        self,
+        competition: CompetitionSpecification,
+        y_pred: PredictionsType,
+        result_name: str = "",
+        description: str = "",
+        tags: list[str] = [],
+        user_attributes: Dict[str, str] = {},
+        github_url: HttpUrlString | None = "",
+        paper_url: HttpUrlString | None = "",
+        contributors: list[HubUser] | None = [],
+        results_access: AccessType = "private",
+    ) -> CompetitionResults:
         """Evaluate the predictions for a competition on the Polaris Hub. Target labels are fetched
         by Polaris Hub and used only internally.
 
@@ -863,15 +877,35 @@ class PolarisHubClient(OAuth2Client):
                 If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
 
         Returns:
-             A `BenchmarkResults` object.
+             A `CompetitionResults` object.
         """
+
+        y_pred = serialize_predictions(y_pred)
         response = self._base_request_to_hub(
-            url="/v2/competition/evaluate",
+            url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
             method="PUT",
-            json={"competition": competition.artifact_id, "predictions": y_pred},
+            json={
+                "predictions": y_pred,
+                "access": results_access,
+                "polaris_version": po.__version__,
+                "name": result_name,
+                "description": description,
+                "tags": tags,
+                "user_attributes": user_attributes,
+                "github_url": github_url,
+                "paper_url": paper_url,
+                "contributors": contributors,
+            },
         )
-        return BenchmarkResults(
-            results=pd.read_json(response["scores"]),
-            benchmark_name=competition.name,
-            benchmark_owner=competition.owner,
+
+        # Inform the user about where to find their newly created artifact.
+        result_url = urljoin(
+            self.settings.hub_url,
+            f"/v2/competition/{competition.owner}/{competition.name}/{response['id']}",
+        )
+        logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
+
+        scores = response["results"]
+        return CompetitionResults(
+            results=scores, competition_name=competition.name, competition_owner=competition.owner
         )

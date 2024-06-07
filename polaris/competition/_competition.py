@@ -1,12 +1,12 @@
 from datetime import datetime
 import os
-import numpy as np
 from typing import Optional, Union
 
 from pydantic import field_serializer
 from polaris.benchmark import BenchmarkSpecification
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.types import AccessType, HubOwner, PredictionsType, TimeoutTypes, ZarrConflictResolution
+
 
 class CompetitionSpecification(BenchmarkSpecification):
     """This class extends the [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] to
@@ -24,6 +24,7 @@ class CompetitionSpecification(BenchmarkSpecification):
     """
 
     # Additional properties specific to Competitions
+    owner: HubOwner
     start_time: datetime | None = None
     scheduled_end_time: datetime | None = None
     actual_end_time: datetime | None = None
@@ -34,7 +35,7 @@ class CompetitionSpecification(BenchmarkSpecification):
         env_file: Optional[Union[str, os.PathLike]] = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
-        **kwargs: dict
+        **kwargs: dict,
     ):
         """Light convenience wrapper around
         [`PolarisHubClient.evaluate_competition`][polaris.hub.client.PolarisHubClient.evaluate_competition].
@@ -47,7 +48,7 @@ class CompetitionSpecification(BenchmarkSpecification):
             cache_auth_token=cache_auth_token,
             **kwargs,
         ) as client:
-            client.evaluate_competition(self, y_pred=y_pred)
+            return client.evaluate_competition(self, y_pred=y_pred)
 
     def upload_to_hub(
         self,

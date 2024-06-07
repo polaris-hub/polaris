@@ -62,12 +62,8 @@ class ResultRecords(BaseModel):
 ResultsType = Union[pd.DataFrame, list[Union[ResultRecords, dict]]]
 
 
-class BenchmarkResults(BaseArtifactModel):
+class BaseResult(BaseArtifactModel):
     """Class for saving benchmarking results
-
-    This object is returned by [`BenchmarkSpecification.evaluate`][polaris.benchmark.BenchmarkSpecification.evaluate].
-    In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
-    the results with the Polaris Hub.
 
     The actual results are saved in the `results` field using the following tabular format:
 
@@ -86,10 +82,6 @@ class BenchmarkResults(BaseArtifactModel):
     Attributes:
         results: Benchmark results are stored directly in a dataframe or in a serialized, JSON compatible dict
             that can be decoded into the associated tabular format.
-        benchmark_name: The name of the benchmark for which these results were generated.
-            Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.
-        benchmark_owner: The owner of the benchmark for which these results were generated.
-            Together with the benchmark name, this uniquely identifies the benchmark on the Hub.
         github_url: The URL to the GitHub repository of the code used to generate these results.
         paper_url: The URL to the paper describing the methodology used to generate these results.
         contributors: The users that are credited for these results.
@@ -102,8 +94,6 @@ class BenchmarkResults(BaseArtifactModel):
 
     # Data
     results: ResultsType
-    benchmark_name: SlugCompatibleStringType = Field(..., frozen=True)
-    benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
 
     # Additional meta-data
     github_url: Optional[HttpUrlString] = None
@@ -112,11 +102,6 @@ class BenchmarkResults(BaseArtifactModel):
 
     # Private attributes
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
-
-    @computed_field
-    @property
-    def benchmark_artifact_id(self) -> str:
-        return f"{self.benchmark_owner}/{sluggify(self.benchmark_name)}"
 
     @field_validator("results")
     def _validate_results(cls, v):
@@ -215,3 +200,47 @@ class BenchmarkResults(BaseArtifactModel):
 
     def __repr__(self):
         return json.dumps(self._repr_dict_(), indent=2)
+
+
+class BenchmarkResults(BaseResult):
+    """Class specific to results for standard benchmarks.
+
+    This object is returned by [`BenchmarkSpecification.evaluate`][polaris.benchmark.BenchmarkSpecification.evaluate].
+    In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
+    the results with the Polaris Hub.
+
+    benchmark_name: The name of the benchmark for which these results were generated.
+        Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.
+    benchmark_owner: The owner of the benchmark for which these results were generated.
+        Together with the benchmark name, this uniquely identifies the benchmark on the Hub.
+    """
+
+    benchmark_name: SlugCompatibleStringType = Field(..., frozen=True)
+    benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
+
+    @computed_field
+    @property
+    def benchmark_artifact_id(self) -> str:
+        return f"{self.benchmark_owner}/{sluggify(self.benchmark_name)}"
+
+
+class CompetitionResults(BaseResult):
+    """Class specific to results for competition benchmarks.
+
+    This object is returned by [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
+    In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
+    the results with the Polaris Hub.
+
+    competition_name: The name of the competition for which these results were generated.
+        Together with the competition owner, this uniquely identifies the competition on the Hub.
+    competition_owner: The owner of the competition for which these results were generated.
+        Together with the competition name, this uniquely identifies the competition on the Hub.
+    """
+
+    competition_name: SlugCompatibleStringType = Field(..., frozen=True)
+    competition_owner: Optional[HubOwner] = Field(None, frozen=True)
+
+    @computed_field
+    @property
+    def competition_artifact_id(self) -> str:
+        return f"{self.competition_owner}/{sluggify(self.competition_name)}"
