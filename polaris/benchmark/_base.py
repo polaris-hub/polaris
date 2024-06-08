@@ -17,7 +17,7 @@ from pydantic import (
 from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
-from polaris.dataset import Dataset, Subset
+from polaris.dataset import Dataset, Subset, CompetitionDataset
 from polaris.evaluate import BenchmarkResults, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
@@ -96,7 +96,7 @@ class BenchmarkSpecification(BaseArtifactModel):
 
     # Public attributes
     # Data
-    dataset: Union[Dataset, str, dict[str, Any]]
+    dataset: Union[Union[Dataset, CompetitionDataset], str, dict[str, Any]]
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
@@ -368,10 +368,9 @@ class BenchmarkSpecification(BaseArtifactModel):
         """Construct the test set(s), given the split in the benchmark specification. Used
         internally to construct the test set for client use and evaluation.
         """
+
         def make_test_subset(vals):
-            return self._get_subset(vals,
-                                    hide_targets=hide_targets,
-                                    featurization_fn=featurization_fn)
+            return self._get_subset(vals, hide_targets=hide_targets, featurization_fn=featurization_fn)
 
         test_split = self.split[1]
         if isinstance(test_split, dict):
@@ -441,9 +440,7 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         scores = evaluate_benchmark(y_pred, y_true, self.target_cols, self.metrics)
 
-        return BenchmarkResults(results=scores,
-                                benchmark_name=self.name,
-                                benchmark_owner=self.owner)
+        return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)
 
     def upload_to_hub(
         self,
