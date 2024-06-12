@@ -32,6 +32,7 @@ class CompetitionSpecification(BenchmarkSpecification):
     def evaluate(
         self,
         y_pred: PredictionsType,
+        result_name: str,
         env_file: Optional[Union[str, os.PathLike]] = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
@@ -48,7 +49,7 @@ class CompetitionSpecification(BenchmarkSpecification):
             cache_auth_token=cache_auth_token,
             **kwargs,
         ) as client:
-            return client.evaluate_competition(self, y_pred=y_pred)
+            return client.evaluate_competition(self, y_pred=y_pred, result_name=result_name)
 
     def upload_to_hub(
         self,

@@ -862,7 +862,7 @@ class PolarisHubClient(OAuth2Client):
         self,
         competition: CompetitionSpecification,
         y_pred: PredictionsType,
-        result_name: str = "",
+        result_name: str,
         description: str = "",
         tags: list[str] = [],
         user_attributes: Dict[str, str] = {},
@@ -886,7 +886,7 @@ class PolarisHubClient(OAuth2Client):
         y_pred = serialize_predictions(y_pred)
         response = self._base_request_to_hub(
             url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
-            method="PUT",
+            method="POST",
             json={
                 "predictions": y_pred,
                 "access": results_access,
