@@ -178,7 +178,6 @@ class BenchmarkResults(BaseArtifactModel):
 
     def upload_to_hub(
         self,
-        env_file: Optional[Union[str, os.PathLike]] = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         access: Optional[AccessType] = "private",
