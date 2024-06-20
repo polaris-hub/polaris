@@ -11,7 +11,7 @@ from loguru import logger
 
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.constants import DEFAULT_CACHE_DIR
-from utils.errors import PolarisUnauthorizedError
+from polaris.utils.errors import PolarisUnauthorizedError
 
 
 class CachedTokenAuth(TokenAuth):
@@ -36,10 +36,14 @@ class CachedTokenAuth(TokenAuth):
 
         # We cache afterward, because the token setter adds fields we need to save (i.e. expires_at).
         with open(self.TOKEN_CACHE_PATH, "w") as fd:
-            json.dump(value, fd)  # type: ignore
+            json.dump(token, fd)  # type: ignore
 
 
-class AuthClient(OAuth2Client):
+class ExternalAuthClient(OAuth2Client):
+    """
+    This authentication client is used to obtain OAuth 2 tokens from Polaris's external OAuth2 server.
+    These can in turn be used to obtain Polaris Hub tokens.
+    """
 
     def __init__(
         self,
@@ -70,8 +74,6 @@ class AuthClient(OAuth2Client):
             token_endpoint=self.settings.token_fetch_url,
             code_challenge_method="S256",
             # httpx.Client
-            base_url=self.settings.api_url,
-            # verify=verify,
             timeout=self.settings.default_timeout,
             cert=self.settings.ca_bundle,
             # Extra
@@ -137,8 +139,7 @@ class AuthClient(OAuth2Client):
             try:
                 info = self.user_info
                 logger.info(
-                    f"You are already logged in to the Polaris Hub as {info['username']} ({info['email']}). "
-                    f"Set `overwrite=True` to force re-authentication."
+                    f"You are already logged in to the Polaris Hub as {info['email']}. Set `overwrite=True` to force re-authentication."
                 )
                 return
             except PolarisUnauthorizedError:
@@ -160,11 +161,5 @@ class AuthClient(OAuth2Client):
         self.fetch_token(code=authorization_code, grant_type="authorization_code")
 
         logger.success(
-            f"Successfully authenticated to the Polaris Hub "
-            f"as `{self.user_info['username']}` ({self.user_info['email']})! 🎉"
+            f"Successfully authenticated to the Polaris Hub as `{self.user_info['email']}`! 🎉"
         )
-
-
-from authlib.integrations.httpx_client import AsyncOAuth2Client
-settings = PolarisHubSettings()
-client = AsyncOAuth2Client(settings.client_id, scope=settings.scopes, redirect_uri=settings.callback_url, token_endpoint=settings.token_fetch_url, code_challenge_method="S256", base_url=settings.api_url, timeout=settings.default_timeout, cert=settings.ca_bundle)
