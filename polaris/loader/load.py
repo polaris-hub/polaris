@@ -77,12 +77,13 @@ def load_benchmark(path: str, verify_checksum: bool = True):
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
     return cls.from_json(path)
 
+
 def load_competition(slug: str, verify_checksum: bool = True):
     """
     Loads a Polaris competition.
 
     In Polaris, a competition can be thought of as a more secure version of a standard benchmark.
-    In competitions, the target labels never exist on the client and all results are evaluated 
+    In competitions, the target labels never exist on the client and all results are evaluated
     through Polaris' servers.
 
     Note: Dataset is automatically loaded

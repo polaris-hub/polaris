@@ -28,7 +28,7 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.dataset import Dataset
+from polaris.dataset import Dataset, CompetitionDataset
 from polaris.evaluate import BenchmarkResults, CompetitionResults
 from polaris.competition import CompetitionSpecification
 from polaris.hub.polarisfs import PolarisFileSystem
@@ -380,7 +380,8 @@ class PolarisHubClient(OAuth2Client):
         )
         response = self._base_request_to_hub(url=url, method="GET")
 
-        storage_response = self.get(response["tableContent"]["url"])
+        dataset_info = "tableContent" if artifact_type == ArtifactType.STANDARD.value else "maskedDatasetInfo"
+        storage_response = self.get(response[dataset_info]["url"])
 
         # This should be a 307 redirect with the signed URL
         if storage_response.status_code != 307:
@@ -398,7 +399,9 @@ class PolarisHubClient(OAuth2Client):
         if not verify_checksum:
             response.pop("md5Sum", None)
 
-        return Dataset(**response)
+        return (
+            Dataset(**response) if artifact_type == ArtifactType.STANDARD else CompetitionDataset(**response)
+        )
 
     def open_zarr_file(
         self, owner: Union[str, HubOwner], name: str, path: str, mode: IOMode, as_consolidated: bool = True
@@ -863,7 +866,7 @@ class PolarisHubClient(OAuth2Client):
         self,
         competition: CompetitionSpecification,
         y_pred: PredictionsType,
-        result_name: str = "",
+        result_name: str,
         description: str = "",
         tags: list[str] = [],
         user_attributes: Dict[str, str] = {},
@@ -887,7 +890,7 @@ class PolarisHubClient(OAuth2Client):
         y_pred = serialize_predictions(y_pred)
         response = self._base_request_to_hub(
             url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
-            method="PUT",
+            method="POST",
             json={
                 "predictions": y_pred,
                 "access": results_access,
