@@ -25,7 +25,7 @@ If all you care about is to partake in a benchmark that is hosted on the hub, it
 import polaris as po
 
 # Load the benchmark from the Hub
-benchmark = po.load_benchmark("polaris/hello_world_benchmark")
+benchmark = po.load_benchmark("polaris/hello-world-benchmark")
 
 # Get the train and test data-loaders
 train, test = benchmark.get_train_test_split()
@@ -54,7 +54,7 @@ Similarly, you can easily access a dataset.
 import polaris as po
 
 # Load the dataset from the hub
-dataset = po.load_dataset("polaris/hello-world-dataset")
+dataset = po.load_dataset("polaris/hello-world")
 
 # Get information on the dataset size
 dataset.size()
