@@ -369,6 +369,7 @@ class PolarisHubClient(OAuth2Client):
             )
         elif not verify_checksum:
             dataset._md5sum = checksum
+            dataset._leaf_to_md5sum = response.get("leafToMd5Sum", None)
 
         return dataset
 

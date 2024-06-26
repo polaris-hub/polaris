@@ -132,6 +132,10 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     obj = test_single_task_benchmark if is_single_task else test_multi_task_benchmark
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
 
+    # Make sure the `md5sum` is part of the model dump even if not initiated yet.
+    # This is important for uploads to the Hub.
+    assert obj._md5sum is None and "md5sum" in obj.model_dump()
+
     original = obj.md5sum
     assert original is not None
 

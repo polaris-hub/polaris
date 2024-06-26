@@ -38,6 +38,7 @@ from dataclasses import asdict, dataclass, field
 from functools import total_ordering
 from json import dumps
 from pathlib import Path
+from typing import Dict, Tuple
 
 import fsspec
 import fsspec.utils
@@ -50,7 +51,7 @@ from polaris.utils.errors import InvalidZarrChecksum
 ZARR_DIGEST_PATTERN = "([0-9a-f]{32})-([0-9]+)--([0-9]+)"
 
 
-def compute_zarr_checksum(zarr_root_path: str) -> str:
+def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
     r"""
     Implements an algorithm to compute the Zarr checksum.
 
@@ -103,6 +104,7 @@ def compute_zarr_checksum(zarr_root_path: str) -> str:
 
     # Find all files in the root
     leaves = fs.find(zarr_root_path, detail=True)
+    leaf_to_md5sum = {}
 
     for file in tqdm(leaves.values(), desc="Finding all files in the Zarr archive"):
         path = file["name"]
@@ -127,8 +129,12 @@ def compute_zarr_checksum(zarr_root_path: str) -> str:
             digest=digest,
         )
 
+        # We persist the checksums for leaf nodes separately,
+        # because this is what the Hub needs to verify data integrity.
+        leaf_to_md5sum[str(relpath)] = digest
+
     # Compute digest
-    return tree.process().digest
+    return tree.process().digest, leaf_to_md5sum
 
 
 # Pydantic models aren't used for performance reasons

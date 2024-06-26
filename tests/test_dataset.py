@@ -49,6 +49,10 @@ def test_load_data(tmp_path, with_slice, with_caching):
 def test_dataset_checksum(test_dataset):
     """Test whether the checksum is a good indicator of whether the dataset has changed in a meaningful way."""
 
+    # Make sure the `md5sum` is part of the model dump even if not initiated yet.
+    # This is important for uploads to the Hub.
+    assert test_dataset._md5sum is None and "md5sum" in test_dataset.model_dump()
+
     original = test_dataset.md5sum
     assert original is not None
 
