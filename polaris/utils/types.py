@@ -3,11 +3,12 @@ from typing import Annotated, Any, Literal, Optional, Tuple, Union
 
 import numpy as np
 from pydantic import (
-    AfterValidator,
     BaseModel,
+    BeforeValidator,
     ConfigDict,
     HttpUrl,
     StringConstraints,
+    TypeAdapter,
 )
 from pydantic.alias_generators import to_camel
 from typing_extensions import TypeAlias
@@ -65,7 +66,9 @@ A user on the Polaris Hub is identified by a username,
 which is a [`SlugCompatibleStringType`][polaris.utils.types.SlugCompatibleStringType].
 """
 
-HttpUrlString: TypeAlias = Annotated[HttpUrl, AfterValidator(str)]
+HttpUrlAdapter = TypeAdapter(HttpUrl)
+HttpUrlString: TypeAlias = Annotated[str, BeforeValidator(lambda v: HttpUrlAdapter.validate_python(v) and v)]
+
 """
 A validated URL that will be turned into a string.
 This is useful for interactions with httpx and authlib, who have their own URL types.

@@ -1,5 +1,4 @@
 import json
-import os
 from hashlib import md5
 from typing import Any, Callable, Optional, Union
 
@@ -9,7 +8,7 @@ import pandas as pd
 from datamol.utils import fs
 from pydantic import (
     Field,
-    FieldValidationInfo,
+    ValidationInfo,
     computed_field,
     field_serializer,
     field_validator,
@@ -124,7 +123,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         return v
 
     @field_validator("target_cols", "input_cols")
-    def _validate_cols(cls, v, info: FieldValidationInfo):
+    def _validate_cols(cls, v, info: ValidationInfo):
         """Verifies all columns are present in the dataset."""
         if not isinstance(v, list):
             v = [v]
@@ -166,7 +165,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         return v
 
     @field_validator("split")
-    def _validate_split(cls, v, info: FieldValidationInfo):
+    def _validate_split(cls, v, info: ValidationInfo):
         """
         Verifies that:
           1) There is at least two, non-empty partitions
@@ -203,7 +202,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         return v
 
     @field_validator("target_types")
-    def _validate_target_types(cls, v, info: FieldValidationInfo):
+    def _validate_target_types(cls, v, info: ValidationInfo):
         """Try to automatically infer the target types if not already set"""
 
         dataset = info.data.get("dataset")
@@ -346,7 +345,7 @@ class BenchmarkSpecification(BaseArtifactModel):
 
     @computed_field
     @property
-    def task_type(self) -> TaskType:
+    def task_type(self) -> str:
         """The high-level task type of the benchmark."""
         v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
         return v.value
@@ -488,7 +487,6 @@ class BenchmarkSpecification(BaseArtifactModel):
 
     def upload_to_hub(
         self,
-        env_file: Optional[Union[str, os.PathLike]] = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         access: Optional[AccessType] = "private",
@@ -502,7 +500,6 @@ class BenchmarkSpecification(BaseArtifactModel):
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient(
-            env_file=env_file,
             settings=settings,
             cache_auth_token=cache_auth_token,
             **kwargs,

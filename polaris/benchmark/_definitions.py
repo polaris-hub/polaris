@@ -19,7 +19,7 @@ class SingleTaskBenchmarkSpecification(BenchmarkSpecification):
 
     @computed_field
     @property
-    def task_type(self) -> TaskType:
+    def task_type(self) -> str:
         """The high-level task type of the benchmark."""
         return TaskType.SINGLE_TASK.value
 
@@ -39,6 +39,6 @@ class MultiTaskBenchmarkSpecification(BenchmarkSpecification):
 
     @computed_field
     @property
-    def task_type(self) -> TaskType:
+    def task_type(self) -> str:
         """The high-level task type of the benchmark."""
         return TaskType.MULTI_TASK.value

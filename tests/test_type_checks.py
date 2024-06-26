@@ -1,9 +1,11 @@
+import warnings
+
 import pytest
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 import polaris as po
 from polaris._artifact import BaseArtifactModel
-from polaris.utils.types import HubOwner
+from polaris.utils.types import HttpUrlString, HubOwner
 
 
 def test_slug_string_type():
@@ -62,3 +64,29 @@ def test_version():
         BaseArtifactModel(polaris_version="invalid")
     assert BaseArtifactModel().polaris_version == po.__version__
     assert BaseArtifactModel(polaris_version="0.1.2")
+
+
+def test_http_url_string():
+    """Verifies that a string validated correctly as a URL."""
+
+    class _TestModel(BaseModel):
+        url: HttpUrlString
+
+    m = _TestModel(url="https://example.com")
+    assert isinstance(m.url, str)
+
+    m = _TestModel(url="http://example.com")
+    assert isinstance(m.url, str)
+
+    m = _TestModel(url="http://example.io")
+    assert isinstance(m.url, str)
+
+    with warnings.catch_warnings():
+        # Crash if any warnings are raised
+        warnings.simplefilter("error")
+        m.model_dump()
+
+    with pytest.raises(ValidationError):
+        _TestModel(url="invalid")
+    with pytest.raises(ValidationError):
+        _TestModel(url="ftp://invalid.com")
