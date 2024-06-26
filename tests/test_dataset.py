@@ -5,11 +5,9 @@ import pandas as pd
 import pytest
 import zarr
 from datamol.utils import fs
-from pydantic import ValidationError
 
 from polaris.dataset import Dataset, Subset, create_dataset_from_file
 from polaris.loader import load_dataset
-from polaris.utils.errors import PolarisChecksumError
 
 
 @pytest.mark.parametrize("with_caching", [True, False])
@@ -56,24 +54,21 @@ def test_dataset_checksum(test_dataset):
 
     # Without any changes, same hash
     kwargs = test_dataset.model_dump()
-    Dataset(**kwargs)
+    assert Dataset(**kwargs).md5sum == original
 
     # With unimportant changes, same hash
     kwargs["name"] = "changed"
     kwargs["description"] = "changed"
     kwargs["source"] = "https://changed.com"
-    Dataset(**kwargs)
+    assert Dataset(**kwargs).md5sum == original
 
     # Check sensitivity to the row and column ordering
     kwargs["table"] = kwargs["table"].iloc[::-1]
     kwargs["table"] = kwargs["table"][kwargs["table"].columns[::-1]]
-    Dataset(**kwargs)
+    assert Dataset(**kwargs).md5sum == original
 
     def _check_for_failure(_kwargs):
-        with pytest.raises(ValidationError) as error:
-            Dataset(**_kwargs)
-            assert error.error_count() == 1  # noqa
-            assert isinstance(error.errors()[0], PolarisChecksumError)  # noqa
+        assert Dataset(**_kwargs).md5sum != _kwargs["md5sum"]
 
     # Without any changes, but different hash
     kwargs["md5sum"] = "invalid"

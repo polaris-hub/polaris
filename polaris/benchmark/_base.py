@@ -8,6 +8,7 @@ import pandas as pd
 from datamol.utils import fs
 from pydantic import (
     Field,
+    PrivateAttr,
     ValidationInfo,
     computed_field,
     field_serializer,
@@ -22,7 +23,7 @@ from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
-from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
+from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.misc import listit
 from polaris.utils.types import (
     AccessType,
@@ -102,13 +103,15 @@ class BenchmarkSpecification(BaseArtifactModel):
     split: SplitType
     metrics: Union[str, Metric, list[Union[str, Metric]]]
     main_metric: Optional[Union[str, Metric]] = None
-    md5sum: Optional[str] = None
 
     # Additional meta-data
     readme: str = ""
     target_types: dict[str, Optional[Union[TargetType, str]]] = Field(
         default_factory=dict, validate_default=True
     )
+
+    # Private attributes
+    _md5sum: Optional[str] = PrivateAttr(None)
 
     @field_validator("dataset")
     def _validate_dataset(cls, v):
@@ -214,6 +217,12 @@ class BenchmarkSpecification(BaseArtifactModel):
         for target in target_cols:
             if target not in v:
                 val = dataset[:, target]
+
+                # Non numeric columns can be targets (e.g. prediction molecular reactions),
+                # but in that case we currently don't infer the target type.
+                if not np.issubdtype(val.dtype, np.number):
+                    continue
+
                 # remove the nans for mutiple task dataset when the table is sparse
                 target_type = type_of_target(val[~np.isnan(val)])
                 if target_type == "continuous":
@@ -230,34 +239,11 @@ class BenchmarkSpecification(BaseArtifactModel):
     @classmethod
     def _validate_model(cls, m: "BenchmarkSpecification"):
         """
-        If a checksum is provided, verify it matches what the checksum should be.
-        If no checksum is provided, make sure it is set.
-        Also sets a default metric if missing.
+        Sets a default metric if missing.
         """
-
-        # Validate checksum
-        checksum = m.md5sum
-
-        expected = cls._compute_checksum(
-            dataset=m.dataset,
-            target_cols=m.target_cols,
-            input_cols=m.input_cols,
-            split=m.split,
-            metrics=m.metrics,
-        )
-
-        if checksum is None:
-            m.md5sum = expected
-        elif checksum != expected:
-            raise PolarisChecksumError(
-                "The dataset checksum does not match what was specified in the meta-data. "
-                f"{checksum} != {expected}"
-            )
-
         # Set a default main metric if not set yet
         if m.main_metric is None:
             m.main_metric = m.metrics[0]
-
         return m
 
     @field_serializer("metrics", "main_metric")
@@ -309,6 +295,16 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         checksum = hash_fn.hexdigest()
         return checksum
+
+    @computed_field
+    @property
+    def md5sum(self) -> Optional[str]:
+        """Lazily compute the checksum once needed."""
+        if self._md5sum is None:
+            self._md5sum = self._compute_checksum(
+                self.dataset, self.target_cols, self.input_cols, self.split, self.metrics
+            )
+        return self._md5sum
 
     @computed_field
     @property

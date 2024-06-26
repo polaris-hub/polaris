@@ -6,7 +6,6 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.utils.errors import PolarisChecksumError
 
 
 @pytest.mark.parametrize("is_single_task", [True, False])
@@ -140,34 +139,31 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
 
     # Without any changes, same hash
     kwargs = obj.model_dump()
-    cls(**kwargs)
+    assert cls(**kwargs).md5sum == original
 
     # With a different ordering of the target columns
     kwargs["target_cols"] = kwargs["target_cols"][::-1]
-    cls(**kwargs)
+    assert cls(**kwargs).md5sum == original
 
     # With a different ordering of the metrics
     kwargs["metrics"] = kwargs["metrics"][::-1]
-    cls(**kwargs)
+    assert cls(**kwargs).md5sum == original
 
     # With a different ordering of the split
     kwargs["split"] = kwargs["split"][0][::-1], kwargs["split"][1]
-    cls(**kwargs)
+    assert cls(**kwargs).md5sum == original
 
     # --- Test that the checksum is NOT the same ---
     def _check_for_failure(_kwargs):
-        with pytest.raises((ValidationError, TypeError)) as error:
-            cls(**_kwargs)
-            assert error.error_count() == 1  # noqa
-            assert isinstance(error.errors()[0], PolarisChecksumError)  # noqa
+        assert cls(**_kwargs).md5sum != _kwargs["md5sum"]
 
     # Split
     kwargs = obj.model_dump()
-    kwargs["split"] = kwargs["split"][0][1:] + [-1], kwargs["split"][1]
+    kwargs["split"] = kwargs["split"][0][1:], kwargs["split"][1]
     _check_for_failure(kwargs)
 
     kwargs = obj.model_dump()
-    kwargs["split"] = kwargs["split"][0], kwargs["split"][1][1:] + [-1]
+    kwargs["split"] = kwargs["split"][0], kwargs["split"][1][1:]
     _check_for_failure(kwargs)
 
     # Metrics

@@ -110,8 +110,8 @@ def test_checksum_for_zarr_archive(zarr_archive, tmpdir):
 
     path = tmpdir.join("copy")
     copytree(zarr_archive, path)
-    assert checksum == compute_zarr_checksum(path)
+    assert checksum == compute_zarr_checksum(str(path))
 
     root = zarr.open(path)
     root["A"][0:10] = 0
-    assert checksum != compute_zarr_checksum(path)
+    assert checksum != compute_zarr_checksum(str(path))

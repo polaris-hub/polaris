@@ -31,7 +31,12 @@ from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.context import tmp_attribute_change
-from polaris.utils.errors import InvalidDatasetError, PolarisHubError, PolarisUnauthorizedError
+from polaris.utils.errors import (
+    InvalidDatasetError,
+    PolarisChecksumError,
+    PolarisHubError,
+    PolarisUnauthorizedError,
+)
 from polaris.utils.types import (
     AccessType,
     HubOwner,
@@ -354,10 +359,18 @@ class PolarisHubClient(OAuth2Client):
 
         response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
 
-        if not verify_checksum:
-            response.pop("md5Sum", None)
+        dataset = Dataset(**response)
+        checksum = response.pop("md5Sum", None)
 
-        return Dataset(**response)
+        if verify_checksum and checksum is not None and checksum != dataset.md5sum:
+            raise PolarisChecksumError(
+                "The dataset checksum does not match what was specified in the meta-data. "
+                f"{checksum} != {dataset.md5sum}"
+            )
+        elif not verify_checksum:
+            dataset._md5sum = checksum
+
+        return dataset
 
     def open_zarr_file(
         self, owner: Union[str, HubOwner], name: str, path: str, mode: IOMode, as_consolidated: bool = True
@@ -440,10 +453,17 @@ class PolarisHubClient(OAuth2Client):
             else MultiTaskBenchmarkSpecification
         )
 
-        if not verify_checksum:
-            response.pop("md5Sum", None)
+        benchmark = benchmark_cls(**response)
+        checksum = response.pop("md5Sum", None)
 
-        return benchmark_cls(**response)
+        if verify_checksum and checksum is not None and checksum != benchmark.md5sum:
+            raise PolarisChecksumError(
+                "The benchmark checksum does not match what was specified in the meta-data. "
+                f"{checksum} != {benchmark.md5sum}"
+            )
+        elif not verify_checksum:
+            benchmark._md5sum = checksum
+        return
 
     def upload_results(
         self,

@@ -1,4 +1,5 @@
 import json
+import uuid
 from hashlib import md5
 from typing import Dict, List, MutableMapping, Optional, Tuple, Union
 
@@ -24,7 +25,7 @@ from polaris.dataset.zarr import MemoryMappedDirectoryStore, compute_zarr_checks
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
-from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
+from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import AccessType, HttpUrlString, HubOwner, SupportedLicenseType
 
 # Constants
@@ -73,7 +74,6 @@ class Dataset(BaseArtifactModel):
     table: Union[pd.DataFrame, str]
     default_adapters: Dict[str, Adapter] = Field(default_factory=dict)
     zarr_root_path: Optional[str] = None
-    md5sum: Optional[str] = None
 
     # Additional meta-data
     readme: str = ""
@@ -88,6 +88,7 @@ class Dataset(BaseArtifactModel):
     # Private attributes
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
     _zarr_data: Optional[MutableMapping[str, np.ndarray]] = PrivateAttr(None)
+    _md5sum: Optional[str] = PrivateAttr(None)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
 
     @field_validator("table")
@@ -113,10 +114,7 @@ class Dataset(BaseArtifactModel):
     @model_validator(mode="after")
     @classmethod
     def _validate_model(cls, m: "Dataset"):
-        """If a checksum is provided, verify it matches what the checksum should be.
-        If no checksum is provided, make sure it is set.
-        If no cache_dir is provided, set it to the default cache dir and make sure it exists
-        """
+        """Verifies some dependencies between properties"""
 
         # Verify that all annotations are for columns that exist
         if any(k not in m.table.columns for k in m.annotations):
@@ -140,22 +138,10 @@ class Dataset(BaseArtifactModel):
                 m.annotations[c] = ColumnAnnotation()
             m.annotations[c].dtype = m.table[c].dtype
 
-        # Verify the checksum
-        # NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
-        actual = m.md5sum
-        expected = cls._compute_checksum(m.table, m.zarr_root_path)
-
-        if actual is None:
-            m.md5sum = expected
-        elif actual != expected:
-            raise PolarisChecksumError(
-                "The dataset md5sum does not match what was specified in the meta-data. "
-                f"{actual} != {expected}"
-            )
-
         # Set the default cache dir if none and make sure it exists
         if m.cache_dir is None:
-            m.cache_dir = fs.join(DEFAULT_CACHE_DIR, _CACHE_SUBDIR, m.name, m.md5sum)
+            m.cache_dir = fs.join(DEFAULT_CACHE_DIR, _CACHE_SUBDIR, str(uuid.uuid4()))
+
         fs.mkdir(m.cache_dir, exist_ok=True)
 
         return m
@@ -200,6 +186,14 @@ class Dataset(BaseArtifactModel):
 
         checksum = hash_fn.hexdigest()
         return checksum
+
+    @computed_field
+    @property
+    def md5sum(self) -> Optional[str]:
+        """Lazily compute the checksum once needed."""
+        if self._md5sum is None:
+            self._md5sum = self._compute_checksum(self.table, self.zarr_root_path)
+        return self._md5sum
 
     @property
     def client(self):

@@ -38,12 +38,11 @@ from dataclasses import asdict, dataclass, field
 from functools import total_ordering
 from json import dumps
 from pathlib import Path
-from typing import Optional
 
-import datamol as dm
+import fsspec
+import fsspec.utils
 import zarr
 import zarr.errors
-from fsspec import AbstractFileSystem
 from tqdm import tqdm
 
 from polaris.utils.errors import InvalidZarrChecksum
@@ -51,7 +50,7 @@ from polaris.utils.errors import InvalidZarrChecksum
 ZARR_DIGEST_PATTERN = "([0-9a-f]{32})-([0-9]+)--([0-9]+)"
 
 
-def compute_zarr_checksum(zarr_root_path: str, fs: Optional[AbstractFileSystem] = None) -> str:
+def compute_zarr_checksum(zarr_root_path: str) -> str:
     r"""
     Implements an algorithm to compute the Zarr checksum.
 
@@ -85,12 +84,9 @@ def compute_zarr_checksum(zarr_root_path: str, fs: Optional[AbstractFileSystem] 
     This method is the biggest deviation of the original code.
     """
 
-    if fs is None:
-        # Try guess the filesystem if it's not specified
-        fs = dm.utils.fs.get_mapper(zarr_root_path).fs
-
     # Get the protocol of the path
-    protocol = dm.utils.fs.get_protocol(zarr_root_path, fs)
+    protocol = fsspec.utils.get_protocol(zarr_root_path)
+    fs, zarr_root_path = fsspec.url_to_fs(zarr_root_path)
 
     # For a local path, we extend the path to an absolute path
     # Otherwise, we assume the path is already absolute
