@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.26">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
     
     
       
@@ -1307,7 +1307,7 @@ a variety of high-quality datasets, benchmarks and associated results.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span> <span class="nn">polaris</span> <span class="k">as</span> <span class="nn">po</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Load the benchmark from the Hub</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">benchmark</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_benchmark</span><span class="p">(</span><span class="s2">&quot;polaris/hello_world_benchmark&quot;</span><span class="p">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">benchmark</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_benchmark</span><span class="p">(</span><span class="s2">&quot;polaris/hello-world-benchmark&quot;</span><span class="p">)</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Get the train and test data-loaders</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">()</span>
@@ -1332,7 +1332,7 @@ a variety of high-quality datasets, benchmarks and associated results.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span> <span class="nn">polaris</span> <span class="k">as</span> <span class="nn">po</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Load the dataset from the hub</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;polaris/hello-world-dataset&quot;</span><span class="p">)</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;polaris/hello-world&quot;</span><span class="p">)</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Get information on the dataset size</span>
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">dataset</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>

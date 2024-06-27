@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.26">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
     
     
       
@@ -1782,13 +1782,13 @@ from polaris.hub.client import PolarisHubClient</div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=de8bf4bf-4dbd-42eb-8f74-bf8aa0339469">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=de8bf4bf-4dbd-42eb-8f74-bf8aa0339469">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-2">
@@ -1806,19 +1806,6 @@ from polaris.hub.client import PolarisHubClient</div>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">client = PolarisHubClient()
 client.login()</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre><span class="ansi-green-fg">2024-02-18 12:35:01.048</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris.hub.client</span>:<span class="ansi-cyan-fg">login</span>:<span class="ansi-cyan-fg">262</span> - <span class="ansi-bold">You are already logged in to the Polaris Hub as cwognum (cas@valencelabs.com). Set `overwrite=True` to force re-authentication.</span>
-</pre>
 </div>
 </div>
 </div>
@@ -1848,8 +1835,8 @@ client.login()</div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=4e004589-6c48-4232-b353-b1700536dde6">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=4e004589-6c48-4232-b353-b1700536dde6">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1872,6 +1859,21 @@ client.login()</div>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-3">dataset = po.load_dataset("polaris/hello-world")
 benchmark = po.load_benchmark("polaris/hello-world-benchmark")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre><span class="ansi-green-fg">2024-06-26 09:52:08.706</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris._artifact</span>:<span class="ansi-cyan-fg">_validate_version</span>:<span class="ansi-cyan-fg">66</span> - <span class="ansi-bold">The version of Polaris that was used to create the artifact (0.0.0) is different from the currently installed version of Polaris (0.0.2.dev191+g82e7db2).</span>
+<span class="ansi-green-fg">2024-06-26 09:52:10.327</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris._artifact</span>:<span class="ansi-cyan-fg">_validate_version</span>:<span class="ansi-cyan-fg">66</span> - <span class="ansi-bold">The version of Polaris that was used to create the artifact (0.0.0) is different from the currently installed version of Polaris (0.0.2.dev191+g82e7db2).</span>
+<span class="ansi-green-fg">2024-06-26 09:52:10.338</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris._artifact</span>:<span class="ansi-cyan-fg">_validate_version</span>:<span class="ansi-cyan-fg">66</span> - <span class="ansi-bold">The version of Polaris that was used to create the artifact (0.0.0) is different from the currently installed version of Polaris (0.0.2.dev191+g82e7db2).</span>
+</pre>
 </div>
 </div>
 </div>
@@ -2158,7 +2160,7 @@ y = train.targets</div>
 <span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
 
 <span class="c1"># Load the benchmark (automatically loads the underlying dataset as well)</span>
-<span class="n">benchmark</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_benchmark</span><span class="p">(</span><span class="s2">"polaris/hello_world_benchmark"</span><span class="p">)</span>
+<span class="n">benchmark</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_benchmark</span><span class="p">(</span><span class="s2">"polaris/hello-world-benchmark"</span><span class="p">)</span>
 
 <span class="c1"># Get the split and convert SMILES to ECFP fingerprints by specifying an featurize function.</span>
 <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">(</span><span class="n">featurization_fn</span><span class="o">=</span><span class="n">dm</span><span class="o">.</span><span class="n">to_fp</span><span class="p">)</span>
@@ -2171,7 +2173,7 @@ y = train.targets</div>
 from sklearn.ensemble import RandomForestRegressor
 
 # Load the benchmark (automatically loads the underlying dataset as well)
-benchmark = po.load_benchmark("polaris/hello_world_benchmark")
+benchmark = po.load_benchmark("polaris/hello-world-benchmark")
 
 # Get the split and convert SMILES to ECFP fingerprints by specifying an featurize function.
 train, test = benchmark.get_train_test_split(featurization_fn=dm.to_fp)
@@ -2190,8 +2192,8 @@ model.fit(train.X, train.y)</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>Failed to find the pandas get_adjustment() function to patch
-Failed to patch pandas - PandasTools will have limited functionality
+<pre><span class="ansi-green-fg">2024-06-26 09:52:12.003</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris._artifact</span>:<span class="ansi-cyan-fg">_validate_version</span>:<span class="ansi-cyan-fg">66</span> - <span class="ansi-bold">The version of Polaris that was used to create the artifact (0.0.0) is different from the currently installed version of Polaris (0.0.2.dev191+g82e7db2).</span>
+<span class="ansi-green-fg">2024-06-26 09:52:12.014</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris._artifact</span>:<span class="ansi-cyan-fg">_validate_version</span>:<span class="ansi-cyan-fg">66</span> - <span class="ansi-bold">The version of Polaris that was used to create the artifact (0.0.0) is different from the currently installed version of Polaris (0.0.2.dev191+g82e7db2).</span>
 </pre>
 </div>
 </div>
@@ -2681,7 +2683,7 @@ results</div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
 <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-<table border="1"><tr><th>name</th><td>None</td></tr><tr><th>description</th><td></td></tr><tr><th>tags</th><td></td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>owner</th><td>None</td></tr><tr><th>benchmark_name</th><td>hello-world-benchmark</td></tr><tr><th>benchmark_owner</th><td><table border="1"><tr><th>slug</th><td>polaris</td></tr><tr><th>external_id</th><td>org_2WG9hRFgKNIRtGw4orsMPcr1F4S</td></tr><tr><th>type</th><td>organization</td></tr></table></td></tr><tr><th>github_url</th><td>None</td></tr><tr><th>paper_url</th><td>None</td></tr><tr><th>contributors</th><td>None</td></tr><tr><th>artifact_id</th><td>None</td></tr><tr><th>benchmark_artifact_id</th><td>polaris/hello-world-benchmark</td></tr><tr><th>results</th><td><table border="1"><thead><tr><th>Test set</th><th>Target label</th><th>Metric</th><th>Score</th></tr></thead><tbody><tr><td>test</td><td>SOL</td><td>mean_squared_error</td><td>2.6875139821</td></tr><tr><td>test</td><td>SOL</td><td>mean_absolute_error</td><td>1.2735690161</td></tr></tbody></table></td></tr></table>
+<table border="1"><tr><th>name</th><td>None</td></tr><tr><th>description</th><td></td></tr><tr><th>tags</th><td></td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>owner</th><td>None</td></tr><tr><th>polaris_version</th><td>0.0.2.dev191+g82e7db2</td></tr><tr><th>benchmark_name</th><td>hello-world-benchmark</td></tr><tr><th>benchmark_owner</th><td><table border="1"><tr><th>slug</th><td>polaris</td></tr><tr><th>external_id</th><td>org_2gtoaJIVrgRqiIR8Qm5BnpFCbxu</td></tr><tr><th>type</th><td>organization</td></tr></table></td></tr><tr><th>github_url</th><td>None</td></tr><tr><th>paper_url</th><td>None</td></tr><tr><th>contributors</th><td>None</td></tr><tr><th>artifact_id</th><td>None</td></tr><tr><th>benchmark_artifact_id</th><td>polaris/hello-world-benchmark</td></tr><tr><th>results</th><td><table border="1"><thead><tr><th>Test set</th><th>Target label</th><th>Metric</th><th>Score</th></tr></thead><tbody><tr><td>test</td><td>SOL</td><td>mean_squared_error</td><td>2.6875139821</td></tr><tr><td>test</td><td>SOL</td><td>mean_absolute_error</td><td>1.2735690161</td></tr></tbody></table></td></tr></table>
 </div>
 </div>
 </div>
@@ -2744,8 +2746,8 @@ results.description = "Hello, World!"</div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=60cbf4b9-8514-480d-beda-8a50e5f7c9a6">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=60cbf4b9-8514-480d-beda-8a50e5f7c9a6">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2768,23 +2770,6 @@ results.description = "Hello, World!"</div>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-15">client.upload_results(results, owner="cwognum")
 client.close()</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>/Users/cas.wognum/micromamba/envs/polaris/lib/python3.12/site-packages/pydantic/main.py:314: UserWarning: Pydantic serializer warnings:
-  Expected `url` but got `str` - serialized value may not be as expected
-  Expected `url` but got `str` - serialized value may not be as expected
-  return self.__pydantic_serializer__.to_python(
-<span class="ansi-green-fg">2024-02-18 12:35:09.465</span> | <span class="ansi-green-intense-fg ansi-bold">SUCCESS </span> | <span class="ansi-cyan-fg">polaris.hub.client</span>:<span class="ansi-cyan-fg">upload_results</span>:<span class="ansi-cyan-fg">431</span> - <span class="ansi-green-intense-fg ansi-bold">Your result has been successfully uploaded to the Hub. View it here: https://polarishub.io/benchmarks/polaris/hello-world-benchmark/l3uWzFBEyaD09Sa4Aik21</span>
-</pre>
 </div>
 </div>
 </div>
