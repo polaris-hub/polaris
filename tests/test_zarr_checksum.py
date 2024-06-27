@@ -49,10 +49,10 @@ from polaris.dataset.zarr._checksum import (
 
 def test_generate_digest() -> None:
     manifest = ZarrChecksumManifest(
-        directories=[ZarrChecksum(digest="a7e86136543b019d72468ceebf71fb8e-1--1", name="a/b", size=1)],
-        files=[ZarrChecksum(digest="92eb5ffee6ae2fec3ad71c777531578f-1--1", name="b", size=1)],
+        directories=[ZarrChecksum(digest="a7e86136543b019d72468ceebf71fb8e-1-1", name="a/b", size=1)],
+        files=[ZarrChecksum(digest="92eb5ffee6ae2fec3ad71c777531578f-0-1", name="b", size=1)],
     )
-    assert manifest.generate_digest().digest == "2ed39fd5ae56fd4177c4eb503d163528-2--2"
+    assert manifest.generate_digest().digest == "9c5294e46908cf397cb7ef53ffc12efc-1-2"
 
 
 def test_zarr_checksum_sort_order() -> None:
@@ -64,7 +64,7 @@ def test_zarr_checksum_sort_order() -> None:
 
 def test_parse_zarr_directory_digest() -> None:
     # Parse valid
-    ZarrDirectoryDigest.parse("c228464f432c4376f0de6ddaea32650c-37481--38757151179")
+    ZarrDirectoryDigest.parse("c228464f432c4376f0de6ddaea32650c-37481-38757151179")
     ZarrDirectoryDigest.parse(None)
 
     # Ensure exception is raised
@@ -101,7 +101,7 @@ def test_process_tree() -> None:
     # This zarr checksum was computed against the same file structure using the previous
     # zarr checksum implementation
     # Assert the current implementation produces a matching checksum
-    assert checksum.digest == "26054e501f570a8bfa69a2bc75e7c82d-2--2"
+    assert checksum.digest == "e53fcb7b5c36b2f4647fbf826a44bdc9-2-2"
 
 
 def test_checksum_for_zarr_archive(zarr_archive, tmpdir):
@@ -118,6 +118,7 @@ def test_checksum_for_zarr_archive(zarr_archive, tmpdir):
 
 
 def test_zarr_leaf_to_checksum(zarr_archive):
+    # NOTE: This test was not in the original code base of the zarr-checksum package.
     _, leaf_to_checksum = compute_zarr_checksum(zarr_archive)
     root = zarr.open(zarr_archive)
 

@@ -48,7 +48,7 @@ from tqdm import tqdm
 
 from polaris.utils.errors import InvalidZarrChecksum
 
-ZARR_DIGEST_PATTERN = "([0-9a-f]{32})-([0-9]+)--([0-9]+)"
+ZARR_DIGEST_PATTERN = "([0-9a-f]{32})-([0-9]+)-([0-9]+)"
 
 
 def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
@@ -102,7 +102,7 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
     # Generate the checksum
     tree = ZarrChecksumTree()
 
-    # Find all files in the root
+    # Find all files below the root
     leaves = fs.find(zarr_root_path, detail=True)
     leaf_to_md5sum = {}
 
@@ -137,43 +137,77 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
     return tree.process().digest, leaf_to_md5sum
 
 
+# ================================
+# Overview of the data structures
+# ================================
+
+# NOTE (cwognum): I kept forgetting how this works, so I'm writing it down
+# - The ZarrChecksumTree is a binary tree (heap queue). It determines the order in which to process the nodes.
+# - The ZarrChecksumNode is a node in the ZarrChecksumTree queue. It represents a directory in the Zarr archive and
+#   stores a manifest with all the data needed to compute the checksum for that node.
+# - The ZarrChecksumManifest is a collection of checksums for all direct (non-recursive) children of a directory.
+# - The ZarrChecksum is the data used to compute the checksum for a file or directory in a Zarr Archive.
+#   This is the object that the ZarrChecksumManifest stores a collection of.
+# - A ZarrDirectoryDigest is the result of processing a directory. Once completed,
+#   it is added to the ZarrChecksumManifest of its parent as part of a ZarrChecksum.
+
+# NOTE (cwognum): As a first impression, it seems there is some redundancy in the data structures.
+#   My feeling is that we could reduce the redundancy to simplify things and improve maintainability.
+#   However, for the time being, let's stick close to the original code.
+
+# ================================
+
+
 # Pydantic models aren't used for performance reasons
-@dataclass
-class ZarrChecksumNode:
-    """Represents the aggregation of zarr files at a specific path in the tree."""
-
-    path: Path
-    checksums: "ZarrChecksumManifest"
-
-    def __lt__(self, other: "ZarrChecksumNode") -> bool:
-        return str(self.path) < str(other.path)
-
-
 class ZarrChecksumTree:
-    """A tree that represents the checksummed files in a zarr."""
+    """
+    The ZarrChecksumTree is a tree structure that maintains the state of the checksum algorithm.
+
+    Initialized with a set of leafs (i.e. files), the nodes in this tree correspond to all directories
+    that are above those leafs and below the Zarr Root.
+
+    The tree then implements the logic for retrieving the next node (i.e. directory) to process,
+    and for computing the checksum for that node based on its children.
+    Once it reaches the root, it has computed the checksum for the entire Zarr archive.
+    """
 
     def __init__(self) -> None:
+        # Queue to prioritize the next node to process
         self._heap: list[tuple[int, ZarrChecksumNode]] = []
+
+        # Map of (relative) paths to nodes.
         self._path_map: dict[Path, ZarrChecksumNode] = {}
 
     @property
     def empty(self) -> bool:
+        """Check if the tree is empty."""
+        # This is used as an exit condition in the process() method
         return len(self._heap) == 0
 
     def _add_path(self, key: Path) -> None:
-        node = ZarrChecksumNode(path=key, checksums=ZarrChecksumManifest())
+        """Adds a new entry to the heap queue for which we need to compute the checksum."""
 
-        # Add link to node
+        # Create a new node
+        # A node represents a file or directory.
+        # A node refers to a node in the heap queue (i.e. binary tree)
+        # The structure of the heap is thus _not_ the same as the structure of the file system!
+        node = ZarrChecksumNode(path=key, checksums=ZarrChecksumManifest())
         self._path_map[key] = node
 
-        # Add node to heap with length (negated to representa max heap)
+        # Add node to heap with length (negated to represent a max heap)
+        # We use the length of the parents (relative to the Zarr root) to structure the heap.
+        # The node with the longest path is the deepest node in the tree.
+        # This node will be prioritized for processing next.
         length = len(key.parents)
         heapq.heappush(self._heap, (-1 * length, node))
 
-    def _get_path(self, key: Path) -> ZarrChecksumNode:
+    def _get_path(self, key: Path) -> "ZarrChecksumNode":
+        """
+        If an entry for this path already exists, return it.
+        Otherwise create a new one and return that.
+        """
         if key not in self._path_map:
             self._add_path(key)
-
         return self._path_map[key]
 
     def add_leaf(self, path: Path, size: int, digest: str) -> None:
@@ -181,7 +215,7 @@ class ZarrChecksumTree:
         parent_node = self._get_path(path.parent)
         parent_node.checksums.files.append(ZarrChecksum(name=path.name, size=size, digest=digest))
 
-    def add_node(self, path: Path, size: int, digest: str) -> None:
+    def add_node(self, path: Path, size: int, digest: str, count: int) -> None:
         """Add an internal node to the tree."""
         parent_node = self._get_path(path.parent)
         parent_node.checksums.directories.append(
@@ -189,22 +223,31 @@ class ZarrChecksumTree:
                 name=path.name,
                 size=size,
                 digest=digest,
+                count=count,
             )
         )
 
-    def pop_deepest(self) -> ZarrChecksumNode:
-        """Find the deepest node in the tree, and return it."""
+    def pop_deepest(self) -> "ZarrChecksumNode":
+        """
+        Returns the node with the highest priority for processing next.
+
+        Returns (one of the) node(s) with the most parent directories
+        (i.e. the deepest directory in the file system)
+        """
         _, node = heapq.heappop(self._heap)
         del self._path_map[node.path]
-
         return node
 
     def process(self) -> "ZarrDirectoryDigest":
         """Process the tree, returning the resulting top level digest."""
-        # Begin with empty root node, so if no files are present, the empty checksum is returned
+
+        # Begin with empty root node, so that if no files are present, the empty checksum is returned
         node = ZarrChecksumNode(path=Path("."), checksums=ZarrChecksumManifest())
+
         while not self.empty:
-            # Pop the deepest directory available
+            # Get the next directory to process
+            # Priority is based on the number of parents a directory has
+            # In other word, the depth of the directory in the file system.
             node = self.pop_deepest()
 
             # If we have reached the root node, then we're done.
@@ -217,6 +260,7 @@ class ZarrChecksumTree:
                 path=node.path,
                 size=directory_digest.size,
                 digest=directory_digest.digest,
+                count=directory_digest.count,
             )
 
         # Return digest
@@ -224,8 +268,91 @@ class ZarrChecksumTree:
 
 
 @dataclass
+class ZarrChecksumNode:
+    """
+    A node in the ZarrChecksumTree.
+
+    This node represents a file or directory in the Zarr archive,
+    but "node" here refers to a node in the heap queue (i.e. binary tree).
+    The structure of the heap is thus _not_ the same as the structure of the file system!
+
+    The node stores a manifest of checksums for all files and directories below it.
+    """
+
+    path: Path
+    checksums: "ZarrChecksumManifest"
+
+    def __lt__(self, other: "ZarrChecksumNode") -> bool:
+        return str(self.path) < str(other.path)
+
+
+@dataclass
+class ZarrChecksumManifest:
+    """
+    For a directory in the Zarr archive (i.e. a node in the heap queue),
+    we maintain a manifest of the checksums for all files and directories
+    below that directory.
+
+    This data is then used to calculate the checksum of a directory.
+    """
+
+    directories: list["ZarrChecksum"] = field(default_factory=list)
+    files: list["ZarrChecksum"] = field(default_factory=list)
+
+    @property
+    def is_empty(self) -> bool:
+        return not (self.files or self.directories)
+
+    def generate_digest(self) -> "ZarrDirectoryDigest":
+        """Generate an aggregated digest for the provided files/directories."""
+
+        # Sort everything to ensure the checksum is deterministic
+        self.files.sort()
+        self.directories.sort()
+
+        # Aggregate total file count
+        count = len(self.files) + sum(checksum.count for checksum in self.directories)
+
+        # Aggregate total size
+        size = sum(file.size for file in self.files) + sum(directory.size for directory in self.directories)
+
+        # Serialize json without any spacing
+        json = dumps(asdict(self), separators=(",", ":"))
+
+        # Generate digest
+        md5 = hashlib.md5(json.encode("utf-8")).hexdigest()
+
+        # Construct and return
+        return ZarrDirectoryDigest(md5=md5, count=count, size=size)
+
+
+@total_ordering
+@dataclass
+class ZarrChecksum:
+    """
+    The data used to compute the checksum for a file or directory in a Zarr Archive.
+
+    This class is serialized to JSON, and as such, key order should not be modified.
+    """
+
+    digest: str
+    name: str
+    size: int
+    count: int = 0
+
+    # To make this class sortable
+    def __lt__(self, other: "ZarrChecksum") -> bool:
+        return self.name < other.name
+
+
+@dataclass
 class ZarrDirectoryDigest:
-    """The data that can be serialized to / deserialized from a checksum string."""
+    """
+    The digest for a directory in a Zarr Archive.
+
+    The digest is a string representation that serves as a checksum for the directory.
+    This is a utility class to (de)serialize that string.
+    """
 
     md5: str
     count: int
@@ -248,68 +375,7 @@ class ZarrDirectoryDigest:
 
     @property
     def digest(self) -> str:
-        return f"{self.md5}-{self.count}--{self.size}"
-
-
-@total_ordering
-@dataclass
-class ZarrChecksum:
-    """
-    A checksum for a single file/directory in a zarr file.
-
-    Every file and directory in a zarr archive has a name, digest, and size.
-    Leaf nodes are created by providing an md5 digest.
-    Internal nodes (directories) have a digest field that is a zarr directory digest
-
-    This class is serialized to JSON, and as such, key order should not be modified.
-    """
-
-    digest: str
-    name: str
-    size: int
-
-    # To make this class sortable
-    def __lt__(self, other: "ZarrChecksum") -> bool:
-        return self.name < other.name
-
-
-@dataclass
-class ZarrChecksumManifest:
-    """
-    A set of file and directory checksums.
-
-    This is the data hashed to calculate the checksum of a directory.
-    """
-
-    directories: list[ZarrChecksum] = field(default_factory=list)
-    files: list[ZarrChecksum] = field(default_factory=list)
-
-    @property
-    def is_empty(self) -> bool:
-        return not (self.files or self.directories)
-
-    def generate_digest(self) -> ZarrDirectoryDigest:
-        """Generate an aggregated digest for the provided files/directories."""
-        # Ensure sorted first
-        self.files.sort()
-        self.directories.sort()
-
-        # Aggregate total file count
-        count = len(self.files) + sum(
-            ZarrDirectoryDigest.parse(checksum.digest).count for checksum in self.directories
-        )
-
-        # Aggregate total size
-        size = sum(file.size for file in self.files) + sum(directory.size for directory in self.directories)
-
-        # Serialize json without any spacing
-        json = dumps(asdict(self), separators=(",", ":"))
-
-        # Generate digest
-        md5 = hashlib.md5(json.encode("utf-8")).hexdigest()
-
-        # Construct and return
-        return ZarrDirectoryDigest(md5=md5, count=count, size=size)
+        return f"{self.md5}-{self.count}-{self.size}"
 
 
 # The "null" zarr checksum
