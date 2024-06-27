@@ -58,7 +58,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         import polaris as po
 
         # Load the benchmark from the Hub
-        benchmark = po.load_benchmark("polaris/hello_world_benchmark")
+        benchmark = po.load_benchmark("polaris/hello-world-benchmark")
 
         # Get the train and test data-loaders
         train, test = benchmark.get_train_test_split()
