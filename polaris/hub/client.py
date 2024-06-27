@@ -1,5 +1,4 @@
 import json
-import os
 import ssl
 import webbrowser
 from hashlib import md5
@@ -87,24 +86,19 @@ class PolarisHubClient(OAuth2Client):
 
     def __init__(
         self,
-        env_file: Optional[Union[str, os.PathLike]] = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         **kwargs: dict,
     ):
         """
         Args:
-            env_file: Path to a `.env` file containing the settings, used to initialize
-                a `PolarisHubSettings` instance. If not provided, the default settings are used.
-            settings: A `PolarisHubSettings` instance. If provided, takes precedence over `env_file`.
+            settings: A `PolarisHubSettings` instance.
             cache_auth_token: Whether to cache the auth token to a file.
             **kwargs: Additional keyword arguments passed to the authlib `OAuth2Client` constructor.
         """
         self._user_info = None
 
-        if settings is None:
-            settings = PolarisHubSettings(_env_file=env_file)  # type: ignore
-        self.settings = settings
+        self.settings = PolarisHubSettings() if settings is None else settings
 
         # We cache the auth token by default, but allow the user to disable this.
         self.cache_auth_token = cache_auth_token
@@ -121,14 +115,14 @@ class PolarisHubClient(OAuth2Client):
 
         super().__init__(
             # OAuth2Client
-            client_id=settings.client_id,
-            redirect_uri=settings.callback_url,
-            scope=settings.scopes,
+            client_id=self.settings.client_id,
+            redirect_uri=self.settings.callback_url,
+            scope=self.settings.scopes,
             token=token,
             token_endpoint=self.settings.token_fetch_url,
             code_challenge_method="S256",
             # httpx.Client
-            base_url=settings.api_url,
+            base_url=self.settings.api_url,
             verify=verify,
             timeout=self.settings.default_timeout,
             # Extra

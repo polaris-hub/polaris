@@ -176,9 +176,7 @@ class BaseResult(BaseArtifactModel):
         """
         from polaris.hub.client import PolarisHubClient
 
-        with PolarisHubClient(
-            env_file=env_file, settings=settings, cache_auth_token=cache_auth_token, **kwargs
-        ) as client:
+        with PolarisHubClient(settings=settings, cache_auth_token=cache_auth_token, **kwargs) as client:
             return client.upload_results(self, access=access, owner=owner)
 
     def _repr_dict_(self) -> dict:
