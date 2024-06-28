@@ -76,6 +76,10 @@ class Subset:
 
         self._adapters = adapters
         self._featurization_fn = featurization_fn
+
+        # NOTE (cwognum): Note to future self. As we're starting to think about competition-style benchmarks,
+        #  we will likely split up datasets. In that case, this default iloc_to_loc mapping won't work.
+        #  By that time, we should probably be able to overwrite this mapping.
         self._iloc_to_loc = self.dataset.table.index
 
         # For the iterator implementation
