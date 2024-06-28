@@ -94,8 +94,8 @@ class PolarisHubClient(OAuth2Client):
         super().__init__(
             # OAuth2Client
             token_endpoint=self.settings.hub_token_url,
-            token_endpoint_auth_method='none',
-            grant_type='urn:ietf:params:oauth:grant-type:token-exchange',
+            token_endpoint_auth_method="none",
+            grant_type="urn:ietf:params:oauth:grant-type:token-exchange",
             # httpx.Client
             base_url=self.settings.api_url,
             cert=self.settings.ca_bundle,
@@ -105,17 +105,21 @@ class PolarisHubClient(OAuth2Client):
         )
 
         # We use an external client to get an auth token that can be exchanged for a Polaris Hub token
-        self.external_client = ExternalAuthClient(settings=self.settings, cache_auth_token=cache_auth_token, **kwargs)
+        self.external_client = ExternalAuthClient(
+            settings=self.settings, cache_auth_token=cache_auth_token, **kwargs
+        )
 
     def _prepare_token_endpoint_body(self, body, grant_type, **kwargs):
         """
         Override to support required fields for the token exchange grant type.
         See https://datatracker.ietf.org/doc/html/rfc8693#name-request
         """
-        if grant_type == 'urn:ietf:params:oauth:grant-type:token-exchange':
-            kwargs['subject_token'] = self.external_client.token['access_token']
-            kwargs['subject_token_type'] = 'urn:ietf:params:oauth:token-type:access_token'
-            kwargs['requested_token_type'] = 'urn:ietf:params:oauth:token-type:jwt'
+        if grant_type == "urn:ietf:params:oauth:grant-type:token-exchange":
+            kwargs.update({
+                "subject_token": self.external_client.token["access_token"],
+                "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
+                "requested_token_type": "urn:ietf:params:oauth:token-type:jwt",
+            })
         return super()._prepare_token_endpoint_body(body, grant_type, **kwargs)
 
     def ensure_active_token(self, token: OAuth2Token) -> bool:
@@ -228,7 +232,7 @@ class PolarisHubClient(OAuth2Client):
             self.external_client.interactive_login(overwrite=overwrite, auto_open_browser=auto_open_browser)
             self.token = self.fetch_token()
 
-        logger.success('You are successfully logged in to the Polaris Hub.')
+        logger.success("You are successfully logged in to the Polaris Hub.")
 
     # =========================
     #     API Endpoints
@@ -245,10 +249,7 @@ class PolarisHubClient(OAuth2Client):
             A list of dataset names in the format `owner/dataset_name`.
         """
         response = self._base_request_to_hub(
-            url="/dataset", method="GET", params={
-                "limit": limit,
-                "offset": offset
-            }
+            url="/dataset", method="GET", params={"limit": limit, "offset": offset}
         )
         dataset_list = [bm["artifactId"] for bm in response["data"]]
         return dataset_list
@@ -332,10 +333,7 @@ class PolarisHubClient(OAuth2Client):
 
         # TODO (cwognum): What to do with pagination, i.e. limit and offset?
         response = self._base_request_to_hub(
-            url="/benchmark", method="GET", params={
-                "limit": limit,
-                "offset": offset
-            }
+            url="/benchmark", method="GET", params={"limit": limit, "offset": offset}
         )
         benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
         return benchmarks_list
@@ -359,9 +357,7 @@ class PolarisHubClient(OAuth2Client):
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
         #  but we'd need to change the signature of get_dataset to use it
         response["dataset"] = self.get_dataset(
-            response["dataset"]["owner"]["slug"],
-            response["dataset"]["name"],
-            verify_checksum=verify_checksum
+            response["dataset"]["owner"]["slug"], response["dataset"]["name"], verify_checksum=verify_checksum
         )
 
         # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
@@ -413,9 +409,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Make a request to the hub
         response = self._base_request_to_hub(
-            url="/result", method="POST", json={
-                "access": access, **result_json
-            }
+            url="/result", method="POST", json={"access": access, **result_json}
         )
 
         # Inform the user about where to find their newly created artifact.
@@ -525,9 +519,7 @@ class PolarisHubClient(OAuth2Client):
             bucket_response = self.request(
                 url=hub_response_body["url"],
                 method=hub_response_body["method"],
-                headers={
-                    "Content-type": "application/vnd.apache.parquet", **hub_response_body["headers"]
-                },
+                headers={"Content-type": "application/vnd.apache.parquet", **hub_response_body["headers"]},
                 content=buffer.getvalue(),
                 auth=None,
                 timeout=timeout,  # required for large size dataset

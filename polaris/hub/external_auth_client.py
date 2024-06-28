@@ -85,9 +85,7 @@ class ExternalAuthClient(OAuth2Client):
             user_info = self.get(
                 self.settings.user_info_url,
                 auth=None,  # type: ignore
-                headers={
-                    "authorization": f"Bearer {self.token['access_token']}"
-                },
+                headers={"authorization": f"Bearer {self.token['access_token']}"},
             )
             user_info.raise_for_status()
             self._user_info = user_info.json()
@@ -134,6 +132,4 @@ class ExternalAuthClient(OAuth2Client):
         # Step 3: Exchange authorization code for an access token
         self.fetch_token(code=authorization_code, grant_type="authorization_code")
 
-        logger.success(
-            f"Successfully authenticated to the Polaris Hub as `{self.user_info['email']}`! 🎉"
-        )
+        logger.success(f"Successfully authenticated to the Polaris Hub as `{self.user_info['email']}`! 🎉")
