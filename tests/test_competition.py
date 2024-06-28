@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
-from polaris.evaluate.utils import evaluate_benchmark
+from polaris.evaluate.utils import (
+    evaluate_benchmark,
+    normalize_predictions_type
+)
 
 from polaris.competition import CompetitionSpecification
 
@@ -20,10 +23,11 @@ def test_multi_col_competition_evaluation(test_competition):
         target_col: np.random.randint(2, size=labels.shape[0]) for target_col in labels.columns
     }
 
-    result = evaluate_benchmark(predictions,
+    result = evaluate_benchmark(['Column1', 'Column2', 'Column3'],
+                                test_competition.metrics,
                                 labels_as_from_hub,
-                                ['Column1', 'Column2', 'Column3'],
-                                test_competition.metrics)
+                                y_pred=predictions)
+
 
     assert isinstance(result, pd.DataFrame)
     assert set(result.columns) == {
@@ -42,10 +46,10 @@ def test_single_col_competition_evaluation(test_competition):
     labels = {'LOG HLM_CLint (mL/min/kg)': data}
     predictions = data + np.random.uniform(0, 3, size=len(data))
 
-    result = evaluate_benchmark(predictions,
+    result = evaluate_benchmark(['LOG HLM_CLint (mL/min/kg)'],
+                                test_competition.metrics,
                                 labels,
-                                ['LOG HLM_CLint (mL/min/kg)'],
-                                test_competition.metrics)
+                                y_pred=predictions)
 
     assert isinstance(result, pd.DataFrame)
     assert set(result.columns) == {
@@ -54,3 +58,45 @@ def test_single_col_competition_evaluation(test_competition):
         "Metric",
         "Score",
     }
+
+def test_normalize_predictions_type():
+    "Single column, single test set"
+    assert {"test": {"col1": [1, 2, 3]}} == normalize_predictions_type(
+        [1, 2, 3], ["col1"]
+    )
+    assert {"test": {"col1": [1, 2, 3]}} == normalize_predictions_type(
+        {"col1": [1, 2, 3]}, ["col1"]
+    )
+    assert {"test": {"col1": [1, 2, 3]}} == normalize_predictions_type(
+        {"test": {"col1": [1, 2, 3]}}, ["col1"]
+    )
+
+    "Multi-column, single test set"
+    assert {"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}
+            } == normalize_predictions_type(
+                {"col1": [1, 2, 3], "col2": [4, 5, 6]}, ["col1", "col2"]
+            )
+
+    assert {"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}
+            } == normalize_predictions_type(
+                {"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}},
+                ["col1", "col2"]
+            )
+
+    "Single column, multi-test set"
+    assert {"test1": {"col1": [1, 2, 3]},
+            "test2": {"col1": [4, 5, 6]}} == normalize_predictions_type(
+                {"test1": {"col1": [1, 2, 3]},
+                 "test2": {"col1": [4, 5, 6]}}, ["col1"]
+            )
+
+    "Multi-column, multi-test set"
+    assert {"test1": {"col1": [1, 2, 3],
+                      "col2": [4, 5, 6]},
+            "test2": {"col1": [7, 8, 9],
+                      "col2": [10, 11, 12]}} == normalize_predictions_type(
+                {"test1": {"col1": [1, 2, 3],
+                           "col2": [4, 5, 6]},
+                 "test2": {"col1": [7, 8, 9],
+                           "col2": [10, 11, 12]}}, ["col1", "col2"]
+            )
