@@ -44,7 +44,7 @@ dependencies = [
     "httpx",
     "tenacity",
     "filelock",
-    "numpy < 2.0.0",
+    "numpy < 3.0.0",
     "pandas < 2.2.0",
     "scipy",
     "scikit-learn",

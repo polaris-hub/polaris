@@ -14,10 +14,10 @@ class CachedTokenAuth(OAuth2Auth):
     def __init__(
         self,
         token: dict | None = None,
-        token_placement='header',
+        token_placement="header",
         client=None,
         cache_dir=DEFAULT_CACHE_DIR,
-        filename='hub_auth_token.json'
+        filename="hub_auth_token.json",
     ):
         self.token_cache_path = Path(cache_dir) / filename
 
@@ -44,9 +44,9 @@ class ExternalCachedTokenAuth(CachedTokenAuth):
     def __init__(
         self,
         token: dict | None = None,
-        token_placement='header',
+        token_placement="header",
         client=None,
         cache_dir=DEFAULT_CACHE_DIR,
-        filename='external_auth_token.json'
+        filename="external_auth_token.json",
     ):
         super().__init__(token, token_placement, client, cache_dir, filename)

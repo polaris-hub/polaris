@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Union
 from urllib.parse import urljoin
 
 from pydantic import ValidationInfo, field_validator
@@ -27,6 +27,7 @@ class PolarisHubSettings(BaseSettings):
         ca_bundle: The path to a CA bundle file for requests.
             Allows for custom SSL certificates to be used.
     """
+
     # Configuration of the pydantic model
     model_config = SettingsConfigDict(env_file=".env", env_prefix="POLARIS_")
 
@@ -48,7 +49,6 @@ class PolarisHubSettings(BaseSettings):
     # Networking settings
     ca_bundle: Union[str, bool, None] = None
     default_timeout: TimeoutTypes = (10, 200)
-
 
     @field_validator("api_url", mode="before")
     def validate_api_url(cls, v, info: ValidationInfo):
