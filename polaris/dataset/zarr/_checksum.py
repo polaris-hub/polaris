@@ -88,8 +88,10 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
     # Get the protocol of the path
     protocol = fsspec.utils.get_protocol(zarr_root_path)
 
-    # NOTE (cwognum): The original Zarr Checksum implementation also seem to work for S3,
-    #   but I'm not sure yet how
+    # We only support computing checksum for local datasets.
+    # NOTE (cwognum): We don't have to verify the checksum for datasets stored on the Hub,
+    # as the Hub will do this on upload. And if you're streaming the data from the Hub,
+    # we will check the checksum of each chunk on download.
     if protocol != "file":
         raise RuntimeError(
             "You can only compute the checksum for a local Zarr archive. "

@@ -362,11 +362,10 @@ class PolarisHubClient(OAuth2Client):
         dataset = Dataset(**response)
         checksum = response.pop("md5Sum", None)
 
-        if verify_checksum and checksum is not None and checksum != dataset.md5sum:
-            raise PolarisChecksumError(
-                "The dataset checksum does not match what was specified in the meta-data. "
-                f"{checksum} != {dataset.md5sum}"
-            )
+        if verify_checksum and checksum is not None:
+            if dataset.uses_zarr:
+                logger.info("Skipping checksum verification, because the dataset is stored remotely.")
+            dataset.verify_checksum(md5sum=checksum)
         elif not verify_checksum:
             dataset._md5sum = checksum
             dataset._leaf_to_md5sum = response.get("leafToMd5Sum", None)
