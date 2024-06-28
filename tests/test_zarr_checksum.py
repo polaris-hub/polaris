@@ -30,8 +30,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
+import uuid
 from pathlib import Path
-from shutil import copytree
+from shutil import copytree, rmtree
 
 import pytest
 import zarr
@@ -125,3 +127,37 @@ def test_zarr_leaf_to_checksum(zarr_archive):
     # Check the basic structure - Each key corresponds to a file in the zarr archive
     assert len(leaf_to_checksum) == len(root.store)
     assert all(k in root.store for k in leaf_to_checksum.keys())
+
+
+def test_zarr_checksum_fails_for_remote_storage(zarr_archive):
+    # NOTE: This test was not in the original code base of the zarr-checksum package.
+    with pytest.raises(RuntimeError):
+        compute_zarr_checksum("s3://bucket/data.zarr")
+    with pytest.raises(RuntimeError):
+        compute_zarr_checksum("gs://bucket/data.zarr")
+
+
+def test_zarr_checksum_with_path_normalization(zarr_archive):
+    # NOTE: This test was not in the original code base of the zarr-checksum package.
+
+    baseline = compute_zarr_checksum(zarr_archive)[0]
+    rootdir = os.path.dirname(zarr_archive)
+
+    # Test a relative path
+    copytree(zarr_archive, os.path.join(rootdir, "relative", "data.zarr"))
+    compute_zarr_checksum(f"{zarr_archive}/../relative/data.zarr")[0] == baseline
+
+    # Test with variables
+    rng_id = str(uuid.uuid4())
+    os.environ["TMP_TEST_DIR"] = rng_id
+    copytree(zarr_archive, os.path.join(rootdir, "vars", rng_id))
+    compute_zarr_checksum(f"{rootdir}/vars/${{TMP_TEST_DIR}}")[0] == baseline  # Format ${...}
+    compute_zarr_checksum(f"{rootdir}/vars/$TMP_TEST_DIR")[0] == baseline  # Format $...
+
+    # And with the user abbreviation
+    try:
+        path = os.path.expanduser("~/data.zarr")
+        copytree(zarr_archive, path)
+        compute_zarr_checksum("~/data.zarr")[0] == baseline
+    finally:
+        rmtree(path)

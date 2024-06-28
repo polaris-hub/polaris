@@ -87,14 +87,21 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
 
     # Get the protocol of the path
     protocol = fsspec.utils.get_protocol(zarr_root_path)
-    fs, zarr_root_path = fsspec.url_to_fs(zarr_root_path)
 
-    # For a local path, we extend the path to an absolute path
-    # Otherwise, we assume the path is already absolute
-    if protocol == "file":
-        zarr_root_path = os.path.expandvars(zarr_root_path)
-        zarr_root_path = os.path.expanduser(zarr_root_path)
-        zarr_root_path = os.path.abspath(zarr_root_path)
+    # NOTE (cwognum): The original Zarr Checksum implementation also seem to work for S3,
+    #   but I'm not sure yet how
+    if protocol != "file":
+        raise RuntimeError(
+            "You can only compute the checksum for a local Zarr archive. "
+            "You can cache a dataset to your local machine with `dataset.cache()`."
+        )
+
+    # Normalize the path
+    zarr_root_path = os.path.expandvars(zarr_root_path)
+    zarr_root_path = os.path.expanduser(zarr_root_path)
+    zarr_root_path = os.path.abspath(zarr_root_path)
+
+    fs, zarr_root_path = fsspec.url_to_fs(zarr_root_path)
 
     # Make sure the path exists and is a Zarr archive
     zarr.open_group(zarr_root_path, mode="r")
@@ -122,7 +129,8 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
                 md5sum.update(chunk)
         digest = md5sum.hexdigest()
 
-        # Yield file
+        # Add a leaf to the tree
+        # (This actually adds the file's checksum to the parent directory's manifest)
         tree.add_leaf(
             path=relpath,
             size=size,
