@@ -22,7 +22,7 @@ from pydantic import (
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
-from polaris.dataset.zarr import MemoryMappedDirectoryStore, compute_zarr_checksum
+from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum, compute_zarr_checksum
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
@@ -90,7 +90,7 @@ class Dataset(BaseArtifactModel):
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
     _zarr_data: Optional[MutableMapping[str, np.ndarray]] = PrivateAttr(None)
     _md5sum: Optional[str] = PrivateAttr(None)
-    _leaf_to_md5sum: Optional[Dict[str, str]] = PrivateAttr(None)
+    _zarr_md5sum_manifest: Optional[Dict[str, ZarrFileChecksum]] = PrivateAttr(None)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
 
     @field_validator("table")
@@ -182,13 +182,13 @@ class Dataset(BaseArtifactModel):
         hash_fn.update(table_hash)
 
         # If the Zarr archive exists, we hash its contents too.
-        leaf_to_md5sum = None
+        zarr_md5sum_manifest = None
         if zarr_root_path is not None:
-            zarr_hash, leaf_to_md5sum = compute_zarr_checksum(zarr_root_path)
+            zarr_hash, zarr_md5sum_manifest = compute_zarr_checksum(zarr_root_path)
             hash_fn.update(zarr_hash.encode())
 
         checksum = hash_fn.hexdigest()
-        return checksum, leaf_to_md5sum
+        return checksum, zarr_md5sum_manifest
 
     def verify_checksum(self, md5sum: Optional[str] = None):
         """
@@ -228,14 +228,14 @@ class Dataset(BaseArtifactModel):
 
     @computed_field
     @property
-    def leaf_to_md5sum(self) -> Optional[Dict[str, str]]:
+    def zarr_md5sum_manifest(self) -> Optional[Dict[str, ZarrFileChecksum]]:
         """
         For Zarr archives, the mapping from all files to their checksum is used by the Hub
         to verify data integrity on upload.
         """
-        if self._leaf_to_md5sum is None and self._md5sum is None:
-            self._md5sum, self._leaf_to_md5sum = self._compute_checksum(self.table, self.zarr_root_path)
-        return self._leaf_to_md5sum
+        if self._zarr_md5sum_manifest is None and self._md5sum is None:
+            self._md5sum, self._zarr_md5sum_manifest = self._compute_checksum(self.table, self.zarr_root_path)
+        return self._zarr_md5sum_manifest
 
     @property
     def client(self):

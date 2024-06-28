@@ -44,6 +44,7 @@ import fsspec
 import fsspec.utils
 import zarr
 import zarr.errors
+from pydantic import BaseModel
 from tqdm import tqdm
 
 from polaris.utils.errors import InvalidZarrChecksum
@@ -109,11 +110,11 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
     zarr.open_group(zarr_root_path, mode="r")
 
     # Generate the checksum
-    tree = ZarrChecksumTree()
+    tree = _ZarrChecksumTree()
 
     # Find all files below the root
     leaves = fs.find(zarr_root_path, detail=True)
-    leaf_to_md5sum = {}
+    zarr_md5sum_manifest = {}
 
     for file in tqdm(leaves.values(), desc="Finding all files in the Zarr archive"):
         path = file["name"]
@@ -141,10 +142,23 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
 
         # We persist the checksums for leaf nodes separately,
         # because this is what the Hub needs to verify data integrity.
-        leaf_to_md5sum[str(relpath)] = digest
+        zarr_md5sum_manifest[str(relpath)] = ZarrFileChecksum(md5sum=digest, size=size)
 
     # Compute digest
-    return tree.process().digest, leaf_to_md5sum
+    return tree.process().digest, zarr_md5sum_manifest
+
+
+class ZarrFileChecksum(BaseModel):
+    """
+    This data is sent to the Hub to verify the integrity of the Zarr archive on upload.
+
+    Attributes:
+        md5sum: The md5sum of the file.
+        size: The size of the file in bytes.
+    """
+
+    md5sum: str
+    size: int
 
 
 # ================================
@@ -169,7 +183,7 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
 
 
 # Pydantic models aren't used for performance reasons
-class ZarrChecksumTree:
+class _ZarrChecksumTree:
     """
     The ZarrChecksumTree is a tree structure that maintains the state of the checksum algorithm.
 
@@ -183,10 +197,10 @@ class ZarrChecksumTree:
 
     def __init__(self) -> None:
         # Queue to prioritize the next node to process
-        self._heap: list[tuple[int, ZarrChecksumNode]] = []
+        self._heap: list[tuple[int, _ZarrChecksumNode]] = []
 
         # Map of (relative) paths to nodes.
-        self._path_map: dict[Path, ZarrChecksumNode] = {}
+        self._path_map: dict[Path, _ZarrChecksumNode] = {}
 
     @property
     def empty(self) -> bool:
@@ -201,7 +215,7 @@ class ZarrChecksumTree:
         # A node represents a file or directory.
         # A node refers to a node in the heap queue (i.e. binary tree)
         # The structure of the heap is thus _not_ the same as the structure of the file system!
-        node = ZarrChecksumNode(path=key, checksums=ZarrChecksumManifest())
+        node = _ZarrChecksumNode(path=key, checksums=_ZarrChecksumManifest())
         self._path_map[key] = node
 
         # Add node to heap with length (negated to represent a max heap)
@@ -211,7 +225,7 @@ class ZarrChecksumTree:
         length = len(key.parents)
         heapq.heappush(self._heap, (-1 * length, node))
 
-    def _get_path(self, key: Path) -> "ZarrChecksumNode":
+    def _get_path(self, key: Path) -> "_ZarrChecksumNode":
         """
         If an entry for this path already exists, return it.
         Otherwise create a new one and return that.
@@ -223,13 +237,13 @@ class ZarrChecksumTree:
     def add_leaf(self, path: Path, size: int, digest: str) -> None:
         """Add a leaf file to the tree."""
         parent_node = self._get_path(path.parent)
-        parent_node.checksums.files.append(ZarrChecksum(name=path.name, size=size, digest=digest))
+        parent_node.checksums.files.append(_ZarrChecksum(name=path.name, size=size, digest=digest))
 
     def add_node(self, path: Path, size: int, digest: str, count: int) -> None:
         """Add an internal node to the tree."""
         parent_node = self._get_path(path.parent)
         parent_node.checksums.directories.append(
-            ZarrChecksum(
+            _ZarrChecksum(
                 name=path.name,
                 size=size,
                 digest=digest,
@@ -237,7 +251,7 @@ class ZarrChecksumTree:
             )
         )
 
-    def pop_deepest(self) -> "ZarrChecksumNode":
+    def pop_deepest(self) -> "_ZarrChecksumNode":
         """
         Returns the node with the highest priority for processing next.
 
@@ -248,11 +262,11 @@ class ZarrChecksumTree:
         del self._path_map[node.path]
         return node
 
-    def process(self) -> "ZarrDirectoryDigest":
+    def process(self) -> "_ZarrDirectoryDigest":
         """Process the tree, returning the resulting top level digest."""
 
         # Begin with empty root node, so that if no files are present, the empty checksum is returned
-        node = ZarrChecksumNode(path=Path("."), checksums=ZarrChecksumManifest())
+        node = _ZarrChecksumNode(path=Path("."), checksums=_ZarrChecksumManifest())
 
         while not self.empty:
             # Get the next directory to process
@@ -278,7 +292,7 @@ class ZarrChecksumTree:
 
 
 @dataclass
-class ZarrChecksumNode:
+class _ZarrChecksumNode:
     """
     A node in the ZarrChecksumTree.
 
@@ -290,14 +304,14 @@ class ZarrChecksumNode:
     """
 
     path: Path
-    checksums: "ZarrChecksumManifest"
+    checksums: "_ZarrChecksumManifest"
 
-    def __lt__(self, other: "ZarrChecksumNode") -> bool:
+    def __lt__(self, other: "_ZarrChecksumNode") -> bool:
         return str(self.path) < str(other.path)
 
 
 @dataclass
-class ZarrChecksumManifest:
+class _ZarrChecksumManifest:
     """
     For a directory in the Zarr archive (i.e. a node in the heap queue),
     we maintain a manifest of the checksums for all files and directories
@@ -306,14 +320,14 @@ class ZarrChecksumManifest:
     This data is then used to calculate the checksum of a directory.
     """
 
-    directories: list["ZarrChecksum"] = field(default_factory=list)
-    files: list["ZarrChecksum"] = field(default_factory=list)
+    directories: list["_ZarrChecksum"] = field(default_factory=list)
+    files: list["_ZarrChecksum"] = field(default_factory=list)
 
     @property
     def is_empty(self) -> bool:
         return not (self.files or self.directories)
 
-    def generate_digest(self) -> "ZarrDirectoryDigest":
+    def generate_digest(self) -> "_ZarrDirectoryDigest":
         """Generate an aggregated digest for the provided files/directories."""
 
         # Sort everything to ensure the checksum is deterministic
@@ -333,12 +347,12 @@ class ZarrChecksumManifest:
         md5 = hashlib.md5(json.encode("utf-8")).hexdigest()
 
         # Construct and return
-        return ZarrDirectoryDigest(md5=md5, count=count, size=size)
+        return _ZarrDirectoryDigest(md5=md5, count=count, size=size)
 
 
 @total_ordering
 @dataclass
-class ZarrChecksum:
+class _ZarrChecksum:
     """
     The data used to compute the checksum for a file or directory in a Zarr Archive.
 
@@ -351,12 +365,12 @@ class ZarrChecksum:
     count: int = 0
 
     # To make this class sortable
-    def __lt__(self, other: "ZarrChecksum") -> bool:
+    def __lt__(self, other: "_ZarrChecksum") -> bool:
         return self.name < other.name
 
 
 @dataclass
-class ZarrDirectoryDigest:
+class _ZarrDirectoryDigest:
     """
     The digest for a directory in a Zarr Archive.
 
@@ -369,7 +383,7 @@ class ZarrDirectoryDigest:
     size: int
 
     @classmethod
-    def parse(cls, checksum: str | None) -> "ZarrDirectoryDigest":
+    def parse(cls, checksum: str | None) -> "_ZarrDirectoryDigest":
         if checksum is None:
             return cls.parse(EMPTY_CHECKSUM)
 
@@ -389,4 +403,4 @@ class ZarrDirectoryDigest:
 
 
 # The "null" zarr checksum
-EMPTY_CHECKSUM = ZarrChecksumManifest().generate_digest().digest
+EMPTY_CHECKSUM = _ZarrChecksumManifest().generate_digest().digest

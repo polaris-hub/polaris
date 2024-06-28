@@ -622,7 +622,7 @@ class PolarisHubClient(OAuth2Client):
             hub_response.raise_for_status()
 
         # Step 3: Upload any associated Zarr archive
-        if dataset.zarr_root is not None:
+        if dataset.uses_zarr:
             with tmp_attribute_change(self.settings, "default_timeout", timeout):
                 # Copy the Zarr archive to the hub
                 dest = self.open_zarr_file(
