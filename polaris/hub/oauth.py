@@ -11,12 +11,18 @@ class CachedTokenAuth(OAuth2Auth):
     A combination of an authlib token and a httpx auth class, that will cache the token to a file.
     """
 
-    def __init__(self, token: dict | None, token_placement='header', client=None, filename='hub_auth_token.json'):
-        self.token_cache_path = Path(DEFAULT_CACHE_DIR) / filename
+    def __init__(
+        self,
+        token: dict | None = None,
+        token_placement='header',
+        client=None,
+        cache_dir=DEFAULT_CACHE_DIR,
+        filename='hub_auth_token.json'
+    ):
+        self.token_cache_path = Path(cache_dir) / filename
 
         if token is None and self.token_cache_path.exists():
-            with open(self.token_cache_path, "r") as fd:
-                token = json.load(fd)
+            token = json.loads(self.token_cache_path.read_text())
 
         super().__init__(token, token_placement, client)
 
@@ -27,8 +33,7 @@ class CachedTokenAuth(OAuth2Auth):
         self.token_cache_path.parent.mkdir(parents=True, exist_ok=True)
 
         # We cache afterward, because the token setter adds fields we need to save (i.e. expires_at).
-        with open(self.token_cache_path, "w") as fd:
-            json.dump(token, fd)
+        self.token_cache_path.write_text(json.dumps(token))
 
 
 class ExternalCachedTokenAuth(CachedTokenAuth):
@@ -36,6 +41,12 @@ class ExternalCachedTokenAuth(CachedTokenAuth):
     Cached token for external authentication.
     """
 
-    def __init__(self, token: dict | None, token_placement='header', client=None):
-        super().__init__(token, token_placement, client, filename='external_auth_token.json')
-
+    def __init__(
+        self,
+        token: dict | None = None,
+        token_placement='header',
+        client=None,
+        cache_dir=DEFAULT_CACHE_DIR,
+        filename='external_auth_token.json'
+    ):
+        super().__init__(token, token_placement, client, cache_dir, filename)
