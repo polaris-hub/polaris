@@ -1,11 +1,16 @@
 import numpy as np
 import pandas as pd
+import pytest
+
+from pydantic import ValidationError
 from polaris.evaluate.utils import (
     evaluate_benchmark,
     normalize_predictions_type
 )
-
 from polaris.competition import CompetitionSpecification
+from polaris.dataset import Dataset
+from polaris.utils.types import HubOwner
+from polaris.utils.errors import InvalidCompetitionError
 
 def test_competition_from_json(test_competition, tmpdir):
     """Test whether we can successfully save and load a competition from JSON."""
@@ -100,3 +105,61 @@ def test_normalize_predictions_type():
                  "test2": {"col1": [7, 8, 9],
                            "col2": [10, 11, 12]}}, ["col1", "col2"]
             )
+
+def test_invalid_competition_creation():
+    data = {"col a": [1, 2, None],
+            "col b": [4, None, 6],
+            "col c": [7, 8, None]}
+
+    df = pd.DataFrame(data, index=range(3))
+    dataset = Dataset(
+        table=df,
+        name="test-dataset"
+    )
+
+    # Check that creating a competition where there is at least one value per test row works
+    CompetitionSpecification(
+        name="test-competition",
+        owner=HubOwner(organizationId="test-org", slug="test-org"),
+        dataset=dataset,
+        metrics=["mean_absolute_error", "mean_squared_error"],
+        split=([0, 1], [2]),
+        target_cols=["col b"],
+        input_cols=["col a", "col c"]
+    )
+
+    CompetitionSpecification(
+        name="test-competition",
+        owner=HubOwner(organizationId="test-org", slug="test-org"),
+        dataset=dataset,
+        metrics=["mean_absolute_error", "mean_squared_error"],
+        split=([0, 1], [2]),
+        target_cols=["col a", "col b"],
+        input_cols=["col c"]
+    )
+
+    with pytest.raises(ValidationError) as ex_info:
+        CompetitionSpecification(
+            name="test-competition",
+            owner=HubOwner(organizationId="test-org", slug="test-org"),
+            dataset=dataset,
+            metrics=["mean_absolute_error", "mean_squared_error"],
+            split=([0, 1], [2]),
+            target_cols=["col a"],
+            input_cols=["col b", "col c"]
+        )
+
+    assert ex_info.match("All rows of the test set must have at least one value")
+
+    with pytest.raises(ValidationError) as ex_info_2:
+        CompetitionSpecification(
+            name="test-competition",
+            owner=HubOwner(organizationId="test-org", slug="test-org"),
+            dataset=dataset,
+            metrics=["mean_absolute_error", "mean_squared_error"],
+            split=([0, 1], [2]),
+            target_cols=["col a", "col c"],
+            input_cols=["col b"]
+        )
+
+    assert ex_info_2.match("All rows of the test set must have at least one value")
