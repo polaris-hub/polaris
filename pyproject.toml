@@ -99,7 +99,7 @@ namespaces = false
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=75 --cov-report xml --cov-report term"
+addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=75 --cov-report xml --cov-report term-missing"
 testpaths = ["tests"]
 pythonpath = "."
 filterwarnings = ["ignore::DeprecationWarning:jupyter_client.connect.*:"]
