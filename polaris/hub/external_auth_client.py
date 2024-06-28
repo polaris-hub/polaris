@@ -108,7 +108,8 @@ class ExternalAuthClient(OAuth2Client):
         """
 
         # Check if the user is already logged in
-        if self.token and not overwrite:
+        token_is_valid = self.ensure_active_token(self.token)
+        if token_is_valid and not overwrite:
             try:
                 info = self.user_info
                 logger.info(

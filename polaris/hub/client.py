@@ -1,6 +1,5 @@
 import json
 import ssl
-import webbrowser
 from hashlib import md5
 from io import BytesIO
 from typing import Callable, get_args
@@ -129,7 +128,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Check if external token is still valid
         if not self.external_client.ensure_active_token(self.external_client.token):
-            raise PolarisUnauthorizedError()
+            return False
 
         # If so, use it to get a new Hub token
         self.token = self.fetch_token()
@@ -213,7 +212,7 @@ class PolarisHubClient(OAuth2Client):
                 raise
             raise PolarisUnauthorizedError from error
 
-    def login(self, overwrite: bool = False, auto_open_browser: bool = True):
+    def interactive_login(self, overwrite: bool = False, auto_open_browser: bool = True):
         """Login to the Polaris Hub using the OAuth2 protocol.
 
         Warning: Headless authentication
@@ -224,40 +223,12 @@ class PolarisHubClient(OAuth2Client):
             overwrite: Whether to overwrite the current token if the user is already logged in.
             auto_open_browser: Whether to automatically open the browser to visit the authorization URL.
         """
+        token_is_valid = self.ensure_active_token(self.token)
+        if overwrite or not token_is_valid:
+            self.external_client.interactive_login(overwrite=overwrite, auto_open_browser=auto_open_browser)
+            self.token = self.fetch_token()
 
-        # TODO: Wrap external client login
-
-        # Check if the user is already logged in
-        if self.token is not None and not overwrite:
-            try:
-                info = self.user_info
-                logger.info(
-                    f"You are already logged in to the Polaris Hub as {info['username']} ({info['email']}). "
-                    "Set `overwrite=True` to force re-authentication."
-                )
-                return
-            except PolarisUnauthorizedError:
-                pass
-
-        # Step 1: Redirect user to the authorization URL
-        authorization_url, _ = self.create_authorization_url()
-
-        if auto_open_browser:
-            logger.info(f"Your browser has been opened to visit:\n{authorization_url}\n")
-            webbrowser.open_new_tab(authorization_url)
-        else:
-            logger.info(f"Please visit the following URL:\n{authorization_url}\n")
-
-        # Step 2: After user grants permission, we'll get the authorization code through the callback URL
-        authorization_code = input("Please enter the authorization token: ")
-
-        # Step 3: Exchange authorization code for an access token
-        self.fetch_token(code=authorization_code, grant_type="authorization_code")
-
-        logger.success(
-            f"Successfully authenticated to the Polaris Hub "
-            f"as `{self.user_info['username']}` ({self.user_info['email']})! 🎉"
-        )
+        logger.success('You are successfully logged in to the Polaris Hub.')
 
     # =========================
     #     API Endpoints
