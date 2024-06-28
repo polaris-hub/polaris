@@ -1,6 +1,4 @@
-import json
 import webbrowser
-from pathlib import Path
 from typing import Optional
 
 from authlib.common.security import generate_token
@@ -9,34 +7,9 @@ from authlib.integrations.httpx_client import OAuth2Client
 from authlib.oauth2 import TokenAuth
 from loguru import logger
 
+from polaris.hub.oauth import ExternalCachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import PolarisUnauthorizedError
-
-
-class CachedTokenAuth(TokenAuth):
-    """
-    Subclass of TokenAuth that will cache the token to a file.
-    """
-
-    TOKEN_CACHE_PATH = Path(DEFAULT_CACHE_DIR) / 'polaris_auth_token.json'
-
-    def __init__(self, token: dict | None, token_placement='header', client=None):
-        if token is None and self.TOKEN_CACHE_PATH.exists():
-            with open(self.TOKEN_CACHE_PATH, "r") as fd:
-                token = json.load(fd)
-
-        super().__init__(token, token_placement, client)
-
-    def set_token(self, token: dict):
-        super().set_token(token)
-
-        # Ensure the cache directory exists.
-        self.TOKEN_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
-
-        # We cache afterward, because the token setter adds fields we need to save (i.e. expires_at).
-        with open(self.TOKEN_CACHE_PATH, "w") as fd:
-            json.dump(token, fd)  # type: ignore
 
 
 class ExternalAuthClient(OAuth2Client):
@@ -47,7 +20,7 @@ class ExternalAuthClient(OAuth2Client):
 
     def __init__(
         self,
-        settings: PolarisHubSettings | None = None,
+        settings: PolarisHubSettings,
         cache_auth_token: bool = True,
         **kwargs: dict,
     ):
@@ -60,9 +33,9 @@ class ExternalAuthClient(OAuth2Client):
         self._user_info = None
 
         # We cache the auth token by default, but allow the user to disable this.
-        self.token_auth_class = CachedTokenAuth if cache_auth_token else TokenAuth
+        self.token_auth_class = ExternalCachedTokenAuth if cache_auth_token else TokenAuth
 
-        self.settings = PolarisHubSettings() if settings is None else settings
+        self.settings = settings
 
         self.code_verifier = generate_token(48)
 
