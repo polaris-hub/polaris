@@ -76,3 +76,24 @@ def load_benchmark(path: str, verify_checksum: bool = True):
     is_single_task = isinstance(data["target_cols"], str) or len(data["target_cols"]) == 1
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
     return cls.from_json(path)
+
+
+def load_competition(slug: str, verify_checksum: bool = True):
+    """
+    Loads a Polaris competition.
+
+    In Polaris, a competition can be thought of as a more secure version of a standard benchmark.
+    In competitions, the target labels never exist on the client and all results are evaluated
+    through Polaris' servers.
+
+    Note: Dataset is automatically loaded
+        The dataset underlying the competition is automatically loaded when pulling the competition.
+
+    - **Hub** (recommended): When loading the competition from the Hub, you can simply
+        provide the `owner/name` slug. This can be easily copied from the relevant competition
+        page on the Hub.
+    """
+
+    # Load from the Hub
+    client = PolarisHubClient()
+    return client.get_competition(*slug.split("/"), verify_checksum=verify_checksum)

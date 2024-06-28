@@ -1,6 +1,5 @@
 from contextlib import contextmanager
 
-
 @contextmanager
 def tmp_attribute_change(obj, attribute, value):
     """Temporarily set and reset an attribute of an object."""
