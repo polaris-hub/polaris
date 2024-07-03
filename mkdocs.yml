@@ -20,7 +20,6 @@ nav:
       - Basics: tutorials/basics.ipynb
       - Data Models: tutorials/custom_dataset_benchmark.ipynb
       - Creating Datasets:
-          - Data Curation: tutorials/data_curation.ipynb
           - Zarr Datasets: tutorials/dataset_zarr.ipynb
           - Dataset Factory: tutorials/dataset_factory.ipynb
           - Optimization: tutorials/optimization.ipynb
