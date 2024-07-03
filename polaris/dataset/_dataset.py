@@ -25,6 +25,7 @@ from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum, compute_zarr_checksum
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
+from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 from polaris.utils.types import (
@@ -32,6 +33,7 @@ from polaris.utils.types import (
     HttpUrlString,
     HubOwner,
     SupportedLicenseType,
+    ZarrConflictResolution,
 )
 
 # Constants
@@ -413,7 +415,11 @@ class Dataset(BaseArtifactModel):
         data.pop("cache_dir", None)
         return cls.model_validate(data)
 
-    def to_json(self, destination: str) -> str:
+    def to_json(
+        self,
+        destination: str,
+        if_exists: ZarrConflictResolution = "replace",
+    ) -> str:
         """
         Save the dataset to a destination directory as a JSON file.
 
@@ -428,6 +434,8 @@ class Dataset(BaseArtifactModel):
 
         Args:
             destination: The _directory_ to save the associated data to.
+            if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
+                an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
 
         Returns:
             The path to the JSON file.
@@ -443,11 +451,19 @@ class Dataset(BaseArtifactModel):
 
         # Copy over Zarr data to the destination
         if self.uses_zarr:
-            # Zarr has the `copy_all` function, but this does not copy the .zmetadata file
-            # and creates .zattrs files even if there aren't any user attributes. This
-            # messes with our checksums. So we copy the files manually.
-            dmfs.copy_dir(self.zarr_root_path, new_zarr_root_path)
-            serialized["zarr_root_path"] = new_zarr_root_path
+            with tmp_attribute_change(self, "_warn_about_remote_zarr", False):
+                logger.info(f"Copying Zarr archive to {new_zarr_root_path}. This may take a while.")
+
+                dest = zarr.open(new_zarr_root_path, "w")
+
+                zarr.copy_store(
+                    source=self.zarr_root.store.store,
+                    dest=dest.store,
+                    log=logger.debug,
+                    if_exists=if_exists,
+                )
+
+                self._warn_about_remote_zarr = True
 
         self.table.to_parquet(table_path)
         with fsspec.open(dataset_path, "w") as f:

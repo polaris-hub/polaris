@@ -652,7 +652,7 @@ class PolarisHubClient(OAuth2Client):
                 zarr.copy_store(
                     source=dataset.zarr_root.store.store,
                     dest=dest.store,
-                    log=logger.info,
+                    log=logger.debug,
                     if_exists=if_exists,
                 )
 
