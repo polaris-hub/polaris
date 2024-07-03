@@ -1,18 +1,14 @@
-<h1 align="center">Polaris</h1>
-<p align="center"><i>So many stars in the sky, yet one is enough to guide you home.</i></p>
-
-</br>
 <div align="center">
-    <img src="docs/images/logo.svg" width="100px">
+    <img src="docs/images/logo.svg" width="300px">
 </div>
 </br>
 
 <p align="center">
     <a href="https://polarishub.io/" target="_blank">
-      🟆 Polaris Hub
+      ✨ Polaris Hub
   </a> |
   <a href="https://polaris-hub.github.io/polaris/" target="_blank">
-      🛈 Client Doc
+      📚 Client Doc
   </a>
 </p>
 
