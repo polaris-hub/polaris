@@ -90,7 +90,7 @@ class Dataset(BaseArtifactModel):
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
     _zarr_data: Optional[MutableMapping[str, np.ndarray]] = PrivateAttr(None)
     _md5sum: Optional[str] = PrivateAttr(None)
-    _zarr_md5sum_manifest: Optional[Dict[str, ZarrFileChecksum]] = PrivateAttr(None)
+    _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
 
     @field_validator("table")
@@ -223,19 +223,8 @@ class Dataset(BaseArtifactModel):
     def md5sum(self) -> str:
         """Lazily compute the checksum once needed."""
         if self._md5sum is None:
-            self._md5sum, self._leaf_to_md5sum = self._compute_checksum(self.table, self.zarr_root_path)
-        return self._md5sum
-
-    @computed_field
-    @property
-    def zarr_md5sum_manifest(self) -> Optional[Dict[str, ZarrFileChecksum]]:
-        """
-        For Zarr archives, the mapping from all files to their checksum is used by the Hub
-        to verify data integrity on upload.
-        """
-        if self._zarr_md5sum_manifest is None and self._md5sum is None:
             self._md5sum, self._zarr_md5sum_manifest = self._compute_checksum(self.table, self.zarr_root_path)
-        return self._zarr_md5sum_manifest
+        return self._md5sum
 
     @property
     def client(self):

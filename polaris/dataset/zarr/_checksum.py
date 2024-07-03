@@ -114,7 +114,7 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
 
     # Find all files below the root
     leaves = fs.find(zarr_root_path, detail=True)
-    zarr_md5sum_manifest = {}
+    zarr_md5sum_manifest = []
 
     for file in tqdm(leaves.values(), desc="Finding all files in the Zarr archive"):
         path = file["name"]
@@ -142,7 +142,7 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, Dict[str, str]]:
 
         # We persist the checksums for leaf nodes separately,
         # because this is what the Hub needs to verify data integrity.
-        zarr_md5sum_manifest[str(relpath)] = ZarrFileChecksum(md5sum=digest, size=size)
+        zarr_md5sum_manifest.append(ZarrFileChecksum(path=str(relpath), md5sum=digest, size=size))
 
     # Compute digest
     return tree.process().digest, zarr_md5sum_manifest
@@ -153,10 +153,12 @@ class ZarrFileChecksum(BaseModel):
     This data is sent to the Hub to verify the integrity of the Zarr archive on upload.
 
     Attributes:
+        path: The path of the file relative to the Zarr root.
         md5sum: The md5sum of the file.
         size: The size of the file in bytes.
     """
 
+    path: str
     md5sum: str
     size: int
 

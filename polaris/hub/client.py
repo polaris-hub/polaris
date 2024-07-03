@@ -564,19 +564,20 @@ class PolarisHubClient(OAuth2Client):
         dataset_json["zarrRootPath"] = f"{PolarisFileSystem.protocol}://data.zarr"
 
         # Uploading a dataset is a three-step process.
-        # 1. Upload the dataset meta data to the hub and prepare the hub to receive the parquet file
+        # 1. Upload the dataset meta data to the hub and prepare the hub to receive the data
         # 2. Upload the parquet file to the hub
         # 3. Upload the associated Zarr archive
         # TODO: Revert step 1 in case step 2 fails - Is this needed? Or should this be taken care of by the hub?
 
-        # Write the parquet file directly to a buffer
+        # Prepare the parquet file
         buffer = BytesIO()
         dataset.table.to_parquet(buffer, engine="auto")
         parquet_size = len(buffer.getbuffer())
         parquet_md5 = md5(buffer.getbuffer()).hexdigest()
 
         # Step 1: Upload meta-data
-        # Instead of directly uploading the table, we announce to the hub that we intend to upload one.
+        # Instead of directly uploading the data, we announce to the hub that we intend to upload it.
+        # We do so separately for the Zarr archive and Parquet file.
         url = f"/dataset/{dataset.artifact_id}"
         response = self._base_request_to_hub(
             url=url,
@@ -587,6 +588,7 @@ class PolarisHubClient(OAuth2Client):
                     "fileType": "parquet",
                     "md5sum": parquet_md5,
                 },
+                "zarrContent": [md5sum.model_dump() for md5sum in dataset._zarr_md5sum_manifest],
                 "access": access,
                 **dataset_json,
             },
@@ -607,6 +609,7 @@ class PolarisHubClient(OAuth2Client):
         if hub_response.status_code == 307:
             # If the hub returns a 307 redirect, we need to follow it to get the signed URL
             hub_response_body = hub_response.json()
+
             # Upload the data to the cloudflare url
             bucket_response = self.request(
                 url=hub_response_body["url"],
