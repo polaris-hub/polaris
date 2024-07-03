@@ -17,6 +17,11 @@
             "key": "docs",
             "title": "## 📚 Documentation",
             "labels": ["documentation"]
+        },
+        {
+            "key": "chore",
+            "title": "## 🧹 Chores",
+            "labels": ["chore"]
         }
     ]
 }
