@@ -16,7 +16,7 @@
         <link rel="prev" href="basics.html">
       
       
-        <link rel="next" href="data_curation.html">
+        <link rel="next" href="dataset_zarr.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -625,27 +625,6 @@
             Creating Datasets
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="data_curation.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Data Curation
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
             
               
                 
@@ -1747,7 +1726,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h2 id="create-the-dataset">Create the dataset<a class="anchor-link" href="#create-the-dataset">¶</a></h2><p>A dataset in Polaris is at its core a tabular data-structure in which each row stores a single datapoint. For this example, we will process a multi-task DMPK dataset from <a href="https://doi.org/10.1021/acs.jcim.3c00160">Fang et al.</a>. For the sake of simplicity, we don't do any curation and will just download the dataset as-is from their Github.</p>
 <div class="admonition warning highlight">
 <p class="admonition-title">The importance of curation</p>
-<p>While we do not address it in this tutorial, data curation is essential to an impactful benchmark. Because of this, we have not just made several high-quality benchmarks readily available on the Polaris Hub, but also open-sourced some of the tools we've built to curate these datasets.</p>
+<p>While we do not address it in this tutorial, data curation is essential to an impactful benchmark. Because of this, we have not just made several high-quality benchmarks readily available on the Polaris Hub, but also open-sourced <a href="https://github.com/polaris-hub/auroris">some of the tools</a> we've built to curate these datasets.</p>
 </div>
 </div>
 </div>
@@ -2773,13 +2752,13 @@ fs.ls(save_dir)</div>
         
         
           
-          <a href="data_curation.html" class="md-footer__link md-footer__link--next" aria-label="Next: Data Curation">
+          <a href="dataset_zarr.html" class="md-footer__link md-footer__link--next" aria-label="Next: Zarr Datasets">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Data Curation
+                Zarr Datasets
               </div>
             </div>
             <div class="md-footer__button md-icon">
