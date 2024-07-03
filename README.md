@@ -3,7 +3,7 @@
 
 </br>
 <div align="center">
-    <img src="docs/images/logo-black.svg" width="100px">
+    <img src="docs/images/logo.svg" width="100px">
 </div>
 </br>
 
