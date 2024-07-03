@@ -365,10 +365,11 @@ class PolarisHubClient(OAuth2Client):
         if verify_checksum and checksum is not None:
             if dataset.uses_zarr:
                 logger.info("Skipping checksum verification, because the dataset is stored remotely.")
-            dataset.verify_checksum(md5sum=checksum)
-        elif not verify_checksum:
-            dataset._md5sum = checksum
-            dataset._leaf_to_md5sum = response.get("leafToMd5Sum", None)
+            else:
+                dataset.verify_checksum(md5sum=checksum)
+
+        dataset._md5sum = checksum
+        dataset._zarr_md5sum_manifest = response.get("zarrContent", None)
 
         return dataset
 
@@ -456,14 +457,18 @@ class PolarisHubClient(OAuth2Client):
         benchmark = benchmark_cls(**response)
         checksum = response.pop("md5Sum", None)
 
-        if verify_checksum and checksum is not None and checksum != benchmark.md5sum:
-            raise PolarisChecksumError(
-                "The benchmark checksum does not match what was specified in the meta-data. "
-                f"{checksum} != {benchmark.md5sum}"
-            )
+        if verify_checksum and checksum is not None:
+            if benchmark.dataset.uses_zarr:
+                logger.info("Skipping checksum verification, because the dataset is stored remotely.")
+            elif checksum != benchmark.md5sum:
+                raise PolarisChecksumError(
+                    "The benchmark checksum does not match what was specified in the meta-data. "
+                    f"{checksum} != {benchmark.md5sum}"
+                )
         elif not verify_checksum:
             benchmark._md5sum = checksum
-        return
+
+        return benchmark
 
     def upload_results(
         self,

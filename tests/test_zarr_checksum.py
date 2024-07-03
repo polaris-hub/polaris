@@ -126,7 +126,7 @@ def test_zarr_leaf_to_checksum(zarr_archive):
 
     # Check the basic structure - Each key corresponds to a file in the zarr archive
     assert len(leaf_to_checksum) == len(root.store)
-    assert all(k in root.store for k in leaf_to_checksum.keys())
+    assert all(k.path in root.store for k in leaf_to_checksum)
 
 
 def test_zarr_checksum_fails_for_remote_storage(zarr_archive):

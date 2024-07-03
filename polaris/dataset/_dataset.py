@@ -27,7 +27,12 @@ from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
-from polaris.utils.types import AccessType, HttpUrlString, HubOwner, SupportedLicenseType
+from polaris.utils.types import (
+    AccessType,
+    HttpUrlString,
+    HubOwner,
+    SupportedLicenseType,
+)
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -92,6 +97,7 @@ class Dataset(BaseArtifactModel):
     _md5sum: Optional[str] = PrivateAttr(None)
     _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
+    _warn_about_remote_zarr: bool = PrivateAttr(True)  # Optional[PolarisHubClient]
 
     @field_validator("table")
     def _validate_table(cls, v):
@@ -277,14 +283,16 @@ class Dataset(BaseArtifactModel):
 
         # We open the archive in read-only mode if it is saved on the Hub
         saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_root_path)
-        saved_remote = saved_on_hub or not dmfs.is_local_path(self.zarr_root_path)
 
-        if saved_remote:
-            logger.warning(
-                f"You're loading data from a remote location. "
-                f"To speed up this process, consider caching the dataset first "
-                f"using {self.__class__.__name__}.cache()"
-            )
+        if self._warn_about_remote_zarr:
+            saved_remote = saved_on_hub or not dmfs.is_local_path(self.zarr_root_path)
+
+            if saved_remote:
+                logger.warning(
+                    f"You're loading data from a remote location. "
+                    f"To speed up this process, consider caching the dataset first "
+                    f"using {self.__class__.__name__}.cache()"
+                )
 
         try:
             if saved_on_hub:

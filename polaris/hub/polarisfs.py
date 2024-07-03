@@ -1,5 +1,3 @@
-import hashlib
-from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import fsspec
@@ -202,14 +200,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
 
-        sha256_hash = hashlib.sha256(content).hexdigest()
-
-        headers = {
-            "Content-Type": "application/octet-stream",
-            "x-amz-content-sha256": sha256_hash,
-            "x-amz-date": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
-            **hub_response_body["headers"],
-        }
+        headers = {"Content-Type": "application/octet-stream", **hub_response_body["headers"]}
 
         response = self.polaris_client.request(
             url=signed_url,
