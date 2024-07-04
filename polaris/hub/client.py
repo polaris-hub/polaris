@@ -596,7 +596,7 @@ class PolarisHubClient(OAuth2Client):
                 "tableContent": {
                     "size": parquet_size,
                     "fileType": "parquet",
-                    "md5sum": parquet_md5,
+                    "md5Sum": parquet_md5,
                 },
                 "zarrContent": [md5sum.model_dump() for md5sum in dataset._zarr_md5sum_manifest],
                 "access": access,
