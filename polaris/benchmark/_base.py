@@ -23,7 +23,7 @@ from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
-from polaris.utils.errors import InvalidBenchmarkError
+from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
 from polaris.utils.misc import listit
 from polaris.utils.types import (
     AccessType,
@@ -295,6 +295,26 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         checksum = hash_fn.hexdigest()
         return checksum
+
+    def verify_checksum(self, md5sum: Optional[str] = None):
+        """
+        Recomputes the checksum and verifies whether it matches the stored checksum.
+        """
+        if md5sum is None:
+            md5sum = self._md5sum
+        if md5sum is None:
+            raise RuntimeError(
+                "No checksum to verify against. Specify either the md5sum parameter or "
+                "store the checksum in the dataset._md5sum attribute."
+            )
+
+        # Temporarily reset
+        # Calling self.md5sum will recompute the checksum and set it again
+        self._md5sum = None
+        if self.md5sum != md5sum:
+            raise PolarisChecksumError(
+                f"The specified checksum {md5sum} does not match the computed checksum {self.md5sum}"
+            )
 
     @computed_field
     @property

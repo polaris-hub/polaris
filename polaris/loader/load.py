@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 import fsspec
 from datamol.utils import fs
@@ -11,7 +12,7 @@ from polaris.dataset import Dataset, create_dataset_from_file
 from polaris.hub.client import PolarisHubClient
 
 
-def load_dataset(path: str, verify_checksum: bool = True) -> Dataset:
+def load_dataset(path: str, verify_checksum: Optional[bool] = None) -> Dataset:
     """
     Loads a Polaris dataset.
 
@@ -37,12 +38,20 @@ def load_dataset(path: str, verify_checksum: bool = True) -> Dataset:
         client = PolarisHubClient()
         return client.get_dataset(*path.split("/"), verify_checksum=verify_checksum)
 
+    # Load from local file
     if extension == "json":
-        return Dataset.from_json(path)
-    return create_dataset_from_file(path)
+        dataset = Dataset.from_json(path)
+    else:
+        dataset = create_dataset_from_file(path)
+
+    # Verify checksum if requested
+    if verify_checksum:
+        dataset.verify_checksum()
+
+    return dataset
 
 
-def load_benchmark(path: str, verify_checksum: bool = True):
+def load_benchmark(path: str, verify_checksum: Optional[bool] = None):
     """
     Loads a Polaris benchmark.
 
@@ -75,4 +84,11 @@ def load_benchmark(path: str, verify_checksum: bool = True):
     #  e.g. we might end up with a single class per benchmark.
     is_single_task = isinstance(data["target_cols"], str) or len(data["target_cols"]) == 1
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
-    return cls.from_json(path)
+
+    benchmark = cls.from_json(path)
+
+    # Verify checksum if requested
+    if verify_checksum:
+        benchmark.verify_checksum()
+
+    return benchmark

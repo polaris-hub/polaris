@@ -85,10 +85,6 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         if timeout is None:
             timeout = self.default_timeout
 
-        cached_listings = self._ls_from_cache(path)
-        if cached_listings is not None:
-            return cached_listings if detail else [d["name"] for d in cached_listings]
-
         ls_path = self.sep.join([self.base_path, "ls", path])
 
         # GET request to Polaris Hub to list objects in path

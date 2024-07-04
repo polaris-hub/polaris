@@ -33,7 +33,6 @@ from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import (
     InvalidDatasetError,
-    PolarisChecksumError,
     PolarisHubError,
     PolarisUnauthorizedError,
 )
@@ -178,6 +177,15 @@ class PolarisHubClient(OAuth2Client):
             )
 
         return artifact_owner if isinstance(artifact_owner, HubOwner) else HubOwner(slug=artifact_owner)
+
+    @staticmethod
+    def _normalize_verify_checksum(
+        verify_checksum: Optional[bool],
+        dataset: Dataset,
+    ):
+        if verify_checksum is not None:
+            return verify_checksum
+        return dataset._md5sum is not None and not dataset.uses_zarr
 
     # =========================
     #     Overrides
@@ -331,13 +339,16 @@ class PolarisHubClient(OAuth2Client):
         dataset_list = [bm["artifactId"] for bm in response["data"]]
         return dataset_list
 
-    def get_dataset(self, owner: Union[str, HubOwner], name: str, verify_checksum: bool = True) -> Dataset:
+    def get_dataset(
+        self, owner: Union[str, HubOwner], name: str, verify_checksum: Optional[bool] = None
+    ) -> Dataset:
         """Load a dataset from the Polaris Hub.
 
         Args:
             owner: The owner of the dataset. Can be either a user or organization from the Polaris Hub.
             name: The name of the dataset.
-            verify_checksum: Whether to use the checksum to verify the integrity of the dataset.
+            verify_checksum: Whether to use the checksum to verify the integrity of the dataset. If None,
+                will infer a practical default based on the dataset's storage location.
 
         Returns:
             A `Dataset` instance, if it exists.
@@ -360,17 +371,12 @@ class PolarisHubClient(OAuth2Client):
         response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
 
         dataset = Dataset(**response)
-        checksum = response.pop("md5Sum", None)
+        verify_checksum = self._normalize_verify_checksum(verify_checksum, dataset)
 
-        if verify_checksum and checksum is not None:
-            if dataset.uses_zarr:
-                logger.info("Skipping checksum verification, because the dataset is stored remotely.")
-            else:
-                dataset.verify_checksum(md5sum=checksum)
+        if verify_checksum:
+            dataset.verify_checksum()
 
-        dataset._md5sum = checksum
         dataset._zarr_md5sum_manifest = response.get("zarrContent", None)
-
         return dataset
 
     def open_zarr_file(
@@ -383,7 +389,8 @@ class PolarisHubClient(OAuth2Client):
             name: Name of the dataset.
             path: Path to the Zarr file within the dataset.
             mode: The mode in which the file is opened.
-            as_consolidated: Whether to open the store with consolidated metadata for optimized reading. This is only applicable in 'r' and 'r+' modes.
+            as_consolidated: Whether to open the store with consolidated metadata for optimized reading.
+                This is only applicable in 'r' and 'r+' modes.
 
         Returns:
             The Zarr object representing the dataset.
@@ -425,14 +432,15 @@ class PolarisHubClient(OAuth2Client):
         return benchmarks_list
 
     def get_benchmark(
-        self, owner: Union[str, HubOwner], name: str, verify_checksum: bool = True
+        self, owner: Union[str, HubOwner], name: str, verify_checksum: Optional[bool] = None
     ) -> BenchmarkSpecification:
         """Load a benchmark from the Polaris Hub.
 
         Args:
             owner: The owner of the benchmark. Can be either a user or organization from the Polaris Hub.
             name: The name of the benchmark.
-            verify_checksum: Whether to use the checksum to verify the integrity of the dataset.
+            verify_checksum: Whether to use the checksum to verify the integrity of the dataset. If None,
+                will infer a practical default based on the dataset's storage location.
 
         Returns:
             A `BenchmarkSpecification` instance, if it exists.
@@ -455,18 +463,11 @@ class PolarisHubClient(OAuth2Client):
         )
 
         benchmark = benchmark_cls(**response)
-        checksum = response.pop("md5Sum", None)
 
-        if verify_checksum and checksum is not None:
-            if benchmark.dataset.uses_zarr:
-                logger.info("Skipping checksum verification, because the dataset is stored remotely.")
-            elif checksum != benchmark.md5sum:
-                raise PolarisChecksumError(
-                    "The benchmark checksum does not match what was specified in the meta-data. "
-                    f"{checksum} != {benchmark.md5sum}"
-                )
-        elif not verify_checksum:
-            benchmark._md5sum = checksum
+        verify_checksum = self._normalize_verify_checksum(verify_checksum, benchmark.dataset)
+
+        if verify_checksum:
+            benchmark.verify_checksum()
 
         return benchmark
 
