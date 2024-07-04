@@ -139,11 +139,20 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         if response.status_code != 307:
             raise PolarisHubError("Could not get signed URL from Polaris Hub.")
 
-        signed_url = response.json()["url"]
+        hub_response_body = response.json()
+        signed_url = hub_response_body["url"]
 
-        with fsspec.open(signed_url, "rb", **kwargs) as f:
-            data = f.read()
-        return data[start:end]
+        headers = {"Content-Type": "application/octet-stream", **hub_response_body["headers"]}
+
+        response = self.polaris_client.request(
+            url=signed_url,
+            method="GET",
+            auth=None,
+            headers=headers,
+            timeout=timeout,
+        )
+        response.raise_for_status()
+        return response.content[start:end]
 
     def rm(self, path: str, recursive: bool = False, maxdepth: Optional[int] = None) -> None:
         """Remove a file or directory from the Polaris dataset.
