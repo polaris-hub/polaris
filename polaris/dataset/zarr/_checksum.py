@@ -44,7 +44,8 @@ import fsspec
 import fsspec.utils
 import zarr
 import zarr.errors
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 from tqdm import tqdm
 
 from polaris.utils.errors import InvalidZarrChecksum
@@ -157,6 +158,8 @@ class ZarrFileChecksum(BaseModel):
         md5sum: The md5sum of the file.
         size: The size of the file in bytes.
     """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, arbitrary_types_allowed=True)
 
     path: str
     md5sum: str

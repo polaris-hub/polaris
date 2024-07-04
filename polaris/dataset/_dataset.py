@@ -234,6 +234,14 @@ class Dataset(BaseArtifactModel):
             self._md5sum, self._zarr_md5sum_manifest = self._compute_checksum(self.table, self.zarr_root_path)
         return self._md5sum
 
+    @computed_field
+    @property
+    def zarr_md5sum_manifest(self) -> str:
+        """Lazily compute the checksum once needed."""
+        if self._zarr_md5sum_manifest is None and self._md5sum is None:
+            self._md5sum, self._zarr_md5sum_manifest = self._compute_checksum(self.table, self.zarr_root_path)
+        return self._zarr_md5sum_manifest
+
     @property
     def client(self):
         """The Polaris Hub client used to interact with the Polaris Hub."""
