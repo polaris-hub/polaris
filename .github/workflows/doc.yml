@@ -31,11 +31,7 @@ jobs:
           cache-downloads: true
 
       - name: Install library
-        run: |
-          python -m pip install --no-deps .
-          # Note: Temporarily upgrade mkdocs-jupyter through PyPi
-          # See https://github.com/conda-forge/mkdocs-jupyter-feedstock/pull/30
-          python -m pip install mkdocs-jupyter -U
+        run: python -m pip install --no-deps .
 
       - name: Configure git
         run: |

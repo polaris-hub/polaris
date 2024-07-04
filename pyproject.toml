@@ -116,7 +116,6 @@ omit = [
     "polaris/hub/client.py",
     "polaris/hub/settings.py",
     "polaris/hub/__init__.py",
-    "polaris/curation/viz_utils.py",
 ]
 
 [tool.coverage.xml]
