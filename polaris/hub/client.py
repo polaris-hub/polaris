@@ -375,6 +375,8 @@ class PolarisHubClient(OAuth2Client):
 
         if verify_checksum:
             dataset.verify_checksum()
+        else:
+            dataset._md5sum = response["md5Sum"]
 
         dataset._zarr_md5sum_manifest = response.get("zarrContent", None)
         return dataset
@@ -468,6 +470,8 @@ class PolarisHubClient(OAuth2Client):
 
         if verify_checksum:
             benchmark.verify_checksum()
+        else:
+            benchmark._md5sum = response["md5Sum"]
 
         return benchmark
 
