@@ -90,4 +90,5 @@ def load_benchmark(path: str, verify_checksum: Optional[bool] = None):
     # Verify checksum if requested
     if PolarisHubClient._normalize_verify_checksum(verify_checksum, benchmark.dataset):
         benchmark.verify_checksum(md5sum=data["md5sum"])
+
     return benchmark
