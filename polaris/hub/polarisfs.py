@@ -1,6 +1,8 @@
+from hashlib import md5
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import fsspec
+from loguru import logger
 
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import TimeoutTypes
@@ -152,7 +154,23 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             timeout=timeout,
         )
         response.raise_for_status()
-        return response.content[start:end]
+        response_content = response.content
+
+        # Verify the checksum on download
+        expected_md5sum = self.polaris_client.get_metadata_from_response(response, "md5sum")
+        if expected_md5sum is None:
+            raise PolarisHubError("MD5 checksum not found in response headers.")
+        logger.debug(f"MD5 checksum found in response headers: {expected_md5sum}.")
+
+        md5sum = md5(response_content).hexdigest()
+        logger.debug(f"MD5 checksum computed for response content: {md5sum}.")
+
+        if md5sum != expected_md5sum:
+            raise PolarisHubError(
+                f"MD5 checksum verification failed. Expected {expected_md5sum}, got {md5sum}."
+            )
+
+        return response_content[start:end]
 
     def rm(self, path: str, recursive: bool = False, maxdepth: Optional[int] = None) -> None:
         """Remove a file or directory from the Polaris dataset.

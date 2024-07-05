@@ -16,7 +16,7 @@ from authlib.integrations.base_client.errors import InvalidTokenError, MissingTo
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from datamol.utils import fs
-from httpx import HTTPStatusError
+from httpx import HTTPStatusError, Response
 from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
 
@@ -186,6 +186,11 @@ class PolarisHubClient(OAuth2Client):
         if verify_checksum is not None:
             return verify_checksum
         return dataset._md5sum is not None and not dataset.uses_zarr
+
+    def get_metadata_from_response(self, response: Response, key: str) -> Optional[str]:
+        """Get custom metadata saved to the R2 object from the headers."""
+        key = f"{self.settings.custom_metadata_prefix}{key}"
+        return response.headers.get(key)
 
     # =========================
     #     Overrides
@@ -377,8 +382,6 @@ class PolarisHubClient(OAuth2Client):
             dataset.verify_checksum()
         else:
             dataset._md5sum = response["md5Sum"]
-
-        dataset._zarr_md5sum_manifest = response.get("zarrContent", None)
         return dataset
 
     def open_zarr_file(

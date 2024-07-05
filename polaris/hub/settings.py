@@ -37,6 +37,7 @@ class PolarisHubSettings(BaseSettings):
     scopes: str = "profile email"
     client_id: str = "agQP2xVM6JqMHvGc"
     ca_bundle: Optional[Union[str, bool]] = None
+    custom_metadata_prefix: str = "X-Amz-Meta-"
 
     default_timeout: TimeoutTypes = (10, 200)
 
