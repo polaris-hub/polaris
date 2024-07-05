@@ -51,42 +51,33 @@ def test_dataset_checksum(test_dataset):
 
     # Make sure the `md5sum` is part of the model dump even if not initiated yet.
     # This is important for uploads to the Hub.
-    assert test_dataset._md5sum is None and "md5sum" in test_dataset.model_dump()
-
-    original = test_dataset.md5sum
-    assert original is not None
+    assert test_dataset._md5sum is None
+    assert "md5sum" in test_dataset.model_dump()
 
     # Without any changes, same hash
     kwargs = test_dataset.model_dump()
-    assert Dataset(**kwargs).md5sum == original
+    assert Dataset(**kwargs) == test_dataset
 
     # With unimportant changes, same hash
     kwargs["name"] = "changed"
     kwargs["description"] = "changed"
     kwargs["source"] = "https://changed.com"
-    assert Dataset(**kwargs).md5sum == original
+    assert Dataset(**kwargs) == test_dataset
 
     # Check sensitivity to the row and column ordering
     kwargs["table"] = kwargs["table"].iloc[::-1]
     kwargs["table"] = kwargs["table"][kwargs["table"].columns[::-1]]
-    assert Dataset(**kwargs).md5sum == original
-
-    def _check_for_failure(_kwargs):
-        assert Dataset(**_kwargs).md5sum != _kwargs["md5sum"]
+    assert Dataset(**kwargs) == test_dataset
 
     # Without any changes, but different hash
-    kwargs["md5sum"] = "invalid"
-    _check_for_failure(kwargs)
+    dataset = Dataset(**kwargs)
+    dataset._md5sum = "invalid"
+    assert dataset != test_dataset
 
     # With changes, but same hash
-    kwargs["md5sum"] = original
+    kwargs["md5sum"] = test_dataset.md5sum
     kwargs["table"] = kwargs["table"].iloc[:-1]
-    _check_for_failure(kwargs)
-
-    # With changes, but no hash
-    kwargs["md5sum"] = None
-    dataset = Dataset(**kwargs)
-    assert dataset.md5sum is not None
+    assert Dataset(**kwargs) != test_dataset
 
 
 def test_dataset_from_zarr(zarr_archive, tmpdir):

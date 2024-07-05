@@ -60,7 +60,7 @@ def test_user_owner():
     return HubOwner(userId="test-user", slug="test-user")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def test_dataset(test_data, test_org_owner):
     dataset = Dataset(
         table=test_data,

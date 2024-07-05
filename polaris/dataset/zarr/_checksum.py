@@ -41,7 +41,6 @@ from pathlib import Path
 from typing import List, Tuple
 
 import fsspec
-import fsspec.utils
 import zarr
 import zarr.errors
 from pydantic import BaseModel, ConfigDict

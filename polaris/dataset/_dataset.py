@@ -4,7 +4,6 @@ from hashlib import md5
 from typing import Dict, List, MutableMapping, Optional, Tuple, Union
 
 import fsspec
-import fsspec.utils
 import numpy as np
 import pandas as pd
 import zarr
@@ -99,7 +98,7 @@ class Dataset(BaseArtifactModel):
     _md5sum: Optional[str] = PrivateAttr(None)
     _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
-    _warn_about_remote_zarr: bool = PrivateAttr(True)  # Optional[PolarisHubClient]
+    _warn_about_remote_zarr: bool = PrivateAttr(True)
 
     @field_validator("table")
     def _validate_table(cls, v):
@@ -150,7 +149,8 @@ class Dataset(BaseArtifactModel):
 
         # Set the default cache dir if none and make sure it exists
         if m.cache_dir is None:
-            m.cache_dir = dmfs.join(DEFAULT_CACHE_DIR, _CACHE_SUBDIR, str(uuid.uuid4()))
+            dataset_id = m._md5sum if m._md5sum is not None else str(uuid.uuid4())
+            m.cache_dir = dmfs.join(DEFAULT_CACHE_DIR, _CACHE_SUBDIR, dataset_id)
 
         dmfs.mkdir(m.cache_dir, exist_ok=True)
 
@@ -303,6 +303,7 @@ class Dataset(BaseArtifactModel):
                     f"To speed up this process, consider caching the dataset first "
                     f"using {self.__class__.__name__}.cache()"
                 )
+                self._warn_about_remote_zarr = False
 
         try:
             if saved_on_hub:
@@ -470,8 +471,6 @@ class Dataset(BaseArtifactModel):
                     log=logger.debug,
                     if_exists=if_exists,
                 )
-
-                self._warn_about_remote_zarr = True
 
         self.table.to_parquet(table_path)
         with fsspec.open(dataset_path, "w") as f:

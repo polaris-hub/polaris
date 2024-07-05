@@ -86,8 +86,6 @@ class BenchmarkSpecification(BaseArtifactModel):
         split: The predefined train-test split to use for evaluation.
         metrics: The metrics to use for evaluating performance
         main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
-        md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
-            raise an error if the specified checksum doesn't match the computed checksum.
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
@@ -305,7 +303,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         if md5sum is None:
             raise RuntimeError(
                 "No checksum to verify against. Specify either the md5sum parameter or "
-                "store the checksum in the dataset._md5sum attribute."
+                "store the checksum in the benchmark._md5sum attribute."
             )
 
         # Temporarily reset

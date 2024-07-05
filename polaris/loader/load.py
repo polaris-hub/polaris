@@ -45,7 +45,7 @@ def load_dataset(path: str, verify_checksum: Optional[bool] = None) -> Dataset:
         dataset = create_dataset_from_file(path)
 
     # Verify checksum if requested
-    if verify_checksum:
+    if PolarisHubClient._normalize_verify_checksum(verify_checksum, dataset):
         dataset.verify_checksum()
 
     return dataset
@@ -88,7 +88,6 @@ def load_benchmark(path: str, verify_checksum: Optional[bool] = None):
     benchmark = cls.from_json(path)
 
     # Verify checksum if requested
-    if verify_checksum:
-        benchmark.verify_checksum()
-
+    if PolarisHubClient._normalize_verify_checksum(verify_checksum, benchmark.dataset):
+        benchmark.verify_checksum(md5sum=data["md5sum"])
     return benchmark
