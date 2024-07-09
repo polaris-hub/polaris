@@ -6,7 +6,7 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.utils.errors import PolarisChecksumError, TargetBinningError
+from polaris.utils.errors import PolarisChecksumError
 
 
 @pytest.mark.parametrize("is_single_task", [True, False])
@@ -193,7 +193,7 @@ def test_benchmark_targetbinning_error(test_dataset, tmpdir):
         train_indices = list(range(90))
         test_indices = list(range(90, 100))
         with pytest.raises(ValidationError):
-            benchmark = SingleTaskBenchmarkSpecification(
+            SingleTaskBenchmarkSpecification(
                 name="single-task-benchmark",
                 dataset=test_dataset,
                 main_metric="accuracy",
