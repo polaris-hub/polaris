@@ -22,7 +22,7 @@ from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
-from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
+from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError, TargetBinningError
 from polaris.utils.misc import listit
 from polaris.utils.types import (
     AccessType,
@@ -31,7 +31,9 @@ from polaris.utils.types import (
     SplitType,
     TargetType,
     TaskType,
+    DiscretizerType,
 )
+from polaris.utils.misc import discretize
 
 ColumnsType = Union[str, list[str]]
 
@@ -103,6 +105,7 @@ class BenchmarkSpecification(BaseArtifactModel):
     metrics: Union[str, Metric, list[Union[str, Metric]]]
     main_metric: Optional[Union[str, Metric]] = None
     md5sum: Optional[str] = None
+    target_binning: Optional[dict[str, DiscretizerType]] = None
 
     # Additional meta-data
     readme: str = ""
@@ -254,6 +257,10 @@ class BenchmarkSpecification(BaseArtifactModel):
                 f"{checksum} != {expected}"
             )
 
+        if len(m.n_classes) > 0 and m.target_binning is not None:
+            raise TargetBinningError(
+                "Target binning is only supported for evaluating regression model with classification task.")
+
         # Set a default main metric if not set yet
         if m.main_metric is None:
             m.main_metric = m.metrics[0]
@@ -316,6 +323,12 @@ class BenchmarkSpecification(BaseArtifactModel):
         """The size of the train set."""
         return len(self.split[0])
 
+    @computed_field
+    @property
+    def reg_evaluate_as_cls(self) -> int:
+        """Whether the regression benchmark can also be evaluated as classification task"""
+        return len(self.n_classes) == 0 and self.target_binning is not None
+    
     @computed_field
     @property
     def n_test_sets(self) -> int:
@@ -387,6 +400,11 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         return train, test
 
+    def _get_label_class(self, key, value ):
+        """Apply discretization of target values """
+        discretize_param = self.target_binning.get(key)
+        return discretize(X=value, thresholds=discretize_param[0], label_order=discretize_param[1])
+
     def evaluate(
         self, y_pred: Optional[PredictionsType] = None, y_prob: Optional[PredictionsType] = None
     ) -> BenchmarkResults:
@@ -419,7 +437,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
         # See also the `hide_targets` parameter in the `Subset` class.
         test = self.get_train_test_split()[1]
-
+                                    
         if not isinstance(test, dict):
             test = {"test": test}
 
@@ -427,7 +445,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         for k, test_subset in test.items():
             with tmp_attribute_change(test_subset, "_hide_targets", False):
                 y_true[k] = test_subset.targets
-
+     
         if not isinstance(y_pred, dict) or all(k in self.target_cols for k in y_pred):
             y_pred = {"test": y_pred}
 
@@ -438,18 +456,40 @@ class BenchmarkSpecification(BaseArtifactModel):
             raise KeyError(
                 f"Missing keys for at least one of the test sets. Expecting: {sorted(test.keys())}"
             )
+        
+        if self.reg_evaluate_as_cls: 
+            y_true_class = {}
+            y_pred_class = {}
+            for k in test.keys():
+                y_true_class[k] = {}
+                y_pred_class[k] = {}
+                # apply discretization if applicable
+                for target_name in y_true[k].keys():
+                    if target_name in self.target_binning:
+                        y_true_class[k][target_name] = self._get_label_class(target_name, y_true[k].get(target_name))
+                        y_pred_class[k][target_name] = self._get_label_class(target_name, y_pred[k].get(target_name))
 
         # Results are saved in a tabular format. For more info, see the BenchmarkResults docs.
         scores: ResultsType = pd.DataFrame(columns=BenchmarkResults.RESULTS_COLUMNS)
 
         # For every test set...
-        for test_label, y_true_subset in y_true.items():
+        for test_label in y_true.keys():
             # For every metric...
             for metric in self.metrics:
+                if self.reg_evaluate_as_cls and metric.value.target_type == TargetType.CLASSIFICATION:
+                    y_true_subset = y_true_class.get(test_label)
+                    y_pred_eval = y_pred_class.get(test_label)
+                    y_prob_eval = y_pred.get(test_label)
+                else:
+                    y_true_subset = y_true.get(test_label)
+                    y_pred_eval = y_pred.get(test_label)
+                    y_prob_eval = y_prob.get(test_label)
+
                 if metric.is_multitask:
                     # Multi-task but with a metric across targets
+
                     score = metric(
-                        y_true=y_true_subset, y_pred=y_pred.get(test_label), y_prob=y_prob.get(test_label)
+                        y_true=y_true_subset, y_pred=y_pred_eval, y_prob=y_prob_eval
                     )
                     scores.loc[len(scores)] = (test_label, "aggregated", metric, score)
                     continue
@@ -457,7 +497,7 @@ class BenchmarkSpecification(BaseArtifactModel):
                 if not isinstance(y_true_subset, dict):
                     # Single task
                     score = metric(
-                        y_true=y_true_subset, y_pred=y_pred.get(test_label), y_prob=y_prob.get(test_label)
+                        y_true=y_true_subset, y_pred=y_pred_eval, y_prob=y_prob_eval
                     )
                     scores.loc[len(scores)] = (
                         test_label,
@@ -474,15 +514,14 @@ class BenchmarkSpecification(BaseArtifactModel):
                     mask = ~np.isnan(y_true_target)
                     score = metric(
                         y_true=y_true_target[mask],
-                        y_pred=y_pred[test_label][target_label][mask]
-                        if y_pred[test_label] is not None
+                        y_pred=y_pred_eval[target_label][mask]
+                        if y_pred_eval is not None
                         else None,
-                        y_prob=y_prob[test_label][target_label][mask]
-                        if y_prob[test_label] is not None
+                        y_prob=y_prob_eval[target_label][mask]
+                        if y_prob_eval is not None
                         else None,
                     )
                     scores.loc[len(scores)] = (test_label, target_label, metric, score)
-
         return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)
 
     def upload_to_hub(

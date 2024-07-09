@@ -233,6 +233,35 @@ def test_multi_task_benchmark(test_dataset):
 
 
 @pytest.fixture(scope="function")
+def test_multi_reg_task_benchmark_with_cls_metrics(test_dataset):
+    # For the sake of simplicity, just use a small set of indices
+    train_indices = list(range(90))
+    test_indices = list(range(90, 100))
+    benchmark = MultiTaskBenchmarkSpecification(
+        name="multi-task-benchmark",
+        dataset=test_dataset,
+        main_metric="mean_absolute_error",
+        metrics=[
+            "mean_absolute_error",
+            "mean_squared_error",
+            "r2",
+            "spearmanr",
+            "pearsonr",
+            "explained_var",
+            "absolute_average_fold_error",
+            "accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"
+        ],
+        split=(train_indices, test_indices),
+        target_cols=["expt", "calc"],
+        input_cols="smiles",
+        target_types={"expt": "regression"},
+        target_binning={"expt": ([0.2], "ascending")}
+    )
+    check_version(benchmark)
+    return benchmark
+
+
+@pytest.fixture(scope="function")
 def test_multi_task_benchmark_clf(test_dataset):
     # For the sake of simplicity, just use a small set of indices
     train_indices = list(range(90))

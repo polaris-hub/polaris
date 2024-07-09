@@ -33,3 +33,6 @@ class TestAccessError(Exception):
     __test__ = False
 
     pass
+
+class TargetBinningError(ValueError):
+    pass

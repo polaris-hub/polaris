@@ -107,6 +107,10 @@ ZarrConflictResolution: TypeAlias = Literal["raise", "replace", "skip"]
 Type to specify which action to take when encountering existing files within a Zarr archive.
 """
 
+DiscretizerType: TypeAlias = tuple[Union[np.ndarray, list], Literal["ascending", "descending"]]
+"""
+Type to specify the thresholds and label order when applying discretizer.
+"""
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
