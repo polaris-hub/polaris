@@ -69,7 +69,9 @@ def test_metrics_multitask_reg(tmpdir: str, test_multi_task_benchmark: MultiTask
         assert metric in result.results.Metric.tolist()
 
 
-def test_metrics_multitask_reg_with_cls_metrics(tmpdir: str, test_multi_reg_task_benchmark_with_cls_metrics: MultiTaskBenchmarkSpecification):
+def test_metrics_multitask_reg_with_cls_metrics(
+    tmpdir: str, test_multi_reg_task_benchmark_with_cls_metrics: MultiTaskBenchmarkSpecification
+):
     train, test = test_multi_reg_task_benchmark_with_cls_metrics.get_train_test_split()
     predictions = {
         target_col: np.random.random(size=test.inputs.shape[0]) for target_col in train.target_cols

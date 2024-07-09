@@ -249,13 +249,18 @@ def test_multi_reg_task_benchmark_with_cls_metrics(test_dataset):
             "pearsonr",
             "explained_var",
             "absolute_average_fold_error",
-            "accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"
+            "accuracy",
+            "f1",
+            "roc_auc",
+            "pr_auc",
+            "mcc",
+            "cohen_kappa",
         ],
         split=(train_indices, test_indices),
         target_cols=["expt", "calc"],
         input_cols="smiles",
         target_types={"expt": "regression"},
-        target_binning={"expt": ([0.2], "ascending")}
+        target_binning={"expt": ([0.2], "ascending")},
     )
     check_version(benchmark)
     return benchmark

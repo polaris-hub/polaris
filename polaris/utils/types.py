@@ -112,6 +112,7 @@ DiscretizerType: TypeAlias = tuple[Union[np.ndarray, list], Literal["ascending",
 Type to specify the binning thresholds and label order when applying discretizer.
 """
 
+
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
 

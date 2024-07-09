@@ -97,27 +97,43 @@ class Metric(Enum):
     pearsonr = MetricInfo(fn=pearsonr, direction="max", target_type="regression")
     spearmanr = MetricInfo(fn=spearman, direction="max", target_type="regression")
     explained_var = MetricInfo(fn=explained_variance_score, direction="max", target_type="regression")
-    absolute_average_fold_error = MetricInfo(fn=absolute_average_fold_error, direction=1, target_type="regression")
+    absolute_average_fold_error = MetricInfo(
+        fn=absolute_average_fold_error, direction=1, target_type="regression"
+    )
 
     # binary and multiclass classification
     accuracy = MetricInfo(fn=accuracy_score, direction="max", target_type="classification")
     balanced_accuracy = MetricInfo(fn=balanced_accuracy_score, direction="max", target_type="classification")
     mcc = MetricInfo(fn=matthews_corrcoef, direction="max", target_type="classification")
     cohen_kappa = MetricInfo(fn=cohen_kappa_score, direction="max", target_type="classification")
-    pr_auc = MetricInfo(fn=average_precision_score, direction="max", y_type="y_score", target_type="classification")
+    pr_auc = MetricInfo(
+        fn=average_precision_score, direction="max", y_type="y_score", target_type="classification"
+    )
 
     # binary only
     f1 = MetricInfo(fn=f1_score, kwargs={"average": "binary"}, direction="max", target_type="classification")
     roc_auc = MetricInfo(fn=roc_auc_score, direction="max", y_type="y_score", target_type="classification")
 
     # multiclass tasks only
-    f1_macro = MetricInfo(fn=f1_score, kwargs={"average": "macro"}, direction="max", target_type="classification")
-    f1_micro = MetricInfo(fn=f1_score, kwargs={"average": "micro"}, direction="max", target_type="classification")
+    f1_macro = MetricInfo(
+        fn=f1_score, kwargs={"average": "macro"}, direction="max", target_type="classification"
+    )
+    f1_micro = MetricInfo(
+        fn=f1_score, kwargs={"average": "micro"}, direction="max", target_type="classification"
+    )
     roc_auc_ovr = MetricInfo(
-        fn=roc_auc_score, kwargs={"multi_class": "ovr"}, direction="max", y_type="y_score", target_type="classification"
+        fn=roc_auc_score,
+        kwargs={"multi_class": "ovr"},
+        direction="max",
+        y_type="y_score",
+        target_type="classification",
     )
     roc_auc_ovo = MetricInfo(
-        fn=roc_auc_score, kwargs={"multi_class": "ovo"}, direction="max", y_type="y_score", target_type="classification"
+        fn=roc_auc_score,
+        kwargs={"multi_class": "ovo"},
+        direction="max",
+        y_type="y_score",
+        target_type="classification",
     )
     # TODO: add metrics to handle multitask multiclass predictions.
 
