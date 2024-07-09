@@ -28,7 +28,7 @@ def login(
     This CLI will use the OAuth2 protocol to gain token-based access to the Polaris Hub API.
     """
     with PolarisHubClient(settings=PolarisHubSettings(_env_file=client_env_file)) as client:
-        client.interactive_login(auto_open_browser=auto_open_browser, overwrite=overwrite)
+        client.login(auto_open_browser=auto_open_browser, overwrite=overwrite)
 
 
 @app.command(hidden=True)

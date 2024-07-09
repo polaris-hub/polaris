@@ -125,6 +125,13 @@ class HubOwner(BaseModel):
     def __str__(self):
         return self.slug
 
+    @staticmethod
+    def normalize(owner: Union[str, "HubOwner"]) -> "HubOwner":
+        """
+        Normalize a string or `HubOwner` instance to a `HubOwner` instance.
+        """
+        return owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
+
 
 class TargetType(Enum):
     """The high-level classification of different targets."""

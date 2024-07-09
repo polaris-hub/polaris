@@ -115,11 +115,13 @@ class PolarisHubClient(OAuth2Client):
         See https://datatracker.ietf.org/doc/html/rfc8693#name-request
         """
         if grant_type == "urn:ietf:params:oauth:grant-type:token-exchange":
-            kwargs.update({
-                "subject_token": self.external_client.token["access_token"],
-                "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-                "requested_token_type": "urn:ietf:params:oauth:token-type:jwt",
-            })
+            kwargs.update(
+                {
+                    "subject_token": self.external_client.token["access_token"],
+                    "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
+                    "requested_token_type": "urn:ietf:params:oauth:token-type:jwt",
+                }
+            )
         return super()._prepare_token_endpoint_body(body, grant_type, **kwargs)
 
     def ensure_active_token(self, token: OAuth2Token) -> bool:
@@ -172,29 +174,6 @@ class PolarisHubClient(OAuth2Client):
 
         return response
 
-    def _normalize_owner(
-        self,
-        artifact_owner: str | HubOwner | None = None,
-        parameter_owner: str | HubOwner | None = None,
-    ) -> HubOwner:
-        """
-        Normalize the owner of an artifact to a `HubOwner` instance.
-        The parameter owner takes precedence over the artifact owner.
-        """
-        if parameter_owner is not None:
-            artifact_owner = parameter_owner
-
-        if artifact_owner is None:
-            raise ValueError(
-                "Either specify the `owner` attribute for the artifact or pass the `owner` parameter."
-            )
-
-        return artifact_owner if isinstance(artifact_owner, HubOwner) else HubOwner(slug=artifact_owner)
-
-    # =========================
-    #     Overrides
-    # =========================
-
     def request(self, method, url, withhold_token=False, auth=httpx.USE_CLIENT_DEFAULT, **kwargs):
         """Wraps the base request method to handle errors"""
         try:
@@ -216,7 +195,7 @@ class PolarisHubClient(OAuth2Client):
                 raise
             raise PolarisUnauthorizedError from error
 
-    def interactive_login(self, overwrite: bool = False, auto_open_browser: bool = True):
+    def login(self, overwrite: bool = False, auto_open_browser: bool = True):
         """Login to the Polaris Hub using the OAuth2 protocol.
 
         Warning: Headless authentication
@@ -404,7 +383,7 @@ class PolarisHubClient(OAuth2Client):
         """
 
         # Get the serialized model data-structure
-        results.owner = self._normalize_owner(results.owner, owner)
+        results.owner = HubOwner.normalize(results.owner and owner)
         result_json = results.model_dump(by_alias=True, exclude_none=True)
 
         # Make a request to the hub
@@ -465,7 +444,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Get the serialized data-model
         # We exclude the table as it handled separately and we exclude the cache_dir as it is user-specific
-        dataset.owner = self._normalize_owner(dataset.owner, owner)
+        dataset.owner = HubOwner.normalize(dataset.owner and owner)
         dataset_json = dataset.model_dump(exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True)
 
         # We will save the Zarr archive to the Hub as well
@@ -592,7 +571,7 @@ class PolarisHubClient(OAuth2Client):
         """
         # Get the serialized data-model
         # We exclude the dataset as we expect it to exist on the hub already.
-        benchmark.owner = self._normalize_owner(benchmark.owner, owner)
+        benchmark.owner = HubOwner.normalize(benchmark.owner and owner)
         benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
         benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
         benchmark_json["access"] = access
