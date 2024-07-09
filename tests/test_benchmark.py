@@ -6,7 +6,7 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.utils.errors import PolarisChecksumError
+from polaris.utils.errors import PolarisChecksumError, TargetBinningError
 
 
 @pytest.mark.parametrize("is_single_task", [True, False])
@@ -188,3 +188,19 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     kwargs["md5sum"] = None
     dataset = cls(**kwargs)
     assert dataset.md5sum is not None
+
+def test_benchmark_targetbinning_error(test_dataset, tmpdir):
+        train_indices = list(range(90))
+        test_indices = list(range(90, 100))
+        with pytest.raises(ValidationError):
+            benchmark = SingleTaskBenchmarkSpecification(
+                name="single-task-benchmark",
+                dataset=test_dataset,
+                main_metric="accuracy",
+                metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa", "balanced_accuracy"],
+                split=(train_indices, test_indices),
+                target_cols="CLASS_expt",
+                input_cols="smiles",
+                target_binning={"CLASS_expt": ([0.1], "ascending")}
+            )
+        
