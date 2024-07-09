@@ -93,6 +93,8 @@ class BenchmarkSpecification(BaseArtifactModel):
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
         target_types: A dictionary that maps target columns to their type. If not specified, this is automatically inferred.
+        target_binning: A dictionary which specifies which target column(s) that trained as regression task(s) but also can be evaluated as classification metrics.
+            The binning argument is a tuple which includes binning thresholds and label order. It is only applicable for regression training tasks.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
     """
 

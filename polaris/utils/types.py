@@ -109,7 +109,7 @@ Type to specify which action to take when encountering existing files within a Z
 
 DiscretizerType: TypeAlias = tuple[Union[np.ndarray, list], Literal["ascending", "descending"]]
 """
-Type to specify the thresholds and label order when applying discretizer.
+Type to specify the binning thresholds and label order when applying discretizer.
 """
 
 class HubOwner(BaseModel):
