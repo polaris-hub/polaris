@@ -1,5 +1,4 @@
 import json
-from typing import Optional
 
 import fsspec
 from datamol.utils import fs
@@ -10,9 +9,11 @@ from polaris.benchmark._definitions import (
 )
 from polaris.dataset import Dataset, create_dataset_from_file
 from polaris.hub.client import PolarisHubClient
+from polaris.utils.misc import should_verify_checksum
+from polaris.utils.types import ChecksumStrategy
 
 
-def load_dataset(path: str, verify_checksum: Optional[bool] = None) -> Dataset:
+def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr") -> Dataset:
     """
     Loads a Polaris dataset.
 
@@ -45,13 +46,13 @@ def load_dataset(path: str, verify_checksum: Optional[bool] = None) -> Dataset:
         dataset = create_dataset_from_file(path)
 
     # Verify checksum if requested
-    if PolarisHubClient._normalize_verify_checksum(verify_checksum, dataset):
+    if should_verify_checksum(verify_checksum, dataset):
         dataset.verify_checksum()
 
     return dataset
 
 
-def load_benchmark(path: str, verify_checksum: Optional[bool] = None):
+def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr"):
     """
     Loads a Polaris benchmark.
 
@@ -88,7 +89,7 @@ def load_benchmark(path: str, verify_checksum: Optional[bool] = None):
     benchmark = cls.from_json(path)
 
     # Verify checksum if requested
-    if PolarisHubClient._normalize_verify_checksum(verify_checksum, benchmark.dataset):
-        benchmark.verify_checksum(md5sum=data["md5sum"])
+    if should_verify_checksum(verify_checksum, benchmark.dataset):
+        benchmark.verify_checksum()
 
     return benchmark

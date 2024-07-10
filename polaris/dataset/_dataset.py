@@ -1,6 +1,7 @@
 import json
 import uuid
 from hashlib import md5
+from pathlib import Path
 from typing import Dict, List, MutableMapping, Optional, Tuple, Union
 
 import fsspec
@@ -24,7 +25,6 @@ from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum, compute_zarr_checksum
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
-from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
 from polaris.utils.types import (
@@ -90,7 +90,7 @@ class Dataset(BaseArtifactModel):
     curation_reference: Optional[HttpUrlString] = None
 
     # Config
-    cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.
+    cache_dir: Optional[Path] = None  # Where to cache the data to if cache() is called.
 
     # Private attributes
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
@@ -149,11 +149,10 @@ class Dataset(BaseArtifactModel):
 
         # Set the default cache dir if none and make sure it exists
         if m.cache_dir is None:
-            dataset_id = m._md5sum if m._md5sum is not None else str(uuid.uuid4())
-            m.cache_dir = dmfs.join(DEFAULT_CACHE_DIR, _CACHE_SUBDIR, dataset_id)
+            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
+            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
 
-        dmfs.mkdir(m.cache_dir, exist_ok=True)
-
+        m.cache_dir.mkdir(parents=True, exist_ok=True)
         return m
 
     @field_validator("default_adapters", mode="before")
@@ -166,11 +165,7 @@ class Dataset(BaseArtifactModel):
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
 
-    @staticmethod
-    def _compute_checksum(
-        table: pd.DataFrame,
-        zarr_root_path: Optional[str] = None,
-    ):
+    def _compute_checksum(self):
         """Computes a hash of the dataset.
 
         This is meant to uniquely identify the dataset and can be used to verify the version.
@@ -182,7 +177,7 @@ class Dataset(BaseArtifactModel):
         hash_fn = md5()
 
         # Sort the columns s.t. the checksum is not sensitive to the column-ordering
-        df = table.copy(deep=True)
+        df = self.table.copy(deep=True)
         df = df[sorted(df.columns.tolist())]
 
         # Use the sum of the row-wise hashes s.t. the hash is insensitive to the row-ordering
@@ -191,8 +186,8 @@ class Dataset(BaseArtifactModel):
 
         # If the Zarr archive exists, we hash its contents too.
         zarr_md5sum_manifest = None
-        if zarr_root_path is not None:
-            zarr_hash, zarr_md5sum_manifest = compute_zarr_checksum(zarr_root_path)
+        if self.zarr_root_path is not None:
+            zarr_hash, zarr_md5sum_manifest = compute_zarr_checksum(self.zarr_root_path)
             hash_fn.update(zarr_hash.encode())
 
         checksum = hash_fn.hexdigest()
@@ -213,10 +208,11 @@ class Dataset(BaseArtifactModel):
         if md5sum is None:
             md5sum = self._md5sum
         if md5sum is None:
-            raise RuntimeError(
+            logger.warning(
                 "No checksum to verify against. Specify either the md5sum parameter or "
-                "store the checksum in the dataset._md5sum attribute."
+                "store the checksum in the dataset.md5sum attribute."
             )
+            return
 
         # Temporarily reset
         # Calling self.md5sum will recompute the checksum and set it again
@@ -230,16 +226,28 @@ class Dataset(BaseArtifactModel):
     @property
     def md5sum(self) -> str:
         """Lazily compute the checksum once needed."""
-        if self._md5sum is None:
-            self._md5sum, self._zarr_md5sum_manifest = self._compute_checksum(self.table, self.zarr_root_path)
+        if not self.has_md5sum:
+            self._md5sum, self._zarr_md5sum_manifest = self._compute_checksum()
         return self._md5sum
+
+    @md5sum.setter
+    def md5sum(self, value: str):
+        """Set the checksum."""
+        if len(value) != 32 or not all(c in "0123456789abcdef" for c in value):
+            raise ValueError("The checksum should be a 32-character long MD5 hash.")
+        self._md5sum = value
+
+    @property
+    def has_md5sum(self) -> bool:
+        """Whether the md5sum for this class has been computed and stored."""
+        return self._md5sum is not None
 
     @computed_field
     @property
     def zarr_md5sum_manifest(self) -> List[ZarrFileChecksum]:
         """Lazily compute the checksum once needed."""
-        if self._zarr_md5sum_manifest is None and self._md5sum is None:
-            self._md5sum, self._zarr_md5sum_manifest = self._compute_checksum(self.table, self.zarr_root_path)
+        if self._zarr_md5sum_manifest is None and not self.has_md5sum:
+            self._md5sum, self._zarr_md5sum_manifest = self._compute_checksum()
         return self._zarr_md5sum_manifest
 
     @property
@@ -254,7 +262,7 @@ class Dataset(BaseArtifactModel):
         return self._client
 
     @property
-    def uses_zarr(self) -> str:
+    def uses_zarr(self) -> bool:
         """Whether any of the data in this dataset is stored in a Zarr Archive."""
         return self.zarr_root_path is not None
 
@@ -295,7 +303,7 @@ class Dataset(BaseArtifactModel):
         saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_root_path)
 
         if self._warn_about_remote_zarr:
-            saved_remote = saved_on_hub or not dmfs.is_local_path(self.zarr_root_path)
+            saved_remote = saved_on_hub or not Path(self.zarr_root_path).exists()
 
             if saved_remote:
                 logger.warning(
@@ -460,17 +468,18 @@ class Dataset(BaseArtifactModel):
 
         # Copy over Zarr data to the destination
         if self.uses_zarr:
-            with tmp_attribute_change(self, "_warn_about_remote_zarr", False):
-                logger.info(f"Copying Zarr archive to {new_zarr_root_path}. This may take a while.")
+            self._warn_about_remote_zarr = False
 
-                dest = zarr.open(new_zarr_root_path, "w")
+            logger.info(f"Copying Zarr archive to {new_zarr_root_path}. This may take a while.")
 
-                zarr.copy_store(
-                    source=self.zarr_root.store.store,
-                    dest=dest.store,
-                    log=logger.debug,
-                    if_exists=if_exists,
-                )
+            dest = zarr.open(new_zarr_root_path, "w")
+
+            zarr.copy_store(
+                source=self.zarr_root.store.store,
+                dest=dest.store,
+                log=logger.debug,
+                if_exists=if_exists,
+            )
 
         self.table.to_parquet(table_path)
         with fsspec.open(dataset_path, "w") as f:
@@ -499,8 +508,8 @@ class Dataset(BaseArtifactModel):
             self.zarr_root_path = dmfs.join(self.cache_dir, "data.zarr")
             self._zarr_root = None
 
-        if verify_checksum and self._md5sum is not None:
-            self.verify_checksum(md5sum=self._md5sum)
+        if verify_checksum:
+            self.verify_checksum()
 
         return self.cache_dir
 

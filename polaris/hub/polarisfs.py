@@ -223,7 +223,12 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
 
-        headers = {"Content-Type": "application/octet-stream", **hub_response_body["headers"]}
+        headers = {
+            "Content-Type": "application/octet-stream",
+            **hub_response_body["headers"],
+            # By adding this header, R2 will verify the MD5 checksum of the content on upload
+            "Content-MD5": self.polaris_client.get_metadata_from_response(response, "md5sum"),
+        }
 
         response = self.polaris_client.request(
             url=signed_url,

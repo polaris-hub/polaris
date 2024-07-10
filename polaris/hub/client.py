@@ -36,8 +36,10 @@ from polaris.utils.errors import (
     PolarisHubError,
     PolarisUnauthorizedError,
 )
+from polaris.utils.misc import should_verify_checksum
 from polaris.utils.types import (
     AccessType,
+    ChecksumStrategy,
     HubOwner,
     IOMode,
     SupportedLicenseType,
@@ -177,15 +179,6 @@ class PolarisHubClient(OAuth2Client):
             )
 
         return artifact_owner if isinstance(artifact_owner, HubOwner) else HubOwner(slug=artifact_owner)
-
-    @staticmethod
-    def _normalize_verify_checksum(
-        verify_checksum: Optional[bool],
-        dataset: Dataset,
-    ):
-        if verify_checksum is not None:
-            return verify_checksum
-        return dataset._md5sum is not None and not dataset.uses_zarr
 
     def get_metadata_from_response(self, response: Response, key: str) -> Optional[str]:
         """Get custom metadata saved to the R2 object from the headers."""
@@ -345,7 +338,10 @@ class PolarisHubClient(OAuth2Client):
         return dataset_list
 
     def get_dataset(
-        self, owner: Union[str, HubOwner], name: str, verify_checksum: Optional[bool] = None
+        self,
+        owner: Union[str, HubOwner],
+        name: str,
+        verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> Dataset:
         """Load a dataset from the Polaris Hub.
 
@@ -376,12 +372,11 @@ class PolarisHubClient(OAuth2Client):
         response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
 
         dataset = Dataset(**response)
-        verify_checksum = self._normalize_verify_checksum(verify_checksum, dataset)
 
-        if verify_checksum:
+        if should_verify_checksum(verify_checksum, dataset):
             dataset.verify_checksum()
         else:
-            dataset._md5sum = response["md5Sum"]
+            dataset.md5sum = response["md5Sum"]
         return dataset
 
     def open_zarr_file(
@@ -437,15 +432,17 @@ class PolarisHubClient(OAuth2Client):
         return benchmarks_list
 
     def get_benchmark(
-        self, owner: Union[str, HubOwner], name: str, verify_checksum: Optional[bool] = None
+        self,
+        owner: Union[str, HubOwner],
+        name: str,
+        verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> BenchmarkSpecification:
         """Load a benchmark from the Polaris Hub.
 
         Args:
             owner: The owner of the benchmark. Can be either a user or organization from the Polaris Hub.
             name: The name of the benchmark.
-            verify_checksum: Whether to use the checksum to verify the integrity of the dataset. If None,
-                will infer a practical default based on the dataset's storage location.
+            verify_checksum: Whether to use the checksum to verify the integrity of the benchmark.
 
         Returns:
             A `BenchmarkSpecification` instance, if it exists.
@@ -469,12 +466,10 @@ class PolarisHubClient(OAuth2Client):
 
         benchmark = benchmark_cls(**response)
 
-        verify_checksum = self._normalize_verify_checksum(verify_checksum, benchmark.dataset)
-
-        if verify_checksum:
+        if should_verify_checksum(verify_checksum, benchmark.dataset):
             benchmark.verify_checksum()
         else:
-            benchmark._md5sum = response["md5Sum"]
+            benchmark.md5sum = response["md5Sum"]
 
         return benchmark
 
@@ -627,7 +622,11 @@ class PolarisHubClient(OAuth2Client):
             bucket_response = self.request(
                 url=hub_response_body["url"],
                 method=hub_response_body["method"],
-                headers={"Content-type": "application/vnd.apache.parquet", **hub_response_body["headers"]},
+                headers={
+                    "Content-type": "application/vnd.apache.parquet",
+                    **hub_response_body["headers"],
+                    "Content-MD5": parquet_md5,
+                },
                 content=buffer.getvalue(),
                 auth=None,
                 timeout=timeout,  # required for large size dataset

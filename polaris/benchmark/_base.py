@@ -6,6 +6,7 @@ import fsspec
 import numpy as np
 import pandas as pd
 from datamol.utils import fs
+from loguru import logger
 from pydantic import (
     Field,
     PrivateAttr,
@@ -261,8 +262,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         """Convert from enum to string to make sure it's serializable"""
         return {k: v.value for k, v in self.target_types.items()}
 
-    @staticmethod
-    def _compute_checksum(dataset, target_cols, input_cols, split, metrics):
+    def _compute_checksum(self):
         """
         Computes a hash of the benchmark.
 
@@ -270,16 +270,16 @@ class BenchmarkSpecification(BaseArtifactModel):
         """
 
         hash_fn = md5()
-        hash_fn.update(dataset.md5sum.encode("utf-8"))
-        for c in sorted(target_cols):
+        hash_fn.update(self.dataset.md5sum.encode("utf-8"))
+        for c in sorted(self.target_cols):
             hash_fn.update(c.encode("utf-8"))
-        for c in sorted(input_cols):
+        for c in sorted(self.input_cols):
             hash_fn.update(c.encode("utf-8"))
-        for m in sorted(metrics, key=lambda k: k.name):
+        for m in sorted(self.metrics, key=lambda k: k.name):
             hash_fn.update(m.name.encode("utf-8"))
 
-        if not isinstance(split[1], dict):
-            split = split[0], {"test": split[1]}
+        if not isinstance(self.split[1], dict):
+            split = self.split[0], {"test": self.split[1]}
 
         # Train set
         s = json.dumps(sorted(split[0]))
@@ -301,10 +301,11 @@ class BenchmarkSpecification(BaseArtifactModel):
         if md5sum is None:
             md5sum = self._md5sum
         if md5sum is None:
-            raise RuntimeError(
+            logger.warning(
                 "No checksum to verify against. Specify either the md5sum parameter or "
-                "store the checksum in the benchmark._md5sum attribute."
+                "store the checksum in the benchmark.md5sum attribute. Skipping!"
             )
+            return
 
         # Temporarily reset
         # Calling self.md5sum will recompute the checksum and set it again
@@ -318,11 +319,21 @@ class BenchmarkSpecification(BaseArtifactModel):
     @property
     def md5sum(self) -> Optional[str]:
         """Lazily compute the checksum once needed."""
-        if self._md5sum is None:
-            self._md5sum = self._compute_checksum(
-                self.dataset, self.target_cols, self.input_cols, self.split, self.metrics
-            )
+        if not self.has_md5sum:
+            self._md5sum = self._compute_checksum()
         return self._md5sum
+
+    @md5sum.setter
+    def md5sum(self, value: str):
+        """Set the checksum."""
+        if len(value) != 32 or not all(c in "0123456789abcdef" for c in value):
+            raise ValueError("The checksum should be a 32-character long MD5 hash.")
+        self._md5sum = value
+
+    @property
+    def has_md5sum(self) -> Optional[str]:
+        """Lazily compute the checksum once needed."""
+        return self._md5sum is not None
 
     @computed_field
     @property
