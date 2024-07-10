@@ -17,8 +17,9 @@ class ExternalAuthClient(OAuth2Client):
     This authentication client is used to obtain OAuth 2 tokens from Polaris's external OAuth2 server.
     These can in turn be used to obtain Polaris Hub tokens.
 
-    This class is intended for internal use by the `PolarisHubClient` class, and you should not have to
-    interact with it directly.
+    Note: Internal use
+        This class is intended for internal use by the `PolarisHubClient` class, and you should not have to
+        interact with it directly.
     """
 
     def __init__(
