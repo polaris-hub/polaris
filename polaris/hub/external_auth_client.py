@@ -69,6 +69,13 @@ class ExternalAuthClient(OAuth2Client):
             url=self.settings.token_fetch_url, code_verifier=self.code_verifier, **kwargs
         )
 
+    def ensure_active_token(self, token) -> bool:
+        try:
+            return super().ensure_active_token(token) or False
+        except OAuthError:
+            # The refresh attempt can fail with this error
+            return False
+
     @property
     def user_info(self) -> dict:
         """
