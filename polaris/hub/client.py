@@ -1,21 +1,18 @@
 import json
 import ssl
-import webbrowser
 from hashlib import md5
 from io import BytesIO
-from typing import Callable, Optional, Union, get_args
+from typing import Callable, get_args
 from urllib.parse import urljoin
 
 import certifi
-import fsspec
 import httpx
 import pandas as pd
 import zarr
-from authlib.common.security import generate_token
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
-from authlib.oauth2.client import OAuth2Client as _OAuth2Client
-from datamol.utils import fs
+from authlib.oauth2 import TokenAuth
+from authlib.oauth2.rfc6749 import OAuth2Token
 from httpx import HTTPStatusError
 from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
@@ -27,9 +24,10 @@ from polaris.benchmark import (
 )
 from polaris.dataset import Dataset
 from polaris.evaluate import BenchmarkResults
+from polaris.hub.external_auth_client import ExternalAuthClient
+from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import InvalidDatasetError, PolarisHubError, PolarisUnauthorizedError
 from polaris.utils.types import (
@@ -78,7 +76,7 @@ class PolarisHubClient(OAuth2Client):
 
     def __init__(
         self,
-        settings: Optional[PolarisHubSettings] = None,
+        settings: PolarisHubSettings | None = None,
         cache_auth_token: bool = True,
         **kwargs: dict,
     ):
@@ -88,40 +86,61 @@ class PolarisHubClient(OAuth2Client):
             cache_auth_token: Whether to cache the auth token to a file.
             **kwargs: Additional keyword arguments passed to the authlib `OAuth2Client` constructor.
         """
-        self._user_info = None
-
         self.settings = PolarisHubSettings() if settings is None else settings
 
         # We cache the auth token by default, but allow the user to disable this.
-        self.cache_auth_token = cache_auth_token
-        token = kwargs.get("token")
-        if fs.exists(self._auth_token_cache_path) and token is None:  # type: ignore
-            with fsspec.open(self._auth_token_cache_path, "r") as fd:
-                token = json.load(fd)  # type: ignore
-
-        verify = self.settings.ca_bundle
-        if verify is None:
-            verify = True
-
-        self.code_verifier = generate_token(48)
+        self.token_auth_class = CachedTokenAuth if cache_auth_token else TokenAuth
 
         super().__init__(
             # OAuth2Client
-            client_id=self.settings.client_id,
-            redirect_uri=self.settings.callback_url,
-            scope=self.settings.scopes,
-            token=token,
-            token_endpoint=self.settings.token_fetch_url,
-            code_challenge_method="S256",
+            token_endpoint=self.settings.hub_token_url,
+            token_endpoint_auth_method="none",
+            grant_type="urn:ietf:params:oauth:grant-type:token-exchange",
             # httpx.Client
             base_url=self.settings.api_url,
-            verify=verify,
+            cert=self.settings.ca_bundle,
             timeout=self.settings.default_timeout,
             # Extra
             **kwargs,
         )
 
-    def _load_from_signed_url(self, url: URLTypes, load_fn: Callable, headers: Optional[HeaderTypes] = None):
+        # We use an external client to get an auth token that can be exchanged for a Polaris Hub token
+        self.external_client = ExternalAuthClient(
+            settings=self.settings, cache_auth_token=cache_auth_token, **kwargs
+        )
+
+    def _prepare_token_endpoint_body(self, body, grant_type, **kwargs):
+        """
+        Override to support required fields for the token exchange grant type.
+        See https://datatracker.ietf.org/doc/html/rfc8693#name-request
+        """
+        if grant_type == "urn:ietf:params:oauth:grant-type:token-exchange":
+            kwargs.update(
+                {
+                    "subject_token": self.external_client.token["access_token"],
+                    "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
+                    "requested_token_type": "urn:ietf:params:oauth:token-type:jwt",
+                }
+            )
+        return super()._prepare_token_endpoint_body(body, grant_type, **kwargs)
+
+    def ensure_active_token(self, token: OAuth2Token) -> bool:
+        """
+        Override the active check to trigger a refetch of the token if it is not active.
+        """
+        is_active = super().ensure_active_token(token)
+        if is_active:
+            return True
+
+        # Check if external token is still valid
+        if not self.external_client.ensure_active_token(self.external_client.token):
+            return False
+
+        # If so, use it to get a new Hub token
+        self.token = self.fetch_token()
+        return True
+
+    def _load_from_signed_url(self, url: URLTypes, load_fn: Callable, headers: HeaderTypes | None = None):
         """Utility function to load a file from a signed URL"""
         response = self.get(url, auth=None, headers=headers)  # type: ignore
         response.raise_for_status()
@@ -155,64 +174,10 @@ class PolarisHubClient(OAuth2Client):
 
         return response
 
-    def _normalize_owner(
-        self,
-        artifact_owner: Optional[Union[str, HubOwner]] = None,
-        parameter_owner: Optional[Union[str, HubOwner]] = None,
-    ) -> HubOwner:
-        """
-        Normalize the owner of an artifact to a `HubOwner` instance.
-        The parameter owner takes precedence over the artifact owner.
-        """
-        if parameter_owner is not None:
-            artifact_owner = parameter_owner
-
-        if artifact_owner is None:
-            raise ValueError(
-                "Either specify the `owner` attribute for the artifact or pass the `owner` parameter."
-            )
-
-        return artifact_owner if isinstance(artifact_owner, HubOwner) else HubOwner(slug=artifact_owner)
-
-    # =========================
-    #     Overrides
-    # =========================
-
-    @_OAuth2Client.token.setter
-    def token(self, value):
-        """Override the token setter to additionally save the token to a cache"""
-        super(OAuth2Client, type(self)).token.fset(self, value)  # type: ignore
-
-        # We cache afterwards, because the token setter adds fields we need to save (i.e. expires_at).
-        if self.cache_auth_token:
-            with fsspec.open(self._auth_token_cache_path, "w") as fd:
-                json.dump(value, fd)  # type: ignore
-
-    @property
-    def _auth_token_cache_path(self) -> str:
-        """If self.cache_auth_token is True, this is the location of the cached auth token."""
-        path = None
-        if self.cache_auth_token:
-            fs.mkdir(DEFAULT_CACHE_DIR, exist_ok=True)
-            path = fs.join(DEFAULT_CACHE_DIR, "polaris_auth_token.json")
-        return path
-
-    def create_authorization_url(self, **kwargs) -> tuple[str, Optional[str]]:
-        """Light wrapper to automatically pass in the right URL."""
-        return super().create_authorization_url(
-            url=self.settings.authorize_url, code_verifier=self.code_verifier, **kwargs
-        )
-
-    def fetch_token(self, **kwargs):
-        """Light wrapper to automatically pass in the right URL"""
-        return super().fetch_token(
-            url=self.settings.token_fetch_url, code_verifier=self.code_verifier, **kwargs
-        )
-
     def request(self, method, url, withhold_token=False, auth=httpx.USE_CLIENT_DEFAULT, **kwargs):
         """Wraps the base request method to handle errors"""
         try:
-            response = super().request(method, url, withhold_token, auth, **kwargs)
+            return super().request(method, url, withhold_token, auth, **kwargs)
         except httpx.ConnectError as error:
             # NOTE (cwognum): In the stack-trace, the more specific SSLCertVerificationError is raised.
             #   We could use the traceback module to cactch this specific error, but that would be overkill here.
@@ -229,42 +194,6 @@ class PolarisHubClient(OAuth2Client):
             if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:
                 raise
             raise PolarisUnauthorizedError from error
-        return response
-
-    # =========================
-    #     API Endpoints
-    # =========================
-
-    @property
-    def user_info(self) -> dict:
-        """Get information about the currently logged in user through the OAuth2 User Info flow."""
-
-        # NOTE (cwognum): We override the default `auth` and `headers` argument, since
-        #  the defaults trigger a 530 error (Cloudflare) due to the header ordering.
-        #  Because of this, we also have to copy some code from the base `request` method to
-        #  make auto-refresh a token if needed. For more info, see: https://stackoverflow.com/a/62687390
-
-        try:
-            if self.token is None or not self.ensure_active_token(self.token):
-                raise PolarisUnauthorizedError
-        except OAuthError:
-            raise PolarisUnauthorizedError
-
-        if self._user_info is None:
-            user_info = self.get(
-                self.settings.user_info_url,
-                auth=None,  # type: ignore
-                headers={"authorization": f"Bearer {self.token['access_token']}"},
-            )
-            user_info.raise_for_status()
-            self._user_info = user_info.json()
-
-        return self._user_info
-
-    @property
-    def user_as_owner(self) -> HubOwner:
-        """Easily get the currently logged-in user a `HubOwner` instance."""
-        return HubOwner(user_id=self.user_info["user_id"], slug=self.user_info["username"])
 
     def login(self, overwrite: bool = False, auto_open_browser: bool = True):
         """Login to the Polaris Hub using the OAuth2 protocol.
@@ -277,38 +206,16 @@ class PolarisHubClient(OAuth2Client):
             overwrite: Whether to overwrite the current token if the user is already logged in.
             auto_open_browser: Whether to automatically open the browser to visit the authorization URL.
         """
+        token_is_valid = self.ensure_active_token(self.token)
+        if overwrite or not token_is_valid:
+            self.external_client.interactive_login(overwrite=overwrite, auto_open_browser=auto_open_browser)
+            self.token = self.fetch_token()
 
-        # Check if the user is already logged in
-        if self.token is not None and not overwrite:
-            try:
-                info = self.user_info
-                logger.info(
-                    f"You are already logged in to the Polaris Hub as {info['username']} ({info['email']}). "
-                    "Set `overwrite=True` to force re-authentication."
-                )
-                return
-            except PolarisUnauthorizedError:
-                pass
+        logger.success("You are successfully logged in to the Polaris Hub.")
 
-        # Step 1: Redirect user to the authorization URL
-        authorization_url, _ = self.create_authorization_url()
-
-        if auto_open_browser:
-            logger.info(f"Your browser has been opened to visit:\n{authorization_url}\n")
-            webbrowser.open_new_tab(authorization_url)
-        else:
-            logger.info(f"Please visit the following URL:\n{authorization_url}\n")
-
-        # Step 2: After user grants permission, we'll get the authorization code through the callback URL
-        authorization_code = input("Please enter the authorization token: ")
-
-        # Step 3: Exchange authorization code for an access token
-        self.fetch_token(code=authorization_code, grant_type="authorization_code")
-
-        logger.success(
-            f"Successfully authenticated to the Polaris Hub "
-            f"as `{self.user_info['username']}` ({self.user_info['email']})! 🎉"
-        )
+    # =========================
+    #     API Endpoints
+    # =========================
 
     def list_datasets(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available datasets on the Polaris Hub.
@@ -326,7 +233,7 @@ class PolarisHubClient(OAuth2Client):
         dataset_list = [bm["artifactId"] for bm in response["data"]]
         return dataset_list
 
-    def get_dataset(self, owner: Union[str, HubOwner], name: str, verify_checksum: bool = True) -> Dataset:
+    def get_dataset(self, owner: str | HubOwner, name: str, verify_checksum: bool = True) -> Dataset:
         """Load a dataset from the Polaris Hub.
 
         Args:
@@ -360,7 +267,7 @@ class PolarisHubClient(OAuth2Client):
         return Dataset(**response)
 
     def open_zarr_file(
-        self, owner: Union[str, HubOwner], name: str, path: str, mode: IOMode, as_consolidated: bool = True
+        self, owner: str | HubOwner, name: str, path: str, mode: IOMode, as_consolidated: bool = True
     ) -> zarr.hierarchy.Group:
         """Open a Zarr file from a Polaris dataset
 
@@ -411,7 +318,7 @@ class PolarisHubClient(OAuth2Client):
         return benchmarks_list
 
     def get_benchmark(
-        self, owner: Union[str, HubOwner], name: str, verify_checksum: bool = True
+        self, owner: str | HubOwner, name: str, verify_checksum: bool = True
     ) -> BenchmarkSpecification:
         """Load a benchmark from the Polaris Hub.
 
@@ -426,10 +333,10 @@ class PolarisHubClient(OAuth2Client):
 
         response = self._base_request_to_hub(url=f"/benchmark/{owner}/{name}", method="GET")
 
-        # TODO (cwognum): Currently, the benchmark endpoints do not return the owner info for the underlying dataset.
-        # TODO (jstlaurent): Use the same owner for now, until the benchmark returns a better dataset entity
+        # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
+        #  but we'd need to change the signature of get_dataset to use it
         response["dataset"] = self.get_dataset(
-            owner, response["dataset"]["name"], verify_checksum=verify_checksum
+            response["dataset"]["owner"]["slug"], response["dataset"]["name"], verify_checksum=verify_checksum
         )
 
         # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
@@ -449,7 +356,7 @@ class PolarisHubClient(OAuth2Client):
         self,
         results: BenchmarkResults,
         access: AccessType = "private",
-        owner: Optional[Union[HubOwner, str]] = None,
+        owner: HubOwner | str | None = None,
     ):
         """Upload the results to the Polaris Hub.
 
@@ -476,7 +383,7 @@ class PolarisHubClient(OAuth2Client):
         """
 
         # Get the serialized model data-structure
-        results.owner = self._normalize_owner(results.owner, owner)
+        results.owner = HubOwner.normalize(results.owner and owner)
         result_json = results.model_dump(by_alias=True, exclude_none=True)
 
         # Make a request to the hub
@@ -497,7 +404,7 @@ class PolarisHubClient(OAuth2Client):
         dataset: Dataset,
         access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
-        owner: Optional[Union[HubOwner, str]] = None,
+        owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
     ):
         """Upload the dataset to the Polaris Hub.
@@ -537,7 +444,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Get the serialized data-model
         # We exclude the table as it handled separately and we exclude the cache_dir as it is user-specific
-        dataset.owner = self._normalize_owner(dataset.owner, owner)
+        dataset.owner = HubOwner.normalize(dataset.owner and owner)
         dataset_json = dataset.model_dump(exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True)
 
         # We will save the Zarr archive to the Hub as well
@@ -639,7 +546,7 @@ class PolarisHubClient(OAuth2Client):
         self,
         benchmark: BenchmarkSpecification,
         access: AccessType = "private",
-        owner: Optional[Union[HubOwner, str]] = None,
+        owner: HubOwner | str | None = None,
     ):
         """Upload the benchmark to the Polaris Hub.
 
@@ -664,7 +571,7 @@ class PolarisHubClient(OAuth2Client):
         """
         # Get the serialized data-model
         # We exclude the dataset as we expect it to exist on the hub already.
-        benchmark.owner = self._normalize_owner(benchmark.owner, owner)
+        benchmark.owner = HubOwner.normalize(benchmark.owner and owner)
         benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
         benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
         benchmark_json["access"] = access

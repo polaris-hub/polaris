@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Union
 from urllib.parse import urljoin
 
 from pydantic import ValidationInfo, field_validator
@@ -28,23 +28,36 @@ class PolarisHubSettings(BaseSettings):
             Allows for custom SSL certificates to be used.
     """
 
+    # Configuration of the pydantic model
+    model_config = SettingsConfigDict(env_file=".env", env_prefix="POLARIS_")
+
+    # Hub settings
     hub_url: HttpUrlString = "https://polarishub.io/"
-    api_url: Optional[HttpUrlString] = None
+    api_url: HttpUrlString | None = None
+
+    # Hub authentication settings
+    hub_token_url: HttpUrlString | None = None
+
+    # External authentication settings
     authorize_url: HttpUrlString = "https://clerk.polarishub.io/oauth/authorize"
     callback_url: HttpUrlString = "https://polarishub.io/oauth2/callback"
     token_fetch_url: HttpUrlString = "https://clerk.polarishub.io/oauth/token"
     user_info_url: HttpUrlString = "https://clerk.polarishub.io/oauth/userinfo"
     scopes: str = "profile email"
     client_id: str = "agQP2xVM6JqMHvGc"
-    ca_bundle: Optional[Union[str, bool]] = None
 
+    # Networking settings
+    ca_bundle: Union[str, bool, None] = None
     default_timeout: TimeoutTypes = (10, 200)
-
-    # Configuration of the pydantic model
-    model_config = SettingsConfigDict(env_file=".env", env_prefix="POLARIS_")
 
     @field_validator("api_url", mode="before")
     def validate_api_url(cls, v, info: ValidationInfo):
         if v is None:
             v = urljoin(str(info.data["hub_url"]), "/api/v1")
+        return v
+
+    @field_validator("hub_token_url", mode="before")
+    def populate_hub_token_url(cls, v, info: ValidationInfo):
+        if v is None:
+            v = urljoin(str(info.data["hub_url"]), "/api/auth/token")
         return v
