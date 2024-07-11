@@ -411,7 +411,7 @@ class PolarisHubClient(OAuth2Client):
         """
 
         # Get the serialized model data-structure
-        results.owner = HubOwner.normalize(results.owner and owner)
+        results.owner = HubOwner.normalize(owner or results.owner)
         result_json = results.model_dump(by_alias=True, exclude_none=True)
 
         # Make a request to the hub
@@ -472,7 +472,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Get the serialized data-model
         # We exclude the table as it handled separately and we exclude the cache_dir as it is user-specific
-        dataset.owner = HubOwner.normalize(dataset.owner and owner)
+        dataset.owner = HubOwner.normalize(owner or dataset.owner)
         dataset_json = dataset.model_dump(exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True)
 
         # We will save the Zarr archive to the Hub as well
@@ -606,7 +606,7 @@ class PolarisHubClient(OAuth2Client):
         """
         # Get the serialized data-model
         # We exclude the dataset as we expect it to exist on the hub already.
-        benchmark.owner = HubOwner.normalize(benchmark.owner and owner)
+        benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
         benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
         benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
         benchmark_json["access"] = access
