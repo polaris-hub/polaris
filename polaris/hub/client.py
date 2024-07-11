@@ -179,8 +179,8 @@ class PolarisHubClient(OAuth2Client):
             pass
 
         return response
-      
-    def get_metadata_from_response(self, response: Response, key: str) -> Optional[str]:
+
+    def get_metadata_from_response(self, response: Response, key: str) -> str | None:
         """Get custom metadata saved to the R2 object from the headers."""
         key = f"{self.settings.custom_metadata_prefix}{key}"
         return response.headers.get(key)
