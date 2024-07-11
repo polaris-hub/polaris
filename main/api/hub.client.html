@@ -938,24 +938,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#polaris.hub.client.PolarisHubClient.user_info" class="md-nav__link">
-    <span class="md-ellipsis">
-      user_info
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#polaris.hub.client.PolarisHubClient.user_as_owner" class="md-nav__link">
-    <span class="md-ellipsis">
-      user_as_owner
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#polaris.hub.client.PolarisHubClient.login" class="md-nav__link">
     <span class="md-ellipsis">
       login
@@ -1326,24 +1308,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#polaris.hub.client.PolarisHubClient.user_info" class="md-nav__link">
-    <span class="md-ellipsis">
-      user_info
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#polaris.hub.client.PolarisHubClient.user_as_owner" class="md-nav__link">
-    <span class="md-ellipsis">
-      user_as_owner
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#polaris.hub.client.PolarisHubClient.login" class="md-nav__link">
     <span class="md-ellipsis">
       login
@@ -1499,7 +1463,7 @@ See <a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a> for mor
           <tr class="doc-section-item">
             <td><code><span title="polaris.hub.settings.PolarisHubSettings.api_url">api_url</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1576,7 +1540,7 @@ See <a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a> for mor
           <tr class="doc-section-item">
             <td><code><span title="polaris.hub.settings.PolarisHubSettings.ca_bundle">ca_bundle</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[str, bool]]</code>
+                  <code><span title="typing.Union">Union</span>[str, bool, None]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1619,7 +1583,7 @@ Allows for custom SSL certificates to be used.</p>
 
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">PolarisHubClient</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PolarisHubSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">PolarisHubClient</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">PolarisHubSettings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -1673,7 +1637,7 @@ we are sticking to the sync client - at least for now.</p>
           <tr class="doc-section-item">
             <td><code>settings</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.hub.settings.PolarisHubSettings" href="#polaris.hub.settings.PolarisHubSettings">PolarisHubSettings</a>]</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.hub.settings.PolarisHubSettings" href="#polaris.hub.settings.PolarisHubSettings">PolarisHubSettings</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1725,52 +1689,6 @@ we are sticking to the sync client - at least for now.</p>
 
 
 
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h4 id="polaris.hub.client.PolarisHubClient.user_info" class="doc doc-heading">
-            <span class="doc doc-object-name doc-attribute-name">user_info</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-  </span>
-
-</h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">user_info</span><span class="p">:</span> <span class="nb">dict</span>
-</span></code></pre></div>
-
-    <div class="doc doc-contents ">
-
-      <p>Get information about the currently logged in user through the OAuth2 User Info flow.</p>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h4 id="polaris.hub.client.PolarisHubClient.user_as_owner" class="doc doc-heading">
-            <span class="doc doc-object-name doc-attribute-name">user_as_owner</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-  </span>
-
-</h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">user_as_owner</span><span class="p">:</span> <span class="n">HubOwner</span>
-</span></code></pre></div>
-
-    <div class="doc doc-contents ">
-
-      <p>Easily get the currently logged-in user a <code>HubOwner</code> instance.</p>
-    </div>
-
-</div>
 
 
 
@@ -1935,7 +1853,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_dataset</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HubOwner</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_dataset</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">HubOwner</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1957,7 +1875,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
           <tr class="doc-section-item">
             <td><code>owner</code></td>
             <td>
-                  <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
+                  <code>str | <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2034,7 +1952,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">open_zarr_file</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HubOwner</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">IOMode</span><span class="p">,</span> <span class="n">as_consolidated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">zarr</span><span class="o">.</span><span class="n">hierarchy</span><span class="o">.</span><span class="n">Group</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">open_zarr_file</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">HubOwner</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">IOMode</span><span class="p">,</span> <span class="n">as_consolidated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">zarr</span><span class="o">.</span><span class="n">hierarchy</span><span class="o">.</span><span class="n">Group</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2056,7 +1974,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
           <tr class="doc-section-item">
             <td><code>owner</code></td>
             <td>
-                  <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
+                  <code>str | <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2246,7 +2164,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_benchmark</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HubOwner</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BenchmarkSpecification</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_benchmark</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">HubOwner</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BenchmarkSpecification</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2268,7 +2186,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
           <tr class="doc-section-item">
             <td><code>owner</code></td>
             <td>
-                  <code><span title="typing.Union">Union</span>[str, <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
+                  <code>str | <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2345,7 +2263,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_results</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="n">BenchmarkResults</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_results</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="n">BenchmarkResults</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">HubOwner</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2417,7 +2335,7 @@ and match an existing benchmark on the Polaris Hub. If these results were genera
           <tr class="doc-section-item">
             <td><code>owner</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>, str]]</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a> | str | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2443,7 +2361,7 @@ and match an existing benchmark on the Polaris Hub. If these results were genera
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeoutTypes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeoutTypes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="n">owner</span><span class="p">:</span> <span class="n">HubOwner</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2525,7 +2443,7 @@ See also: https://www.python-httpx.org/advanced/#timeout-configuration</p>
           <tr class="doc-section-item">
             <td><code>owner</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>, str]]</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a> | str | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2566,7 +2484,7 @@ an error, 'replace' to overwrite, or 'skip' to proceed without altering the exis
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_benchmark</span><span class="p">(</span><span class="n">benchmark</span><span class="p">:</span> <span class="n">BenchmarkSpecification</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_benchmark</span><span class="p">(</span><span class="n">benchmark</span><span class="p">:</span> <span class="n">BenchmarkSpecification</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">HubOwner</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2636,7 +2554,7 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
           <tr class="doc-section-item">
             <td><code>owner</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>, str]]</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a> | str | None</code>
             </td>
             <td>
               <div class="doc-md-description">
