@@ -529,11 +529,7 @@ class PolarisHubClient(OAuth2Client):
             bucket_response = self.request(
                 url=hub_response_body["url"],
                 method=hub_response_body["method"],
-                headers={
-                    "Content-type": "application/vnd.apache.parquet",
-                    **hub_response_body["headers"],
-                    "Content-MD5": parquet_md5,
-                },
+                headers={"Content-type": "application/vnd.apache.parquet", **hub_response_body["headers"]},
                 content=buffer.getvalue(),
                 auth=None,
                 timeout=timeout,  # required for large size dataset
