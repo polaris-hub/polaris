@@ -938,6 +938,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#polaris.hub.client.PolarisHubClient.get_metadata_from_response" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_metadata_from_response
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.hub.client.PolarisHubClient.login" class="md-nav__link">
     <span class="md-ellipsis">
       login
@@ -1306,6 +1315,15 @@
   
     <nav class="md-nav" aria-label="PolarisHubClient">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.hub.client.PolarisHubClient.get_metadata_from_response" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_metadata_from_response
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#polaris.hub.client.PolarisHubClient.login" class="md-nav__link">
@@ -1695,6 +1713,25 @@ we are sticking to the sync client - at least for now.</p>
 <div class="doc doc-object doc-function">
 
 
+<h4 id="polaris.hub.client.PolarisHubClient.get_metadata_from_response" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_metadata_from_response</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_metadata_from_response</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">Response</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+      <p>Get custom metadata saved to the R2 object from the headers.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h4 id="polaris.hub.client.PolarisHubClient.login" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">login</span>
 
@@ -1853,7 +1890,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_dataset</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">HubOwner</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_dataset</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">HubOwner</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="n">ChecksumStrategy</span> <span class="o">=</span> <span class="s1">&#39;verify_unless_zarr&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1903,15 +1940,16 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
           <tr class="doc-section-item">
             <td><code>verify_checksum</code></td>
             <td>
-                  <code>bool</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.ChecksumStrategy" href="utils.types.html#polaris.utils.types.ChecksumStrategy">ChecksumStrategy</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Whether to use the checksum to verify the integrity of the dataset.</p>
+                <p>Whether to use the checksum to verify the integrity of the dataset. If None,
+will infer a practical default based on the dataset's storage location.</p>
               </div>
             </td>
             <td>
-                  <code>True</code>
+                  <code>&#39;verify_unless_zarr&#39;</code>
             </td>
           </tr>
       </tbody>
@@ -2034,7 +2072,8 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Whether to open the store with consolidated metadata for optimized reading. This is only applicable in 'r' and 'r+' modes.</p>
+                <p>Whether to open the store with consolidated metadata for optimized reading.
+This is only applicable in 'r' and 'r+' modes.</p>
               </div>
             </td>
             <td>
@@ -2164,7 +2203,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_benchmark</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">HubOwner</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BenchmarkSpecification</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_benchmark</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">HubOwner</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="n">ChecksumStrategy</span> <span class="o">=</span> <span class="s1">&#39;verify_unless_zarr&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BenchmarkSpecification</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2214,15 +2253,15 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
           <tr class="doc-section-item">
             <td><code>verify_checksum</code></td>
             <td>
-                  <code>bool</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.ChecksumStrategy" href="utils.types.html#polaris.utils.types.ChecksumStrategy">ChecksumStrategy</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Whether to use the checksum to verify the integrity of the dataset.</p>
+                <p>Whether to use the checksum to verify the integrity of the benchmark.</p>
               </div>
             </td>
             <td>
-                  <code>True</code>
+                  <code>&#39;verify_unless_zarr&#39;</code>
             </td>
           </tr>
       </tbody>

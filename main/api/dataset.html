@@ -794,9 +794,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.zarr_md5sum_manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_md5sum_manifest
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.client" class="md-nav__link">
     <span class="md-ellipsis">
       client
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.uses_zarr" class="md-nav__link">
+    <span class="md-ellipsis">
+      uses_zarr
     </span>
   </a>
   
@@ -921,6 +939,48 @@
       ColumnAnnotation
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="zarr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr.ZarrFileChecksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      ZarrFileChecksum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr.MemoryMappedDirectoryStore" class="md-nav__link">
+    <span class="md-ellipsis">
+      MemoryMappedDirectoryStore
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr.compute_zarr_checksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      compute_zarr_checksum
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1335,9 +1395,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.zarr_md5sum_manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr_md5sum_manifest
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.client" class="md-nav__link">
     <span class="md-ellipsis">
       client
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.uses_zarr" class="md-nav__link">
+    <span class="md-ellipsis">
+      uses_zarr
     </span>
   </a>
   
@@ -1465,6 +1543,48 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr" class="md-nav__link">
+    <span class="md-ellipsis">
+      zarr
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="zarr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr.ZarrFileChecksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      ZarrFileChecksum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr.MemoryMappedDirectoryStore" class="md-nav__link">
+    <span class="md-ellipsis">
+      MemoryMappedDirectoryStore
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.zarr.compute_zarr_checksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      compute_zarr_checksum
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1498,7 +1618,7 @@
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="polaris._artifact.BaseArtifactModel" href="base.html#polaris._artifact.BaseArtifactModel">BaseArtifactModel</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris._artifact.BaseArtifactModel" href="base.html#polaris._artifact.BaseArtifactModel">BaseArtifactModel</a></code>, <code><span title="polaris._mixins.ChecksumMixin">ChecksumMixin</span></code></p>
 
 
       <p>Basic data-model for a Polaris dataset, implemented as a <a href="https://docs.pydantic.dev/latest/">Pydantic</a> model.</p>
@@ -1556,18 +1676,6 @@ for specific columns.</p>
             <td>
               <div class="doc-md-description">
                 <p>The data for any pointer column should be saved in the Zarr archive this path points to.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><span title="polaris.dataset.Dataset.md5sum">md5sum</span></code></td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[str]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The checksum is used to verify the version of the dataset specification. If specified, it will
-raise an error if the specified checksum doesn't match the computed checksum.</p>
               </div>
             </td>
           </tr>
@@ -1653,16 +1761,6 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
               </div>
             </td>
           </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="polaris.utils.errors.PolarisChecksumError">PolarisChecksumError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If the specified checksum does not match the computed checksum.</p>
-              </div>
-            </td>
-          </tr>
       </tbody>
     </table>
 
@@ -1676,6 +1774,30 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="polaris.dataset.Dataset.zarr_md5sum_manifest" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">zarr_md5sum_manifest</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">zarr_md5sum_manifest</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ZarrFileChecksum</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+      <p>The Zarr Checksum manifest stores the checksums of all files in a Zarr archive.
+If the dataset doesn't use Zarr, this will simply return an empty list.</p>
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-attribute">
 
@@ -1696,6 +1818,29 @@ Importantly, this is used to annotate whether a column is a pointer column.</p>
     <div class="doc doc-contents ">
 
       <p>The Polaris Hub client used to interact with the Polaris Hub.</p>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="polaris.dataset.Dataset.uses_zarr" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">uses_zarr</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">uses_zarr</span><span class="p">:</span> <span class="nb">bool</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+      <p>Whether any of the data in this dataset is stored in a Zarr Archive.</p>
     </div>
 
 </div>
@@ -2066,7 +2211,7 @@ as that should be user dependent.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2111,6 +2256,21 @@ as that should be user dependent.</p>
                 <em>required</em>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code>if_exists</code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.ZarrConflictResolution" href="utils.types.html#polaris.utils.types.ZarrConflictResolution">ZarrConflictResolution</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Action for handling existing files in the Zarr archive. Options are 'raise' to throw
+an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;replace&#39;</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -2149,7 +2309,7 @@ as that should be user dependent.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">cache</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">cache</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2181,6 +2341,20 @@ this will fall back to the <code>Dataset.cache_dir</code> attribute</p>
             </td>
             <td>
                   <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>verify_checksum</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to verify the checksum of the dataset after caching.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
             </td>
           </tr>
       </tbody>
@@ -2313,6 +2487,213 @@ and while it does not affect logic in this library, it does affect the logic of 
 
 
 
+
+
+
+  </div>
+
+    </div>
+
+</div><hr />
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h3 id="polaris.dataset.zarr" class="doc doc-heading">
+            <span class="doc doc-object-name doc-module-name">polaris.dataset.zarr</span>
+
+
+</h3>
+
+    <div class="doc doc-contents first">
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="polaris.dataset.zarr.ZarrFileChecksum" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ZarrFileChecksum</span>
+
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+      <p>This data is sent to the Hub to verify the integrity of the Zarr archive on upload.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.zarr.ZarrFileChecksum.path">path</span></code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path of the file relative to the Zarr root.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.zarr.ZarrFileChecksum.md5sum">md5sum</span></code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The md5sum of the file.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.dataset.zarr.ZarrFileChecksum.size">size</span></code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The size of the file in bytes.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="polaris.dataset.zarr.MemoryMappedDirectoryStore" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">MemoryMappedDirectoryStore</span>
+
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="zarr.DirectoryStore">DirectoryStore</span></code></p>
+
+
+      <p>A Zarr Store to open chunks as memory-mapped files.
+See also <a href="https://github.com/zarr-developers/zarr-python/issues/1245">this Github issue</a>.</p>
+<p>Memory mapping leverages low-level OS functionality to reduce the time it takes
+to read the content of a file by directly mapping to memory.</p>
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.dataset.zarr.compute_zarr_checksum" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">compute_zarr_checksum</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">compute_zarr_checksum</span><span class="p">(</span><span class="n">zarr_root_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">ZarrFileChecksum</span><span class="p">]]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+      <p>Implements an algorithm to compute the Zarr checksum.</p>
+
+
+<details class="warning" open>
+  <summary>This checksum is sensitive to Zarr configuration.</summary>
+  <p>This checksum is sensitive to change in the Zarr structure. For example, if you change the chunk size, 
+the checksum will also change.</p>
+</details>      <p>To understand how this works, consider the following directory structure:</p>
+<div class="language-text highlight"><pre><span></span><code>       . (root)
+      / \
+     a   c
+    /
+   b
+</code></pre></div>
+<p>Within zarr, this would for example be:</p>
+<ul>
+<li><code>root</code>: A Zarr Group with a single Array.</li>
+<li><code>a</code>: A Zarr Array</li>
+<li><code>b</code>: A single chunk of the Zarr Array</li>
+<li><code>c</code>: A metadata file (i.e. .zarray, .zattrs or .zgroup) </li>
+</ul>
+<p>To compute the checksum, we first find all the trees in the node, in this case b and c. 
+We compute the hash of the content (the raw bytes) for each of these files.</p>
+<p>We then work our way up the tree. For any node (directory), we find all children of that node.
+In an sorted order, we then serialize a list with - for each of the children - the checksum, size, and number of children.
+The hash of the directory is then equal to the hash of the serialized JSON.</p>
+<p>The Polaris implementation is heavily based on the <a href="https://github.com/dandi/zarr_checksum"><code>zarr-checksum</code> package</a>.
+This method is the biggest deviation of the original code.</p>
+
+    </div>
+
+</div>
 
 
 
