@@ -206,8 +206,7 @@ class PolarisHubClient(OAuth2Client):
             overwrite: Whether to overwrite the current token if the user is already logged in.
             auto_open_browser: Whether to automatically open the browser to visit the authorization URL.
         """
-        token_is_valid = self.ensure_active_token(self.token)
-        if overwrite or not token_is_valid:
+        if overwrite or self.token is None or not self.ensure_active_token(self.token):
             self.external_client.interactive_login(overwrite=overwrite, auto_open_browser=auto_open_browser)
             self.token = self.fetch_token()
 
