@@ -1,6 +1,6 @@
 import datamol as dm
 import numpy as np
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 from polaris.evaluate import BenchmarkResults
 
@@ -57,7 +57,6 @@ def test_single_task_benchmark_clf_loop_with_multiple_test_sets(
     y_prob = {}
     y_pred = {}
     for k, test_subset in test.items():
-        print(k, test_subset)
         x_test = np.array([dm.to_fp(dm.to_mol(smi)) for smi in test_subset.inputs])
         y_prob[k] = model.predict_proba(x_test)[:, :1]  # for binary classification
         y_pred[k] = model.predict(x_test)

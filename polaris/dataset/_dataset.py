@@ -1,12 +1,14 @@
 import json
+import uuid
 from hashlib import md5
+from pathlib import Path
 from typing import Dict, List, MutableMapping, Optional, Tuple, Union
 
 import fsspec
 import numpy as np
 import pandas as pd
 import zarr
-from datamol.utils import fs
+from datamol.utils import fs as dmfs
 from loguru import logger
 from pydantic import (
     Field,
@@ -18,14 +20,21 @@ from pydantic import (
 )
 
 from polaris._artifact import BaseArtifactModel
+from polaris._mixins import ChecksumMixin
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
-from polaris.dataset.zarr import MemoryMappedDirectoryStore
+from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum, compute_zarr_checksum
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
-from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
-from polaris.utils.types import AccessType, HttpUrlString, HubOwner, SupportedLicenseType
+from polaris.utils.errors import InvalidDatasetError
+from polaris.utils.types import (
+    AccessType,
+    HttpUrlString,
+    HubOwner,
+    SupportedLicenseType,
+    ZarrConflictResolution,
+)
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -33,7 +42,7 @@ _CACHE_SUBDIR = "datasets"
 _INDEX_SEP = "#"
 
 
-class Dataset(BaseArtifactModel):
+class Dataset(BaseArtifactModel, ChecksumMixin):
     """Basic data-model for a Polaris dataset, implemented as a [Pydantic](https://docs.pydantic.dev/latest/) model.
 
     At its core, a dataset in Polaris is a tabular data structure that stores data-points in a row-wise manner.
@@ -51,8 +60,6 @@ class Dataset(BaseArtifactModel):
         default_adapters: The adapters that the Dataset recommends to use by default to change the format of the data
             for specific columns.
         zarr_root_path: The data for any pointer column should be saved in the Zarr archive this path points to.
-        md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
-            raise an error if the specified checksum doesn't match the computed checksum.
         readme: Markdown text that can be used to provide a formatted description of the dataset.
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
@@ -65,7 +72,6 @@ class Dataset(BaseArtifactModel):
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
-        PolarisChecksumError: If the specified checksum does not match the computed checksum.
     """
 
     # Public attributes
@@ -73,7 +79,6 @@ class Dataset(BaseArtifactModel):
     table: Union[pd.DataFrame, str]
     default_adapters: Dict[str, Adapter] = Field(default_factory=dict)
     zarr_root_path: Optional[str] = None
-    md5sum: Optional[str] = None
 
     # Additional meta-data
     readme: str = ""
@@ -83,12 +88,15 @@ class Dataset(BaseArtifactModel):
     curation_reference: Optional[HttpUrlString] = None
 
     # Config
-    cache_dir: Optional[str] = None  # Where to cache the data to if cache() is called.
+    cache_dir: Optional[Path] = None  # Where to cache the data to if cache() is called.
 
     # Private attributes
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
     _zarr_data: Optional[MutableMapping[str, np.ndarray]] = PrivateAttr(None)
+    _md5sum: Optional[str] = PrivateAttr(None)
+    _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
+    _warn_about_remote_zarr: bool = PrivateAttr(True)
 
     @field_validator("table")
     def _validate_table(cls, v):
@@ -99,7 +107,7 @@ class Dataset(BaseArtifactModel):
         """
         # Load from path if not a dataframe
         if not isinstance(v, pd.DataFrame):
-            if not fs.is_file(v) or fs.get_extension(v) not in _SUPPORTED_TABLE_EXTENSIONS:
+            if not dmfs.is_file(v) or dmfs.get_extension(v) not in _SUPPORTED_TABLE_EXTENSIONS:
                 raise InvalidDatasetError(f"{v} is not a valid DataFrame or .parquet path.")
             v = pd.read_parquet(v)
         # Check if there are any duplicate columns
@@ -113,10 +121,7 @@ class Dataset(BaseArtifactModel):
     @model_validator(mode="after")
     @classmethod
     def _validate_model(cls, m: "Dataset"):
-        """If a checksum is provided, verify it matches what the checksum should be.
-        If no checksum is provided, make sure it is set.
-        If no cache_dir is provided, set it to the default cache dir and make sure it exists
-        """
+        """Verifies some dependencies between properties"""
 
         # Verify that all annotations are for columns that exist
         if any(k not in m.table.columns for k in m.annotations):
@@ -140,24 +145,12 @@ class Dataset(BaseArtifactModel):
                 m.annotations[c] = ColumnAnnotation()
             m.annotations[c].dtype = m.table[c].dtype
 
-        # Verify the checksum
-        # NOTE (cwognum): Is it still reasonable to always verify this as the dataset size grows?
-        actual = m.md5sum
-        expected = cls._compute_checksum(m.table)
-
-        if actual is None:
-            m.md5sum = expected
-        elif actual != expected:
-            raise PolarisChecksumError(
-                "The dataset md5sum does not match what was specified in the meta-data. "
-                f"{actual} != {expected}"
-            )
-
         # Set the default cache dir if none and make sure it exists
         if m.cache_dir is None:
-            m.cache_dir = fs.join(DEFAULT_CACHE_DIR, _CACHE_SUBDIR, m.name, m.md5sum)
-        fs.mkdir(m.cache_dir, exist_ok=True)
+            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
+            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
 
+        m.cache_dir.mkdir(parents=True, exist_ok=True)
         return m
 
     @field_validator("default_adapters", mode="before")
@@ -170,30 +163,45 @@ class Dataset(BaseArtifactModel):
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
 
-    @staticmethod
-    def _compute_checksum(table):
+    def _compute_checksum(self):
         """Computes a hash of the dataset.
 
         This is meant to uniquely identify the dataset and can be used to verify the version.
 
         1. Is not sensitive to the ordering of the columns or rows in the table.
         2. Purposefully does not include the meta-data (source, description, name, annotations).
-        3. For any pointer column, it uses a hash of the path instead of the file contents.
-            This is a limitation, but probably a reasonable assumption that helps practicality.
-            A big downside is that as the dataset is saved elsewhere, the hash changes.
+        3. Includes a hash for the Zarr archive.
         """
         hash_fn = md5()
 
         # Sort the columns s.t. the checksum is not sensitive to the column-ordering
-        df = table.copy(deep=True)
+        df = self.table.copy(deep=True)
         df = df[sorted(df.columns.tolist())]
 
         # Use the sum of the row-wise hashes s.t. the hash is insensitive to the row-ordering
         table_hash = pd.util.hash_pandas_object(df, index=False).sum()
         hash_fn.update(table_hash)
 
+        # If the Zarr archive exists, we hash its contents too.
+        if self.uses_zarr:
+            zarr_hash, self._zarr_md5sum_manifest = compute_zarr_checksum(self.zarr_root_path)
+            hash_fn.update(zarr_hash.encode())
+
         checksum = hash_fn.hexdigest()
         return checksum
+
+    @computed_field
+    @property
+    def zarr_md5sum_manifest(self) -> List[ZarrFileChecksum]:
+        """
+        The Zarr Checksum manifest stores the checksums of all files in a Zarr archive.
+        If the dataset doesn't use Zarr, this will simply return an empty list.
+        """
+        if len(self._zarr_md5sum_manifest) == 0 and not self.has_md5sum:
+            # The manifest is set as an instance variable
+            # as a side-effect of the compute_checksum method
+            self.md5sum = self._compute_checksum()
+        return self._zarr_md5sum_manifest
 
     @property
     def client(self):
@@ -205,6 +213,11 @@ class Dataset(BaseArtifactModel):
         if self._client is None:
             self._client = PolarisHubClient()
         return self._client
+
+    @property
+    def uses_zarr(self) -> bool:
+        """Whether any of the data in this dataset is stored in a Zarr Archive."""
+        return self.zarr_root_path is not None
 
     @property
     def zarr_data(self):
@@ -241,14 +254,17 @@ class Dataset(BaseArtifactModel):
 
         # We open the archive in read-only mode if it is saved on the Hub
         saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_root_path)
-        saved_remote = saved_on_hub or not fs.is_local_path(self.zarr_root_path)
 
-        if saved_remote:
-            logger.warning(
-                f"You're loading data from a remote location. "
-                f"To speed up this process, consider caching the dataset first "
-                f"using {self.__class__.__name__}.cache()"
-            )
+        if self._warn_about_remote_zarr:
+            saved_remote = saved_on_hub or not Path(self.zarr_root_path).exists()
+
+            if saved_remote:
+                logger.warning(
+                    f"You're loading data from a remote location. "
+                    f"To speed up this process, consider caching the dataset first "
+                    f"using {self.__class__.__name__}.cache()"
+                )
+                self._warn_about_remote_zarr = False
 
         try:
             if saved_on_hub:
@@ -369,7 +385,11 @@ class Dataset(BaseArtifactModel):
         data.pop("cache_dir", None)
         return cls.model_validate(data)
 
-    def to_json(self, destination: str) -> str:
+    def to_json(
+        self,
+        destination: str,
+        if_exists: ZarrConflictResolution = "replace",
+    ) -> str:
         """
         Save the dataset to a destination directory as a JSON file.
 
@@ -384,31 +404,35 @@ class Dataset(BaseArtifactModel):
 
         Args:
             destination: The _directory_ to save the associated data to.
+            if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
+                an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
 
         Returns:
             The path to the JSON file.
         """
-        fs.mkdir(destination, exist_ok=True)
-        table_path = fs.join(destination, "table.parquet")
-        dataset_path = fs.join(destination, "dataset.json")
-        zarr_archive = fs.join(destination, "data.zarr")
+        dmfs.mkdir(destination, exist_ok=True)
+        table_path = dmfs.join(destination, "table.parquet")
+        dataset_path = dmfs.join(destination, "dataset.json")
+        new_zarr_root_path = dmfs.join(destination, "data.zarr")
 
         # Lu: Avoid serilizing and sending None to hub app.
         serialized = self.model_dump(exclude={"cache_dir"}, exclude_none=True)
         serialized["table"] = table_path
 
         # Copy over Zarr data to the destination
-        if self.zarr_root is not None:
-            dest = zarr.open(zarr_archive, "w")
-            zarr.copy_all(source=self.zarr_root, dest=dest)
+        if self.uses_zarr:
+            self._warn_about_remote_zarr = False
 
-            # Copy the .zmetadata file
-            # To track discussions on whether this should be done by copy_all()
-            # see https://github.com/zarr-developers/zarr-python/issues/1731
-            zmetadata_content = self.zarr_root.store.store[".zmetadata"]
-            dest.store[".zmetadata"] = zmetadata_content
+            logger.info(f"Copying Zarr archive to {new_zarr_root_path}. This may take a while.")
 
-            serialized["zarr_root_path"] = zarr_archive
+            dest = zarr.open(new_zarr_root_path, "w")
+
+            zarr.copy_store(
+                source=self.zarr_root.store.store,
+                dest=dest.store,
+                log=logger.debug,
+                if_exists=if_exists,
+            )
 
         self.table.to_parquet(table_path)
         with fsspec.open(dataset_path, "w") as f:
@@ -416,12 +440,13 @@ class Dataset(BaseArtifactModel):
 
         return dataset_path
 
-    def cache(self, cache_dir: Optional[str] = None) -> str:
+    def cache(self, cache_dir: Optional[str] = None, verify_checksum: bool = True) -> str:
         """Caches the dataset by downloading all additional data for pointer columns to a local directory.
 
         Args:
             cache_dir: The directory to cache the data to. If not provided,
                 this will fall back to the `Dataset.cache_dir` attribute
+            verify_checksum: Whether to verify the checksum of the dataset after caching.
 
         Returns:
             The path to the cache directory.
@@ -432,9 +457,12 @@ class Dataset(BaseArtifactModel):
 
         self.to_json(self.cache_dir)
 
-        if self.zarr_root_path is not None:
-            self.zarr_root_path = fs.join(self.cache_dir, "data.zarr")
+        if self.uses_zarr:
+            self.zarr_root_path = dmfs.join(self.cache_dir, "data.zarr")
             self._zarr_root = None
+
+        if verify_checksum:
+            self.verify_checksum()
 
         return self.cache_dir
 

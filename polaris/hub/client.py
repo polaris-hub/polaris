@@ -13,7 +13,7 @@ from authlib.integrations.base_client.errors import InvalidTokenError, MissingTo
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2 import TokenAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
-from httpx import HTTPStatusError
+from httpx import HTTPStatusError, Response
 from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
 
@@ -29,9 +29,15 @@ from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.context import tmp_attribute_change
-from polaris.utils.errors import InvalidDatasetError, PolarisHubError, PolarisUnauthorizedError
+from polaris.utils.errors import (
+    InvalidDatasetError,
+    PolarisHubError,
+    PolarisUnauthorizedError,
+)
+from polaris.utils.misc import should_verify_checksum
 from polaris.utils.types import (
     AccessType,
+    ChecksumStrategy,
     HubOwner,
     IOMode,
     SupportedLicenseType,
@@ -174,6 +180,11 @@ class PolarisHubClient(OAuth2Client):
 
         return response
 
+    def get_metadata_from_response(self, response: Response, key: str) -> str | None:
+        """Get custom metadata saved to the R2 object from the headers."""
+        key = f"{self.settings.custom_metadata_prefix}{key}"
+        return response.headers.get(key)
+
     def request(self, method, url, withhold_token=False, auth=httpx.USE_CLIENT_DEFAULT, **kwargs):
         """Wraps the base request method to handle errors"""
         try:
@@ -232,13 +243,19 @@ class PolarisHubClient(OAuth2Client):
         dataset_list = [bm["artifactId"] for bm in response["data"]]
         return dataset_list
 
-    def get_dataset(self, owner: str | HubOwner, name: str, verify_checksum: bool = True) -> Dataset:
+    def get_dataset(
+        self,
+        owner: str | HubOwner,
+        name: str,
+        verify_checksum: ChecksumStrategy = "verify_unless_zarr",
+    ) -> Dataset:
         """Load a dataset from the Polaris Hub.
 
         Args:
             owner: The owner of the dataset. Can be either a user or organization from the Polaris Hub.
             name: The name of the dataset.
-            verify_checksum: Whether to use the checksum to verify the integrity of the dataset.
+            verify_checksum: Whether to use the checksum to verify the integrity of the dataset. If None,
+                will infer a practical default based on the dataset's storage location.
 
         Returns:
             A `Dataset` instance, if it exists.
@@ -260,10 +277,13 @@ class PolarisHubClient(OAuth2Client):
 
         response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
 
-        if not verify_checksum:
-            response.pop("md5Sum", None)
+        dataset = Dataset(**response)
 
-        return Dataset(**response)
+        if should_verify_checksum(verify_checksum, dataset):
+            dataset.verify_checksum()
+        else:
+            dataset.md5sum = response["md5Sum"]
+        return dataset
 
     def open_zarr_file(
         self, owner: str | HubOwner, name: str, path: str, mode: IOMode, as_consolidated: bool = True
@@ -275,7 +295,8 @@ class PolarisHubClient(OAuth2Client):
             name: Name of the dataset.
             path: Path to the Zarr file within the dataset.
             mode: The mode in which the file is opened.
-            as_consolidated: Whether to open the store with consolidated metadata for optimized reading. This is only applicable in 'r' and 'r+' modes.
+            as_consolidated: Whether to open the store with consolidated metadata for optimized reading.
+                This is only applicable in 'r' and 'r+' modes.
 
         Returns:
             The Zarr object representing the dataset.
@@ -317,14 +338,17 @@ class PolarisHubClient(OAuth2Client):
         return benchmarks_list
 
     def get_benchmark(
-        self, owner: str | HubOwner, name: str, verify_checksum: bool = True
+        self,
+        owner: str | HubOwner,
+        name: str,
+        verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> BenchmarkSpecification:
         """Load a benchmark from the Polaris Hub.
 
         Args:
             owner: The owner of the benchmark. Can be either a user or organization from the Polaris Hub.
             name: The name of the benchmark.
-            verify_checksum: Whether to use the checksum to verify the integrity of the dataset.
+            verify_checksum: Whether to use the checksum to verify the integrity of the benchmark.
 
         Returns:
             A `BenchmarkSpecification` instance, if it exists.
@@ -346,10 +370,14 @@ class PolarisHubClient(OAuth2Client):
             else MultiTaskBenchmarkSpecification
         )
 
-        if not verify_checksum:
-            response.pop("md5Sum", None)
+        benchmark = benchmark_cls(**response)
 
-        return benchmark_cls(**response)
+        if should_verify_checksum(verify_checksum, benchmark.dataset):
+            benchmark.verify_checksum()
+        else:
+            benchmark.md5sum = response["md5Sum"]
+
+        return benchmark
 
     def upload_results(
         self,
@@ -450,19 +478,20 @@ class PolarisHubClient(OAuth2Client):
         dataset_json["zarrRootPath"] = f"{PolarisFileSystem.protocol}://data.zarr"
 
         # Uploading a dataset is a three-step process.
-        # 1. Upload the dataset meta data to the hub and prepare the hub to receive the parquet file
+        # 1. Upload the dataset meta data to the hub and prepare the hub to receive the data
         # 2. Upload the parquet file to the hub
         # 3. Upload the associated Zarr archive
         # TODO: Revert step 1 in case step 2 fails - Is this needed? Or should this be taken care of by the hub?
 
-        # Write the parquet file directly to a buffer
+        # Prepare the parquet file
         buffer = BytesIO()
         dataset.table.to_parquet(buffer, engine="auto")
         parquet_size = len(buffer.getbuffer())
         parquet_md5 = md5(buffer.getbuffer()).hexdigest()
 
         # Step 1: Upload meta-data
-        # Instead of directly uploading the table, we announce to the hub that we intend to upload one.
+        # Instead of directly uploading the data, we announce to the hub that we intend to upload it.
+        # We do so separately for the Zarr archive and Parquet file.
         url = f"/dataset/{dataset.artifact_id}"
         response = self._base_request_to_hub(
             url=url,
@@ -471,8 +500,9 @@ class PolarisHubClient(OAuth2Client):
                 "tableContent": {
                     "size": parquet_size,
                     "fileType": "parquet",
-                    "md5sum": parquet_md5,
+                    "md5Sum": parquet_md5,
                 },
+                "zarrContent": [md5sum.model_dump() for md5sum in dataset._zarr_md5sum_manifest],
                 "access": access,
                 **dataset_json,
             },
@@ -493,6 +523,7 @@ class PolarisHubClient(OAuth2Client):
         if hub_response.status_code == 307:
             # If the hub returns a 307 redirect, we need to follow it to get the signed URL
             hub_response_body = hub_response.json()
+
             # Upload the data to the cloudflare url
             bucket_response = self.request(
                 url=hub_response_body["url"],
@@ -508,7 +539,7 @@ class PolarisHubClient(OAuth2Client):
             hub_response.raise_for_status()
 
         # Step 3: Upload any associated Zarr archive
-        if dataset.zarr_root is not None:
+        if dataset.uses_zarr:
             with tmp_attribute_change(self.settings, "default_timeout", timeout):
                 # Copy the Zarr archive to the hub
                 dest = self.open_zarr_file(
@@ -530,7 +561,7 @@ class PolarisHubClient(OAuth2Client):
                 zarr.copy_store(
                     source=dataset.zarr_root.store.store,
                     dest=dest.store,
-                    log=logger.info,
+                    log=logger.debug,
                     if_exists=if_exists,
                 )
 

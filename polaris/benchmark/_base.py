@@ -17,12 +17,13 @@ from pydantic import (
 from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
+from polaris._mixins import ChecksumMixin
 from polaris.dataset import Dataset, Subset
 from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
-from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
+from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.misc import listit
 from polaris.utils.types import (
     AccessType,
@@ -36,7 +37,7 @@ from polaris.utils.types import (
 ColumnsType = Union[str, list[str]]
 
 
-class BenchmarkSpecification(BaseArtifactModel):
+class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     """This class wraps a [`Dataset`][polaris.dataset.Dataset] with additional data
      to specify the evaluation logic.
 
@@ -85,8 +86,6 @@ class BenchmarkSpecification(BaseArtifactModel):
         split: The predefined train-test split to use for evaluation.
         metrics: The metrics to use for evaluating performance
         main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
-        md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
-            raise an error if the specified checksum doesn't match the computed checksum.
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
@@ -102,7 +101,6 @@ class BenchmarkSpecification(BaseArtifactModel):
     split: SplitType
     metrics: Union[str, Metric, list[Union[str, Metric]]]
     main_metric: Optional[Union[str, Metric]] = None
-    md5sum: Optional[str] = None
 
     # Additional meta-data
     readme: str = ""
@@ -214,6 +212,12 @@ class BenchmarkSpecification(BaseArtifactModel):
         for target in target_cols:
             if target not in v:
                 val = dataset[:, target]
+
+                # Non numeric columns can be targets (e.g. prediction molecular reactions),
+                # but in that case we currently don't infer the target type.
+                if not np.issubdtype(val.dtype, np.number):
+                    continue
+
                 # remove the nans for mutiple task dataset when the table is sparse
                 target_type = type_of_target(val[~np.isnan(val)])
                 if target_type == "continuous":
@@ -230,34 +234,11 @@ class BenchmarkSpecification(BaseArtifactModel):
     @classmethod
     def _validate_model(cls, m: "BenchmarkSpecification"):
         """
-        If a checksum is provided, verify it matches what the checksum should be.
-        If no checksum is provided, make sure it is set.
-        Also sets a default metric if missing.
+        Sets a default metric if missing.
         """
-
-        # Validate checksum
-        checksum = m.md5sum
-
-        expected = cls._compute_checksum(
-            dataset=m.dataset,
-            target_cols=m.target_cols,
-            input_cols=m.input_cols,
-            split=m.split,
-            metrics=m.metrics,
-        )
-
-        if checksum is None:
-            m.md5sum = expected
-        elif checksum != expected:
-            raise PolarisChecksumError(
-                "The dataset checksum does not match what was specified in the meta-data. "
-                f"{checksum} != {expected}"
-            )
-
         # Set a default main metric if not set yet
         if m.main_metric is None:
             m.main_metric = m.metrics[0]
-
         return m
 
     @field_serializer("metrics", "main_metric")
@@ -277,8 +258,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         """Convert from enum to string to make sure it's serializable"""
         return {k: v.value for k, v in self.target_types.items()}
 
-    @staticmethod
-    def _compute_checksum(dataset, target_cols, input_cols, split, metrics):
+    def _compute_checksum(self):
         """
         Computes a hash of the benchmark.
 
@@ -286,16 +266,16 @@ class BenchmarkSpecification(BaseArtifactModel):
         """
 
         hash_fn = md5()
-        hash_fn.update(dataset.md5sum.encode("utf-8"))
-        for c in sorted(target_cols):
+        hash_fn.update(self.dataset.md5sum.encode("utf-8"))
+        for c in sorted(self.target_cols):
             hash_fn.update(c.encode("utf-8"))
-        for c in sorted(input_cols):
+        for c in sorted(self.input_cols):
             hash_fn.update(c.encode("utf-8"))
-        for m in sorted(metrics, key=lambda k: k.name):
+        for m in sorted(self.metrics, key=lambda k: k.name):
             hash_fn.update(m.name.encode("utf-8"))
 
-        if not isinstance(split[1], dict):
-            split = split[0], {"test": split[1]}
+        if not isinstance(self.split[1], dict):
+            split = self.split[0], {"test": self.split[1]}
 
         # Train set
         s = json.dumps(sorted(split[0]))

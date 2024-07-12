@@ -107,6 +107,11 @@ ZarrConflictResolution: TypeAlias = Literal["raise", "replace", "skip"]
 Type to specify which action to take when encountering existing files within a Zarr archive.
 """
 
+ChecksumStrategy: TypeAlias = Literal["verify", "verify_unless_zarr", "ignore"]
+"""
+Type to specify which action to take to verify the data integrity of an artifact through a checksum.
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub

@@ -1,4 +1,5 @@
 from enum import Enum, auto, unique
+
 import datamol as dm
 
 # Map of conversion operations which can be applied to dataset columns

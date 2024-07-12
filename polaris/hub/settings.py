@@ -34,6 +34,7 @@ class PolarisHubSettings(BaseSettings):
     # Hub settings
     hub_url: HttpUrlString = "https://polarishub.io/"
     api_url: HttpUrlString | None = None
+    custom_metadata_prefix: str = "X-Amz-Meta-"
 
     # Hub authentication settings
     hub_token_url: HttpUrlString | None = None
