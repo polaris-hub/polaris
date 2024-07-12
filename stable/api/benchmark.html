@@ -1541,7 +1541,7 @@
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="polaris._artifact.BaseArtifactModel" href="base.html#polaris._artifact.BaseArtifactModel">BaseArtifactModel</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris._artifact.BaseArtifactModel" href="base.html#polaris._artifact.BaseArtifactModel">BaseArtifactModel</a></code>, <code><span title="polaris._mixins.ChecksumMixin">ChecksumMixin</span></code></p>
 
 
       <p>This class wraps a <a class="autorefs autorefs-internal" href="dataset.html#polaris.dataset.Dataset"><code>Dataset</code></a> with additional data
@@ -1661,18 +1661,6 @@
             <td>
               <div class="doc-md-description">
                 <p>The main metric used to rank methods. If <code>None</code>, the first of the <code>metrics</code> field.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td><code><span title="polaris.benchmark.BenchmarkSpecification.md5sum">md5sum</span></code></td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[str]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The checksum is used to verify the version of the dataset specification. If specified, it will
-raise an error if the specified checksum doesn't match the computed checksum.</p>
               </div>
             </td>
           </tr>
