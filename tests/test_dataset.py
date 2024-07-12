@@ -163,3 +163,17 @@ def test_dataset_in_memory_optimization(zarr_archive, tmpdir):
     d2 = perf_counter() - t2
 
     assert d2 < d1
+
+
+def test_setting_an_invalid_checksum(test_dataset):
+    """Test whether setting an invalid checksum raises an error."""
+    with pytest.raises(ValueError):
+        test_dataset.md5sum = "invalid"
+
+
+def test_checksum_verification(test_dataset):
+    """Test whether setting an invalid checksum raises an error."""
+    test_dataset.verify_checksum()
+    test_dataset.md5sum = "0" * 32
+    with pytest.raises(ValueError):
+        test_dataset.verify_checksum()

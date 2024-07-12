@@ -188,3 +188,17 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     kwargs["md5sum"] = None
     dataset = cls(**kwargs)
     assert dataset.md5sum is not None
+
+
+def test_setting_an_invalid_checksum(test_single_task_benchmark):
+    """Test whether setting an invalid checksum raises an error."""
+    with pytest.raises(ValueError):
+        test_single_task_benchmark.md5sum = "invalid"
+
+
+def test_checksum_verification(test_single_task_benchmark):
+    """Test whether setting an invalid checksum raises an error."""
+    test_single_task_benchmark.verify_checksum()
+    test_single_task_benchmark.md5sum = "0" * 32
+    with pytest.raises(ValueError):
+        test_single_task_benchmark.verify_checksum()

@@ -20,13 +20,14 @@ from pydantic import (
 )
 
 from polaris._artifact import BaseArtifactModel
+from polaris._mixins import ChecksumMixin
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum, compute_zarr_checksum
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
-from polaris.utils.errors import InvalidDatasetError, PolarisChecksumError
+from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
     HttpUrlString,
@@ -41,7 +42,7 @@ _CACHE_SUBDIR = "datasets"
 _INDEX_SEP = "#"
 
 
-class Dataset(BaseArtifactModel):
+class Dataset(BaseArtifactModel, ChecksumMixin):
     """Basic data-model for a Polaris dataset, implemented as a [Pydantic](https://docs.pydantic.dev/latest/) model.
 
     At its core, a dataset in Polaris is a tabular data structure that stores data-points in a row-wise manner.
@@ -59,8 +60,6 @@ class Dataset(BaseArtifactModel):
         default_adapters: The adapters that the Dataset recommends to use by default to change the format of the data
             for specific columns.
         zarr_root_path: The data for any pointer column should be saved in the Zarr archive this path points to.
-        md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
-            raise an error if the specified checksum doesn't match the computed checksum.
         readme: Markdown text that can be used to provide a formatted description of the dataset.
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
@@ -73,7 +72,6 @@ class Dataset(BaseArtifactModel):
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
-        PolarisChecksumError: If the specified checksum does not match the computed checksum.
     """
 
     # Public attributes
@@ -185,69 +183,24 @@ class Dataset(BaseArtifactModel):
         hash_fn.update(table_hash)
 
         # If the Zarr archive exists, we hash its contents too.
-        zarr_md5sum_manifest = None
-        if self.zarr_root_path is not None:
-            zarr_hash, zarr_md5sum_manifest = compute_zarr_checksum(self.zarr_root_path)
+        if self.uses_zarr:
+            zarr_hash, self._zarr_md5sum_manifest = compute_zarr_checksum(self.zarr_root_path)
             hash_fn.update(zarr_hash.encode())
 
         checksum = hash_fn.hexdigest()
-        return checksum, zarr_md5sum_manifest
-
-    def verify_checksum(self, md5sum: Optional[str] = None):
-        """
-        Recomputes the checksum and verifies whether it matches the stored checksum.
-
-        Warning: Slow operation
-            This operation can be slow for large datasets.
-
-        Info: Only works for locally stored datasets
-            The checksum verification only works for datasets that are stored locally in its entirety.
-            We don't have to verify the checksum for datasets stored on the Hub, as the Hub will do this on upload.
-            And if you're streaming the data from the Hub, we will check the checksum of each chunk on download.
-        """
-        if md5sum is None:
-            md5sum = self._md5sum
-        if md5sum is None:
-            logger.warning(
-                "No checksum to verify against. Specify either the md5sum parameter or "
-                "store the checksum in the dataset.md5sum attribute."
-            )
-            return
-
-        # Temporarily reset
-        # Calling self.md5sum will recompute the checksum and set it again
-        self._md5sum = None
-        if self.md5sum != md5sum:
-            raise PolarisChecksumError(
-                f"The specified checksum {md5sum} does not match the computed checksum {self.md5sum}"
-            )
-
-    @computed_field
-    @property
-    def md5sum(self) -> str:
-        """Lazily compute the checksum once needed."""
-        if not self.has_md5sum:
-            self._md5sum, self._zarr_md5sum_manifest = self._compute_checksum()
-        return self._md5sum
-
-    @md5sum.setter
-    def md5sum(self, value: str):
-        """Set the checksum."""
-        if len(value) != 32 or not all(c in "0123456789abcdef" for c in value):
-            raise ValueError("The checksum should be a 32-character long MD5 hash.")
-        self._md5sum = value
-
-    @property
-    def has_md5sum(self) -> bool:
-        """Whether the md5sum for this class has been computed and stored."""
-        return self._md5sum is not None
+        return checksum
 
     @computed_field
     @property
     def zarr_md5sum_manifest(self) -> List[ZarrFileChecksum]:
-        """Lazily compute the checksum once needed."""
-        if self._zarr_md5sum_manifest is None and not self.has_md5sum:
-            self._md5sum, self._zarr_md5sum_manifest = self._compute_checksum()
+        """
+        The Zarr Checksum manifest stores the checksums of all files in a Zarr archive.
+        If the dataset doesn't use Zarr, this will simply return an empty list.
+        """
+        if len(self._zarr_md5sum_manifest) == 0 and not self.has_md5sum:
+            # The manifest is set as an instance variable
+            # as a side-effect of the compute_checksum method
+            self.md5sum = self._compute_checksum()
         return self._zarr_md5sum_manifest
 
     @property

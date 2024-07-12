@@ -6,10 +6,8 @@ import fsspec
 import numpy as np
 import pandas as pd
 from datamol.utils import fs
-from loguru import logger
 from pydantic import (
     Field,
-    PrivateAttr,
     ValidationInfo,
     computed_field,
     field_serializer,
@@ -19,12 +17,13 @@ from pydantic import (
 from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
+from polaris._mixins import ChecksumMixin
 from polaris.dataset import Dataset, Subset
 from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
-from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
+from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.misc import listit
 from polaris.utils.types import (
     AccessType,
@@ -38,7 +37,7 @@ from polaris.utils.types import (
 ColumnsType = Union[str, list[str]]
 
 
-class BenchmarkSpecification(BaseArtifactModel):
+class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     """This class wraps a [`Dataset`][polaris.dataset.Dataset] with additional data
      to specify the evaluation logic.
 
@@ -108,9 +107,6 @@ class BenchmarkSpecification(BaseArtifactModel):
     target_types: dict[str, Optional[Union[TargetType, str]]] = Field(
         default_factory=dict, validate_default=True
     )
-
-    # Private attributes
-    _md5sum: Optional[str] = PrivateAttr(None)
 
     @field_validator("dataset")
     def _validate_dataset(cls, v):
@@ -293,47 +289,6 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         checksum = hash_fn.hexdigest()
         return checksum
-
-    def verify_checksum(self, md5sum: Optional[str] = None):
-        """
-        Recomputes the checksum and verifies whether it matches the stored checksum.
-        """
-        if md5sum is None:
-            md5sum = self._md5sum
-        if md5sum is None:
-            logger.warning(
-                "No checksum to verify against. Specify either the md5sum parameter or "
-                "store the checksum in the benchmark.md5sum attribute. Skipping!"
-            )
-            return
-
-        # Temporarily reset
-        # Calling self.md5sum will recompute the checksum and set it again
-        self._md5sum = None
-        if self.md5sum != md5sum:
-            raise PolarisChecksumError(
-                f"The specified checksum {md5sum} does not match the computed checksum {self.md5sum}"
-            )
-
-    @computed_field
-    @property
-    def md5sum(self) -> Optional[str]:
-        """Lazily compute the checksum once needed."""
-        if not self.has_md5sum:
-            self._md5sum = self._compute_checksum()
-        return self._md5sum
-
-    @md5sum.setter
-    def md5sum(self, value: str):
-        """Set the checksum."""
-        if len(value) != 32 or not all(c in "0123456789abcdef" for c in value):
-            raise ValueError("The checksum should be a 32-character long MD5 hash.")
-        self._md5sum = value
-
-    @property
-    def has_md5sum(self) -> Optional[str]:
-        """Lazily compute the checksum once needed."""
-        return self._md5sum is not None
 
     @computed_field
     @property
