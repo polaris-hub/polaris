@@ -30,7 +30,7 @@ class ChecksumMixin(BaseModel, abc.ABC):
     @md5sum.setter
     def md5sum(self, value: str):
         """Set the checksum."""
-        if len(value) != 32 or not all(c in "0123456789abcdef" for c in value):
+        if not re.fullmatch(r"^[a-f0-9]{32}$", value):
             raise ValueError("The checksum should be the 32-character hexdigest of a 128 bit MD5 hash.")
         self._md5sum = value
 
