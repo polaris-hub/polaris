@@ -1,4 +1,5 @@
 import abc
+import re
 
 from loguru import logger
 from pydantic import BaseModel, PrivateAttr, computed_field
@@ -15,7 +16,7 @@ class ChecksumMixin(BaseModel, abc.ABC):
 
     @abc.abstractmethod
     def _compute_checksum(self) -> str:
-        """Compute the checksum and return it along with manifest."""
+        """Compute the checksum of the dataset."""
         raise NotImplementedError
 
     @computed_field
