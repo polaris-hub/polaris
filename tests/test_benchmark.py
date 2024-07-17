@@ -56,7 +56,9 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
     # It should _not_ fail with missing indices
     cls(split=(train_split[:-1], test_split), **default_kwargs)
     # It should _not_ fail with an empty train set
-    cls(split=([], test_split), **default_kwargs)
+    benchmark = cls(split=([], test_split), **default_kwargs)
+    train, _ = benchmark.get_train_test_split()
+    assert len(train) == 0
 
 
 @pytest.mark.parametrize("cls", [SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification])
