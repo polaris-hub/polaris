@@ -174,9 +174,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         # Train partition can be empty (zero-shot)
         # Test partitions cannot be empty
-        if (
-            (isinstance(v[1], dict) and any(len(v) == 0 for v in v[1].values()))
-            or (not isinstance(v[1], dict) and len(v[1]) == 0)
+        if (isinstance(v[1], dict) and any(len(v) == 0 for v in v[1].values())) or (
+            not isinstance(v[1], dict) and len(v[1]) == 0
         ):
             raise InvalidBenchmarkError("The predefined split contains empty test partitions")
 
