@@ -6,6 +6,7 @@ import fsspec
 import numpy as np
 import pandas as pd
 from datamol.utils import fs
+from loguru import logger
 from pydantic import (
     Field,
     ValidationInfo,
@@ -178,6 +179,11 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             not isinstance(v[1], dict) and len(v[1]) == 0
         ):
             raise InvalidBenchmarkError("The predefined split contains empty test partitions")
+
+        if len(v[0]) == 0:
+            logger.info(
+                "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
+            )
 
         train_indices = v[0]
         test_indices = [i for part in v[1].values() for i in part] if isinstance(v[1], dict) else v[1]
