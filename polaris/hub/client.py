@@ -436,7 +436,7 @@ class PolarisHubClient(OAuth2Client):
             start_msg="Uploading result...",
             success_msg="Uploaded result.",
             error_msg="Failed to upload result.",
-        ) as result_message:
+        ) as update_success_message:
             # Get the serialized model data-structure
             results.owner = HubOwner.normalize(owner or results.owner)
             result_json = results.model_dump(by_alias=True, exclude_none=True)
@@ -452,7 +452,7 @@ class PolarisHubClient(OAuth2Client):
                 f"benchmarks/{results.benchmark_owner}/{results.benchmark_name}/{response['id']}",
             )
 
-            result_message["message"] = (
+            update_success_message(
                 f"Your result has been successfully uploaded to the Hub. View it here: {result_url}"
             )
 
@@ -494,7 +494,7 @@ class PolarisHubClient(OAuth2Client):
             start_msg="Uploading dataset...",
             success_msg="Uploaded dataset.",
             error_msg="Failed to upload dataset.",
-        ) as result_message:
+        ) as update_success_message:
             # Check if a dataset license was specified prior to upload
             if not dataset.license:
                 raise InvalidDatasetError(
@@ -611,7 +611,7 @@ class PolarisHubClient(OAuth2Client):
                         if_exists=if_exists,
                     )
 
-            result_message["message"] = (
+            update_success_message(
                 "Your dataset has been successfully uploaded to the Hub. "
                 f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
             )
@@ -649,7 +649,7 @@ class PolarisHubClient(OAuth2Client):
             start_msg="Uploading benchmark...",
             success_msg="Uploaded benchmark.",
             error_msg="Failed to upload benchmark.",
-        ) as result_message:
+        ) as update_success_message:
             # Get the serialized data-model
             # We exclude the dataset as we expect it to exist on the hub already.
             benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
@@ -660,7 +660,7 @@ class PolarisHubClient(OAuth2Client):
             url = f"/benchmark/{benchmark.owner}/{benchmark.name}"
             response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
-            result_message["message"] = (
+            update_success_message(
                 "Your benchmark has been successfully uploaded to the Hub. "
                 f"View it here: {urljoin(self.settings.hub_url, f'benchmarks/{benchmark.owner}/{benchmark.name}')}"
             )

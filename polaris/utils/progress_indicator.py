@@ -8,19 +8,19 @@ def progress_indicator(start_msg: str = "In progress...", success_msg: str = "",
     spinner = yaspin()
     spinner.spinner = Spinners.dots
     spinner.text = start_msg
-    result_message = {"message": ""}
+
+    result_message = {"message": success_msg}
+
+    def update_message(msg: str):
+        result_message["message"] = msg
 
     try:
         spinner.start()
-        yield result_message
-
-        # For using a message generated in the manager's enclosed function call
-        if result_message["message"] != "":
-            success_msg = result_message["message"]
+        yield update_message
 
         spinner.color = "green"
         spinner.text = ""
-        spinner.ok(f"✅ SUCCESS: \033[1m{success_msg}\033[0m\n")
+        spinner.ok(f"✅ SUCCESS: \033[1m{result_message['message']}\033[0m\n")
 
     except Exception as err:
         spinner.color = "red"
