@@ -1,26 +1,32 @@
+from contextlib import contextmanager
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 
 
-class ProgressIndicator:
-    def __init__(self):
-        self._spinner = yaspin()
-        self._spinner.spinner = Spinners.dots
-        self._spinner.text = "In progress... "
+@contextmanager
+def progress_indicator(start_msg: str = "In progress...", success_msg: str = "", error_msg: str = ""):
+    spinner = yaspin()
+    spinner.spinner = Spinners.dots
+    spinner.text = start_msg
+    result_message = {"message": ""}
 
-    def start_spinner(self, text: str):
-        if text:
-            self._spinner.text = text
+    try:
+        spinner.start()
+        yield result_message
 
-        self._spinner.start()
+        # For using a message generated in the manager's enclosed function call
+        if result_message["message"] != "":
+            success_msg = result_message["message"]
 
-    def stop_spinner(self, success: bool, text: str = ""):
-        if success:
-            self._spinner.color = "green"
-            self._spinner.text = ""
-            self._spinner.ok(f"✅ SUCCESS: \033[1m{text}\033[0m\n")
-        else:
-            self._spinner.color = "red"
-            self._spinner.fail("💥 ERROR: ")
+        spinner.color = "green"
+        spinner.text = ""
+        spinner.ok(f"✅ SUCCESS: \033[1m{success_msg}\033[0m\n")
 
-        self._spinner.stop()
+    except Exception as err:
+        spinner.color = "red"
+        spinner.text = ""
+        spinner.fail(f"💥 ERROR: {error_msg}")
+        raise err
+
+    finally:
+        spinner.stop()
