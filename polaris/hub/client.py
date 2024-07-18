@@ -542,6 +542,10 @@ class PolarisHubClient(OAuth2Client):
             parquet_size = len(buffer.getbuffer())
             parquet_md5 = md5(buffer.getbuffer()).hexdigest()
 
+            # If the dataset uses Zarr, we will save the Zarr archive to the Hub as well
+            if dataset.uses_zarr:
+                dataset_json["zarrRootPath"] = f"{PolarisFileSystem.protocol}://data.zarr"
+
             # Step 1: Upload meta-data
             # Instead of directly uploading the data, we announce to the hub that we intend to upload it.
             # We do so separately for the Zarr archive and Parquet file.
