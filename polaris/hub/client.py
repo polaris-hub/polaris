@@ -474,8 +474,9 @@ class PolarisHubClient(OAuth2Client):
         dataset.owner = HubOwner.normalize(owner or dataset.owner)
         dataset_json = dataset.model_dump(exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True)
 
-        # We will save the Zarr archive to the Hub as well
-        dataset_json["zarrRootPath"] = f"{PolarisFileSystem.protocol}://data.zarr"
+        # If the dataset uses Zarr, we will save the Zarr archive to the Hub as well
+        if dataset.uses_zarr:
+            dataset_json["zarrRootPath"] = f"{PolarisFileSystem.protocol}://data.zarr"
 
         # Uploading a dataset is a three-step process.
         # 1. Upload the dataset meta data to the hub and prepare the hub to receive the data
