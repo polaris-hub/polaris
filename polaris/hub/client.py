@@ -350,9 +350,9 @@ class PolarisHubClient(OAuth2Client):
     ) -> BenchmarkSpecification:
         """Load a benchmark from the Polaris Hub.
 
-        Note: Retrieving datasets owned by an organization
+        Note: Retrieving benchmarks owned by an organization
             Soon after being added to a new organization on Polaris, there may be a delay spanning some
-            minutes where you cannot retrieve private datasets where the aforementioned organization is the owner.
+            minutes where you cannot retrieve private benchmarks where the aforementioned organization is the owner.
             If this occurs, please re-login via `polaris login --overwrite` and try again.
 
         Args:
