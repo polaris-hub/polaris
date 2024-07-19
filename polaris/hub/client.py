@@ -35,7 +35,7 @@ from polaris.utils.errors import (
     PolarisUnauthorizedError,
 )
 from polaris.utils.misc import should_verify_checksum
-from polaris.utils.progress_indicator import progress_indicator
+from polaris.utils.context import ProgressIndicator
 from polaris.utils.types import (
     AccessType,
     ChecksumStrategy,
@@ -238,7 +238,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A list of dataset names in the format `owner/dataset_name`.
         """
-        with progress_indicator(
+        with ProgressIndicator(
             start_msg="Fetching datasets...",
             success_msg="Fetched datasets.",
             error_msg="Failed to fetch datasets.",
@@ -268,7 +268,7 @@ class PolarisHubClient(OAuth2Client):
             A `Dataset` instance, if it exists.
         """
 
-        with progress_indicator(
+        with ProgressIndicator(
             start_msg="Fetching dataset...",
             success_msg="Fetched dataset.",
             error_msg="Failed to fetch dataset.",
@@ -342,7 +342,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A list of benchmark names in the format `owner/benchmark_name`.
         """
-        with progress_indicator(
+        with ProgressIndicator(
             start_msg="Fetching benchmarks...",
             success_msg="Fetched benchmarks.",
             error_msg="Failed to fetch benchmarks.",
@@ -371,7 +371,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `BenchmarkSpecification` instance, if it exists.
         """
-        with progress_indicator(
+        with ProgressIndicator(
             start_msg="Fetching benchmark...",
             success_msg="Fetched benchmark.",
             error_msg="Failed to fetch benchmark.",
@@ -432,11 +432,11 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `results.owner`.
         """
-        with progress_indicator(
+        with ProgressIndicator(
             start_msg="Uploading result...",
             success_msg="Uploaded result.",
             error_msg="Failed to upload result.",
-        ) as update_success_message:
+        ) as progress_indicator:
             # Get the serialized model data-structure
             results.owner = HubOwner.normalize(owner or results.owner)
             result_json = results.model_dump(by_alias=True, exclude_none=True)
@@ -452,7 +452,7 @@ class PolarisHubClient(OAuth2Client):
                 f"benchmarks/{results.benchmark_owner}/{results.benchmark_name}/{response['id']}",
             )
 
-            update_success_message(
+            progress_indicator.update_success_msg(
                 f"Your result has been successfully uploaded to the Hub. View it here: {result_url}"
             )
 
@@ -490,11 +490,11 @@ class PolarisHubClient(OAuth2Client):
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
         """
-        with progress_indicator(
+        with ProgressIndicator(
             start_msg="Uploading dataset...",
             success_msg="Uploaded dataset.",
             error_msg="Failed to upload dataset.",
-        ) as update_success_message:
+        ) as progress_indicator:
             # Check if a dataset license was specified prior to upload
             if not dataset.license:
                 raise InvalidDatasetError(
@@ -527,10 +527,6 @@ class PolarisHubClient(OAuth2Client):
             dataset.table.to_parquet(buffer, engine="auto")
             parquet_size = len(buffer.getbuffer())
             parquet_md5 = md5(buffer.getbuffer()).hexdigest()
-
-            # If the dataset uses Zarr, we will save the Zarr archive to the Hub as well
-            if dataset.uses_zarr:
-                dataset_json["zarrRootPath"] = f"{PolarisFileSystem.protocol}://data.zarr"
 
             # Step 1: Upload meta-data
             # Instead of directly uploading the data, we announce to the hub that we intend to upload it.
@@ -611,7 +607,7 @@ class PolarisHubClient(OAuth2Client):
                         if_exists=if_exists,
                     )
 
-            update_success_message(
+            progress_indicator.update_success_msg(
                 "Your dataset has been successfully uploaded to the Hub. "
                 f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
             )
@@ -645,11 +641,11 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
         """
-        with progress_indicator(
+        with ProgressIndicator(
             start_msg="Uploading benchmark...",
             success_msg="Uploaded benchmark.",
             error_msg="Failed to upload benchmark.",
-        ) as update_success_message:
+        ) as progress_indicator:
             # Get the serialized data-model
             # We exclude the dataset as we expect it to exist on the hub already.
             benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
@@ -660,7 +656,7 @@ class PolarisHubClient(OAuth2Client):
             url = f"/benchmark/{benchmark.owner}/{benchmark.name}"
             response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
-            update_success_message(
+            progress_indicator.update_success_msg(
                 "Your benchmark has been successfully uploaded to the Hub. "
                 f"View it here: {urljoin(self.settings.hub_url, f'benchmarks/{benchmark.owner}/{benchmark.name}')}"
             )
