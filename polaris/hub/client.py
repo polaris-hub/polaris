@@ -30,6 +30,7 @@ from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.errors import (
+    InformativePolarisHubError,
     InvalidDatasetError,
     PolarisHubError,
     PolarisUnauthorizedError,
@@ -153,7 +154,7 @@ class PolarisHubClient(OAuth2Client):
         content = BytesIO(response.content)
         return load_fn(content)
 
-    def _base_request_to_hub(self, url: str, method: str, **kwargs):
+    def _base_request_to_hub(self, url: str, method: str, show_informative_error: bool = False, **kwargs):
         """Utility function since most API methods follow the same pattern"""
         response = self.request(url=url, method=method, **kwargs)
 
@@ -161,14 +162,20 @@ class PolarisHubClient(OAuth2Client):
             response.raise_for_status()
 
         except HTTPStatusError as error:
+            response_status_code = response.status_code
+
             # With an internal server error, we are not sure the custom error-handling code on the hub is reached.
-            if response.status_code == 500:
+            if response_status_code == 500:
                 raise
 
             # If not an internal server error, the hub should always return a JSON response
             # with additional information about the error.
             response = response.json()
             response = json.dumps(response, indent=2, sort_keys=True)
+
+            if show_informative_error and (response_status_code == 403 or response_status_code == 404):
+                raise InformativePolarisHubError(response, method)
+
             raise PolarisHubError(
                 f"The request to the Polaris Hub failed. See the error message below for more details:\n{response}"
             ) from error
@@ -266,7 +273,9 @@ class PolarisHubClient(OAuth2Client):
             A `Dataset` instance, if it exists.
         """
 
-        response = self._base_request_to_hub(url=f"/dataset/{owner}/{name}", method="GET")
+        response = self._base_request_to_hub(
+            url=f"/dataset/{owner}/{name}", method="GET", show_informative_error=True
+        )
         storage_response = self.get(response["tableContent"]["url"])
 
         # This should be a 307 redirect with the signed URL
@@ -364,7 +373,11 @@ class PolarisHubClient(OAuth2Client):
             A `BenchmarkSpecification` instance, if it exists.
         """
 
-        response = self._base_request_to_hub(url=f"/benchmark/{owner}/{name}", method="GET")
+        response = self._base_request_to_hub(
+            url=f"/benchmark/{owner}/{name}",
+            method="GET",
+            show_informative_error=True,
+        )
 
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
         #  but we'd need to change the signature of get_dataset to use it
@@ -430,7 +443,10 @@ class PolarisHubClient(OAuth2Client):
 
         # Make a request to the hub
         response = self._base_request_to_hub(
-            url="/result", method="POST", json={"access": access, **result_json}
+            url="/result",
+            method="POST",
+            json={"access": access, **result_json},
+            show_informative_error=True,
         )
 
         # Inform the user about where to find their newly created artifact.
@@ -528,6 +544,7 @@ class PolarisHubClient(OAuth2Client):
                 **dataset_json,
             },
             timeout=timeout,
+            show_informative_error=True,
         )
 
         # Step 2: Upload the parquet file
@@ -633,7 +650,12 @@ class PolarisHubClient(OAuth2Client):
         benchmark_json["access"] = access
 
         url = f"/benchmark/{benchmark.owner}/{benchmark.name}"
-        response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
+        response = self._base_request_to_hub(
+            url=url,
+            method="PUT",
+            json=benchmark_json,
+            show_informative_error=True,
+        )
 
         logger.success(
             "Your benchmark has been successfully uploaded to the Hub. "

@@ -31,3 +31,11 @@ def should_verify_checksum(strategy: ChecksumStrategy, dataset: "Dataset") -> bo
         return True
     else:
         return not dataset.uses_zarr
+
+
+def format_text(text: str, style_codes: list[str]):
+    END_CODE = "\033[0m"
+    for code in style_codes:
+        text = f"{code}{text}{END_CODE}"
+
+    return text
