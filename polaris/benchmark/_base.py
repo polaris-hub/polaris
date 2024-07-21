@@ -281,6 +281,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         if not isinstance(self.split[1], dict):
             split = self.split[0], {"test": self.split[1]}
+        else:
+            split = self.split
 
         # Train set
         s = json.dumps(sorted(split[0]))

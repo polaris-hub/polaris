@@ -52,7 +52,8 @@ dependencies = [
     "datamol >=0.12.1",
     "zarr",
     "pyarrow",
-    "fsspec[http]"
+    "fsspec[http]",
+    "yaspin"
 ]
 
 [project.optional-dependencies]
