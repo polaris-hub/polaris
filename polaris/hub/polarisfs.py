@@ -6,6 +6,8 @@ from loguru import logger
 
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import TimeoutTypes
+from polaris.utils.misc import sluggify
+
 
 if TYPE_CHECKING:
     from polaris.hub.client import PolarisHubClient
@@ -52,7 +54,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         self.default_timeout = self.polaris_client.settings.default_timeout
 
         # Prefix to remove from ls entries
-        self.prefix = f"dataset/{dataset_owner}/{dataset_name}/"
+        self.prefix = f"dataset/{dataset_owner}/{sluggify(dataset_name)}/"
         self.base_path = f"/storage/{self.prefix.rstrip('/')}"
 
     @staticmethod
