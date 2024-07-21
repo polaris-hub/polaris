@@ -34,7 +34,7 @@ from polaris.utils.errors import (
     PolarisHubError,
     PolarisUnauthorizedError,
 )
-from polaris.utils.misc import should_verify_checksum, sluggify
+from polaris.utils.misc import should_verify_checksum
 from polaris.utils.context import ProgressIndicator
 from polaris.utils.types import (
     AccessType,
