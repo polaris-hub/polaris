@@ -668,6 +668,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Load the dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#upload-zarr-dataset-to-hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      Upload zarr dataset to Hub
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1307,6 +1322,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Load the dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#upload-zarr-dataset-to-hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      Upload zarr dataset to Hub
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1790,8 +1820,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5e201379">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5e201379">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1826,6 +1856,20 @@ import datamol as dm
 import pandas as pd
 
 SAVE_DIR = dm.fs.join(platformdirs.user_cache_dir(appname="polaris-tutorials"), "002")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>/mnt/ps/home/CORP/lu.zhu/miniconda3/envs/po_datasets/lib/python3.12/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+</pre>
 </div>
 </div>
 </div>
@@ -1882,8 +1926,8 @@ root.array(inp_col_name, images)</div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=15df9619-e659-4558-9c69-416a186c1f3a">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=05712cbd">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1901,13 +1945,54 @@ root.array(inp_col_name, images)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># For performance reasons, Polaris expects all data related to a column to be saved in a single Zarr array. </span>
-<span class="c1"># To index a specific element in that array, the pointer path can have a suffix to specify the index. </span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Consolidate the dataset for efficient loading from the cloud bucket</span>
+<span class="n">zarr</span><span class="o">.</span><span class="n">consolidate_metadata</span><span class="p">(</span><span class="n">base_path</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-3"># Consolidate the dataset for efficient loading from the cloud bucket
+zarr.consolidate_metadata(base_path)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
+<pre>&lt;zarr.hierarchy.Group '/'&gt;</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=15df9619-e659-4558-9c69-416a186c1f3a">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-4">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># For performance reasons, Polaris expects all data related to a column to be saved in a single Zarr array.</span>
+<span class="c1"># To index a specific element in that array, the pointer path can have a suffix to specify the index.</span>
 <span class="n">train_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">inp_col_name</span><span class="si">}</span><span class="s2">#0"</span>
 <span class="n">test_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">inp_col_name</span><span class="si">}</span><span class="s2">#1"</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3"># For performance reasons, Polaris expects all data related to a column to be saved in a single Zarr array. 
-# To index a specific element in that array, the pointer path can have a suffix to specify the index. 
+<div class="clipboard-copy-txt" id="cell-4"># For performance reasons, Polaris expects all data related to a column to be saved in a single Zarr array.
+# To index a specific element in that array, the pointer path can have a suffix to specify the index.
 train_path = f"{inp_col_name}#0"
 test_path = f"{inp_col_name}#1"</div>
 </div>
@@ -1921,10 +2006,10 @@ test_path = f"{inp_col_name}#1"</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-4">
+<clipboard-copy for="cell-5">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -1943,7 +2028,7 @@ test_path = f"{inp_col_name}#1"</div>
     <span class="p">}</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">tgt_col_name = "target"
+<div class="clipboard-copy-txt" id="cell-5">tgt_col_name = "target"
 
 table = pd.DataFrame(
     {
@@ -1962,10 +2047,10 @@ table = pd.DataFrame(
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-5">
+<clipboard-copy for="cell-6">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -1986,7 +2071,7 @@ table = pd.DataFrame(
     <span class="n">zarr_root_path</span><span class="o">=</span><span class="n">base_path</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">from polaris.dataset import Dataset, ColumnAnnotation
+<div class="clipboard-copy-txt" id="cell-6">from polaris.dataset import Dataset, ColumnAnnotation
 
 dataset = Dataset(
     table=table,
@@ -2018,10 +2103,10 @@ dataset = Dataset(
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-6">
+<clipboard-copy for="cell-7">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2033,7 +2118,7 @@ dataset = Dataset(
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"images"</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">dataset.table.loc[0, "images"]</div>
+<div class="clipboard-copy-txt" id="cell-7">dataset.table.loc[0, "images"]</div>
 </div>
 </div>
 </div>
@@ -2043,7 +2128,7 @@ dataset = Dataset(
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
 <pre>'images#0'</pre>
 </div>
@@ -2068,10 +2153,10 @@ dataset = Dataset(
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-7">
+<clipboard-copy for="cell-8">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2083,7 +2168,7 @@ dataset = Dataset(
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="s2">"images"</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">dataset.get_data(col="images", row=0).shape</div>
+<div class="clipboard-copy-txt" id="cell-8">dataset.get_data(col="images", row=0).shape</div>
 </div>
 </div>
 </div>
@@ -2093,7 +2178,7 @@ dataset = Dataset(
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
 <pre>(64, 64, 3)</pre>
 </div>
@@ -2118,10 +2203,10 @@ dataset = Dataset(
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-8">
+<clipboard-copy for="cell-9">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2141,7 +2226,7 @@ dataset = Dataset(
     <span class="n">split</span><span class="o">=</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">from polaris.benchmark import SingleTaskBenchmarkSpecification
+<div class="clipboard-copy-txt" id="cell-9">from polaris.benchmark import SingleTaskBenchmarkSpecification
 
 benchmark = SingleTaskBenchmarkSpecification(
     dataset=dataset,
@@ -2161,10 +2246,10 @@ benchmark = SingleTaskBenchmarkSpecification(
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-9">
+<clipboard-copy for="cell-10">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2180,7 +2265,7 @@ benchmark = SingleTaskBenchmarkSpecification(
     <span class="c1"># At this point, the content is loaded from the path specified in the table</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-9">train, test = benchmark.get_train_test_split()
+<div class="clipboard-copy-txt" id="cell-10">train, test = benchmark.get_train_test_split()
 
 for x, y in train:
     # At this point, the content is loaded from the path specified in the table
@@ -2261,10 +2346,10 @@ for x, y in train:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-10">
+<clipboard-copy for="cell-11">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2277,7 +2362,7 @@ for x, y in train:
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Let's first create some dummy dataset with 1000 64x64 "images"</span>
 <span class="n">images</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10"># Let's first create some dummy dataset with 1000 64x64 "images"
+<div class="clipboard-copy-txt" id="cell-11"># Let's first create some dummy dataset with 1000 64x64 "images"
 images = np.random.random((1000, 64, 64, 3))</div>
 </div>
 </div>
@@ -2290,10 +2375,10 @@ images = np.random.random((1000, 64, 64, 3))</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-11">
+<clipboard-copy for="cell-12">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2308,7 +2393,7 @@ images = np.random.random((1000, 64, 64, 3))</div>
 <span class="k">with</span> <span class="n">zarr</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">root</span><span class="p">:</span>
     <span class="n">root</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">inp_col_name</span><span class="p">,</span> <span class="n">images</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-11">path = dm.fs.join(SAVE_DIR, "zarr", "data.zarr")
+<div class="clipboard-copy-txt" id="cell-12">path = dm.fs.join(SAVE_DIR, "zarr", "data.zarr")
 
 with zarr.open(path, "w") as root:
     root.array(inp_col_name, images)</div>
@@ -2334,10 +2419,10 @@ with zarr.open(path, "w") as root:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-12">
+<clipboard-copy for="cell-13">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2349,16 +2434,16 @@ with zarr.open(path, "w") as root:
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">create_dataset_from_file</span>
 
-<span class="c1"># Because Polaris might restructure the Zarr archive, </span>
+<span class="c1"># Because Polaris might restructure the Zarr archive,</span>
 <span class="c1"># we need to specify a location to save the Zarr file to.</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">zarr_root_path</span><span class="o">=</span><span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"zarr"</span><span class="p">,</span> <span class="s2">"processed.zarr"</span><span class="p">))</span>
 
 <span class="c1"># The path refers to the original zarr directory we created in the above code block</span>
 <span class="n">dataset</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">inp_col_name</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-12">from polaris.dataset import create_dataset_from_file
+<div class="clipboard-copy-txt" id="cell-13">from polaris.dataset import create_dataset_from_file
 
-# Because Polaris might restructure the Zarr archive, 
+# Because Polaris might restructure the Zarr archive,
 # we need to specify a location to save the Zarr file to.
 dataset = create_dataset_from_file(path, zarr_root_path=dm.fs.join(SAVE_DIR, "zarr", "processed.zarr"))
 
@@ -2373,7 +2458,7 @@ dataset.table.iloc[0][inp_col_name]</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[13]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
 <pre>'images#0'</pre>
 </div>
@@ -2387,10 +2472,10 @@ dataset.table.iloc[0][inp_col_name]</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-13">
+<clipboard-copy for="cell-14">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2402,7 +2487,7 @@ dataset.table.iloc[0][inp_col_name]</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="n">inp_col_name</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-13">dataset.get_data(col=inp_col_name, row=0).shape</div>
+<div class="clipboard-copy-txt" id="cell-14">dataset.get_data(col=inp_col_name, row=0).shape</div>
 </div>
 </div>
 </div>
@@ -2412,7 +2497,7 @@ dataset.table.iloc[0][inp_col_name]</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[15]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
 <pre>(64, 64, 3)</pre>
 </div>
@@ -2431,37 +2516,8 @@ dataset.table.iloc[0][inp_col_name]</div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1cd94077">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-14">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">savedir</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"json"</span><span class="p">)</span>
-<span class="n">json_path</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">savedir</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-14">savedir = dm.fs.join(SAVE_DIR, "json")
-json_path = dataset.to_json(savedir)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c5147684">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=1cd94077">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2479,10 +2535,60 @@ json_path = dataset.to_json(savedir)</div>
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">savedir</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"json"</span><span class="p">)</span>
+<span class="n">json_path</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">savedir</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-15">savedir = dm.fs.join(SAVE_DIR, "json")
+json_path = dataset.to_json(savedir)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre><span class="ansi-green-fg">2024-07-21 13:11:49.273</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris._mixins</span>:<span class="ansi-cyan-fg">md5sum</span>:<span class="ansi-cyan-fg">27</span> - <span class="ansi-bold">Computing the checksum. This can be slow for large datasets.</span>
+Finding all files in the Zarr archive:  60%|██████    | 79/131 [00:00&lt;00:00, 375.21it/s]</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>Finding all files in the Zarr archive: 100%|██████████| 131/131 [00:00&lt;00:00, 396.17it/s]
+<span class="ansi-green-fg">2024-07-21 13:11:49.616</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris.dataset._dataset</span>:<span class="ansi-cyan-fg">to_json</span>:<span class="ansi-cyan-fg">431</span> - <span class="ansi-bold">Copying Zarr archive to /mnt/ps/home/CORP/lu.zhu/.cache/polaris-tutorials/002/json/data.zarr. This may take a while.</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c5147684">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-16">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">fs</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">get_mapper</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">fs</span>
 <span class="n">fs</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-15">fs = dm.fs.get_mapper(path).fs
+<div class="clipboard-copy-txt" id="cell-16">fs = dm.fs.get_mapper(path).fs
 fs.ls(SAVE_DIR)</div>
 </div>
 </div>
@@ -2493,11 +2599,11 @@ fs.ls(SAVE_DIR)</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[16]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>['/home/cas/.cache/polaris-tutorials/002/zarr',
- '/home/cas/.cache/polaris-tutorials/002/json',
- '/home/cas/.cache/polaris-tutorials/002/data.zarr']</pre>
+<pre>['/mnt/ps/home/CORP/lu.zhu/.cache/polaris-tutorials/002/json',
+ '/mnt/ps/home/CORP/lu.zhu/.cache/polaris-tutorials/002/data.zarr',
+ '/mnt/ps/home/CORP/lu.zhu/.cache/polaris-tutorials/002/zarr']</pre>
 </div>
 </div>
 </div>
@@ -2531,10 +2637,10 @@ fs.ls(SAVE_DIR)</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-16">
+<clipboard-copy for="cell-17">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2546,7 +2652,7 @@ fs.ls(SAVE_DIR)</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">json_path</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-16">Dataset.from_json(json_path)</div>
+<div class="clipboard-copy-txt" id="cell-17">Dataset.from_json(json_path)</div>
 </div>
 </div>
 </div>
@@ -2555,10 +2661,136 @@ fs.ls(SAVE_DIR)</div>
 <div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre><span class="ansi-green-fg">2024-07-21 13:12:16.485</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris._mixins</span>:<span class="ansi-cyan-fg">md5sum</span>:<span class="ansi-cyan-fg">27</span> - <span class="ansi-bold">Computing the checksum. This can be slow for large datasets.</span>
+Finding all files in the Zarr archive:  17%|█▋        | 22/131 [00:00&lt;00:00, 211.62it/s]</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>Finding all files in the Zarr archive: 100%|██████████| 131/131 [00:00&lt;00:00, 246.81it/s]
+</pre>
+</div>
+</div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[18]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-<table border="1"><tr><th>name</th><td>None</td></tr><tr><th>description</th><td></td></tr><tr><th>tags</th><td></td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>owner</th><td>None</td></tr><tr><th>default_adapters</th><td></td></tr><tr><th>zarr_root_path</th><td>/home/cas/.cache/polaris-tutorials/002/json/data.zarr</td></tr><tr><th>md5sum</th><td>5488b4909fd67d3208624288e720e1b8</td></tr><tr><th>readme</th><td></td></tr><tr><th>annotations</th><td><table border="1"><tr><th>images</th><td><table border="1"><tr><th>is_pointer</th><td>True</td></tr><tr><th>modality</th><td>UNKNOWN</td></tr><tr><th>description</th><td>None</td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>dtype</th><td>object</td></tr></table></td></tr></table></td></tr><tr><th>source</th><td>None</td></tr><tr><th>license</th><td>None</td></tr><tr><th>curation_reference</th><td>None</td></tr><tr><th>cache_dir</th><td>/home/cas/.cache/polaris/datasets/None/5488b4909fd67d3208624288e720e1b8</td></tr><tr><th>artifact_id</th><td>None</td></tr><tr><th>n_rows</th><td>1000</td></tr><tr><th>n_columns</th><td>1</td></tr></table>
+<table border="1"><tr><th>name</th><td>None</td></tr><tr><th>description</th><td></td></tr><tr><th>tags</th><td></td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>owner</th><td>None</td></tr><tr><th>polaris_version</th><td>dev</td></tr><tr><th>default_adapters</th><td></td></tr><tr><th>zarr_root_path</th><td>/mnt/ps/home/CORP/lu.zhu/.cache/polaris-tutorials/002/zarr/processed.zarr</td></tr><tr><th>readme</th><td></td></tr><tr><th>annotations</th><td><table border="1"><tr><th>images</th><td><table border="1"><tr><th>is_pointer</th><td>True</td></tr><tr><th>modality</th><td>UNKNOWN</td></tr><tr><th>description</th><td>None</td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>dtype</th><td>object</td></tr></table></td></tr></table></td></tr><tr><th>source</th><td>None</td></tr><tr><th>license</th><td>None</td></tr><tr><th>curation_reference</th><td>None</td></tr><tr><th>cache_dir</th><td>/mnt/ps/home/CORP/lu.zhu/.cache/polaris/datasets/97d642a2-001c-40aa-ac98-0e24353005d2</td></tr><tr><th>md5sum</th><td>b7c52acfbda1f9bba47ae218e9c4717f</td></tr><tr><th>artifact_id</th><td>None</td></tr><tr><th>n_rows</th><td>1000</td></tr><tr><th>n_columns</th><td>1</td></tr></table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0503a3a7">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="upload-zarr-dataset-to-hub">Upload zarr dataset to Hub<a class="anchor-link" href="#upload-zarr-dataset-to-hub">¶</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=cf0f7e69">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [22]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-18">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Define the zarr dataset metadata before uploading</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"tutorial_zarr"</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="s2">"CC-BY-4.0"</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="s2">"https://github.com/polaris-hub/polaris"</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-18"># Define the zarr dataset metadata before uploading
+dataset.name = "tutorial_zarr"
+dataset.license = "CC-BY-4.0"
+dataset.source = "https://github.com/polaris-hub/polaris"</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5251b027">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [23]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-19">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">upload_to_hub</span><span class="p">(</span><span class="n">owner</span><span class="o">=</span><span class="s2">"polaris"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-19">dataset.upload_to_hub(owner="polaris")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>⠙ Uploading dataset... </pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>⠦ Uploading dataset... </pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre><span class="ansi-green-fg">2024-07-21 13:19:12.188</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">polaris.hub.client</span>:<span class="ansi-cyan-fg">upload_dataset</span>:<span class="ansi-cyan-fg">602</span> - <span class="ansi-bold">Copying Zarr archive to the Hub. This may take a while.</span>
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>✅ SUCCESS: <span class="ansi-bold">Your dataset has been successfully uploaded to the Hub. View it here: https://polarishub.io/datasets/polaris/tutorial_zarr</span>
+ 
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>/mnt/ps/home/CORP/lu.zhu/miniconda3/envs/po_datasets/lib/python3.12/site-packages/yaspin/core.py:228: UserWarning: color, on_color and attrs are not supported when running in jupyter
+  self._color = self._set_color(value) if value else value
+</pre>
 </div>
 </div>
 </div>
