@@ -6,6 +6,7 @@ import fsspec
 import numpy as np
 import pandas as pd
 from datamol.utils import fs
+from loguru import logger
 from pydantic import (
     Field,
     ValidationInfo,
@@ -166,19 +167,23 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     def _validate_split(cls, v, info: ValidationInfo):
         """
         Verifies that:
-          1) There is at least two, non-empty partitions
+          1) There are no empty test partitions
           2) All indices are valid given the dataset
           3) There is no duplicate indices in any of the sets
           3) There is no overlap between the train and test set
         """
 
-        # There is at least two, non-empty partitions
-        if (
-            len(v[0]) == 0
-            or (isinstance(v[1], dict) and any(len(v) == 0 for v in v[1].values()))
-            or (not isinstance(v[1], dict) and len(v[1]) == 0)
+        # Train partition can be empty (zero-shot)
+        # Test partitions cannot be empty
+        if (isinstance(v[1], dict) and any(len(v) == 0 for v in v[1].values())) or (
+            not isinstance(v[1], dict) and len(v[1]) == 0
         ):
-            raise InvalidBenchmarkError("The predefined split contains empty partitions")
+            raise InvalidBenchmarkError("The predefined split contains empty test partitions")
+
+        if len(v[0]) == 0:
+            logger.info(
+                "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
+            )
 
         train_indices = v[0]
         test_indices = [i for part in v[1].values() for i in part] if isinstance(v[1], dict) else v[1]
