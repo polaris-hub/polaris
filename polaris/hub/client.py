@@ -322,15 +322,15 @@ class PolarisHubClient(OAuth2Client):
             dataset_owner=owner,
             dataset_name=name,
         )
+        print(polaris_fs.__dict__)
+        # try:
+        store = zarr.storage.FSStore(path, fs=polaris_fs)
+        if mode in ["r", "r+"] and as_consolidated:
+            return zarr.open_consolidated(store, mode=mode)
+        return zarr.open(store, mode=mode)
 
-        try:
-            store = zarr.storage.FSStore(path, fs=polaris_fs)
-            if mode in ["r", "r+"] and as_consolidated:
-                return zarr.open_consolidated(store, mode=mode)
-            return zarr.open(store, mode=mode)
-
-        except Exception as e:
-            raise PolarisHubError("Error opening Zarr store") from e
+        # except Exception as e:
+        #     raise PolarisHubError("Error opening Zarr store") from e
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.

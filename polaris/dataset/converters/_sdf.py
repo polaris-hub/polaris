@@ -1,5 +1,8 @@
 import uuid
 from typing import TYPE_CHECKING, Optional, Sequence
+from loguru import logger
+import io
+from tqdm import tqdm
 
 import datamol as dm
 import pandas as pd
@@ -45,6 +48,9 @@ class SDFConverter(Converter):
         groupby_key: Optional[str] = None,
         n_jobs: int = 1,
         zarr_chunks: Sequence[Optional[int]] = (1,),
+        split: Optional[bool] = False,
+        max_num_mols: Optional[int] = None
+
     ) -> None:
         super().__init__()
         self.mol_column = mol_column
@@ -55,14 +61,12 @@ class SDFConverter(Converter):
         self.groupby_key = groupby_key
         self.n_jobs = n_jobs
         self.chunks = zarr_chunks
+        self.split = split
+        self.max_num_mols = max_num_mols
 
-    def convert(self, path: str, factory: "DatasetFactory") -> FactoryProduct:
-        tmp_col = uuid.uuid4().hex
-
-        # We do not sanitize the molecules or remove the Hs.
-        # We assume the SDF has been processed by the user already and do not want to change it.
-        df = dm.read_sdf(
-            path,
+    def _read_sdf_string(self, sdf_str, tmp_col):
+        return dm.read_sdf(
+            io.BytesIO(sdf_str.strip().encode()),
             as_df=self.mol_prop_as_cols,
             smiles_column=self.smiles_column,
             mol_column=tmp_col,
@@ -70,8 +74,46 @@ class SDFConverter(Converter):
             sanitize=False,
         )
 
+    def convert(self, path: str, factory: "DatasetFactory") -> FactoryProduct:
+        tmp_col = uuid.uuid4().hex
+
+        # We do not sanitize the molecules or remove the Hs.
+        # We assume the SDF has been processed by the user already and do not want to change it.
+        if self.split:
+            with open(path) as f:
+                sdf_string = f.read().strip()
+            sdf_list = sdf_string.split("$$$$")
+            if self.max_num_mols:
+                sdf_list = sdf_list[: self.max_num_mols]
+            
+            logger.info(f"Number of SDFs: {len(sdf_list)}")
+                
+            df = dm.parallelized(
+                fn=self._read_sdf_string,
+                arg_type="args",
+                inputs_list=[(i, j) for i, j in zip(sdf_list, [tmp_col] * len(sdf_list))],
+                progress=True,
+                n_jobs=self.n_jobs,
+                scheduler="threads",
+            )
+
+            if isinstance(df[0], pd.DataFrame):
+                df = pd.concat(df)
+        else:
+            df = dm.read_sdf(
+                path,
+                as_df=self.mol_prop_as_cols,
+                smiles_column=self.smiles_column,
+                mol_column=tmp_col,
+                remove_hs=False,
+                sanitize=False,
+                max_num_mols=max_num_mols,
+            )
+
         if not isinstance(df, pd.DataFrame):
             df = pd.DataFrame({tmp_col: df})
+
+        logger.info(f"Loaded {df.shape[0]} SDFs.")
 
         if self.mol_column in df.columns:
             raise ValueError(
