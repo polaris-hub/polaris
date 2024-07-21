@@ -516,7 +516,7 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude={'table'})
+        repr_dict = self.model_dump(exclude={"table"})
         repr_dict["cache_dir"] = str(repr_dict["cache_dir"])
         return repr_dict
 
