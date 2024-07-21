@@ -34,7 +34,7 @@ from polaris.utils.errors import (
     PolarisHubError,
     PolarisUnauthorizedError,
 )
-from polaris.utils.misc import should_verify_checksum
+from polaris.utils.misc import should_verify_checksum, sluggify
 from polaris.utils.context import ProgressIndicator
 from polaris.utils.types import (
     AccessType,
@@ -320,7 +320,7 @@ class PolarisHubClient(OAuth2Client):
         polaris_fs = PolarisFileSystem(
             polaris_client=self,
             dataset_owner=owner,
-            dataset_name=name,
+            dataset_name=sluggify(name),
         )
 
         try:
