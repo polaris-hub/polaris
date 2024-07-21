@@ -36,10 +36,6 @@ This library is a Python client to interact with the [Polaris Hub](https://polar
 - Evaluate a custom method against a Polaris benchmark.
 - Create and upload new datasets and benchmarks.
 
-> [!WARNING]
-> The Polaris Hub is currently released as a closed, private beta. We hope to officially release it early 2024.
-
-
 ## Quick API Tour
 
 ```python

@@ -27,7 +27,7 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
     train_split = obj.split[0]
     test_split = obj.split[1]
 
-    # One or more empty partitions
+    # One or more empty test partitions
     with pytest.raises(ValidationError):
         cls(split=(train_split,), **default_kwargs)
     with pytest.raises(ValidationError):
@@ -55,6 +55,10 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
         cls(split=(train_split, test_split + test_split[:1]), **default_kwargs)
     # It should _not_ fail with missing indices
     cls(split=(train_split[:-1], test_split), **default_kwargs)
+    # It should _not_ fail with an empty train set
+    benchmark = cls(split=([], test_split), **default_kwargs)
+    train, _ = benchmark.get_train_test_split()
+    assert len(train) == 0
 
 
 @pytest.mark.parametrize("cls", [SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification])
