@@ -163,6 +163,11 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
 
+    @field_serializer("cache_dir")
+    def _serialize_cache_dir(value):
+        """Serialize the cacha_dir"""
+        return str(value)
+
     def _compute_checksum(self):
         """Computes a hash of the dataset.
 
@@ -516,8 +521,7 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude={"table"})
-        repr_dict["cache_dir"] = str(repr_dict["cache_dir"])
+        repr_dict = self.model_dump(exclude={"table", "zarr_md5sum_manifest"})
         return repr_dict
 
     def _repr_html_(self):

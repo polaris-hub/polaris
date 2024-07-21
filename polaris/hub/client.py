@@ -320,7 +320,7 @@ class PolarisHubClient(OAuth2Client):
         polaris_fs = PolarisFileSystem(
             polaris_client=self,
             dataset_owner=owner,
-            dataset_name=sluggify(name),
+            dataset_name=name,
         )
 
         try:
