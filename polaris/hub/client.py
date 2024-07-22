@@ -460,12 +460,6 @@ class PolarisHubClient(OAuth2Client):
                 url="/result", method="POST", json={"access": access, **result_json}
             )
 
-            # Make a request to the hub
-            response = self._base_request_to_hub(
-                url="/result",
-                method="POST",
-                json={"access": access, **result_json},
-            )
             # Inform the user about where to find their newly created artifact.
             result_url = urljoin(
                 self.settings.hub_url,
