@@ -1,3 +1,4 @@
+from itertools import chain
 import json
 from hashlib import md5
 from typing import Any, Callable, Optional, Union
@@ -180,28 +181,33 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         ):
             raise InvalidBenchmarkError("The predefined split contains empty test partitions")
 
-        if len(v[0]) == 0:
+        train_idx_list = v[0]
+        test_idx_list = list(i for part in v[1].values() for i in part) if isinstance(v[1], dict) else v[1]
+
+        if len(train_idx_list) == 0:
             logger.info(
                 "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
             )
 
-        train_indices = v[0]
-        test_indices = [i for part in v[1].values() for i in part] if isinstance(v[1], dict) else v[1]
+        train_idx_set = set(train_idx_list)
+        test_idx_set = set(test_idx_list)
 
         # The train and test indices do not overlap
-        if any(i in train_indices for i in test_indices):
+        if len(train_idx_set & test_idx_set) > 0:
             raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
 
         # Duplicate indices
-        if len(set(train_indices)) != len(train_indices):
+        if len(train_idx_set) != len(train_idx_list):
             raise InvalidBenchmarkError("The training set contains duplicate indices")
-        if len(set(test_indices)) != len(test_indices):
+        if len(test_idx_set) != len(test_idx_list):
             raise InvalidBenchmarkError("The test set contains duplicate indices")
 
         # All indices are valid given the dataset
         if info.data["dataset"] is not None:
-            if any(i < 0 or i >= len(info.data["dataset"]) for i in train_indices + test_indices):
+            max_i = len(info.data["dataset"])
+            if any(i < 0 or i >= max_i for i in chain(train_idx_list, test_idx_list)):
                 raise InvalidBenchmarkError("The predefined split contains invalid indices")
+
         return v
 
     @field_validator("target_types")
