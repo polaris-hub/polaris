@@ -97,6 +97,22 @@ class DatasetFactory:
             if not isinstance(self._zarr_root, zarr.Group):
                 raise ValueError("The root of the zarr hierarchy should be a group")
         return self._zarr_root
+    
+    @property
+    def zarr_root_append(self) -> zarr.Group:
+        """
+        The root of the zarr archive for the Dataset that is being built.
+        All data for a single dataset is expected to be stored in the same Zarr archive.
+        """
+        if self._zarr_root is None:
+            # NOTE (cwognum): The DirectoryStore is the default store when calling zarr.open
+            #   I nevertheless explicitly set it here to make it clear that this is a design decision.
+            #   We could consider using different stores, such as the NestedDirectoryStore.
+            store = zarr.DirectoryStore(self.zarr_root_path)
+            self._zarr_root = zarr.open(store, "a")
+            if not isinstance(self._zarr_root, zarr.Group):
+                raise ValueError("The root of the zarr hierarchy should be a group")
+        return self._zarr_root
 
     def register_converter(self, ext: str, converter: Converter):
         """
