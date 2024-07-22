@@ -45,20 +45,16 @@ class InvalidZarrChecksum(Exception):
 class PolarisCreateArtifactError(PolarisHubError):
     SUGGEST_LOGIN_ON_CREATE = "Note: If you can confirm that you are authorized to perform this action, please call 'polaris login --overwrite' and try again. If this issue persists, please reach out to the Polaris team for support"
 
-    def __init__(self, method: str):
-        self.method = method
-
     def __str__(self):
+        base_message = super().__str__()
         suggestion_message = self.format(self.SUGGEST_LOGIN_ON_CREATE, [self.BOLD, self.YELLOW])
-        return f"{super().__str__()}\n{suggestion_message}."
+        return f"{base_message}\n{suggestion_message}."
 
 
 class PolarisRetrieveArtifactError(PolarisHubError):
     SUGGEST_LOGIN_ON_RETRIEVE = "Note: If this artifact exists and you can confirm that you are authorized to retrieve it, please call 'polaris login --overwrite' and try again. If this issue persists, please reach out to the Polaris team for support"
 
-    def __init__(self, method: str):
-        self.method = method
-
     def __str__(self):
+        base_message = super().__str__()
         suggestion_message = self.format(self.SUGGEST_LOGIN_ON_RETRIEVE, [self.BOLD, self.YELLOW])
-        return f"{super().__str__()}\n{suggestion_message}."
+        return f"{base_message}\n{suggestion_message}."

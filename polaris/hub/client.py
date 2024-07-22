@@ -181,10 +181,10 @@ class PolarisHubClient(OAuth2Client):
             response = json.dumps(response, indent=2, sort_keys=True)
 
             if response_status_code == 403:
-                raise PolarisCreateArtifactError(method) from error
+                raise PolarisCreateArtifactError() from error
 
             if response_status_code == 404:
-                raise PolarisRetrieveArtifactError(method) from error
+                raise PolarisRetrieveArtifactError() from error
 
             raise PolarisHubError() from error
         # Convert the response to json format if the response contains a 'text' body
