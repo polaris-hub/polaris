@@ -204,8 +204,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         # All indices are valid given the dataset
         if info.data["dataset"] is not None:
-            max = len(info.data["dataset"])
-            if any(i < 0 or i >= max for i in chain(train_idx_list, test_idx_list)):
+            max_i = len(info.data["dataset"])
+            if any(i < 0 or i >= max_i for i in chain(train_idx_list, test_idx_list)):
                 raise InvalidBenchmarkError("The predefined split contains invalid indices")
 
         return v
