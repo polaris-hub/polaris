@@ -47,7 +47,7 @@ class PolarisUnauthorizedError(PolarisHubError):
     def __init__(self, response: Response | None = None):
         message = (
             "You are not logged in to Polaris or your login has expired. "
-            "You can use the Polaris CLI to easily authenticate yourself again, see `polaris login --help`."
+            "You can use the Polaris CLI to easily authenticate yourself again with `polaris login --overwrite`."
         )
         message = self.format(message, [self.BOLD, self.YELLOW])
         super().__init__(message, response)
