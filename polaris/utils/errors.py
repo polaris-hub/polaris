@@ -1,6 +1,6 @@
 from httpx import Response
 
-from polaris.mixins._format_output import FormattingMixin
+from polaris.mixins._format_text import FormattingMixin
 
 
 class InvalidDatasetError(ValueError):
