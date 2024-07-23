@@ -184,13 +184,13 @@ class PolarisHubClient(OAuth2Client):
 
             if response_status_code == 403:
                 # This happens when trying to create an artifact for an owner the user has no access to.
-                raise PolarisCreateArtifactError() from error
+                raise PolarisCreateArtifactError(response=response) from error
 
             if response_status_code == 404:
                 # This happens when an artifact doesn't exist _or_ when the user has no access to that artifact.
-                raise PolarisRetrieveArtifactError() from error
+                raise PolarisRetrieveArtifactError(response=response) from error
 
-            raise PolarisHubError() from error
+            raise PolarisHubError(response=response) from error
         # Convert the response to json format if the response contains a 'text' body
         try:
             response = response.json()
@@ -223,7 +223,7 @@ class PolarisHubClient(OAuth2Client):
         except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError, OAuthError) as error:
             if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:
                 raise
-            raise PolarisUnauthorizedError from error
+            raise PolarisUnauthorizedError(response=error.response) from error
 
     def login(self, overwrite: bool = False, auto_open_browser: bool = True):
         """Login to the Polaris Hub using the OAuth2 protocol.
@@ -299,7 +299,9 @@ class PolarisHubClient(OAuth2Client):
                 try:
                     storage_response.raise_for_status()
                 except HTTPStatusError as error:
-                    raise PolarisHubError("Could not get signed URL from Polaris Hub.") from error
+                    raise PolarisHubError(
+                        "Could not get signed URL from Polaris Hub.", response=storage_response
+                    ) from error
 
             storage_response = storage_response.json()
             url = storage_response["url"]
