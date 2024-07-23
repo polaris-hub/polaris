@@ -35,7 +35,7 @@ class PolarisHubError(Exception, FormattingMixin):
         prefix = "The request to the Polaris Hub failed."
 
         if response is not None:
-            prefix += f" The Hub responded with the following error message: {response.text}."
+            prefix += f" The Hub responded with: {response.text}."
 
         suffix = "If the issue persists, please reach out to the Polaris team for support."
 
