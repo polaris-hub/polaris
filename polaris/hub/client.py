@@ -179,7 +179,7 @@ class PolarisHubClient(OAuth2Client):
             try:
                 response = response.json()
                 response = json.dumps(response, indent=2, sort_keys=True)
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, TypeError):
                 response = response.text
 
             # The below two error cases can happen due to the JWT token containing outdated information.
