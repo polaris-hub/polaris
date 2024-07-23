@@ -43,7 +43,7 @@ class PolarisHubError(Exception, FormattingMixin):
         self.response = response
 
 
-class PolarisUnauthorizedError(Exception, FormattingMixin):
+class PolarisUnauthorizedError(PolarisHubError):
     def __init__(self, response: Response | None = None):
         message = (
             "You are not logged in to Polaris or your login has expired. "
