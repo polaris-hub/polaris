@@ -300,7 +300,7 @@ class PolarisHubClient(OAuth2Client):
                     storage_response.raise_for_status()
                 except HTTPStatusError as error:
                     raise PolarisHubError(
-                        "Could not get signed URL from Polaris Hub.", response=storage_response
+                        message="Could not get signed URL from Polaris Hub.", response=storage_response
                     ) from error
 
             storage_response = storage_response.json()
@@ -351,9 +351,9 @@ class PolarisHubClient(OAuth2Client):
 
         except HTTPStatusError as error:
             # In this case, we can pass the response to provide more information
-            raise PolarisHubError("Error opening Zarr store", response=error.response) from error
+            raise PolarisHubError(message="Error opening Zarr store", response=error.response) from error
         except Exception as error:
-            raise PolarisHubError("Error opening Zarr store") from error
+            raise PolarisHubError(message="Error opening Zarr store") from error
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.

@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 
-from polaris._mixins import FormattingMixin
+from polaris.mixins._format_output import FormattingMixin
 
 
 @contextmanager

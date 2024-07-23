@@ -140,7 +140,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
 
         # This should be a 307 redirect with the signed URL
         if response.status_code != 307:
-            raise PolarisHubError("Could not get signed URL from Polaris Hub.", response)
+            raise PolarisHubError(message="Could not get signed URL from Polaris Hub.", response=response)
 
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
@@ -219,7 +219,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         response = self.polaris_client.put(pipe_path, timeout=timeout)
 
         if response.status_code != 307:
-            raise PolarisHubError("Could not get signed URL from Polaris Hub.", response=response)
+            raise PolarisHubError(message="Could not get signed URL from Polaris Hub.", response=response)
 
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]

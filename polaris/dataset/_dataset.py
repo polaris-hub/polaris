@@ -20,7 +20,7 @@ from pydantic import (
 )
 
 from polaris._artifact import BaseArtifactModel
-from polaris._mixins import ChecksumMixin
+from polaris.mixins._checksum import ChecksumMixin
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum, compute_zarr_checksum

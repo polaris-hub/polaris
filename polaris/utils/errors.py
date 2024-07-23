@@ -1,6 +1,6 @@
 from httpx import Response
 
-from polaris._mixins import FormattingMixin
+from polaris.mixins._format_output import FormattingMixin
 
 
 class InvalidDatasetError(ValueError):
@@ -31,16 +31,13 @@ class InvalidZarrChecksum(Exception):
 
 
 class PolarisHubError(Exception, FormattingMixin):
-    def __init__(self, message: str, response: Response | None = None):
+    def __init__(self, message: str = "", response: Response | None = None):
         prefix = "The request to the Polaris Hub failed."
 
         if response is not None:
-            prefix += f" The Hub responded with: {response.text}."
+            prefix += f" The Hub responded with:\n{response}"
 
-        suffix = "If the issue persists, please reach out to the Polaris team for support."
-
-        super().__init__("\n".join([prefix, message, suffix]))
-        self.response = response
+        super().__init__("\n".join([prefix, message]))
 
 
 class PolarisUnauthorizedError(PolarisHubError):
@@ -57,7 +54,7 @@ class PolarisCreateArtifactError(PolarisHubError):
     def __init__(self, response: Response | None = None):
         message = (
             "Note: If you can confirm that you are authorized to perform this action, "
-            "please call 'polaris login --overwrite' and try again. "
+            "please call 'polaris login --overwrite' and try again. If the issue persists, please reach out to the Polaris team for support."
         )
         message = self.format(message, [self.BOLD, self.YELLOW])
         super().__init__(message, response)
@@ -67,7 +64,7 @@ class PolarisRetrieveArtifactError(PolarisHubError):
     def __init__(self, response: Response | None = None):
         message = (
             "Note: If this artifact exists and you can confirm that you are authorized to retrieve it, "
-            "please call 'polaris login --overwrite' and try again."
+            "please call 'polaris login --overwrite' and try again. If the issue persists, please reach out to the Polaris team for support."
         )
         message = self.format(message, [self.BOLD, self.YELLOW])
         super().__init__(message, response)
