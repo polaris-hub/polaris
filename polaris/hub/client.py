@@ -174,14 +174,17 @@ class PolarisHubClient(OAuth2Client):
             if response_status_code == 500:
                 raise
 
-            # If not an internal server error, the hub should always return a JSON response
-            # with additional information about the error.
-            response = response.json()
-            response = json.dumps(response, indent=2, sort_keys=True)
+            # If JSON is included in the response body, we retrieve it and format it for output. If not, we retrieve
+            # the string representation of the response body and move forward
+            try:
+                response = response.json()
+                response = json.dumps(response, indent=2, sort_keys=True)
+            except json.JSONDecodeError:
+                response = response.text
+                pass
 
             # The below two error cases can happen due to the JWT token containing outdated information.
             # We therefore throw a custom error with a recommended next step.
-
             if response_status_code == 403:
                 # This happens when trying to create an artifact for an owner the user has no access to.
                 raise PolarisCreateArtifactError(response=response) from error
