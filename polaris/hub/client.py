@@ -28,7 +28,7 @@ from polaris.hub.external_auth_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.context import tmp_attribute_change
+from polaris.utils.context import ProgressIndicator, tmp_attribute_change
 from polaris.utils.errors import (
     InvalidDatasetError,
     PolarisCreateArtifactError,
@@ -37,7 +37,6 @@ from polaris.utils.errors import (
     PolarisUnauthorizedError,
 )
 from polaris.utils.misc import should_verify_checksum
-from polaris.utils.context import ProgressIndicator
 from polaris.utils.types import (
     AccessType,
     ChecksumStrategy,
@@ -180,13 +179,18 @@ class PolarisHubClient(OAuth2Client):
             response = response.json()
             response = json.dumps(response, indent=2, sort_keys=True)
 
+            # The below two error cases can happen due to the JWT token containing outdated information.
+            # We therefore throw a custom error with a recommended next step.
+
             if response_status_code == 403:
-                raise PolarisCreateArtifactError() from error
+                # This happens when trying to create an artifact for an owner the user has no access to.
+                raise PolarisCreateArtifactError(response=response) from error
 
             if response_status_code == 404:
-                raise PolarisRetrieveArtifactError() from error
+                # This happens when an artifact doesn't exist _or_ when the user has no access to that artifact.
+                raise PolarisRetrieveArtifactError(response=response) from error
 
-            raise PolarisHubError() from error
+            raise PolarisHubError(response=response) from error
         # Convert the response to json format if the response contains a 'text' body
         try:
             response = response.json()
@@ -219,7 +223,7 @@ class PolarisHubClient(OAuth2Client):
         except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError, OAuthError) as error:
             if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:
                 raise
-            raise PolarisUnauthorizedError from error
+            raise PolarisUnauthorizedError(response=error.response) from error
 
     def login(self, overwrite: bool = False, auto_open_browser: bool = True):
         """Login to the Polaris Hub using the OAuth2 protocol.
@@ -295,7 +299,9 @@ class PolarisHubClient(OAuth2Client):
                 try:
                     storage_response.raise_for_status()
                 except HTTPStatusError as error:
-                    raise PolarisHubError("Could not get signed URL from Polaris Hub.") from error
+                    raise PolarisHubError(
+                        message="Could not get signed URL from Polaris Hub.", response=storage_response
+                    ) from error
 
             storage_response = storage_response.json()
             url = storage_response["url"]
@@ -343,8 +349,11 @@ class PolarisHubClient(OAuth2Client):
                 return zarr.open_consolidated(store, mode=mode)
             return zarr.open(store, mode=mode)
 
-        except Exception as e:
-            raise PolarisHubError("Error opening Zarr store") from e
+        except HTTPStatusError as error:
+            # In this case, we can pass the response to provide more information
+            raise PolarisHubError(message="Error opening Zarr store", response=error.response) from error
+        except Exception as error:
+            raise PolarisHubError(message="Error opening Zarr store") from error
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.
