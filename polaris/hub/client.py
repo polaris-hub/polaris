@@ -28,7 +28,7 @@ from polaris.hub.external_auth_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.context import tmp_attribute_change
+from polaris.utils.context import ProgressIndicator, tmp_attribute_change
 from polaris.utils.errors import (
     InvalidDatasetError,
     PolarisCreateArtifactError,
@@ -37,7 +37,6 @@ from polaris.utils.errors import (
     PolarisUnauthorizedError,
 )
 from polaris.utils.misc import should_verify_checksum
-from polaris.utils.context import ProgressIndicator
 from polaris.utils.types import (
     AccessType,
     ChecksumStrategy,
@@ -180,10 +179,15 @@ class PolarisHubClient(OAuth2Client):
             response = response.json()
             response = json.dumps(response, indent=2, sort_keys=True)
 
+            # The below two error cases can happen due to the JWT token containing outdated information.
+            # We therefore throw a custom error with a recommended next step.
+
             if response_status_code == 403:
+                # This happens when trying to create an artifact for an owner the user has no access to.
                 raise PolarisCreateArtifactError() from error
 
             if response_status_code == 404:
+                # This happens when an artifact doesn't exist _or_ when the user has no access to that artifact.
                 raise PolarisRetrieveArtifactError() from error
 
             raise PolarisHubError() from error

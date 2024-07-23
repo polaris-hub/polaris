@@ -5,10 +5,6 @@ from loguru import logger
 from pydantic import BaseModel, PrivateAttr, computed_field
 
 
-class PolarisChecksumError(ValueError):
-    pass
-
-
 class ChecksumMixin(BaseModel, abc.ABC):
     """
     Mixin class to add checksum functionality to a class.
@@ -68,6 +64,9 @@ class ChecksumMixin(BaseModel, abc.ABC):
         self.md5sum = self._compute_checksum()
 
         if self.md5sum != md5sum:
+            # Import here to prevent circular imports
+            from polaris.utils.errors import PolarisChecksumError
+
             raise PolarisChecksumError(
                 f"The specified checksum {md5sum} does not match the computed checksum {self.md5sum}"
             )

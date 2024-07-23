@@ -1,3 +1,5 @@
+from httpx import Response
+
 from polaris._mixins import FormattingMixin
 
 
@@ -13,12 +15,26 @@ class InvalidResultError(ValueError):
     pass
 
 
-class PolarisHubError(Exception, FormattingMixin):
-    def __str__(self):
-        response_message = self.__cause__.response.text
-        error_message = f"The request to the Polaris Hub failed. See the error message below for more details:\n\n\n{response_message}\n\n"
+class TestAccessError(Exception):
+    # Prevent pytest to collect this as a test
+    __test__ = False
 
-        return error_message
+    pass
+
+
+class PolarisChecksumError(ValueError):
+    pass
+
+
+class InvalidZarrChecksum(Exception):
+    pass
+
+
+class PolarisHubError(Exception, FormattingMixin):
+    def __init__(self, message: str, response: Response):
+        prefix = f"The request to the Polaris Hub failed with status {response.status_code}."
+        suffix = "If the issue persists, please reach out to the Polaris team for support."
+        super().__init__("\n".join([prefix, message, suffix]))
 
 
 class PolarisUnauthorizedError(PolarisHubError):
@@ -31,30 +47,21 @@ class PolarisUnauthorizedError(PolarisHubError):
         super().__init__(message)
 
 
-class TestAccessError(Exception):
-    # Prevent pytest to collect this as a test
-    __test__ = False
-
-    pass
-
-
-class InvalidZarrChecksum(Exception):
-    pass
-
-
 class PolarisCreateArtifactError(PolarisHubError):
-    SUGGEST_LOGIN_ON_CREATE = "Note: If you can confirm that you are authorized to perform this action, please call 'polaris login --overwrite' and try again. If this issue persists, please reach out to the Polaris team for support"
-
-    def __str__(self):
-        base_message = super().__str__()
-        suggestion_message = self.format(self.SUGGEST_LOGIN_ON_CREATE, [self.BOLD, self.YELLOW])
-        return f"{base_message}\n{suggestion_message}."
+    def __init__(self, response: Response):
+        message = (
+            "Note: If you can confirm that you are authorized to perform this action, "
+            "please call 'polaris login --overwrite' and try again. "
+        )
+        message = self.format(message, [self.BOLD, self.YELLOW])
+        super().__init__(message, response)
 
 
 class PolarisRetrieveArtifactError(PolarisHubError):
-    SUGGEST_LOGIN_ON_RETRIEVE = "Note: If this artifact exists and you can confirm that you are authorized to retrieve it, please call 'polaris login --overwrite' and try again. If this issue persists, please reach out to the Polaris team for support"
-
-    def __str__(self):
-        base_message = super().__str__()
-        suggestion_message = self.format(self.SUGGEST_LOGIN_ON_RETRIEVE, [self.BOLD, self.YELLOW])
-        return f"{base_message}\n{suggestion_message}."
+    def __init__(self, response: Response):
+        message = (
+            "Note: If this artifact exists and you can confirm that you are authorized to retrieve it, "
+            "please call 'polaris login --overwrite' and try again."
+        )
+        message = self.format(message, [self.BOLD, self.YELLOW])
+        super().__init__(message, response)

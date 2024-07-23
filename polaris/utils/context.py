@@ -1,6 +1,9 @@
 from contextlib import contextmanager
+
 from yaspin import yaspin
 from yaspin.spinners import Spinners
+
+from polaris._mixins import FormattingMixin
 
 
 @contextmanager
@@ -14,7 +17,7 @@ def tmp_attribute_change(obj, attribute, value):
         setattr(obj, attribute, original_value)
 
 
-class ProgressIndicator:
+class ProgressIndicator(FormattingMixin):
     def __init__(self, success_msg: str, error_msg: str, start_msg: str = "In progress..."):
         self._start_msg = start_msg
         self._success_msg = success_msg
@@ -32,7 +35,7 @@ class ProgressIndicator:
         if exc_type:
             self._spinner.red.fail(f"💥 ERROR: {self._error_msg}")
         else:
-            self._spinner.green.ok(f"✅ SUCCESS: \033[1m{self._success_msg}\033[0m\n")
+            self._spinner.green.ok(f"✅ SUCCESS: {self.format(self._success_msg, self.BOLD)}\n")
 
         self._spinner.stop()
 
