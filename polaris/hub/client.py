@@ -349,8 +349,11 @@ class PolarisHubClient(OAuth2Client):
                 return zarr.open_consolidated(store, mode=mode)
             return zarr.open(store, mode=mode)
 
-        except Exception as e:
-            raise PolarisHubError("Error opening Zarr store") from e
+        except HTTPStatusError as error:
+            # In this case, we can pass the response to provide more information
+            raise PolarisHubError("Error opening Zarr store", response=error.response) from error
+        except Exception as error:
+            raise PolarisHubError("Error opening Zarr store") from error
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.
