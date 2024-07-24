@@ -1632,6 +1632,13 @@ the client has been closed, it cannot be used anymore.</p>
 </span></code></pre></div>
 </details>
 
+<details class="note" open>
+  <summary>Interacting with artifacts owned by an organization</summary>
+  <p>Soon after being added to a new organization on Polaris, there may be a delay spanning some
+minutes where you cannot upload/download artifacts where the aforementioned organization is the owner.
+If this occurs, please re-login via <code>polaris login --overwrite</code> and try again.</p>
+</details>
+
 <details class="info" open>
   <summary>Async Client</summary>
   <p><code>authlib</code> also supports an <a href="https://docs.authlib.org/en/latest/client/httpx.html#async-oauth-2-0">async client</a>.
