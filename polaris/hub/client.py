@@ -174,8 +174,9 @@ class PolarisHubClient(OAuth2Client):
             if response_status_code == 500:
                 raise
 
-            # If JSON is included in the response body, we retrieve it and format it for output. If not, we retrieve
-            # the string representation of the response body and move forward
+            # If JSON is included in the response body, we retrieve it and format it for output. If not, we fallback to
+            # retrieving plain text from the body. This is important for handling large payloads that our backend may reject,
+            # resulting in a non-JSON error response.
             try:
                 response = response.json()
                 response = json.dumps(response, indent=2, sort_keys=True)
