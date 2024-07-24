@@ -175,8 +175,8 @@ class PolarisHubClient(OAuth2Client):
                 raise
 
             # If JSON is included in the response body, we retrieve it and format it for output. If not, we fallback to
-            # retrieving plain text from the body. This is important for handling large payloads that our backend may reject,
-            # resulting in a non-JSON error response.
+            # retrieving plain text from the body. This is important for handling certain errors thrown from the backend
+            # which do not contain JSON in the response.
             try:
                 response = response.json()
                 response = json.dumps(response, indent=2, sort_keys=True)
