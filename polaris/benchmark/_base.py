@@ -196,11 +196,18 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         if len(train_idx_set & test_idx_set) > 0:
             raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
 
-        # Duplicate indices
+        # Duplicate indices in train indices
         if len(train_idx_set) != len(train_idx_list):
             raise InvalidBenchmarkError("The training set contains duplicate indices")
-        if len(test_idx_set) != len(test_idx_list):
-            raise InvalidBenchmarkError("The test set contains duplicate indices")
+
+        # Duplicate indices in test indices
+        if not isinstance(v[1], dict):
+            v[1] = {"test": v[1]}
+
+        for test_name, test_idx_list in v[1].items():
+            test_idx_set = set(test_idx_list)
+            if len(test_idx_set) != len(test_idx_list):
+                raise InvalidBenchmarkError(f"The test set {test_name} contains duplicate indices")
 
         # All indices are valid given the dataset
         if info.data["dataset"] is not None:
