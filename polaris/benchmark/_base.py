@@ -410,7 +410,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         Examples:
             1. For regression benchmarks:
-                pred_scores = your_model.predict_score(molecules) # predict continous score values
+                pred_scores = your_model.predict_score(molecules) # predict continuous score values
                 benchmark.evaluate(y_pred=pred_scores)
             2. For classification benchmarks:
                 - If `roc_auc` and `pr_auc` are in the metric list, both class probabilities and label predictions are required:
