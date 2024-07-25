@@ -406,6 +406,19 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         Returns:
             A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
+
+
+        Examples:
+            1. For regression benchmarks:
+                pred_scores = your_model.predict_score(molecules) # predict continuous score values
+                benchmark.evaluate(y_pred=pred_scores)
+            2. For classification benchmarks:
+                - If `roc_auc` and `pr_auc` are in the metric list, both class probabilities and label predictions are required:
+                    pred_probs = your_model.predict_proba(molecules) # predict probablities
+                    pred_labels = your_model.predict_labels(molecules) # predict class labels
+                    benchmark.evaluate(y_pred=pred_labels, y_prob=pred_probs)
+                - Otherwise:
+                    benchmark.evaluate(y_pred=pred_labels)
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
