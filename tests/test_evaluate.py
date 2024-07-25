@@ -169,7 +169,7 @@ def test_metric_y_types(
 
     # If y_type != "y_pred" and y_prob is None, an error is thrown.
     with pytest.raises(ValueError, match="Metric.roc_auc requires `y_prob` input"):
-        test_single_task_benchmark_clf.metrics = [Metric.roc_auc]
+        test_single_task_benchmark_clf.metrics = [Metric.roc_auc, Metric.pr_auc]
         test_single_task_benchmark_clf.evaluate(y_pred=predictions)
 
     # If y_type != "y_pred" and y_pred is not None and y_prob is not None, it uses y_prob as expected!
