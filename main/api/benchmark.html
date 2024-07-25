@@ -1995,6 +1995,23 @@ If there are multiple test sets, the predictions should be further wrapped in a 
       </tbody>
     </table>
 
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <ol>
+<li>For regression benchmarks:
+    pred_scores = your_model.predict_score(molecules) # predict continuous score values
+    benchmark.evaluate(y_pred=pred_scores)</li>
+<li>For classification benchmarks:<ul>
+<li>If <code>roc_auc</code> and <code>pr_auc</code> are in the metric list, both class probabilities and label predictions are required:
+    pred_probs = your_model.predict_proba(molecules) # predict probablities
+    pred_labels = your_model.predict_labels(molecules) # predict class labels
+    benchmark.evaluate(y_pred=pred_labels, y_prob=pred_probs)</li>
+<li>Otherwise:
+    benchmark.evaluate(y_pred=pred_labels)</li>
+</ul>
+</li>
+</ol>
+
     </div>
 
 </div>
