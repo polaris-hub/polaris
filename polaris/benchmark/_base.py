@@ -252,7 +252,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                 else:
                     v[target] = None
 
-                print(v[target])
             elif not isinstance(v, TargetType):
                 v[target] = TargetType(v[target])
         return v
