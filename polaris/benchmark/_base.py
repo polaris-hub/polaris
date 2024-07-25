@@ -415,7 +415,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             2. For classification benchmarks:
                 - If `roc_auc` and `pr_auc` in the metric list, both class probabilities and label predictions are required:
                     pred_probs = model.predict_proba(molecules) # predict probablities
-                    pred_labels = model.predict_lables(molecules) # predict class labels
+                    pred_labels = model.predict_labels(molecules) # predict class labels
                     benchmark.evaluate(y_pred=prediction_labels, y_prob=pred_labels)
                 - Otherwise:
                     benchmark.evaluate(y_pred=prediction_labels)
