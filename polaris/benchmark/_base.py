@@ -182,9 +182,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             raise InvalidBenchmarkError("The predefined split contains empty test partitions")
 
         train_idx_list = v[0]
-        full_test_idx_list = (
-            list(i for part in v[1].values() for i in part) if isinstance(v[1], dict) else v[1]
-        )
+        full_test_idx_list = list(chain.from_iterable(v[1].values())) if isinstance(v[1], dict) else v[1]
 
         if len(train_idx_list) == 0:
             logger.info(
@@ -207,8 +205,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         # across test sets, we check for duplicates in each test set independently.
         if isinstance(v[1], dict):
             for test_set_name, test_set_idx_list in v[1].items():
-                test_set_idx_set = set(test_set_idx_list)
-                if len(test_set_idx_list) != len(test_set_idx_set):
+                if len(test_set_idx_list) != len(set(test_set_idx_list)):
                     raise InvalidBenchmarkError(
                         f'Test set with name "{test_set_name}" contains duplicate indices'
                     )
