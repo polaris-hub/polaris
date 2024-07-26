@@ -635,7 +635,7 @@ class PolarisHubClient(OAuth2Client):
 
             progress_indicator.update_success_msg(
                 "Your dataset has been successfully uploaded to the Hub. "
-                f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
+                f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.artifact_id}')}"
             )
 
             return response
