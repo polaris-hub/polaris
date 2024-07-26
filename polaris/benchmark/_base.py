@@ -212,9 +212,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                     raise InvalidBenchmarkError(
                         f'Test set with name "{test_set_name}" contains duplicate indices'
                     )
-        else:
-            if len(full_test_idx_set) != len(full_test_idx_list):
-                raise InvalidBenchmarkError("The test set contains duplicate indices")
+        elif len(full_test_idx_set) != len(full_test_idx_list):
+            raise InvalidBenchmarkError("The test set contains duplicate indices")
 
         # All indices are valid given the dataset
         if info.data["dataset"] is not None:
