@@ -684,7 +684,7 @@ class PolarisHubClient(OAuth2Client):
 
             progress_indicator.update_success_msg(
                 "Your benchmark has been successfully uploaded to the Hub. "
-                f"View it here: {urljoin(self.settings.hub_url, f'benchmarks/{benchmark.owner}/{benchmark.name}')}"
+                f"View it here: {urljoin(self.settings.hub_url, f'benchmarks/{benchmark.artifact_id}')}"
             )
 
             return response
