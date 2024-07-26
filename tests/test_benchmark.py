@@ -53,6 +53,13 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
         cls(split=(train_split + train_split[:1], test_split), **default_kwargs)
     with pytest.raises(ValidationError):
         cls(split=(train_split, test_split + test_split[:1]), **default_kwargs)
+    with pytest.raises(ValidationError):
+        cls(
+            split=(train_split, {"test1": test_split, "test2": test_split + test_split[:1]}), **default_kwargs
+        )
+
+    # It should _not_ fail with duplicate indices across test partitions
+    cls(split=(train_split, {"test1": test_split, "test2": test_split}), **default_kwargs)
     # It should _not_ fail with missing indices
     cls(split=(train_split[:-1], test_split), **default_kwargs)
     # It should _not_ fail with an empty train set
