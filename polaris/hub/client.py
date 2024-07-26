@@ -557,7 +557,7 @@ class PolarisHubClient(OAuth2Client):
             # Step 1: Upload meta-data
             # Instead of directly uploading the data, we announce to the hub that we intend to upload it.
             # We do so separately for the Zarr archive and Parquet file.
-            url = f"/dataset/{dataset.artifact_id}"
+            url = f"/dataset/{dataset.owner}/{dataset.name}"
             response = self._base_request_to_hub(
                 url=url,
                 method="PUT",
