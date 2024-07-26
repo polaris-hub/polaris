@@ -679,7 +679,7 @@ class PolarisHubClient(OAuth2Client):
             benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
             benchmark_json["access"] = access
 
-            url = f"/benchmark/{benchmark.owner}/{benchmark.name}"
+            url = f"/benchmark/{benchmark.artifact_id}"
             response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
             progress_indicator.update_success_msg(
