@@ -217,8 +217,8 @@ class PolarisHubClient(OAuth2Client):
         try:
             return super().request(method, url, withhold_token, auth, **kwargs)
         except httpx.ConnectError as error:
-            # NOTE (cwognum): In the stack-trace, the more specific SSLCertVerificationError is raised.
-            #   We could use the traceback module to cactch this specific error, but that would be overkill here.
+            # NOTE (cwognum): In the stack trace, the more specific SSLCertVerificationError is raised.
+            #   We could use the traceback module to catch this specific error, but that would be overkill here.
             if _HTTPX_SSL_ERROR_CODE in str(error):
                 raise ssl.SSLCertVerificationError(
                     "We could not verify the SSL certificate. "
