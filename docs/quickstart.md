@@ -13,6 +13,20 @@ mamba install -c conda-forge polaris
 ??? info "Other installation options"
 You can replace `mamba` by `conda`. The package is also pip installable if you need it: `pip install polaris-lib`.
 
+## Authenticating to the Polaris Hub
+To interact with the [Polaris Hub](https://polarishub.io/) from the client, you must first login. You can do this
+via the following command in your terminal:
+
+```bash
+polaris login
+```
+
+This will redirect you to a login page on the Polaris Hub where you can either sign in or sign up. Once either
+of these options have been completed, you will see an authorization code on your screen. Copy this and paste it 
+back into your terminal when prompted by the client.
+
+That's it! You're now all set to interact with datasets and benchmarks across Polaris.
+
 ## Benchmarking API
 
 At its core, Polaris is a benchmarking library. It provides a simple API to run benchmarks. While it can be used
