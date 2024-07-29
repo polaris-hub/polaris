@@ -183,6 +183,11 @@ class PolarisHubClient(OAuth2Client):
             except (json.JSONDecodeError, TypeError):
                 response = response.text
 
+            # Providing the user a more helpful error message suggesting a re-login when their access
+            # credentials expire.
+            if response_status_code == 401:
+                raise PolarisUnauthorizedError(response=response) from error
+
             # The below two error cases can happen due to the JWT token containing outdated information.
             # We therefore throw a custom error with a recommended next step.
             if response_status_code == 403:
@@ -212,8 +217,8 @@ class PolarisHubClient(OAuth2Client):
         try:
             return super().request(method, url, withhold_token, auth, **kwargs)
         except httpx.ConnectError as error:
-            # NOTE (cwognum): In the stack-trace, the more specific SSLCertVerificationError is raised.
-            #   We could use the traceback module to cactch this specific error, but that would be overkill here.
+            # NOTE (cwognum): In the stack trace, the more specific SSLCertVerificationError is raised.
+            #   We could use the traceback module to catch this specific error, but that would be overkill here.
             if _HTTPX_SSL_ERROR_CODE in str(error):
                 raise ssl.SSLCertVerificationError(
                     "We could not verify the SSL certificate. "
@@ -226,7 +231,16 @@ class PolarisHubClient(OAuth2Client):
         except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError, OAuthError) as error:
             if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:
                 raise
-            raise PolarisUnauthorizedError(response=error.response) from error
+
+            # The `MissingTokenError`, `InvalidTokenError` and `OAuthError` errors from the AuthlibBaseError
+            # class do not hold the `response` attribute. To prevent a misleading `AttributeError` from
+            # being thrown, we conditionally set the error response below based on the error type.
+            if isinstance(error, httpx.HTTPStatusError):
+                error_response = error.response
+            else:
+                error_response = None
+
+            raise PolarisUnauthorizedError(response=error_response) from error
 
     def login(self, overwrite: bool = False, auto_open_browser: bool = True):
         """Login to the Polaris Hub using the OAuth2 protocol.
