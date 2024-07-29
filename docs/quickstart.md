@@ -30,7 +30,7 @@ That's it! You're now all set to interact with datasets and benchmarks across Po
 ## Benchmarking API
 
 At its core, Polaris is a benchmarking library. It provides a simple API to run benchmarks. While it can be used
-independently, it is built to easily integrate with the [Polaris Hub](https://polarishub.io/). The hub hosts
+independently, it is built to easily integrate with the Polaris Hub. The hub hosts
 a variety of high-quality datasets, benchmarks and associated results.
 
 If all you care about is to partake in a benchmark that is hosted on the hub, it is as simple as:
