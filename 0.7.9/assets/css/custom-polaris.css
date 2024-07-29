@@ -1,0 +1,32 @@
+:root {
+
+  /*
+  For a list of all available variables, see
+  https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/_colors.scss
+  */
+  --polaris-primary:    hsla(236, 100%, 19%, 1.0);
+  --polaris-secondary: hsla(290, 61%, 43%, 1.0);
+  --polaris-ternary: hsla(236, 100%, 9%, 1.0);
+}
+
+/* Change the header background to use a gradient */
+.md-header {
+  background-image: linear-gradient(to right, var(--polaris-secondary), var(--polaris-primary));
+}
+
+/* Change the footer background to use a gradient */
+.md-footer {
+  background-image: linear-gradient(to right, var(--polaris-primary), var(--polaris-ternary));
+}
+
+/* Change the tabs background to use a gradient */
+.md-tabs {
+  background-image: linear-gradient(to right, #F4F6F9, #dfc3e2);
+  color: var(--polaris-ternary);
+}
+
+/* Remove the `In` and `Out` block in rendered Jupyter notebooks */
+.md-container .jp-Cell-outputWrapper .jp-OutputPrompt.jp-OutputArea-prompt,
+.md-container .jp-Cell-inputWrapper .jp-InputPrompt.jp-InputArea-prompt {
+  display: none !important;
+}
