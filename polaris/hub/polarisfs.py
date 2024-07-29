@@ -1,10 +1,11 @@
-import hashlib
-from datetime import datetime, timezone
+from hashlib import md5
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import fsspec
+from loguru import logger
 
-from polaris.utils.errors import PolarisHubError
+from polaris.utils.errors import PolarisChecksumError, PolarisHubError
+from polaris.utils.misc import sluggify
 from polaris.utils.types import TimeoutTypes
 
 if TYPE_CHECKING:
@@ -52,7 +53,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         self.default_timeout = self.polaris_client.settings.default_timeout
 
         # Prefix to remove from ls entries
-        self.prefix = f"dataset/{dataset_owner}/{dataset_name}/"
+        self.prefix = f"dataset/{dataset_owner}/{sluggify(dataset_name)}/"
         self.base_path = f"/storage/{self.prefix.rstrip('/')}"
 
     @staticmethod
@@ -86,10 +87,6 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         """
         if timeout is None:
             timeout = self.default_timeout
-
-        cached_listings = self._ls_from_cache(path)
-        if cached_listings is not None:
-            return cached_listings if detail else [d["name"] for d in cached_listings]
 
         ls_path = self.sep.join([self.base_path, "ls", path])
 
@@ -143,13 +140,38 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
 
         # This should be a 307 redirect with the signed URL
         if response.status_code != 307:
-            raise PolarisHubError("Could not get signed URL from Polaris Hub.")
+            raise PolarisHubError(message="Could not get signed URL from Polaris Hub.", response=response)
 
-        signed_url = response.json()["url"]
+        hub_response_body = response.json()
+        signed_url = hub_response_body["url"]
 
-        with fsspec.open(signed_url, "rb", **kwargs) as f:
-            data = f.read()
-        return data[start:end]
+        headers = {"Content-Type": "application/octet-stream", **hub_response_body["headers"]}
+
+        response = self.polaris_client.request(
+            url=signed_url,
+            method="GET",
+            auth=None,
+            headers=headers,
+            timeout=timeout,
+        )
+        response.raise_for_status()
+        response_content = response.content
+
+        # Verify the checksum on download
+        expected_md5sum = self.polaris_client.get_metadata_from_response(response, "md5sum")
+        if expected_md5sum is None:
+            raise PolarisChecksumError("MD5 checksum not found in response headers.")
+        logger.debug(f"MD5 checksum found in response headers: {expected_md5sum}.")
+
+        md5sum = md5(response_content).hexdigest()
+        logger.debug(f"MD5 checksum computed for response content: {md5sum}.")
+
+        if md5sum != expected_md5sum:
+            raise PolarisChecksumError(
+                f"MD5 checksum verification failed. Expected {expected_md5sum}, got {md5sum}."
+            )
+
+        return response_content[start:end]
 
     def rm(self, path: str, recursive: bool = False, maxdepth: Optional[int] = None) -> None:
         """Remove a file or directory from the Polaris dataset.
@@ -197,19 +219,12 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         response = self.polaris_client.put(pipe_path, timeout=timeout)
 
         if response.status_code != 307:
-            raise PolarisHubError("Could not get signed URL from Polaris Hub.")
+            raise PolarisHubError(message="Could not get signed URL from Polaris Hub.", response=response)
 
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
 
-        sha256_hash = hashlib.sha256(content).hexdigest()
-
-        headers = {
-            "Content-Type": "application/octet-stream",
-            "x-amz-content-sha256": sha256_hash,
-            "x-amz-date": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
-            **hub_response_body["headers"],
-        }
+        headers = {"Content-Type": "application/octet-stream", **hub_response_body["headers"]}
 
         response = self.polaris_client.request(
             url=signed_url,

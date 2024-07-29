@@ -6,7 +6,6 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.utils.errors import PolarisChecksumError
 
 
 @pytest.mark.parametrize("is_single_task", [True, False])
@@ -28,7 +27,7 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
     train_split = obj.split[0]
     test_split = obj.split[1]
 
-    # One or more empty partitions
+    # One or more empty test partitions
     with pytest.raises(ValidationError):
         cls(split=(train_split,), **default_kwargs)
     with pytest.raises(ValidationError):
@@ -54,8 +53,19 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
         cls(split=(train_split + train_split[:1], test_split), **default_kwargs)
     with pytest.raises(ValidationError):
         cls(split=(train_split, test_split + test_split[:1]), **default_kwargs)
+    with pytest.raises(ValidationError):
+        cls(
+            split=(train_split, {"test1": test_split, "test2": test_split + test_split[:1]}), **default_kwargs
+        )
+
+    # It should _not_ fail with duplicate indices across test partitions
+    cls(split=(train_split, {"test1": test_split, "test2": test_split}), **default_kwargs)
     # It should _not_ fail with missing indices
     cls(split=(train_split[:-1], test_split), **default_kwargs)
+    # It should _not_ fail with an empty train set
+    benchmark = cls(split=([], test_split), **default_kwargs)
+    train, _ = benchmark.get_train_test_split()
+    assert len(train) == 0
 
 
 @pytest.mark.parametrize("cls", [SingleTaskBenchmarkSpecification, MultiTaskBenchmarkSpecification])
@@ -133,6 +143,10 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     obj = test_single_task_benchmark if is_single_task else test_multi_task_benchmark
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
 
+    # Make sure the `md5sum` is part of the model dump even if not initiated yet.
+    # This is important for uploads to the Hub.
+    assert obj._md5sum is None and "md5sum" in obj.model_dump()
+
     original = obj.md5sum
     assert original is not None
 
@@ -140,34 +154,31 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
 
     # Without any changes, same hash
     kwargs = obj.model_dump()
-    cls(**kwargs)
+    assert cls(**kwargs).md5sum == original
 
     # With a different ordering of the target columns
     kwargs["target_cols"] = kwargs["target_cols"][::-1]
-    cls(**kwargs)
+    assert cls(**kwargs).md5sum == original
 
     # With a different ordering of the metrics
     kwargs["metrics"] = kwargs["metrics"][::-1]
-    cls(**kwargs)
+    assert cls(**kwargs).md5sum == original
 
     # With a different ordering of the split
     kwargs["split"] = kwargs["split"][0][::-1], kwargs["split"][1]
-    cls(**kwargs)
+    assert cls(**kwargs).md5sum == original
 
     # --- Test that the checksum is NOT the same ---
     def _check_for_failure(_kwargs):
-        with pytest.raises((ValidationError, TypeError)) as error:
-            cls(**_kwargs)
-            assert error.error_count() == 1  # noqa
-            assert isinstance(error.errors()[0], PolarisChecksumError)  # noqa
+        assert cls(**_kwargs).md5sum != _kwargs["md5sum"]
 
     # Split
     kwargs = obj.model_dump()
-    kwargs["split"] = kwargs["split"][0][1:] + [-1], kwargs["split"][1]
+    kwargs["split"] = kwargs["split"][0][1:], kwargs["split"][1]
     _check_for_failure(kwargs)
 
     kwargs = obj.model_dump()
-    kwargs["split"] = kwargs["split"][0], kwargs["split"][1][1:] + [-1]
+    kwargs["split"] = kwargs["split"][0], kwargs["split"][1][1:]
     _check_for_failure(kwargs)
 
     # Metrics
@@ -188,3 +199,17 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     kwargs["md5sum"] = None
     dataset = cls(**kwargs)
     assert dataset.md5sum is not None
+
+
+def test_setting_an_invalid_checksum(test_single_task_benchmark):
+    """Test whether setting an invalid checksum raises an error."""
+    with pytest.raises(ValueError):
+        test_single_task_benchmark.md5sum = "invalid"
+
+
+def test_checksum_verification(test_single_task_benchmark):
+    """Test whether setting an invalid checksum raises an error."""
+    test_single_task_benchmark.verify_checksum()
+    test_single_task_benchmark.md5sum = "0" * 32
+    with pytest.raises(ValueError):
+        test_single_task_benchmark.verify_checksum()

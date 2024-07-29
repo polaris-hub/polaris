@@ -1,3 +1,4 @@
+from itertools import chain
 import json
 from hashlib import md5
 from typing import Any, Callable, Optional, Union
@@ -5,6 +6,7 @@ from typing import Any, Callable, Optional, Union
 import fsspec
 import numpy as np
 from datamol.utils import fs
+from loguru import logger
 from pydantic import (
     Field,
     ValidationInfo,
@@ -16,12 +18,13 @@ from pydantic import (
 from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
+from polaris.mixins import ChecksumMixin
 from polaris.dataset import Dataset, Subset, CompetitionDataset
 from polaris.evaluate import BenchmarkResults, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
-from polaris.utils.errors import InvalidBenchmarkError, PolarisChecksumError
+from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.misc import listit
 from polaris.utils.types import (
     AccessType,
@@ -35,7 +38,7 @@ from polaris.utils.types import (
 ColumnsType = Union[str, list[str]]
 
 
-class BenchmarkSpecification(BaseArtifactModel):
+class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     """This class wraps a [`Dataset`][polaris.dataset.Dataset] with additional data
      to specify the evaluation logic.
 
@@ -84,8 +87,6 @@ class BenchmarkSpecification(BaseArtifactModel):
         split: The predefined train-test split to use for evaluation.
         metrics: The metrics to use for evaluating performance
         main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
-        md5sum: The checksum is used to verify the version of the dataset specification. If specified, it will
-            raise an error if the specified checksum doesn't match the computed checksum.
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
@@ -101,7 +102,6 @@ class BenchmarkSpecification(BaseArtifactModel):
     split: SplitType
     metrics: Union[str, Metric, list[Union[str, Metric]]]
     main_metric: Optional[Union[str, Metric]] = None
-    md5sum: Optional[str] = None
 
     # Additional meta-data
     readme: str = ""
@@ -167,37 +167,56 @@ class BenchmarkSpecification(BaseArtifactModel):
     def _validate_split(cls, v, info: ValidationInfo):
         """
         Verifies that:
-          1) There is at least two, non-empty partitions
+          1) There are no empty test partitions
           2) All indices are valid given the dataset
           3) There is no duplicate indices in any of the sets
           3) There is no overlap between the train and test set
         """
 
-        # There is at least two, non-empty partitions
-        if (
-            len(v[0]) == 0
-            or (isinstance(v[1], dict) and any(len(v) == 0 for v in v[1].values()))
-            or (not isinstance(v[1], dict) and len(v[1]) == 0)
+        # Train partition can be empty (zero-shot)
+        # Test partitions cannot be empty
+        if (isinstance(v[1], dict) and any(len(v) == 0 for v in v[1].values())) or (
+            not isinstance(v[1], dict) and len(v[1]) == 0
         ):
-            raise InvalidBenchmarkError("The predefined split contains empty partitions")
+            raise InvalidBenchmarkError("The predefined split contains empty test partitions")
 
-        train_indices = v[0]
-        test_indices = [i for part in v[1].values() for i in part] if isinstance(v[1], dict) else v[1]
+        train_idx_list = v[0]
+        full_test_idx_list = list(chain.from_iterable(v[1].values())) if isinstance(v[1], dict) else v[1]
+
+        if len(train_idx_list) == 0:
+            logger.info(
+                "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
+            )
+
+        train_idx_set = set(train_idx_list)
+        full_test_idx_set = set(full_test_idx_list)
 
         # The train and test indices do not overlap
-        if any(i in train_indices for i in test_indices):
+        if len(train_idx_set & full_test_idx_set) > 0:
             raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
 
-        # Duplicate indices
-        if len(set(train_indices)) != len(train_indices):
+        # Check for duplicate indices within the train set
+        if len(train_idx_set) != len(train_idx_list):
             raise InvalidBenchmarkError("The training set contains duplicate indices")
-        if len(set(test_indices)) != len(test_indices):
+
+        # Check for duplicate indices within a given test set. Because a user can specify
+        # multiple test sets for a given benchmark and it is acceptable for indices to be shared
+        # across test sets, we check for duplicates in each test set independently.
+        if isinstance(v[1], dict):
+            for test_set_name, test_set_idx_list in v[1].items():
+                if len(test_set_idx_list) != len(set(test_set_idx_list)):
+                    raise InvalidBenchmarkError(
+                        f'Test set with name "{test_set_name}" contains duplicate indices'
+                    )
+        elif len(full_test_idx_set) != len(full_test_idx_list):
             raise InvalidBenchmarkError("The test set contains duplicate indices")
 
         # All indices are valid given the dataset
         if info.data["dataset"] is not None:
-            if any(i < 0 or i >= len(info.data["dataset"]) for i in train_indices + test_indices):
+            max_i = len(info.data["dataset"])
+            if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
                 raise InvalidBenchmarkError("The predefined split contains invalid indices")
+
         return v
 
     @field_validator("target_types")
@@ -213,6 +232,12 @@ class BenchmarkSpecification(BaseArtifactModel):
         for target in target_cols:
             if target not in v:
                 val = dataset[:, target]
+
+                # Non numeric columns can be targets (e.g. prediction molecular reactions),
+                # but in that case we currently don't infer the target type.
+                if not np.issubdtype(val.dtype, np.number):
+                    continue
+
                 # remove the nans for mutiple task dataset when the table is sparse
                 target_type = type_of_target(val[~np.isnan(val)])
                 if target_type == "continuous":
@@ -229,34 +254,11 @@ class BenchmarkSpecification(BaseArtifactModel):
     @classmethod
     def _validate_model(cls, m: "BenchmarkSpecification"):
         """
-        If a checksum is provided, verify it matches what the checksum should be.
-        If no checksum is provided, make sure it is set.
-        Also sets a default metric if missing.
+        Sets a default metric if missing.
         """
-
-        # Validate checksum
-        checksum = m.md5sum
-
-        expected = cls._compute_checksum(
-            dataset=m.dataset,
-            target_cols=m.target_cols,
-            input_cols=m.input_cols,
-            split=m.split,
-            metrics=m.metrics,
-        )
-
-        if checksum is None:
-            m.md5sum = expected
-        elif checksum != expected:
-            raise PolarisChecksumError(
-                "The dataset checksum does not match what was specified in the meta-data. "
-                f"{checksum} != {expected}"
-            )
-
         # Set a default main metric if not set yet
         if m.main_metric is None:
             m.main_metric = m.metrics[0]
-
         return m
 
     @field_serializer("metrics", "main_metric")
@@ -276,8 +278,7 @@ class BenchmarkSpecification(BaseArtifactModel):
         """Convert from enum to string to make sure it's serializable"""
         return {k: v.value for k, v in self.target_types.items()}
 
-    @staticmethod
-    def _compute_checksum(dataset, target_cols, input_cols, split, metrics):
+    def _compute_checksum(self):
         """
         Computes a hash of the benchmark.
 
@@ -285,16 +286,18 @@ class BenchmarkSpecification(BaseArtifactModel):
         """
 
         hash_fn = md5()
-        hash_fn.update(dataset.md5sum.encode("utf-8"))
-        for c in sorted(target_cols):
+        hash_fn.update(self.dataset.md5sum.encode("utf-8"))
+        for c in sorted(self.target_cols):
             hash_fn.update(c.encode("utf-8"))
-        for c in sorted(input_cols):
+        for c in sorted(self.input_cols):
             hash_fn.update(c.encode("utf-8"))
-        for m in sorted(metrics, key=lambda k: k.name):
+        for m in sorted(self.metrics, key=lambda k: k.name):
             hash_fn.update(m.name.encode("utf-8"))
 
-        if not isinstance(split[1], dict):
-            split = split[0], {"test": split[1]}
+        if not isinstance(self.split[1], dict):
+            split = self.split[0], {"test": self.split[1]}
+        else:
+            split = self.split
 
         # Train set
         s = json.dumps(sorted(split[0]))
@@ -394,8 +397,8 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         Returns:
             A tuple with the train `Subset` and test `Subset` objects.
-            If there are multiple test sets, these are returned in a dictionary and each test set has
-            an associated name. The targets of the test set can not be accessed.
+                If there are multiple test sets, these are returned in a dictionary and each test set has
+                an associated name. The targets of the test set can not be accessed.
         """
 
         train = self._get_subset(self.split[0], hide_targets=False, featurization_fn=featurization_fn)
@@ -429,6 +432,18 @@ class BenchmarkSpecification(BaseArtifactModel):
 
         Returns:
             A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
+
+        Examples:
+            1. For regression benchmarks:
+                pred_scores = your_model.predict_score(molecules) # predict continuous score values
+                benchmark.evaluate(y_pred=pred_scores)
+            2. For classification benchmarks:
+                - If `roc_auc` and `pr_auc` are in the metric list, both class probabilities and label predictions are required:
+                    pred_probs = your_model.predict_proba(molecules) # predict probablities
+                    pred_labels = your_model.predict_labels(molecules) # predict class labels
+                    benchmark.evaluate(y_pred=pred_labels, y_prob=pred_probs)
+                - Otherwise:
+                    benchmark.evaluate(y_pred=pred_labels)
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.

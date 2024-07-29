@@ -107,6 +107,11 @@ ZarrConflictResolution: TypeAlias = Literal["raise", "replace", "skip"]
 Type to specify which action to take when encountering existing files within a Zarr archive.
 """
 
+ChecksumStrategy: TypeAlias = Literal["verify", "verify_unless_zarr", "ignore"]
+"""
+Type to specify which action to take to verify the data integrity of an artifact through a checksum.
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
@@ -124,6 +129,13 @@ class HubOwner(BaseModel):
 
     def __str__(self):
         return self.slug
+
+    @staticmethod
+    def normalize(owner: Union[str, "HubOwner"]) -> "HubOwner":
+        """
+        Normalize a string or `HubOwner` instance to a `HubOwner` instance.
+        """
+        return owner if isinstance(owner, HubOwner) else HubOwner(slug=owner)
 
 
 class TargetType(Enum):

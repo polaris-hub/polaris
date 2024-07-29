@@ -1,18 +1,14 @@
-<h1 align="center">Polaris</h1>
-<p align="center"><i>So many stars in the sky, yet one is enough to guide you home.</i></p>
-
-</br>
 <div align="center">
-    <img src="docs/images/logo-black.svg" width="100px">
+    <img src="docs/images/logo.svg" width="300px">
 </div>
 </br>
 
 <p align="center">
     <a href="https://polarishub.io/" target="_blank">
-      🟆 Polaris Hub
+      ✨ Polaris Hub
   </a> |
   <a href="https://polaris-hub.github.io/polaris/" target="_blank">
-      🛈 Client Doc
+      📚 Client Doc
   </a>
 </p>
 
@@ -39,10 +35,6 @@ This library is a Python client to interact with the [Polaris Hub](https://polar
 - Download Polaris datasets and benchmarks.
 - Evaluate a custom method against a Polaris benchmark.
 - Create and upload new datasets and benchmarks.
-
-> [!WARNING]
-> The Polaris Hub is currently released as a closed, private beta. We hope to officially release it early 2024.
-
 
 ## Quick API Tour
 

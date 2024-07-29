@@ -9,10 +9,10 @@ name = "polaris-lib"
 description = "Client for the Polaris Hub."
 dynamic = ["version"]
 authors = [
-    { name = "Lu Zhu", email = "lu@valencediscovery.com" },
-    { name = "Hadrien Mary", email = "hadrien@valencediscovery.com" },
-    { name = "Julien St-Laurent", email = "julien.stl@valencediscovery.com" },
-    { name = "Cas Wognum", email = "cas@valencediscovery.com" },
+    { name = "Cas Wognum", email = "cas@valencelabs.com" },
+    { name = "Lu Zhu", email = "lu@valencelabs.com" },
+    { name = "Andrew Quirke", email = "andrew@valencelabs.com" },
+    { name = "Julien St-Laurent", email = "julien.stl@valencelabs.com" },
 ]
 readme = "README.md"
 requires-python = ">=3.10"
@@ -44,7 +44,7 @@ dependencies = [
     "httpx",
     "tenacity",
     "filelock",
-    "numpy",
+    "numpy < 3.0.0",
     "pandas < 2.2.0",
     "scipy",
     "scikit-learn",
@@ -52,7 +52,8 @@ dependencies = [
     "datamol >=0.12.1",
     "zarr",
     "pyarrow",
-    "fsspec[http]"
+    "fsspec[http]",
+    "yaspin"
 ]
 
 [project.optional-dependencies]
@@ -99,7 +100,7 @@ namespaces = false
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=75 --cov-report xml --cov-report term"
+addopts = "--verbose --durations=10 -n auto --cov=polaris --cov-fail-under=75 --cov-report xml --cov-report term-missing"
 testpaths = ["tests"]
 pythonpath = "."
 filterwarnings = ["ignore::DeprecationWarning:jupyter_client.connect.*:"]
@@ -113,10 +114,15 @@ data_file = ".coverage/coverage"
 omit = [
     "polaris/__init__.py",
     "polaris/_version.py",
+    # We cannot yet test the interaction with the Hub. 
+    # See e.g. https://github.com/polaris-hub/polaris/issues/30
     "polaris/hub/client.py",
+    "polaris/hub/external_auth_client.py",
+    "polaris/hub/oauth2.py",
     "polaris/hub/settings.py",
+    "polaris/hub/polarisfs.py",
     "polaris/hub/__init__.py",
-    "polaris/curation/viz_utils.py",
+    "polaris/hub/__init__.py",
 ]
 
 [tool.coverage.xml]

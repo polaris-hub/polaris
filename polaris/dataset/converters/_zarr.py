@@ -35,7 +35,7 @@ class ZarrConverter(Converter):
             raise ValueError("The root of the zarr hierarchy should only contain arrays.")
 
         # Copy to the source zarr, so everything is in one place
-        zarr.copy_all(source=src, dest=factory.zarr_root)
+        zarr.copy_store(source=src.store, dest=factory.zarr_root.store, if_exists="skip")
 
         # Construct the table
         # Parse any group into a column

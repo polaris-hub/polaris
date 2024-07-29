@@ -1,5 +1,4 @@
 import json
-import os
 from datetime import datetime
 from typing import ClassVar, Optional, Union
 
@@ -163,7 +162,6 @@ class BaseResult(BaseArtifactModel):
 
     def upload_to_hub(
         self,
-        env_file: Optional[Union[str, os.PathLike]] = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         access: Optional[AccessType] = "private",
