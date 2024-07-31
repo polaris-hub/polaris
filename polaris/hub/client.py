@@ -790,7 +790,7 @@ class PolarisHubClient(OAuth2Client):
 
             progress_indicator.update_success_msg(
                 f"Your {artifact_type} has been successfully uploaded to the Hub. "
-                f"View it here: {urljoin(self.settings.hub_url, f'{artifact_type}/{benchmark.owner}/{benchmark.name}')}"
+                f"View it here: {urljoin(self.settings.hub_url, url)}"
             )
             return response
 
