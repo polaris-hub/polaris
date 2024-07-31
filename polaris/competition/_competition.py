@@ -2,11 +2,7 @@ from datetime import datetime
 import os
 from typing import Optional, Union
 
-from pydantic import (
-    field_serializer,
-    field_validator,
-    ValidationInfo
-)
+from pydantic import field_serializer, field_validator, ValidationInfo
 from polaris.benchmark import BenchmarkSpecification
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.types import AccessType, HubOwner, PredictionsType, TimeoutTypes, ZarrConflictResolution
@@ -46,7 +42,6 @@ class CompetitionSpecification(BenchmarkSpecification):
             return split
         else:
             raise InvalidCompetitionError("All rows of the test set must have at least one value.")
-
 
     def evaluate(
         self,

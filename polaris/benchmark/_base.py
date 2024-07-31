@@ -455,9 +455,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         else:
             y_true = test.targets
 
-        scores = evaluate_benchmark(self.target_cols, self.metrics, y_true,
-                                    y_pred=y_pred,
-                                    y_prob=y_prob)
+        scores = evaluate_benchmark(self.target_cols, self.metrics, y_true, y_pred=y_pred, y_prob=y_prob)
 
         return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)
 

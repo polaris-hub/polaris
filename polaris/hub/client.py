@@ -3,12 +3,10 @@ import ssl
 from hashlib import md5
 from io import BytesIO
 from typing import Callable, get_args
-from typing import Callable, Dict, Optional, Union, get_args
+from typing import Dict, Optional, Union
 from urllib.parse import urljoin
 
 import certifi
-import fsspec
-from httpcore import Response
 import httpx
 import pandas as pd
 import zarr
@@ -30,8 +28,8 @@ from polaris.dataset import Dataset
 from polaris.evaluate import BenchmarkResults
 from polaris.hub.external_auth_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
-from polaris.dataset import Dataset, CompetitionDataset
-from polaris.evaluate import BenchmarkResults, CompetitionResults
+from polaris.dataset import CompetitionDataset
+from polaris.evaluate import CompetitionResults
 from polaris.competition import CompetitionSpecification
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
@@ -345,7 +343,9 @@ class PolarisHubClient(OAuth2Client):
                 else f"/v2/competition/dataset/{owner}/{name}"
             )
             response = self._base_request_to_hub(url=url, method="GET")
-            dataset_info = "tableContent" if artifact_type == ArtifactType.STANDARD.value else "maskedDatasetInfo"
+            dataset_info = (
+                "tableContent" if artifact_type == ArtifactType.STANDARD.value else "maskedDatasetInfo"
+            )
             storage_response = self.get(response[dataset_info]["url"])
 
             # This should be a 307 redirect with the signed URL
@@ -363,7 +363,11 @@ class PolarisHubClient(OAuth2Client):
 
             response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
 
-            dataset = Dataset(**response) if artifact_type == ArtifactType.STANDARD else CompetitionDataset(**response)
+            dataset = (
+                Dataset(**response)
+                if artifact_type == ArtifactType.STANDARD
+                else CompetitionDataset(**response)
+            )
 
             if should_verify_checksum(verify_checksum, dataset):
                 dataset.verify_checksum()

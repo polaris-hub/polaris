@@ -250,6 +250,7 @@ def test_multi_task_benchmark_clf(test_dataset):
     check_version(benchmark)
     return benchmark
 
+
 @pytest.fixture(scope="function")
 def test_competition(test_dataset, test_org_owner):
     train_indices = list(range(90))

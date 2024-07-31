@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
-from typing import Union, Optional
+from typing import Optional
 
 from polaris.evaluate import BenchmarkResults, ResultsType
 from polaris.utils.types import PredictionsType
 from polaris.evaluate import Metric
+
 
 def is_multi_task_single_test_set(vals: PredictionsType, target_cols: list[str]):
     """Check if the given values are for a multiple-task benchmark with a single
@@ -13,6 +14,7 @@ def is_multi_task_single_test_set(vals: PredictionsType, target_cols: list[str])
     assume they are target names (as opposed to test set names for a single-task,
     multiple test set benchmark)."""
     return all(k in target_cols for k in vals)
+
 
 def serialize_predictions(
     predictions: PredictionsType,
@@ -61,19 +63,20 @@ def normalize_predictions_type(vals: PredictionsType, target_cols: list[str]):
     else:
         return {"test": {target_cols[0]: vals}}
 
+
 def safe_mask(dict, test_label, target_label, mask):
     if dict is None or dict[test_label] is None or dict[test_label][target_label] is None:
         return None
     else:
         return dict[test_label][target_label][mask]
 
+
 def evaluate_benchmark(
     target_cols: list[str],
     metrics: list[Metric],
     y_true: PredictionsType,
     y_pred: Optional[PredictionsType] = None,
-    y_prob: Optional[PredictionsType] = None
-
+    y_prob: Optional[PredictionsType] = None,
 ):
     y_true = normalize_predictions_type(y_true, target_cols)
     y_pred = normalize_predictions_type(y_pred, target_cols)
@@ -114,7 +117,7 @@ def evaluate_benchmark(
                 score = metric(
                     y_true=y_true_target[mask],
                     y_pred=safe_mask(y_pred, test_label, target_label, mask),
-                    y_prob=safe_mask(y_prob, test_label, target_label, mask)
+                    y_prob=safe_mask(y_prob, test_label, target_label, mask),
                 )
 
                 scores.loc[len(scores)] = (test_label, target_label, metric, score)
