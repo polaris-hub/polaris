@@ -799,7 +799,6 @@ class PolarisHubClient(OAuth2Client):
         competition: CompetitionSpecification,
         timeout: TimeoutTypes = (10, 200),
         owner: HubOwner | str | None = None,
-        if_exists: ZarrConflictResolution = "replace",
     ) -> Dict[str, Response]:
         """Upload a competition to the Polaris Hub.
 
@@ -811,8 +810,6 @@ class PolarisHubClient(OAuth2Client):
                 Since datasets can get large, it might be needed to increase the write timeout for larger datasets.
                 See also: https://www.python-httpx.org/advanced/#timeout-configuration
             owner: Which Hub user or organization owns the artifact. Takes precedence over `dataset.owner`.
-            if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
-                an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
 
         Returns:
             A object containing responses from the Polaris Hub regarding both the dataset and benchmark upload.
@@ -825,7 +822,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Upload competition dataset
         dataset_response = self._upload_dataset(
-            competition.dataset, ArtifactType.COMPETITION.value, ACCESS, timeout, owner, if_exists
+            competition.dataset, ArtifactType.COMPETITION.value, ACCESS, timeout, owner
         )
         # Upload competition benchmark
         competition_response = self._upload_benchmark(
