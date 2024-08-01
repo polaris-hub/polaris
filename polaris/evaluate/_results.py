@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from typing import ClassVar, Optional, Union
 
+import numpy as np
 import pandas as pd
 from pydantic import (
     BaseModel,
@@ -20,7 +21,14 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import sluggify
-from polaris.utils.types import AccessType, HttpUrlString, HubOwner, HubUser, SlugCompatibleStringType
+from polaris.utils.types import (
+    AccessType,
+    HttpUrlString,
+    HubOwner,
+    HubUser,
+    PredictionsType,
+    SlugCompatibleStringType,
+)
 
 # Define some helpful type aliases
 TestLabelType = str
@@ -62,7 +70,47 @@ ResultsType = Union[pd.DataFrame, list[ResultRecords | dict]]
 
 
 class BaseResult(BaseArtifactModel):
-    """Class for saving benchmarking results
+    """Base class for evaluation results
+
+    Attributes:
+        github_url: The URL to the GitHub repository of the code used to generate these results.
+        paper_url: The URL to the paper describing the methodology used to generate these results.
+        contributors: The users that are credited for these results.
+        _created_at: The time-stamp at which the results were created. Automatically set.
+    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
+    """
+
+    # Additional meta-data
+    github_url: Optional[HttpUrlString] = None
+    paper_url: Optional[HttpUrlString] = None
+    contributors: Optional[list[HubUser]] = None
+
+    # Private attributes
+    _created_at: datetime = PrivateAttr(default_factory=datetime.now)
+
+    def _repr_dict_(self) -> dict:
+        """Utility function for pretty-printing to the command line and jupyter notebooks"""
+        repr_dict = self.model_dump(exclude=["results"])
+
+        df = self.results.copy(deep=True)
+        df["Metric"] = df["Metric"].apply(lambda x: x.name if isinstance(x, Metric) else x)
+        repr_dict["results"] = json.loads(df.to_json(orient="records"))
+
+        return repr_dict
+
+    def _repr_html_(self):
+        """For pretty-printing in Jupyter Notebooks"""
+        return dict2html(self._repr_dict_())
+
+    def __len__(self):
+        return len(self.table)
+
+    def __repr__(self):
+        return json.dumps(self._repr_dict_(), indent=2)
+
+
+class EvaluationResult(BaseResult):
+    """Class for saving evaluation results
 
     The actual results are saved in the `results` field using the following tabular format:
 
@@ -75,32 +123,20 @@ class BaseResult(BaseArtifactModel):
 
     question: Categorizing methods
         An open question is how to best categorize a methodology (e.g. a model).
-        This is needed since we would like to be able to aggregate results across benchmarks too,
+        This is needed since we would like to be able to aggregate results across benchmarks/competitions too,
         to say something about which (type of) methods performs best _in general_.
 
     Attributes:
-        results: Benchmark results are stored directly in a dataframe or in a serialized, JSON compatible dict
+        results: Evaluation results are stored directly in a dataframe or in a serialized, JSON compatible dict
             that can be decoded into the associated tabular format.
-        github_url: The URL to the GitHub repository of the code used to generate these results.
-        paper_url: The URL to the paper describing the methodology used to generate these results.
-        contributors: The users that are credited for these results.
-        _created_at: The time-stamp at which the results were created. Automatically set.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
     """
 
     # Define the columns of the results table
     RESULTS_COLUMNS: ClassVar[list[str]] = ["Test set", "Target label", "Metric", "Score"]
 
-    # Data
+    # Results attribute
     results: ResultsType
-
-    # Additional meta-data
-    github_url: Optional[HttpUrlString] = None
-    paper_url: Optional[HttpUrlString] = None
-    contributors: Optional[list[HubUser]] = None
-
-    # Private attributes
-    _created_at: datetime = PrivateAttr(default_factory=datetime.now)
 
     @field_validator("results")
     def _validate_results(cls, v):
@@ -160,45 +196,8 @@ class BaseResult(BaseArtifactModel):
 
         return serialized
 
-    def upload_to_hub(
-        self,
-        settings: Optional[PolarisHubSettings] = None,
-        cache_auth_token: bool = True,
-        access: Optional[AccessType] = "private",
-        owner: Union[HubOwner, str, None] = None,
-        **kwargs: dict,
-    ):
-        """
-        Very light, convenient wrapper around the
-        [`PolarisHubClient.upload_results`][polaris.hub.client.PolarisHubClient.upload_results] method.
-        """
-        from polaris.hub.client import PolarisHubClient
 
-        with PolarisHubClient(settings=settings, cache_auth_token=cache_auth_token, **kwargs) as client:
-            return client.upload_results(self, access=access, owner=owner)
-
-    def _repr_dict_(self) -> dict:
-        """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude=["results"])
-
-        df = self.results.copy(deep=True)
-        df["Metric"] = df["Metric"].apply(lambda x: x.name if isinstance(x, Metric) else x)
-        repr_dict["results"] = json.loads(df.to_json(orient="records"))
-
-        return repr_dict
-
-    def _repr_html_(self):
-        """For pretty-printing in Jupyter Notebooks"""
-        return dict2html(self._repr_dict_())
-
-    def __len__(self):
-        return len(self.table)
-
-    def __repr__(self):
-        return json.dumps(self._repr_dict_(), indent=2)
-
-
-class BenchmarkResults(BaseResult):
+class BenchmarkResults(EvaluationResult):
     """Class specific to results for standard benchmarks.
 
     This object is returned by [`BenchmarkSpecification.evaluate`][polaris.benchmark.BenchmarkSpecification.evaluate].
@@ -219,8 +218,25 @@ class BenchmarkResults(BaseResult):
     def benchmark_artifact_id(self) -> str:
         return f"{self.benchmark_owner}/{sluggify(self.benchmark_name)}"
 
+    def upload_to_hub(
+        self,
+        settings: Optional[PolarisHubSettings] = None,
+        cache_auth_token: bool = True,
+        access: Optional[AccessType] = "private",
+        owner: Union[HubOwner, str, None] = None,
+        **kwargs: dict,
+    ):
+        """
+        Very light, convenient wrapper around the
+        [`PolarisHubClient.upload_results`][polaris.hub.client.PolarisHubClient.upload_results] method.
+        """
+        from polaris.hub.client import PolarisHubClient
 
-class CompetitionResults(BaseResult):
+        with PolarisHubClient(settings=settings, cache_auth_token=cache_auth_token, **kwargs) as client:
+            return client.upload_results(self, access=access, owner=owner)
+
+
+class CompetitionResults(EvaluationResult):
     """Class specific to results for competition benchmarks.
 
     This object is returned by [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
@@ -240,3 +256,33 @@ class CompetitionResults(BaseResult):
     @property
     def competition_artifact_id(self) -> str:
         return f"{self.competition_owner}/{sluggify(self.competition_name)}"
+
+
+class CompetitionPredictions(BaseResult):
+    """Class specific to predictions for competition benchmarks.
+
+    This object is used by [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
+    It is used to guarantee the structure of the competition results which are to be evaluated by the Polaris Hub.
+
+    predictions: The predictions
+        Together with the competition owner, this uniquely identifies the competition on the Hub.
+    competition_owner: The owner of the competition for which these results were generated.
+        Together with the competition name, this uniquely identifies the competition on the Hub.
+    """
+
+    predictions: PredictionsType
+    access: Optional[AccessType] = "private"
+
+    @field_serializer("predictions")
+    def _serialize_predictions(self, value: PredictionsType):
+        """Used to serialize a Predictions object such that it can be sent over the wire during
+        external evaluation for competitions"""
+
+        if isinstance(value, np.ndarray):
+            return value.tolist()
+        elif isinstance(value, list):
+            return value
+        elif isinstance(value, dict):
+            for key, val in value.items():
+                value[key] = self._serialize_results(val)
+            return value

@@ -16,42 +16,6 @@ def is_multi_task_single_test_set(vals: PredictionsType, target_cols: list[str])
     return all(k in target_cols for k in vals)
 
 
-def serialize_predictions(
-    predictions: PredictionsType,
-):
-    """Used to serialize a Predictions object such that it can be sent over the wire during
-    external evaluation for competitions"""
-
-    if isinstance(predictions, np.ndarray):
-        return predictions.tolist()
-    elif isinstance(predictions, list):
-        return predictions
-    elif isinstance(predictions, dict):
-        for key, val in predictions.items():
-            predictions[key] = serialize_predictions(val)
-        return predictions
-    else:
-        raise TypeError(f"Unexpected type of {type(predictions)} encountered in Predictions object.")
-
-
-def deserialize_predictions(
-    predictions: PredictionsType,
-):
-    """Used to deserialize a Predictions object such that it can be converted to the
-    expected type of numpy array during external evaluation for competitions"""
-
-    if isinstance(predictions, np.ndarray):
-        return predictions
-    elif isinstance(predictions, list):
-        return np.array(predictions)
-    elif isinstance(predictions, dict):
-        for key, val in predictions.items():
-            predictions[key] = deserialize_predictions(val)
-        return predictions
-    else:
-        raise TypeError(f"Unexpected type of {type(predictions)} encountered in Predictions object.")
-
-
 def normalize_predictions_type(vals: PredictionsType, target_cols: list[str]):
     if isinstance(vals, dict):
         if is_multi_task_single_test_set(vals, target_cols):

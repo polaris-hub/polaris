@@ -17,7 +17,6 @@ from authlib.oauth2.rfc6749 import OAuth2Token
 from httpx import HTTPStatusError, Response
 from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
-import polaris as po
 
 from polaris.benchmark import (
     BenchmarkSpecification,
@@ -26,6 +25,7 @@ from polaris.benchmark import (
 )
 from polaris.dataset import Dataset
 from polaris.evaluate import BenchmarkResults
+from polaris.evaluate._results import CompetitionPredictions
 from polaris.hub.external_auth_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.dataset import CompetitionDataset
@@ -47,16 +47,12 @@ from polaris.utils.types import (
     AccessType,
     ArtifactSubtype,
     ChecksumStrategy,
-    HttpUrlString,
     HubOwner,
-    HubUser,
     IOMode,
-    PredictionsType,
     SupportedLicenseType,
     TimeoutTypes,
     ZarrConflictResolution,
 )
-from polaris.evaluate.utils import serialize_predictions
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -794,7 +790,7 @@ class PolarisHubClient(OAuth2Client):
             response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
             progress_indicator.update_success_msg(
-                f"Your {artifact_type} has been successfully uploaded to the Hub. "
+                f"Your {artifact_type} benchmark has been successfully uploaded to the Hub. "
                 f"View it here: {urljoin(self.settings.hub_url, url)}"
             )
             return response
@@ -857,7 +853,7 @@ class PolarisHubClient(OAuth2Client):
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
         #  but we'd need to change the signature of get_dataset to use it
         response["dataset"] = self._get_dataset(
-            owner,
+            response["dataset"]["owner"]["slug"],
             response["dataset"]["name"],
             ArtifactSubtype.COMPETITION,
             verify_checksum=verify_checksum,
@@ -889,15 +885,7 @@ class PolarisHubClient(OAuth2Client):
     def evaluate_competition(
         self,
         competition: CompetitionSpecification,
-        y_pred: PredictionsType,
-        result_name: str,
-        description: str = "",
-        tags: list[str] = [],
-        user_attributes: Dict[str, str] = {},
-        github_url: HttpUrlString | None = "",
-        paper_url: HttpUrlString | None = "",
-        contributors: list[HubUser] | None = [],
-        results_access: AccessType = "private",
+        competitionPredictions: CompetitionPredictions,
     ) -> CompetitionResults:
         """Evaluate the predictions for a competition on the Polaris Hub. Target labels are fetched
         by Polaris Hub and used only internally.
@@ -911,22 +899,10 @@ class PolarisHubClient(OAuth2Client):
              A `CompetitionResults` object.
         """
 
-        y_pred = serialize_predictions(y_pred)
         response = self._base_request_to_hub(
             url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
             method="POST",
-            json={
-                "predictions": y_pred,
-                "access": results_access,
-                "polaris_version": po.__version__,
-                "name": result_name,
-                "description": description,
-                "tags": tags,
-                "user_attributes": user_attributes,
-                "github_url": github_url,
-                "paper_url": paper_url,
-                "contributors": contributors,
-            },
+            json=competitionPredictions.model_dump_json(),
         )
 
         # Inform the user about where to find their newly created artifact.

@@ -25,6 +25,7 @@ The second item can either be a single test set or a dictionary with multiple, n
 """
 
 PredictionsType: TypeAlias = Union[np.ndarray, dict[str, Union[np.ndarray, dict[str, np.ndarray]]]]
+
 """
 A prediction is one of three things:
 
