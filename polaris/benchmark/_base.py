@@ -161,25 +161,29 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             v = Metric[v]
         return v
 
-    @field_validator("split")
-    def _validate_split(cls, v, info: ValidationInfo):
+    @model_validator(mode="after")
+    def _validate_split(cls, m: "BenchmarkSpecification"):
         """
         Verifies that:
           1) There are no empty test partitions
           2) All indices are valid given the dataset
           3) There is no duplicate indices in any of the sets
-          3) There is no overlap between the train and test set
+          4) There is no overlap between the train and test set
+          5) No row exists in the test set where all labels are missing/empty
         """
+        split = m.split
 
         # Train partition can be empty (zero-shot)
         # Test partitions cannot be empty
-        if (isinstance(v[1], dict) and any(len(v) == 0 for v in v[1].values())) or (
-            not isinstance(v[1], dict) and len(v[1]) == 0
+        if (isinstance(split[1], dict) and any(len(v) == 0 for v in split[1].values())) or (
+            not isinstance(split[1], dict) and len(split[1]) == 0
         ):
             raise InvalidBenchmarkError("The predefined split contains empty test partitions")
 
-        train_idx_list = v[0]
-        full_test_idx_list = list(chain.from_iterable(v[1].values())) if isinstance(v[1], dict) else v[1]
+        train_idx_list = split[0]
+        full_test_idx_list = (
+            list(chain.from_iterable(split[1].values())) if isinstance(split[1], dict) else split[1]
+        )
 
         if len(train_idx_list) == 0:
             logger.info(
@@ -200,8 +204,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         # Check for duplicate indices within a given test set. Because a user can specify
         # multiple test sets for a given benchmark and it is acceptable for indices to be shared
         # across test sets, we check for duplicates in each test set independently.
-        if isinstance(v[1], dict):
-            for test_set_name, test_set_idx_list in v[1].items():
+        if isinstance(split[1], dict):
+            for test_set_name, test_set_idx_list in split[1].items():
                 if len(test_set_idx_list) != len(set(test_set_idx_list)):
                     raise InvalidBenchmarkError(
                         f'Test set with name "{test_set_name}" contains duplicate indices'
@@ -210,12 +214,21 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             raise InvalidBenchmarkError("The test set contains duplicate indices")
 
         # All indices are valid given the dataset
-        if info.data["dataset"] is not None:
-            max_i = len(info.data["dataset"])
+        dataset = m.dataset
+        if dataset is not None:
+            max_i = len(dataset)
             if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
                 raise InvalidBenchmarkError("The predefined split contains invalid indices")
 
-        return v
+        # For a given row in the test set, all target columns must not be missing/empty
+        target_cols = m.target_cols
+        test_indices = list(full_test_idx_set)
+        if not dataset.table.loc[test_indices, target_cols].notna().any(axis=1).all():
+            raise InvalidBenchmarkError(
+                "All rows of the test set must have at least one target column with a value."
+            )
+
+        return m
 
     @field_validator("target_types")
     def _validate_target_types(cls, v, info: ValidationInfo):

@@ -854,10 +854,13 @@ class PolarisHubClient(OAuth2Client):
 
         response = self._base_request_to_hub(url=f"/v2/competition/{owner}/{name}", method="GET")
 
-        # TODO (cwognum): Currently, the competition endpoints do not return the owner info for the underlying dataset.
-        # TODO (jstlaurent): Use the same owner for now, until the competition returns a better dataset entity
+        # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
+        #  but we'd need to change the signature of get_dataset to use it
         response["dataset"] = self._get_dataset(
-            owner, response["dataset"]["name"], ArtifactSubtype.COMPETITION, verify_checksum=verify_checksum
+            owner,
+            response["dataset"]["name"],
+            ArtifactSubtype.COMPETITION,
+            verify_checksum=verify_checksum,
         )
 
         if not verify_checksum:
