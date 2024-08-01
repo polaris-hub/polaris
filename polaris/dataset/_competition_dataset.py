@@ -13,7 +13,6 @@ _CACHE_SUBDIR = "datasets"
 class CompetitionDataset(Dataset):
     masked_md5sum: Optional[str] = None
 
-    ## CHECK IF THIS
     @model_validator(mode="after")
     @classmethod
     def _validate_model(cls, m: "CompetitionDataset"):

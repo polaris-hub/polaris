@@ -106,9 +106,6 @@ def load_competition(slug: str, verify_checksum: bool = True):
     Note: Dataset is automatically loaded
         The dataset underlying the competition is automatically loaded when pulling the competition.
 
-    - **Hub** (recommended): When loading the competition from the Hub, you can simply
-        provide the `owner/name` slug. This can be easily copied from the relevant competition
-        page on the Hub.
     """
 
     # Load from the Hub
