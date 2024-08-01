@@ -96,18 +96,16 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     # Public attributes
     # Data
-    dataset: Union[Union[Dataset, CompetitionDataset], str, dict[str, Any]]
+    dataset: Union[Dataset, CompetitionDataset, str, dict[str, Any]]
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
-    metrics: Union[str, Metric, list[Union[str, Metric]]]
-    main_metric: Optional[Union[str, Metric]] = None
+    metrics: Union[str, Metric, list[str | Metric]]
+    main_metric: str | Metric | None = None
 
     # Additional meta-data
     readme: str = ""
-    target_types: dict[str, Optional[Union[TargetType, str]]] = Field(
-        default_factory=dict, validate_default=True
-    )
+    target_types: dict[str, Union[TargetType, str, None]] = Field(default_factory=dict, validate_default=True)
 
     @field_validator("dataset")
     def _validate_dataset(cls, v):
@@ -464,7 +462,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         access: Optional[AccessType] = "private",
-        owner: Optional[Union[HubOwner, str]] = None,
+        owner: Union[HubOwner, str, None] = None,
         **kwargs: dict,
     ):
         """

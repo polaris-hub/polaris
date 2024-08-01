@@ -3,7 +3,7 @@ import ssl
 from hashlib import md5
 from io import BytesIO
 from typing import Callable, get_args
-from typing import Dict, Optional, Union
+from typing import Dict, Union
 from urllib.parse import urljoin
 
 import certifi
@@ -556,7 +556,7 @@ class PolarisHubClient(OAuth2Client):
         artifact_type: ArtifactType,
         access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
-        owner: Optional[Union[HubOwner, str]] = None,
+        owner: Union[HubOwner, str, None] = None,
         if_exists: ZarrConflictResolution = "replace",
     ):
         """Upload the dataset to the Polaris Hub.
@@ -748,7 +748,7 @@ class PolarisHubClient(OAuth2Client):
         benchmark: BenchmarkSpecification | CompetitionSpecification,
         artifact_type: ArtifactType,
         access: AccessType = "private",
-        owner: Optional[Union[HubOwner, str]] = None,
+        owner: Union[HubOwner, str, None] = None,
     ):
         """Upload a standard or competition benchmark to the Polaris Hub.
 
@@ -798,7 +798,7 @@ class PolarisHubClient(OAuth2Client):
         self,
         competition: CompetitionSpecification,
         timeout: TimeoutTypes = (10, 200),
-        owner: Optional[Union[HubOwner, str]] = None,
+        owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
     ) -> Dict[str, Response]:
         """Upload a competition to the Polaris Hub.

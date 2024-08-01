@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from typing import Optional, Union
+from typing import Optional
 
 from pydantic import field_serializer, field_validator, ValidationInfo
 from polaris.benchmark import BenchmarkSpecification
@@ -47,7 +47,7 @@ class CompetitionSpecification(BenchmarkSpecification):
         self,
         y_pred: PredictionsType,
         result_name: str,
-        env_file: Optional[Union[str, os.PathLike]] = None,
+        env_file: str | os.PathLike | None = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         **kwargs: dict,
@@ -67,12 +67,12 @@ class CompetitionSpecification(BenchmarkSpecification):
 
     def upload_to_hub(
         self,
-        env_file: Optional[Union[str, os.PathLike]] = None,
+        env_file: str | os.PathLike | None = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
-        owner: Optional[Union[HubOwner, str]] = None,
+        owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
     ):
         """Very light, convenient wrapper around the

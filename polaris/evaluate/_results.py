@@ -58,7 +58,7 @@ class ResultRecords(BaseModel):
         return {metric.name: score for metric, score in value.items()}
 
 
-ResultsType = Union[pd.DataFrame, list[Union[ResultRecords, dict]]]
+ResultsType = Union[pd.DataFrame, list[ResultRecords | dict]]
 
 
 class BaseResult(BaseArtifactModel):
@@ -165,7 +165,7 @@ class BaseResult(BaseArtifactModel):
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         access: Optional[AccessType] = "private",
-        owner: Optional[Union[HubOwner, str]] = None,
+        owner: Union[HubOwner, str, None] = None,
         **kwargs: dict,
     ):
         """
