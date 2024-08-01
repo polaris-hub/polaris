@@ -45,8 +45,8 @@ from polaris.utils.errors import (
 from polaris.utils.misc import should_verify_checksum
 from polaris.utils.types import (
     AccessType,
+    ArtifactSubtype,
     ChecksumStrategy,
-    ArtifactType,
     HttpUrlString,
     HubOwner,
     HubUser,
@@ -313,13 +313,13 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `Dataset` instance, if it exists.
         """
-        return self._get_dataset(owner, name, ArtifactType.STANDARD.value, verify_checksum)
+        return self._get_dataset(owner, name, ArtifactSubtype.STANDARD.value, verify_checksum)
 
     def _get_dataset(
         self,
         owner: Union[str, HubOwner],
         name: str,
-        artifact_type: ArtifactType,
+        artifact_type: ArtifactSubtype,
         verify_checksum: bool = True,
     ) -> Dataset:
         """Loads either a standard or competition dataset from Polaris Hub
@@ -340,12 +340,12 @@ class PolarisHubClient(OAuth2Client):
         ):
             url = (
                 f"/v1/dataset/{owner}/{name}"
-                if artifact_type == ArtifactType.STANDARD.value
+                if artifact_type == ArtifactSubtype.STANDARD.value
                 else f"/v2/competition/dataset/{owner}/{name}"
             )
             response = self._base_request_to_hub(url=url, method="GET")
             dataset_info = (
-                "tableContent" if artifact_type == ArtifactType.STANDARD.value else "maskedDatasetInfo"
+                "tableContent" if artifact_type == ArtifactSubtype.STANDARD.value else "maskedDatasetInfo"
             )
             storage_response = self.get(response[dataset_info]["url"])
 
@@ -366,7 +366,7 @@ class PolarisHubClient(OAuth2Client):
 
             dataset = (
                 Dataset(**response)
-                if artifact_type == ArtifactType.STANDARD
+                if artifact_type == ArtifactSubtype.STANDARD
                 else CompetitionDataset(**response)
             )
 
@@ -549,12 +549,14 @@ class PolarisHubClient(OAuth2Client):
         if_exists: ZarrConflictResolution = "replace",
     ):
         """Wrapper method for uploading standard datasets to Polaris Hub"""
-        return self._upload_dataset(dataset, ArtifactType.STANDARD.value, access, timeout, owner, if_exists)
+        return self._upload_dataset(
+            dataset, ArtifactSubtype.STANDARD.value, access, timeout, owner, if_exists
+        )
 
     def _upload_dataset(
         self,
         dataset: Dataset,
-        artifact_type: ArtifactType,
+        artifact_type: ArtifactSubtype,
         access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
         owner: Union[HubOwner, str, None] = None,
@@ -627,7 +629,7 @@ class PolarisHubClient(OAuth2Client):
             # We do so separately for the Zarr archive and Parquet file.
             url = (
                 f"/v1/dataset/{dataset.artifact_id}"
-                if artifact_type == ArtifactType.STANDARD.value
+                if artifact_type == ArtifactSubtype.STANDARD.value
                 else f"/v2/competition/dataset/{dataset.owner}/{dataset.name}"
             )
             response = self._base_request_to_hub(
@@ -706,7 +708,7 @@ class PolarisHubClient(OAuth2Client):
                         if_exists=if_exists,
                     )
             base_artifact_url = (
-                "datasets" if artifact_type == ArtifactType.STANDARD.value else "/competition/datasets"
+                "datasets" if artifact_type == ArtifactSubtype.STANDARD.value else "/competition/datasets"
             )
             progress_indicator.update_success_msg(
                 f"Your {artifact_type} dataset has been successfully uploaded to the Hub. "
@@ -742,12 +744,12 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
         """
-        return self._upload_benchmark(benchmark, ArtifactType.STANDARD.value, access, owner)
+        return self._upload_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
 
     def _upload_benchmark(
         self,
         benchmark: BenchmarkSpecification | CompetitionSpecification,
-        artifact_type: ArtifactType,
+        artifact_type: ArtifactSubtype,
         access: AccessType = "private",
         owner: Union[HubOwner, str, None] = None,
     ):
@@ -785,7 +787,9 @@ class PolarisHubClient(OAuth2Client):
             benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
             benchmark_json["access"] = access
 
-            path_params = "v1/benchmark" if artifact_type == ArtifactType.STANDARD.value else "v2/competition"
+            path_params = (
+                "v1/benchmark" if artifact_type == ArtifactSubtype.STANDARD.value else "v2/competition"
+            )
             url = f"/{path_params}/{benchmark.owner}/{benchmark.name}"
             response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
@@ -822,11 +826,11 @@ class PolarisHubClient(OAuth2Client):
 
         # Upload competition dataset
         dataset_response = self._upload_dataset(
-            competition.dataset, ArtifactType.COMPETITION.value, ACCESS, timeout, owner
+            competition.dataset, ArtifactSubtype.COMPETITION.value, ACCESS, timeout, owner
         )
         # Upload competition benchmark
         competition_response = self._upload_benchmark(
-            competition, ArtifactType.COMPETITION.value, ACCESS, owner
+            competition, ArtifactSubtype.COMPETITION.value, ACCESS, owner
         )
 
         return {
@@ -853,7 +857,7 @@ class PolarisHubClient(OAuth2Client):
         # TODO (cwognum): Currently, the competition endpoints do not return the owner info for the underlying dataset.
         # TODO (jstlaurent): Use the same owner for now, until the competition returns a better dataset entity
         response["dataset"] = self._get_dataset(
-            owner, response["dataset"]["name"], ArtifactType.COMPETITION, verify_checksum=verify_checksum
+            owner, response["dataset"]["name"], ArtifactSubtype.COMPETITION, verify_checksum=verify_checksum
         )
 
         if not verify_checksum:

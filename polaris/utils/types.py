@@ -152,7 +152,7 @@ class TaskType(Enum):
     SINGLE_TASK = "single_task"
 
 
-class ArtifactType(Enum):
+class ArtifactSubtype(Enum):
     """The major artifact types which Polaris supports"""
 
     STANDARD = "standard"
