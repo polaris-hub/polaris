@@ -21,6 +21,7 @@ class CompetitionSpecification(BenchmarkSpecification):
     # Additional properties specific to Competitions
     owner: HubOwner
     start_time: datetime | None = None
+    end_time: datetime | None = None
 
     def evaluate(
         self,
