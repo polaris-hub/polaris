@@ -35,6 +35,7 @@ from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.context import ProgressIndicator, tmp_attribute_change
 from polaris.utils.errors import (
+    InvalidCompetitionError,
     InvalidDatasetError,
     PolarisCreateArtifactError,
     PolarisHubError,
@@ -817,8 +818,7 @@ class PolarisHubClient(OAuth2Client):
         ACCESS = "private"
 
         if competition.dataset.zarr_root is not None:
-            logger.info("Zarr-based competitions are not supported at this time")
-            return
+            raise InvalidCompetitionError("Zarr-based competitions are not supported at this time")
 
         # Upload competition dataset
         dataset_response = self._upload_dataset(
