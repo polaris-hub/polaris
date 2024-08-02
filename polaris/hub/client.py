@@ -281,8 +281,8 @@ class PolarisHubClient(OAuth2Client):
             A list of dataset names in the format `owner/dataset_name`.
         """
         with ProgressIndicator(
-            start_msg="Fetching datasets...",
-            success_msg="Fetched datasets.",
+            start_msg="Fetching artifacts...",
+            success_msg="Fetched artifacts.",
             error_msg="Failed to fetch datasets.",
         ):
             response = self._base_request_to_hub(
@@ -330,8 +330,8 @@ class PolarisHubClient(OAuth2Client):
             A `Dataset` instance, if it exists.
         """
         with ProgressIndicator(
-            start_msg="Fetching dataset...",
-            success_msg="Fetched dataset.",
+            start_msg="Fetching artifact...",
+            success_msg="Fetched artifact.",
             error_msg="Failed to fetch dataset.",
         ):
             url = (
@@ -421,8 +421,8 @@ class PolarisHubClient(OAuth2Client):
             A list of benchmark names in the format `owner/benchmark_name`.
         """
         with ProgressIndicator(
-            start_msg="Fetching benchmarks...",
-            success_msg="Fetched benchmarks.",
+            start_msg="Fetching artifacts...",
+            success_msg="Fetched artifacts.",
             error_msg="Failed to fetch benchmarks.",
         ):
             # TODO (cwognum): What to do with pagination, i.e. limit and offset?
@@ -450,8 +450,8 @@ class PolarisHubClient(OAuth2Client):
             A `BenchmarkSpecification` instance, if it exists.
         """
         with ProgressIndicator(
-            start_msg="Fetching benchmark...",
-            success_msg="Fetched benchmark.",
+            start_msg="Fetching artifact...",
+            success_msg="Fetched artifact.",
             error_msg="Failed to fetch benchmark.",
         ):
             response = self._base_request_to_hub(url=f"/v1/benchmark/{owner}/{name}", method="GET")
@@ -511,8 +511,8 @@ class PolarisHubClient(OAuth2Client):
             owner: Which Hub user or organization owns the artifact. Takes precedence over `results.owner`.
         """
         with ProgressIndicator(
-            start_msg="Uploading result...",
-            success_msg="Uploaded result.",
+            start_msg="Uploading artifact...",
+            success_msg="Uploaded artifact.",
             error_msg="Failed to upload result.",
         ) as progress_indicator:
             # Get the serialized model data-structure
@@ -583,8 +583,8 @@ class PolarisHubClient(OAuth2Client):
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
         """
         with ProgressIndicator(
-            start_msg="Uploading dataset...",
-            success_msg="Uploaded dataset.",
+            start_msg="Uploading artifact...",
+            success_msg="Uploaded artifact.",
             error_msg="Failed to upload dataset.",
         ) as progress_indicator:
             # Check if a dataset license was specified prior to upload
@@ -772,8 +772,8 @@ class PolarisHubClient(OAuth2Client):
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
         """
         with ProgressIndicator(
-            start_msg="Uploading benchmark...",
-            success_msg="Uploaded benchmark.",
+            start_msg="Uploading artifact...",
+            success_msg="Uploaded artifact.",
             error_msg="Failed to upload benchmark.",
         ) as progress_indicator:
             # Get the serialized data-model
@@ -784,9 +784,9 @@ class PolarisHubClient(OAuth2Client):
             benchmark_json["access"] = access
 
             path_params = (
-                "v1/benchmark" if artifact_type == ArtifactSubtype.STANDARD.value else "v2/competition"
+                "/v1/benchmark" if artifact_type == ArtifactSubtype.STANDARD.value else "/v2/competition"
             )
-            url = f"/{path_params}/{benchmark.owner}/{benchmark.name}"
+            url = f"{path_params}/{benchmark.owner}/{benchmark.name}"
             response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
             progress_indicator.update_success_msg(
@@ -829,6 +829,12 @@ class PolarisHubClient(OAuth2Client):
             competition, ArtifactSubtype.COMPETITION.value, ACCESS, owner
         )
 
+        url = f"/v2/competition/{owner}/{competition.name}"
+        logger.info(
+            f"Your competition has been successfully uploaded to the Hub. "
+            f"View it here: {urljoin(self.settings.hub_url, url)}"
+        )
+
         return {
             "dataset_response": dataset_response,
             "competition_response": competition_response,
@@ -847,7 +853,6 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `CompetitionSpecification` instance, if it exists.
         """
-
         response = self._base_request_to_hub(url=f"/v2/competition/{owner}/{name}", method="GET")
 
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
@@ -858,6 +863,8 @@ class PolarisHubClient(OAuth2Client):
             ArtifactSubtype.COMPETITION,
             verify_checksum=verify_checksum,
         )
+
+        # ADD GET COMPETITION_RECORD HERE
 
         if not verify_checksum:
             response.pop("md5Sum", None)
@@ -874,13 +881,17 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A list of competition names in the format `owner/competition_name`.
         """
-
-        # TODO (cwognum): What to do with pagination, i.e. limit and offset?
-        response = self._base_request_to_hub(
-            url="/v2/competition", method="GET", params={"limit": limit, "offset": offset}
-        )
-        benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
-        return benchmarks_list
+        with ProgressIndicator(
+            start_msg="Fetching artifacts...",
+            success_msg="Fetched artifacts.",
+            error_msg="Failed to fetch artifacts.",
+        ):
+            # TODO (cwognum): What to do with pagination, i.e. limit and offset?
+            response = self._base_request_to_hub(
+                url="/v2/competition", method="GET", params={"limit": limit, "offset": offset}
+            )
+            competitions_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
+            return competitions_list
 
     def evaluate_competition(
         self,
@@ -899,20 +910,27 @@ class PolarisHubClient(OAuth2Client):
              A `CompetitionResults` object.
         """
 
-        response = self._base_request_to_hub(
-            url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
-            method="POST",
-            json=competitionPredictions.model_dump_json(),
-        )
+        with ProgressIndicator(
+            start_msg="Evaluating competition predictions...",
+            success_msg="Evaluated competition predictions.",
+            error_msg="Failed to evaluate competition predictions.",
+        ) as progress_indicator:
+            response = self._base_request_to_hub(
+                url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
+                method="POST",
+                json=competitionPredictions.model_dump_json(),
+            )
 
-        # Inform the user about where to find their newly created artifact.
-        result_url = urljoin(
-            self.settings.hub_url,
-            f"/v2/competition/{competition.owner}/{competition.name}/{response['id']}",
-        )
-        logger.success(f"Your result has been successfully uploaded to the Hub. View it here: {result_url}")
+            # Inform the user about where to find their newly created artifact.
+            result_url = urljoin(
+                self.settings.hub_url,
+                f"/v2/competition/{competition.owner}/{competition.name}/{response['id']}",
+            )
+            progress_indicator.update_success_msg(
+                f"Your competition result has been successfully uploaded to the Hub. View it here: {result_url}"
+            )
 
-        scores = response["results"]
-        return CompetitionResults(
-            results=scores, competition_name=competition.name, competition_owner=competition.owner
-        )
+            scores = response["results"]
+            return CompetitionResults(
+                results=scores, competition_name=competition.name, competition_owner=competition.owner
+            )

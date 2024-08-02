@@ -1,6 +1,11 @@
 from polaris.evaluate._metric import Metric, MetricInfo
-from polaris.evaluate._results import BenchmarkResults, ResultsType, CompetitionResults
-from polaris.evaluate.utils import evaluate_benchmark, serialize_predictions, deserialize_predictions
+from polaris.evaluate._results import (
+    BenchmarkResults,
+    ResultsType,
+    CompetitionResults,
+    CompetitionPredictions,
+)
+from polaris.evaluate.utils import evaluate_benchmark
 
 __all__ = [
     "Metric",
@@ -9,6 +14,5 @@ __all__ = [
     "CompetitionResults",
     "ResultsType",
     "evaluate_benchmark",
-    "serialize_predictions",
-    "deserialize_predictions",
+    "CompetitionPredictions",
 ]

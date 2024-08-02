@@ -69,7 +69,7 @@ class ResultRecords(BaseModel):
 ResultsType = Union[pd.DataFrame, list[ResultRecords | dict]]
 
 
-class BaseResult(BaseArtifactModel):
+class ResultsMetadata(BaseArtifactModel):
     """Base class for evaluation results
 
     Attributes:
@@ -109,7 +109,7 @@ class BaseResult(BaseArtifactModel):
         return json.dumps(self._repr_dict_(), indent=2)
 
 
-class EvaluationResult(BaseResult):
+class EvaluationResult(ResultsMetadata):
     """Class for saving evaluation results
 
     The actual results are saved in the `results` field using the following tabular format:
@@ -258,7 +258,7 @@ class CompetitionResults(EvaluationResult):
         return f"{self.competition_owner}/{sluggify(self.competition_name)}"
 
 
-class CompetitionPredictions(BaseResult):
+class CompetitionPredictions(ResultsMetadata):
     """Class specific to predictions for competition benchmarks.
 
     This object is used by [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
