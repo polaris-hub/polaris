@@ -4,10 +4,9 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 import fsspec
 from loguru import logger
 
-from polaris.utils.errors import PolarisHubError
-from polaris.utils.types import TimeoutTypes
+from polaris.utils.errors import PolarisChecksumError, PolarisHubError
 from polaris.utils.misc import sluggify
-
+from polaris.utils.types import TimeoutTypes
 
 if TYPE_CHECKING:
     from polaris.hub.client import PolarisHubClient
@@ -141,7 +140,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
 
         # This should be a 307 redirect with the signed URL
         if response.status_code != 307:
-            raise PolarisHubError("Could not get signed URL from Polaris Hub.")
+            raise PolarisHubError(message="Could not get signed URL from Polaris Hub.", response=response)
 
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
@@ -161,14 +160,14 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         # Verify the checksum on download
         expected_md5sum = self.polaris_client.get_metadata_from_response(response, "md5sum")
         if expected_md5sum is None:
-            raise PolarisHubError("MD5 checksum not found in response headers.")
+            raise PolarisChecksumError("MD5 checksum not found in response headers.")
         logger.debug(f"MD5 checksum found in response headers: {expected_md5sum}.")
 
         md5sum = md5(response_content).hexdigest()
         logger.debug(f"MD5 checksum computed for response content: {md5sum}.")
 
         if md5sum != expected_md5sum:
-            raise PolarisHubError(
+            raise PolarisChecksumError(
                 f"MD5 checksum verification failed. Expected {expected_md5sum}, got {md5sum}."
             )
 
@@ -220,7 +219,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         response = self.polaris_client.put(pipe_path, timeout=timeout)
 
         if response.status_code != 307:
-            raise PolarisHubError("Could not get signed URL from Polaris Hub.")
+            raise PolarisHubError(message="Could not get signed URL from Polaris Hub.", response=response)
 
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]

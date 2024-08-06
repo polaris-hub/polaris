@@ -19,7 +19,7 @@ from pydantic import (
 from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
-from polaris._mixins import ChecksumMixin
+from polaris.mixins import ChecksumMixin
 from polaris.dataset import Dataset, Subset
 from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.hub.settings import PolarisHubSettings
@@ -182,7 +182,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             raise InvalidBenchmarkError("The predefined split contains empty test partitions")
 
         train_idx_list = v[0]
-        test_idx_list = list(i for part in v[1].values() for i in part) if isinstance(v[1], dict) else v[1]
+        full_test_idx_list = list(chain.from_iterable(v[1].values())) if isinstance(v[1], dict) else v[1]
 
         if len(train_idx_list) == 0:
             logger.info(
@@ -190,22 +190,32 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             )
 
         train_idx_set = set(train_idx_list)
-        test_idx_set = set(test_idx_list)
+        full_test_idx_set = set(full_test_idx_list)
 
         # The train and test indices do not overlap
-        if len(train_idx_set & test_idx_set) > 0:
+        if len(train_idx_set & full_test_idx_set) > 0:
             raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
 
-        # Duplicate indices
+        # Check for duplicate indices within the train set
         if len(train_idx_set) != len(train_idx_list):
             raise InvalidBenchmarkError("The training set contains duplicate indices")
-        if len(test_idx_set) != len(test_idx_list):
+
+        # Check for duplicate indices within a given test set. Because a user can specify
+        # multiple test sets for a given benchmark and it is acceptable for indices to be shared
+        # across test sets, we check for duplicates in each test set independently.
+        if isinstance(v[1], dict):
+            for test_set_name, test_set_idx_list in v[1].items():
+                if len(test_set_idx_list) != len(set(test_set_idx_list)):
+                    raise InvalidBenchmarkError(
+                        f'Test set with name "{test_set_name}" contains duplicate indices'
+                    )
+        elif len(full_test_idx_set) != len(full_test_idx_list):
             raise InvalidBenchmarkError("The test set contains duplicate indices")
 
         # All indices are valid given the dataset
         if info.data["dataset"] is not None:
             max_i = len(info.data["dataset"])
-            if any(i < 0 or i >= max_i for i in chain(train_idx_list, test_idx_list)):
+            if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
                 raise InvalidBenchmarkError("The predefined split contains invalid indices")
 
         return v
@@ -406,6 +416,19 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         Returns:
             A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
+
+
+        Examples:
+            1. For regression benchmarks:
+                pred_scores = your_model.predict_score(molecules) # predict continuous score values
+                benchmark.evaluate(y_pred=pred_scores)
+            2. For classification benchmarks:
+                - If `roc_auc` and `pr_auc` are in the metric list, both class probabilities and label predictions are required:
+                    pred_probs = your_model.predict_proba(molecules) # predict probablities
+                    pred_labels = your_model.predict_labels(molecules) # predict class labels
+                    benchmark.evaluate(y_pred=pred_labels, y_prob=pred_probs)
+                - Otherwise:
+                    benchmark.evaluate(y_pred=pred_labels)
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
