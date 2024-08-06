@@ -276,7 +276,7 @@ class CompetitionPredictions(ResultsMetadata):
 
     @field_validator("predictions")
     @classmethod
-    def _convert_predictions(self, value: Union[PredictionsType, CompetitionPredictionsType]):
+    def _convert_predictions(cls, value: Union[PredictionsType, CompetitionPredictionsType]):
         """Convert prediction arrays from a list type to a numpy array. This is required for certain
         operations during prediction evaluation"""
 
@@ -286,7 +286,7 @@ class CompetitionPredictions(ResultsMetadata):
             return value
         elif isinstance(value, dict):
             for key, val in value.items():
-                value[key] = self._convert_predictions(val)
+                value[key] = cls._convert_predictions(val)
             return value
 
     @field_serializer("predictions")
