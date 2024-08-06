@@ -25,13 +25,18 @@ The second item can either be a single test set or a dictionary with multiple, n
 """
 
 PredictionsType: TypeAlias = Union[np.ndarray, dict[str, Union[np.ndarray, dict[str, np.ndarray]]]]
-
 """
 A prediction is one of three things:
 
 - A single array (single-task, single test set)
 - A dictionary of arrays (single-task, multiple test sets)
 - A dictionary of dictionaries of arrays (multi-task, multiple test sets)
+"""
+
+CompetitionPredictionsType: TypeAlias = Union[list, dict[str, Union[list, dict[str, list]]]]
+"""
+An additional type to represent the structure of predictions which are specific to competitions. This
+type allows for the predictions to be sent over the wire for external evaluation.
 """
 
 DatapointPartType = Union[Any, tuple[Any], dict[str, Any]]

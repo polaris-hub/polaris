@@ -23,6 +23,7 @@ from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import sluggify
 from polaris.utils.types import (
     AccessType,
+    CompetitionPredictionsType,
     HttpUrlString,
     HubOwner,
     HubUser,
@@ -270,7 +271,7 @@ class CompetitionPredictions(ResultsMetadata):
         Together with the competition name, this uniquely identifies the competition on the Hub.
     """
 
-    predictions: PredictionsType
+    predictions: Union[PredictionsType, CompetitionPredictionsType]
     access: Optional[AccessType] = "private"
 
     @field_serializer("predictions")
