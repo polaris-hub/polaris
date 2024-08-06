@@ -284,5 +284,5 @@ class CompetitionPredictions(ResultsMetadata):
             return value
         elif isinstance(value, dict):
             for key, val in value.items():
-                value[key] = self._serialize_results(val)
+                value[key] = self._serialize_predictions(val)
             return value

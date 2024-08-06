@@ -799,7 +799,6 @@ class PolarisHubClient(OAuth2Client):
         self,
         competition: CompetitionSpecification,
         timeout: TimeoutTypes = (10, 200),
-        owner: HubOwner | str | None = None,
     ) -> Dict[str, Response]:
         """Upload a competition to the Polaris Hub.
 
@@ -822,14 +821,14 @@ class PolarisHubClient(OAuth2Client):
 
         # Upload competition dataset
         dataset_response = self._upload_dataset(
-            competition.dataset, ArtifactSubtype.COMPETITION.value, ACCESS, timeout, owner
+            competition.dataset, ArtifactSubtype.COMPETITION.value, ACCESS, timeout, competition.owner
         )
         # Upload competition benchmark
         competition_response = self._upload_benchmark(
-            competition, ArtifactSubtype.COMPETITION.value, ACCESS, owner
+            competition, ArtifactSubtype.COMPETITION.value, ACCESS, competition.owner
         )
 
-        url = f"/v2/competition/{owner}/{competition.name}"
+        url = f"/v2/competition/{competition.owner}/{competition.name}"
         logger.info(
             f"Your competition has been successfully uploaded to the Hub. "
             f"View it here: {urljoin(self.settings.hub_url, url)}"
@@ -915,10 +914,13 @@ class PolarisHubClient(OAuth2Client):
             success_msg="Evaluated competition predictions.",
             error_msg="Failed to evaluate competition predictions.",
         ) as progress_indicator:
+            comps = competition.model_dump()
+            evaluation_body = {**competitionPredictions.model_dump(), "metrics": [comps["metrics"]]}
+
             response = self._base_request_to_hub(
                 url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
                 method="POST",
-                json=competitionPredictions.model_dump_json(),
+                json=evaluation_body,
             )
 
             # Inform the user about where to find their newly created artifact.

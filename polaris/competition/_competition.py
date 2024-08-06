@@ -1,11 +1,11 @@
 from datetime import datetime
-import os
 from typing import Optional
 
 from pydantic import field_serializer
 from polaris.benchmark import BenchmarkSpecification
+from polaris.evaluate._results import CompetitionPredictions
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.types import AccessType, HubOwner, PredictionsType, TimeoutTypes, ZarrConflictResolution
+from polaris.utils.types import AccessType, HubOwner, TimeoutTypes, ZarrConflictResolution
 
 
 class CompetitionSpecification(BenchmarkSpecification):
@@ -25,9 +25,7 @@ class CompetitionSpecification(BenchmarkSpecification):
 
     def evaluate(
         self,
-        y_pred: PredictionsType,
-        result_name: str,
-        env_file: str | os.PathLike | None = None,
+        predictions: CompetitionPredictions,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         **kwargs: dict,
@@ -42,17 +40,13 @@ class CompetitionSpecification(BenchmarkSpecification):
             cache_auth_token=cache_auth_token,
             **kwargs,
         ) as client:
-            return client.evaluate_competition(self, y_pred=y_pred, result_name=result_name)
+            return client.evaluate_competition(self, predictions)
 
     def upload_to_hub(
         self,
-        env_file: str | os.PathLike | None = None,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
-        access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
-        owner: HubOwner | str | None = None,
-        if_exists: ZarrConflictResolution = "replace",
     ):
         """Very light, convenient wrapper around the
         [`PolarisHubClient.upload_competition`][polaris.hub.client.PolarisHubClient.upload_competition] method."""
@@ -60,11 +54,10 @@ class CompetitionSpecification(BenchmarkSpecification):
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient(
-            env_file=env_file,
             settings=settings,
             cache_auth_token=cache_auth_token,
         ) as client:
-            return client.upload_competition(self.dataset, self, access, timeout, owner, if_exists)
+            return client.upload_competition(self, timeout)
 
     @field_serializer("start_time")
     def _serialize_start_date(self, v):
