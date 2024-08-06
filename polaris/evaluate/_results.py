@@ -275,6 +275,7 @@ class CompetitionPredictions(ResultsMetadata):
     access: Optional[AccessType] = "private"
 
     @field_validator("predictions")
+    @classmethod
     def _convert_predictions(self, value: Union[PredictionsType, CompetitionPredictionsType]):
         """Convert prediction arrays from a list type to a numpy array. This is required for certain
         operations during prediction evaluation"""
