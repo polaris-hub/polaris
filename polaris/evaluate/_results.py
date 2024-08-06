@@ -274,6 +274,20 @@ class CompetitionPredictions(ResultsMetadata):
     predictions: Union[PredictionsType, CompetitionPredictionsType]
     access: Optional[AccessType] = "private"
 
+    @field_validator("predictions")
+    def _convert_predictions(self, value: Union[PredictionsType, CompetitionPredictionsType]):
+        """Convert prediction arrays from a list type to a numpy array. This is required for certain
+        operations during prediction evaluation"""
+
+        if isinstance(value, list):
+            return np.array(value)
+        elif isinstance(value, np.ndarray):
+            return value
+        elif isinstance(value, dict):
+            for key, val in value.items():
+                value[key] = self._convert_predictions(val)
+            return value
+
     @field_serializer("predictions")
     def _serialize_predictions(self, value: PredictionsType):
         """Used to serialize a Predictions object such that it can be sent over the wire during

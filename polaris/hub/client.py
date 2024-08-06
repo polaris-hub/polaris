@@ -914,8 +914,11 @@ class PolarisHubClient(OAuth2Client):
             success_msg="Evaluated competition predictions.",
             error_msg="Failed to evaluate competition predictions.",
         ) as progress_indicator:
-            comps = competition.model_dump()
-            evaluation_body = {**competitionPredictions.model_dump(), "metrics": [comps["metrics"]]}
+            evaluation_body = {
+                **competitionPredictions.model_dump(),
+                "metrics": [str(competition.metrics)],
+                "competition_id": f"{competition.owner}/{competition.name}",
+            }
 
             response = self._base_request_to_hub(
                 url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
