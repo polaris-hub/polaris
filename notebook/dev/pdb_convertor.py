@@ -2,10 +2,9 @@ import zarr
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from biopandas.pdb import PandasPdb
 
 def create_zarr_from_pdb(pdb_file, zarr_file, mode="w", index=0):
-
+    from biopandas.pdb import PandasPdb
     # load structure
     ppdb_df = PandasPdb().read_pdb(pdb_file)
 
@@ -34,3 +33,49 @@ def create_zarr_from_pdb(pdb_file, zarr_file, mode="w", index=0):
             dtype = col_val.values.dtype
             dtype = dtype_dict.get(str(dtype) ,dtype)
             group.create_dataset(col_name, data=col_val.values, dtype=dtype)
+
+
+
+# Use Bio.PDB to check if two pdb are identifcal
+
+from Bio.PDB import PDBParser, Superimposer
+
+# Function to load a PDB file
+def load_structure(file_path):
+    parser = PDBParser(QUIET=True)
+    structure = parser.get_structure('', file_path)
+    return structure
+
+# Function to compare two structures
+def compare_structures(structure1, structure2):
+    parser = PDBParser(QUIET=True)
+
+    # Load structure from pdb files
+    structure1 = parser.get_structure('', structure1)
+    structure2 = parser.get_structure('', structure2)
+
+    # Check if the number of atoms is the same
+    atoms1 = list(structure1.get_atoms())
+    atoms2 = list(structure2.get_atoms())
+
+    if len(atoms1) != len(atoms2):
+        return False
+
+    # Check if atomic coordinates are the same
+    for atom1, atom2 in zip(atoms1, atoms2):
+        if not atom1 - atom2 < 1e-3:  # Use a small tolerance for numerical precision
+            return False
+
+    # Superimpose the structures and check the RMSD
+    sup = Superimposer()
+    sup.set_atoms(atoms1, atoms2)
+    sup.apply(structure2.get_atoms())
+
+    # Print the RMSD
+    print(f"RMSD: {sup.rms:.4f} Å")
+    if sup.rms > 1e-3:  # Again, use a small tolerance
+        return False
+
+    return True
+
+
