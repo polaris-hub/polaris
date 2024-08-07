@@ -5,6 +5,7 @@ from pathlib import Path
 
 ## load from zarr  and export to PDB
 import biotite.structure as struc
+from biotite.structure import Atom
 import fastpdb
 
 import zarr
@@ -59,10 +60,11 @@ def pdb_to_dict(atom_array):
     return pdb_dict
 
 
-def create_zarr_from_pdb(pdb_file, zarr_file):
+def create_zarr_from_pdb(pdb_file, zarr_file, pdb_pointer=None, mode="a"):
     # load structure
     in_file = fastpdb.PDBFile.read(pdb_file)
-    pdb_name = Path(pdb_file).stem
+    if pdb_pointer is None:
+        pdb_pointer = Path(pdb_file).stem
     atom_array = in_file.get_structure(
         model=1, include_bonds=True, extra_fields=["atom_id", "b_factor", "occupancy", "charge"]
     )
@@ -72,12 +74,16 @@ def create_zarr_from_pdb(pdb_file, zarr_file):
 
     # Create a Zarr store
     store = zarr.DirectoryStore(zarr_file)
-
+    
     # Create a root group
-    root = zarr.group(store=store)
+    if mode == "a":
+        root = zarr.open_group(store=store, mode=mode) 
+    else:
+        root = zarr.group(store=store)
 
     # Create group and add datasets
-    group = root.create_group(pdb_name)
+    pdb_group = root.create_group("pdb")
+    group = pdb_group.create_group(pdb_pointer)
     for col_name, col_val in pdb_dict.items():
         col_val = np.array(col_val)
         # get the accepted dtype
@@ -97,10 +103,10 @@ def load_group_as_numpy_arrays(group):
     return arrays
 
 
-def zarr_to_pdb(zarr_file, pdb_file, pdb_pointer):
+def zarr_to_pdb(zarr_file, pdb_file=None, pdb_pointer="0"):
     store = zarr.DirectoryStore(zarr_file)
     root = zarr.open_group(store=store, mode="r")  # 'r' mode for read-only
-    group = root[pdb_pointer]
+    group = root['pdb'][pdb_pointer]
     atom_array = []
     atom_dict = load_group_as_numpy_arrays(group)
 
@@ -122,10 +128,12 @@ def zarr_to_pdb(zarr_file, pdb_file, pdb_pointer):
         )
         atom_array.append(atom)
 
-    # write the arrays to fastpdb file
-    out_file = fastpdb.PDBFile()
-    out_file.set_structure(struc.array(atom_array))
-    out_file.write(pdb_file)
+    if pdb_file: 
+        # write the arrays to fastpdb file
+        out_file = fastpdb.PDBFile()
+        out_file.set_structure(struc.array(atom_array))
+        out_file.write(pdb_file)
+    return struc.array(atom_array)
 
 
 # Function to load a PDB file
