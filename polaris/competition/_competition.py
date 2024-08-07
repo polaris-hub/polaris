@@ -5,7 +5,7 @@ from pydantic import field_serializer
 from polaris.benchmark import BenchmarkSpecification
 from polaris.evaluate._results import CompetitionPredictions
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.types import AccessType, HubOwner, TimeoutTypes, ZarrConflictResolution
+from polaris.utils.types import HubOwner, TimeoutTypes
 
 
 class CompetitionSpecification(BenchmarkSpecification):

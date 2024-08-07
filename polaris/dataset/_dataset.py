@@ -100,7 +100,6 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
 
     @field_validator("table")
     def _validate_table(cls, v):
-        print("hello")
         """
         If the table is not a dataframe yet, assume it's a path and try load it.
         We also make sure that the pandas index is contiguous and starts at 0, and

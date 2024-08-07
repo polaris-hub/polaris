@@ -267,8 +267,6 @@ class CompetitionPredictions(ResultsMetadata):
 
     predictions: The predictions
         Together with the competition owner, this uniquely identifies the competition on the Hub.
-    competition_owner: The owner of the competition for which these results were generated.
-        Together with the competition name, this uniquely identifies the competition on the Hub.
     """
 
     predictions: Union[PredictionsType, CompetitionPredictionsType]

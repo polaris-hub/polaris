@@ -863,12 +863,10 @@ class PolarisHubClient(OAuth2Client):
             verify_checksum=verify_checksum,
         )
 
-        # ADD GET COMPETITION_RECORD HERE
-
         if not verify_checksum:
             response.pop("md5Sum", None)
 
-        return CompetitionSpecification(**response)
+        return CompetitionSpecification.model_construct(**response)
 
     def list_competitions(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available competitions on the Polaris Hub.
@@ -908,22 +906,15 @@ class PolarisHubClient(OAuth2Client):
         Returns:
              A `CompetitionResults` object.
         """
-
         with ProgressIndicator(
             start_msg="Evaluating competition predictions...",
             success_msg="Evaluated competition predictions.",
             error_msg="Failed to evaluate competition predictions.",
         ) as progress_indicator:
-            evaluation_body = {
-                **competitionPredictions.model_dump(),
-                "metrics": [str(competition.metrics)],
-                "competition_id": f"{competition.owner}/{competition.name}",
-            }
-
             response = self._base_request_to_hub(
                 url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
                 method="POST",
-                json=evaluation_body,
+                json=competitionPredictions.model_dump(),
             )
 
             # Inform the user about where to find their newly created artifact.
