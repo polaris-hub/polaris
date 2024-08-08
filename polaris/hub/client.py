@@ -911,6 +911,8 @@ class PolarisHubClient(OAuth2Client):
             success_msg="Evaluated competition predictions.",
             error_msg="Failed to evaluate competition predictions.",
         ) as progress_indicator:
+            competition.owner = HubOwner(**competition.owner)
+
             response = self._base_request_to_hub(
                 url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
                 method="POST",
