@@ -29,8 +29,14 @@ PredictionsType: TypeAlias = Union[np.ndarray, dict[str, Union[np.ndarray, dict[
 A prediction is one of three things:
 
 - A single array (single-task, single test set)
-- A dictionary of arrays (single-task, multiple test sets) 
+- A dictionary of arrays (single-task, multiple test sets)
 - A dictionary of dictionaries of arrays (multi-task, multiple test sets)
+"""
+
+CompetitionPredictionsType: TypeAlias = Union[list, dict[str, Union[list, dict[str, list]]]]
+"""
+An additional type to represent the structure of predictions which are specific to competitions. This
+type allows for the predictions to be sent over the wire for external evaluation.
 """
 
 DatapointPartType = Union[Any, tuple[Any], dict[str, Any]]
@@ -55,14 +61,14 @@ SlugCompatibleStringType: TypeAlias = Annotated[
 """
 A URL-compatible string that can be turned into a slug by the hub.
 
-Can only use alpha-numeric characters, underscores and dashes. 
+Can only use alpha-numeric characters, underscores and dashes.
 The string must be at least 4 and at most 64 characters long.
 """
 
 
 HubUser: TypeAlias = SlugCompatibleStringType
 """
-A user on the Polaris Hub is identified by a username, 
+A user on the Polaris Hub is identified by a username,
 which is a [`SlugCompatibleStringType`][polaris.utils.types.SlugCompatibleStringType].
 """
 
@@ -150,3 +156,10 @@ class TaskType(Enum):
 
     MULTI_TASK = "multi_task"
     SINGLE_TASK = "single_task"
+
+
+class ArtifactSubtype(Enum):
+    """The major artifact types which Polaris supports"""
+
+    STANDARD = "standard"
+    COMPETITION = "competition"

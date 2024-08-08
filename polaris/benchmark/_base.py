@@ -5,7 +5,6 @@ from typing import Any, Callable, Optional, Union
 
 import fsspec
 import numpy as np
-import pandas as pd
 from datamol.utils import fs
 from loguru import logger
 from pydantic import (
@@ -20,10 +19,10 @@ from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
 from polaris.mixins import ChecksumMixin
-from polaris.dataset import Dataset, Subset
-from polaris.evaluate import BenchmarkResults, Metric, ResultsType
+from polaris.dataset import Dataset, Subset, CompetitionDataset
+from polaris.evaluate import BenchmarkResults, Metric
+from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.misc import listit
@@ -97,18 +96,16 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     # Public attributes
     # Data
-    dataset: Union[Dataset, str, dict[str, Any]]
+    dataset: Union[Dataset, CompetitionDataset, str, dict[str, Any]]
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
-    metrics: Union[str, Metric, list[Union[str, Metric]]]
-    main_metric: Optional[Union[str, Metric]] = None
+    metrics: Union[str, Metric, list[str | Metric]]
+    main_metric: str | Metric | None = None
 
     # Additional meta-data
     readme: str = ""
-    target_types: dict[str, Optional[Union[TargetType, str]]] = Field(
-        default_factory=dict, validate_default=True
-    )
+    target_types: dict[str, Union[TargetType, str, None]] = Field(default_factory=dict, validate_default=True)
 
     @field_validator("dataset")
     def _validate_dataset(cls, v):
@@ -164,25 +161,29 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             v = Metric[v]
         return v
 
-    @field_validator("split")
-    def _validate_split(cls, v, info: ValidationInfo):
+    @model_validator(mode="after")
+    def _validate_split(cls, m: "BenchmarkSpecification"):
         """
         Verifies that:
           1) There are no empty test partitions
           2) All indices are valid given the dataset
           3) There is no duplicate indices in any of the sets
-          3) There is no overlap between the train and test set
+          4) There is no overlap between the train and test set
+          5) No row exists in the test set where all labels are missing/empty
         """
+        split = m.split
 
         # Train partition can be empty (zero-shot)
         # Test partitions cannot be empty
-        if (isinstance(v[1], dict) and any(len(v) == 0 for v in v[1].values())) or (
-            not isinstance(v[1], dict) and len(v[1]) == 0
+        if (isinstance(split[1], dict) and any(len(v) == 0 for v in split[1].values())) or (
+            not isinstance(split[1], dict) and len(split[1]) == 0
         ):
             raise InvalidBenchmarkError("The predefined split contains empty test partitions")
 
-        train_idx_list = v[0]
-        full_test_idx_list = list(chain.from_iterable(v[1].values())) if isinstance(v[1], dict) else v[1]
+        train_idx_list = split[0]
+        full_test_idx_list = (
+            list(chain.from_iterable(split[1].values())) if isinstance(split[1], dict) else split[1]
+        )
 
         if len(train_idx_list) == 0:
             logger.info(
@@ -203,8 +204,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         # Check for duplicate indices within a given test set. Because a user can specify
         # multiple test sets for a given benchmark and it is acceptable for indices to be shared
         # across test sets, we check for duplicates in each test set independently.
-        if isinstance(v[1], dict):
-            for test_set_name, test_set_idx_list in v[1].items():
+        if isinstance(split[1], dict):
+            for test_set_name, test_set_idx_list in split[1].items():
                 if len(test_set_idx_list) != len(set(test_set_idx_list)):
                     raise InvalidBenchmarkError(
                         f'Test set with name "{test_set_name}" contains duplicate indices'
@@ -213,12 +214,21 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             raise InvalidBenchmarkError("The test set contains duplicate indices")
 
         # All indices are valid given the dataset
-        if info.data["dataset"] is not None:
-            max_i = len(info.data["dataset"])
+        dataset = m.dataset
+        if dataset is not None:
+            max_i = len(dataset)
             if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
                 raise InvalidBenchmarkError("The predefined split contains invalid indices")
 
-        return v
+        # For a given row in the test set, all target columns must not be missing/empty
+        target_cols = m.target_cols
+        test_indices = list(full_test_idx_set)
+        if not dataset.table.loc[test_indices, target_cols].notna().any(axis=1).all():
+            raise InvalidBenchmarkError(
+                "All rows of the test set must have at least one target column with a value."
+            )
+
+        return m
 
     @field_validator("target_types")
     def _validate_target_types(cls, v, info: ValidationInfo):
@@ -353,6 +363,36 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
         return v.value
 
+    def _get_subset(self, indices, hide_targets=True, featurization_fn=None):
+        """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
+        internally to construct the train and test sets."""
+        return Subset(
+            dataset=self.dataset,
+            indices=indices,
+            input_cols=self.input_cols,
+            target_cols=self.target_cols,
+            hide_targets=hide_targets,
+            featurization_fn=featurization_fn,
+        )
+
+    def _get_test_set(
+        self, hide_targets=True, featurization_fn: Optional[Callable] = None
+    ) -> Union["Subset", dict[str, Subset]]:
+        """Construct the test set(s), given the split in the benchmark specification. Used
+        internally to construct the test set for client use and evaluation.
+        """
+
+        def make_test_subset(vals):
+            return self._get_subset(vals, hide_targets=hide_targets, featurization_fn=featurization_fn)
+
+        test_split = self.split[1]
+        if isinstance(test_split, dict):
+            test = {k: make_test_subset(v) for k, v in test_split.items()}
+        else:
+            test = make_test_subset(test_split)
+
+        return test
+
     def get_train_test_split(
         self, featurization_fn: Optional[Callable] = None
     ) -> tuple[Subset, Union["Subset", dict[str, Subset]]]:
@@ -372,21 +412,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                 an associated name. The targets of the test set can not be accessed.
         """
 
-        def _get_subset(indices, hide_targets):
-            return Subset(
-                dataset=self.dataset,
-                indices=indices,
-                input_cols=self.input_cols,
-                target_cols=self.target_cols,
-                hide_targets=hide_targets,
-                featurization_fn=featurization_fn,
-            )
-
-        train = _get_subset(self.split[0], hide_targets=False)
-        if isinstance(self.split[1], dict):
-            test = {k: _get_subset(v, hide_targets=True) for k, v in self.split[1].items()}
-        else:
-            test = _get_subset(self.split[1], hide_targets=True)
+        train = self._get_subset(self.split[0], hide_targets=False, featurization_fn=featurization_fn)
+        test = self._get_test_set(hide_targets=True, featurization_fn=featurization_fn)
 
         return train, test
 
@@ -417,7 +444,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         Returns:
             A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
 
-
         Examples:
             1. For regression benchmarks:
                 pred_scores = your_model.predict_score(molecules) # predict continuous score values
@@ -434,70 +460,13 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
         # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
         # See also the `hide_targets` parameter in the `Subset` class.
-        test = self.get_train_test_split()[1]
+        test = self._get_test_set(hide_targets=False)
+        if isinstance(test, dict):
+            y_true = {k: v.targets for k, v in test.items()}
+        else:
+            y_true = test.targets
 
-        if not isinstance(test, dict):
-            test = {"test": test}
-
-        y_true = {}
-        for k, test_subset in test.items():
-            with tmp_attribute_change(test_subset, "_hide_targets", False):
-                y_true[k] = test_subset.targets
-
-        if not isinstance(y_pred, dict) or all(k in self.target_cols for k in y_pred):
-            y_pred = {"test": y_pred}
-
-        if not isinstance(y_prob, dict) or all(k in self.target_cols for k in y_prob):
-            y_prob = {"test": y_prob}
-
-        if any(k not in y_pred for k in test.keys()) and any(k not in y_prob for k in test.keys()):
-            raise KeyError(
-                f"Missing keys for at least one of the test sets. Expecting: {sorted(test.keys())}"
-            )
-
-        # Results are saved in a tabular format. For more info, see the BenchmarkResults docs.
-        scores: ResultsType = pd.DataFrame(columns=BenchmarkResults.RESULTS_COLUMNS)
-
-        # For every test set...
-        for test_label, y_true_subset in y_true.items():
-            # For every metric...
-            for metric in self.metrics:
-                if metric.is_multitask:
-                    # Multi-task but with a metric across targets
-                    score = metric(
-                        y_true=y_true_subset, y_pred=y_pred.get(test_label), y_prob=y_prob.get(test_label)
-                    )
-                    scores.loc[len(scores)] = (test_label, "aggregated", metric, score)
-                    continue
-
-                if not isinstance(y_true_subset, dict):
-                    # Single task
-                    score = metric(
-                        y_true=y_true_subset, y_pred=y_pred.get(test_label), y_prob=y_prob.get(test_label)
-                    )
-                    scores.loc[len(scores)] = (
-                        test_label,
-                        self.target_cols[0],
-                        metric,
-                        score,
-                    )
-                    continue
-
-                # Otherwise, for every target...
-                for target_label, y_true_target in y_true_subset.items():
-                    # Single-task metrics for a multi-task benchmark
-                    # In such a setting, there can be NaN values, which we thus have to filter out.
-                    mask = ~np.isnan(y_true_target)
-                    score = metric(
-                        y_true=y_true_target[mask],
-                        y_pred=y_pred[test_label][target_label][mask]
-                        if y_pred[test_label] is not None
-                        else None,
-                        y_prob=y_prob[test_label][target_label][mask]
-                        if y_prob[test_label] is not None
-                        else None,
-                    )
-                    scores.loc[len(scores)] = (test_label, target_label, metric, score)
+        scores = evaluate_benchmark(self.target_cols, self.metrics, y_true, y_pred=y_pred, y_prob=y_prob)
 
         return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)
 
@@ -506,7 +475,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         access: Optional[AccessType] = "private",
-        owner: Optional[Union[HubOwner, str]] = None,
+        owner: Union[HubOwner, str, None] = None,
         **kwargs: dict,
     ):
         """

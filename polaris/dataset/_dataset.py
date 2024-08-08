@@ -368,7 +368,7 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
         return arr
 
     def upload_to_hub(
-        self, access: Optional[AccessType] = "private", owner: Optional[Union[HubOwner, str]] = None
+        self, access: Optional[AccessType] = "private", owner: Union[HubOwner, str, None] = None
     ):
         """
         Very light, convenient wrapper around the

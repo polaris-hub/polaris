@@ -36,7 +36,7 @@ class ColumnAnnotation(BaseModel):
     modality: Union[str, Modality] = Modality.UNKNOWN
     description: Optional[str] = None
     user_attributes: Dict[str, str] = Field(default_factory=dict)
-    dtype: Optional[Union[np.dtype, str]] = None
+    dtype: Union[np.dtype, str, None] = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_camel, populate_by_name=True)
 

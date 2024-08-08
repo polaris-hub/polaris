@@ -93,3 +93,21 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
         benchmark.verify_checksum()
 
     return benchmark
+
+
+def load_competition(slug: str, verify_checksum: bool = True):
+    """
+    Loads a Polaris competition.
+
+    In Polaris, a competition can be thought of as a more secure version of a standard benchmark.
+    In competitions, the target labels never exist on the client and all results are evaluated
+    through Polaris' servers.
+
+    Note: Dataset is automatically loaded
+        The dataset underlying the competition is automatically loaded when pulling the competition.
+
+    """
+
+    # Load from the Hub
+    client = PolarisHubClient()
+    return client.get_competition(*slug.split("/"), verify_checksum=verify_checksum)
