@@ -198,15 +198,18 @@ class DatasetFactory:
             adapter = adapters.get(name)
             self.add_column(series, annotation, adapter)
 
-    def add_from_file(self, path: str):
+    def add_from_file(self, path: Union[str, List[str]]):
         """
         Uses the registered converters to parse the data from a specific file and add it to the dataset.
         If no converter is found for the file extension, it raises an error.
 
         Args:
-            path: The path to the file that should be parsed.
+            path: The path or list of path to the file that should be parsed.
         """
-        ext = dm.fs.get_extension(path)
+        if isinstance(path, list):
+            ext = dm.fs.get_extension(path[0])
+        else:
+            ext = dm.fs.get_extension(path)
         converter = self._converters.get(ext)
         if converter is None:
             raise ValueError(f"No converter found for extension {ext}")

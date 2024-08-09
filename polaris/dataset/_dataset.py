@@ -485,7 +485,9 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
             index = index.split(":")
 
             if len(index) == 1:
-                index = int(index[0])
+                index = index[0]
+                if index.isdigit():
+                    index = int(index)
             elif len(index) == 2:
                 index = slice(int(index[0]), int(index[1]))
             else:

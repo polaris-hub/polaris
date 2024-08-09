@@ -1,14 +1,8 @@
-import uuid
-from typing import TYPE_CHECKING, Optional, Sequence, List
+from typing import TYPE_CHECKING, Optional, Sequence, List, Union
 
+from pathlib import Path
 import numpy as np
-import datamol as dm
 import pandas as pd
-from rdkit import Chem
-import zarr
-
-import biotite.structure as struc
-from biotite.structure import Atom
 import fastpdb
 
 from polaris.dataset import ColumnAnnotation, Modality
@@ -48,7 +42,17 @@ KEYS = [
 
 
 class PDBConverter(Converter):
-    """ """
+    """
+    Converts PDB files into a Polaris dataset.
+
+    Info: Numpy array for serialization
+        This class converts the 3D structure to fastpdb array (for ML purposes with key structual information).
+        This might not be the most storage efficient, but is fastest and easiest to maintain.
+        See[fastpdb](https://github.com/biotite-dev/fastpdb) and [biotite](https://github.com/biotite-dev/biotite/blob/main/src/biotite/structure/atoms.py) for more info.
+
+    Args:
+        pdb_column: The name of the column that will contain the pointers to the pdbs.
+    """
 
     def __init__(
         self,
@@ -62,6 +66,9 @@ class PDBConverter(Converter):
         self.chunks = zarr_chunks
 
     def _pdb_to_dict(self, atom_array: np.ndarray):
+        """
+        Convert 'biotite.AtomArray' to dictionary
+        """
         pdb_dict = {k: [] for k in KEYS}
         for row in atom_array:
             pdb_dict["X"].append(row.coord[0])
@@ -80,47 +87,42 @@ class PDBConverter(Converter):
             pdb_dict["charge"].append(row.charge)
         return pdb_dict
 
-    def _load_pdf(self, path: str):
-        """Load PDB file"""
-        # load structure
-        in_file = fastpdb.PDBFile.read(pdb_file)
-        if pdb_pointer is None:
-            pdb_pointer = Path(pdb_file).stem
+    def _load_pdf(self, path: str, pdb_pointer=None) -> dict:
+        """
+        Load a single PDB file along with a dictionary that contains structure properties as keys.
+
+        `AtomArray` stores data for an entire structure model containing *n* atoms.
+        See [AtomArray](https://github.com/biotite-dev/biotite/blob/0404084283765baef765cc869d86ee07a898d82f/src/biotite/structure/atoms.py#L558) for more details.
+        """
+        # load pdb file
+        in_file = fastpdb.PDBFile.read(path)
+
+        # get the structure as AtomArray
         atom_array = in_file.get_structure(
             model=1, include_bonds=True, extra_fields=["atom_id", "b_factor", "occupancy", "charge"]
         )
 
-        # fastpbd to dict
-        pdb_dict = pdb_to_dict(atom_array)
+        # convert AtomArray to dict
+        pdb_dict = self._pdb_to_dict(atom_array)
 
         return pdb_dict
 
-    def _convert_pdb(self, path: str, factory: "DatasetFactory") -> FactoryProduct:
-        # load structure
-        in_file = fastpdb.PDBFile.read(pdb_file)
-        if pdb_pointer is None:
-            pdb_pointer = Path(pdb_file).stem
-        atom_array = in_file.get_structure(
-            model=1, include_bonds=True, extra_fields=["atom_id", "b_factor", "occupancy", "charge"]
-        )
+    def _convert_pdb(
+        self, path: str, factory: "DatasetFactory", pdb_pointer: Union[str, int]
+    ) -> FactoryProduct:
+        """
+        Convert a single pdb to zarr file
+        """
 
-        # fastpbd to dict
-        pdb_dict = pdb_to_dict(atom_array)
-
-        # Create the zarr array
-        # factory.zarr_root.array(self.pdb_column, bytes_data, dtype=bytes, chunks=self.chunks)
-
-        # Create a Zarr store
-        store = zarr.DirectoryStore(zarr_file)
-
-        # Create a root group
-        if mode == "a":
-            root = zarr.open_group(store=store, mode=mode)
-        else:
-            root = zarr.group(store=store)
+        # load pdb as fastpbd and convert to dict
+        pdb_dict = self._load_pdf(path)
 
         # Create group and add datasets
-        pdb_group = root.create_group("pdb")
+        if self.pdb_column not in factory.zarr_root:
+            pdb_group = factory.zarr_root.create_group(self.pdb_column)
+        else:
+            pdb_group = factory.zarr_root[self.pdb_column]
+
         group = pdb_group.create_group(pdb_pointer)
         for col_name, col_val in pdb_dict.items():
             col_val = np.array(col_val)
@@ -128,15 +130,24 @@ class PDBConverter(Converter):
             dtype = DTYPE_DICT.get(col_name, col_val.dtype)
             group.create_dataset(col_name, data=col_val, dtype=dtype)
 
-    def convert(self, path_list: List[str], factory: "DatasetFactory") -> FactoryProduct:
-        
-        
+    def convert(self, path: Union[str, List[str]], factory: "DatasetFactory") -> FactoryProduct:
+        """Convert one or a list of PDB files into Zarr"""
+
+        if not isinstance(path, list):
+            path = [path]
+
+        pdb_pointers = []
+
         # load single pdb and convert to zarr
-        for path in path_list:
-            self._convert_pdb(path, factory=factory)
+        for pdb_path in path:
+            # use the pdb file name as pointer
+            pdb_pointer = Path(path).stem
+            self._convert_pdb(pdb_path, factory, pdb_pointer)
+            pdb_pointers.append(pdb_pointer)
 
         # Add a pointer column to the table
-        pointers = [self.get_pointer(self.pdb_column, i) for i in range(len(path_list))]
+        pointers = [self.get_pointer(self.pdb_column, pointer) for pointer in pdb_pointers]
+        df = pd.DataFrame()
         df[self.pdb_column] = pd.Series(pointers)
 
         # Set the annotations
