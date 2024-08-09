@@ -2,7 +2,7 @@ from enum import Enum, auto, unique
 
 import datamol as dm
 
-from _adapter_utils import zarr_to_pdb
+from polaris.dataset._adapter_utils import zarr_to_pdb
 
 # Map of conversion operations which can be applied to dataset columns
 conversion_map = {"SMILES_TO_MOL": dm.to_mol, "BYTES_TO_MOL": dm.Mol, "PDB_TO_ARRAY": zarr_to_pdb}

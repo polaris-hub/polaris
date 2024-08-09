@@ -141,7 +141,7 @@ class PDBConverter(Converter):
         # load single pdb and convert to zarr
         for pdb_path in path:
             # use the pdb file name as pointer
-            pdb_pointer = Path(path).stem
+            pdb_pointer = Path(pdb_path).stem
             self._convert_pdb(pdb_path, factory, pdb_pointer)
             pdb_pointers.append(pdb_pointer)
 
