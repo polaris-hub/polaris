@@ -8,7 +8,7 @@ from loguru import logger
 
 from polaris.dataset import ColumnAnnotation, Dataset
 from polaris.dataset._adapters import Adapter
-from polaris.dataset.converters import Converter, SDFConverter, ZarrConverter
+from polaris.dataset.converters import Converter, SDFConverter, ZarrConverter, PDBConverter
 
 
 def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) -> Dataset:
@@ -21,6 +21,7 @@ def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) ->
     factory = DatasetFactory(zarr_root_path=zarr_root_path)
     factory.register_converter("sdf", SDFConverter())
     factory.register_converter("zarr", ZarrConverter())
+    factory.register_converter("pdb", PDBConverter())
 
     factory.add_from_file(path)
     return factory.build()
