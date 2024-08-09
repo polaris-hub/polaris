@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Union
 
 import datamol as dm
 import pandas as pd
