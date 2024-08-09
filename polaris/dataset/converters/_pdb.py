@@ -44,6 +44,7 @@ KEYS = [
 class PDBConverter(Converter):
     """
     Converts PDB files into a Polaris dataset.
+    During the conversion, only the most essential structural information is retained, including 3D coordinates, chain ID, residue ID, insertion code, residue name, heteroatom indicator, atom name, element, atom ID, B-factor, occupancy, and charge.
 
     Info: Numpy array for serialization
         This class converts the 3D structure to fastpdb array (for ML purposes with key structual information).
