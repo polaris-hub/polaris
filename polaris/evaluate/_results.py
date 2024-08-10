@@ -244,10 +244,11 @@ class CompetitionResults(EvaluationResult):
     In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
     the results with the Polaris Hub.
 
-    competition_name: The name of the competition for which these results were generated.
-        Together with the competition owner, this uniquely identifies the competition on the Hub.
-    competition_owner: The owner of the competition for which these results were generated.
-        Together with the competition name, this uniquely identifies the competition on the Hub.
+    Attributes:
+        competition_name: The name of the competition for which these results were generated.
+            Together with the competition owner, this uniquely identifies the competition on the Hub.
+        competition_owner: The owner of the competition for which these results were generated.
+            Together with the competition name, this uniquely identifies the competition on the Hub.
     """
 
     competition_name: SlugCompatibleStringType = Field(..., frozen=True)
@@ -262,11 +263,11 @@ class CompetitionResults(EvaluationResult):
 class CompetitionPredictions(ResultsMetadata):
     """Class specific to predictions for competition benchmarks.
 
-    This object is used by [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
-    It is used to guarantee the structure of the competition results which are to be evaluated by the Polaris Hub.
+    This object is to be used as input to [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
+    It is used to ensure that the structure of the predictions are compatible with evaluation methods on the Polaris Hub.
 
-    predictions: The predictions
-        Together with the competition owner, this uniquely identifies the competition on the Hub.
+    Attributes:
+        predictions: The predictions created for a given competition's test set(s).
     """
 
     predictions: Union[PredictionsType, CompetitionPredictionsType]

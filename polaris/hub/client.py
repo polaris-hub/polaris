@@ -809,7 +809,6 @@ class PolarisHubClient(OAuth2Client):
                 tuple with (connect_timeout, write_timeout). The type of the the timout parameter comes from `httpx`.
                 Since datasets can get large, it might be needed to increase the write timeout for larger datasets.
                 See also: https://www.python-httpx.org/advanced/#timeout-configuration
-            owner: Which Hub user or organization owns the artifact. Takes precedence over `dataset.owner`.
 
         Returns:
             A object containing responses from the Polaris Hub regarding both the dataset and benchmark upload.
@@ -893,15 +892,14 @@ class PolarisHubClient(OAuth2Client):
     def evaluate_competition(
         self,
         competition: CompetitionSpecification,
-        competitionPredictions: CompetitionPredictions,
+        competition_predictions: CompetitionPredictions,
     ) -> CompetitionResults:
         """Evaluate the predictions for a competition on the Polaris Hub. Target labels are fetched
         by Polaris Hub and used only internally.
 
         Args:
             competition: The competition to evaluate the predictions for.
-            y_pred: The predictions for the test set, as NumPy arrays.
-                If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
+            competition_predictions: The predictions and associated metadata to be submitted for evaluation by the Hub.
 
         Returns:
              A `CompetitionResults` object.
@@ -916,7 +914,7 @@ class PolarisHubClient(OAuth2Client):
             response = self._base_request_to_hub(
                 url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
                 method="POST",
-                json=competitionPredictions.model_dump(),
+                json=competition_predictions.model_dump(),
             )
 
             # Inform the user about where to find their newly created artifact.

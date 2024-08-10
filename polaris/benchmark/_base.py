@@ -220,7 +220,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
                 raise InvalidBenchmarkError("The predefined split contains invalid indices")
 
-        # For a given row in the test set, all target columns must not be missing/empty
+        # For a given row in the test set, all target columns must not be missing/empty.
+        # NOTE: This could break a bunch of benchmarks already on the hub UNLESS we turn off
+        # validation on download from the Hub.
         target_cols = m.target_cols
         test_indices = list(full_test_idx_set)
         if not dataset.table.loc[test_indices, target_cols].notna().any(axis=1).all():

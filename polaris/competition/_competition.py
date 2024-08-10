@@ -9,13 +9,14 @@ from polaris.utils.types import HubOwner, TimeoutTypes
 
 
 class CompetitionSpecification(BenchmarkSpecification):
-    """This class extends the [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] to
-    facilitate interactions with Polaris Competitions.
-
-    Much of the underlying data model and logic is shared across Benchmarks and Competitions, and
+    """Much of the underlying data model and logic is shared across Benchmarks and Competitions, and
     anything within this class serves as a point of differentiation between the two.
 
-    Currently, these entities will primarily differ at how user predictions are evaluated.
+    Attributes:
+        owner: A slug-compatible name for the owner of the competition. This is redefined such
+            that it is required.
+        start_time: The time at which the competition becomes active and interactable.
+        end_time: The time at which the competition ends and is no longer interactable.
     """
 
     # Additional properties specific to Competitions
@@ -48,7 +49,7 @@ class CompetitionSpecification(BenchmarkSpecification):
         cache_auth_token: bool = True,
         timeout: TimeoutTypes = (10, 200),
     ):
-        """Very light, convenient wrapper around the
+        """Light convenience wrapper around the
         [`PolarisHubClient.upload_competition`][polaris.hub.client.PolarisHubClient.upload_competition] method."""
 
         from polaris.hub.client import PolarisHubClient
@@ -59,7 +60,7 @@ class CompetitionSpecification(BenchmarkSpecification):
         ) as client:
             return client.upload_competition(self, timeout)
 
-    @field_serializer("start_time")
+    @field_serializer("start_time", "end_time")
     def _serialize_start_date(self, v):
         """Convert from datetime to string to make sure it's serializable"""
         if v:
