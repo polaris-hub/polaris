@@ -3,7 +3,7 @@ import ssl
 from hashlib import md5
 from io import BytesIO
 from typing import Callable, get_args
-from typing import Dict, Union
+from typing import Union
 from urllib.parse import urljoin
 
 import certifi
@@ -35,7 +35,6 @@ from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.context import ProgressIndicator, tmp_attribute_change
 from polaris.utils.errors import (
-    InvalidCompetitionError,
     InvalidDatasetError,
     PolarisCreateArtifactError,
     PolarisHubError,
@@ -794,49 +793,6 @@ class PolarisHubClient(OAuth2Client):
                 f"View it here: {urljoin(self.settings.hub_url, url)}"
             )
             return response
-
-    def upload_competition(
-        self,
-        competition: CompetitionSpecification,
-        timeout: TimeoutTypes = (10, 200),
-    ) -> Dict[str, Response]:
-        """Upload a competition to the Polaris Hub.
-
-        Args:
-            competition: The competition to upload.
-            timeout: Request timeout values. User can modify the value when uploading large dataset as needed.
-                This can be a single value with the timeout in seconds for all IO operations, or a more granular
-                tuple with (connect_timeout, write_timeout). The type of the the timout parameter comes from `httpx`.
-                Since datasets can get large, it might be needed to increase the write timeout for larger datasets.
-                See also: https://www.python-httpx.org/advanced/#timeout-configuration
-
-        Returns:
-            A object containing responses from the Polaris Hub regarding both the dataset and benchmark upload.
-        """
-        ACCESS = "private"
-
-        if competition.dataset.zarr_root is not None:
-            raise InvalidCompetitionError("Zarr-based competitions are not supported at this time")
-
-        # Upload competition dataset
-        dataset_response = self._upload_dataset(
-            competition.dataset, ArtifactSubtype.COMPETITION.value, ACCESS, timeout, competition.owner
-        )
-        # Upload competition benchmark
-        competition_response = self._upload_benchmark(
-            competition, ArtifactSubtype.COMPETITION.value, ACCESS, competition.owner
-        )
-
-        url = f"/v2/competition/{competition.owner}/{competition.name}"
-        logger.info(
-            f"Your competition has been successfully uploaded to the Hub. "
-            f"View it here: {urljoin(self.settings.hub_url, url)}"
-        )
-
-        return {
-            "dataset_response": dataset_response,
-            "competition_response": competition_response,
-        }
 
     def get_competition(
         self, owner: Union[str, HubOwner], name: str, verify_checksum: bool = True

@@ -460,12 +460,29 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
-        # This simplifies the API, but also was added to make accidental access to the test set targets less likely.
-        # See also the `hide_targets` parameter in the `Subset` class.
+        # The `evaluate_benchmark` function expects the benchmark labels to be of a certain structure which
+        # depends on the number of tasks and test sets defined for the benchmark. Below, we build the structure
+        # of the benchmark labels based on the aforementioned factors.
         test = self._get_test_set(hide_targets=False)
         if isinstance(test, dict):
-            y_true = {k: v.targets for k, v in test.items()}
+            #
+            # For multi-set benchmarks
+            y_true = {}
+            for test_set_name, values in test.items():
+                y_true[test_set_name] = {}
+                if isinstance(values.targets, dict):
+                    #
+                    # For multi-task, multi-set benchmarks
+                    for task_name, values in values.targets.items():
+                        y_true[test_set_name][task_name] = values
+                else:
+                    #
+                    # For single task, multi-set benchmarks
+                    for task_name in self.target_cols:
+                        y_true[test_set_name][task_name] = values.targets
         else:
+            #
+            # For single set benchmarks (single and multiple task)
             y_true = test.targets
 
         scores = evaluate_benchmark(self.target_cols, self.metrics, y_true, y_pred=y_pred, y_prob=y_prob)

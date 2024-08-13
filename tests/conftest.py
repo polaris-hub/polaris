@@ -93,7 +93,7 @@ def test_single_task_benchmark(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     benchmark = SingleTaskBenchmarkSpecification(
-        name="single-task-benchmark",
+        name="single-task-single-set-benchmark",
         dataset=test_dataset,
         metrics=[
             "mean_absolute_error",
@@ -118,7 +118,7 @@ def test_single_task_benchmark_clf(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     benchmark = SingleTaskBenchmarkSpecification(
-        name="single-task-benchmark",
+        name="single-task-single-set-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
         metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa", "balanced_accuracy"],
@@ -139,7 +139,7 @@ def test_single_task_benchmark_multi_clf(test_dataset):
     test_indices = indices[80:]
 
     benchmark = SingleTaskBenchmarkSpecification(
-        name="single-task-benchmark",
+        name="single-task-single-set-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
         metrics=[
@@ -166,7 +166,7 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
     train_indices = list(range(90))
     test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
     benchmark = SingleTaskBenchmarkSpecification(
-        name="single-task-benchmark",
+        name="single-task-multi-set-benchmark",
         dataset=test_dataset,
         metrics=[
             "mean_absolute_error",
@@ -194,7 +194,7 @@ def test_single_task_benchmark_clf_multiple_test_sets(test_dataset):
     train_indices = indices[:80]
     test_indices = {"test_1": indices[80:90], "test_2": indices[90:]}
     benchmark = SingleTaskBenchmarkSpecification(
-        name="single-task-benchmark-clf",
+        name="single-task-multi-set-benchmark-clf",
         dataset=test_dataset,
         metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
         main_metric="pr_auc",
@@ -274,3 +274,28 @@ def test_competition(test_dataset, test_org_owner):
     )
     check_version(competition)
     return competition
+
+
+@pytest.fixture(scope="function")
+def test_multi_task_benchmark_multiple_test_sets(test_dataset):
+    train_indices = list(range(90))
+    test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
+    benchmark = MultiTaskBenchmarkSpecification(
+        name="multi-task-multi-set-benchmark",
+        dataset=test_dataset,
+        metrics=[
+            "mean_absolute_error",
+            "mean_squared_error",
+            "r2",
+            "spearmanr",
+            "pearsonr",
+            "explained_var",
+            "absolute_average_fold_error",
+        ],
+        main_metric="r2",
+        split=(train_indices, test_indices),
+        target_cols=["expt", "calc"],
+        input_cols="smiles",
+    )
+    check_version(benchmark)
+    return benchmark

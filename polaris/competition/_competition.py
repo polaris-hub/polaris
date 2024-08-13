@@ -5,7 +5,7 @@ from pydantic import field_serializer
 from polaris.benchmark import BenchmarkSpecification
 from polaris.evaluate._results import CompetitionPredictions
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.types import HubOwner, TimeoutTypes
+from polaris.utils.types import HubOwner
 
 
 class CompetitionSpecification(BenchmarkSpecification):
@@ -42,23 +42,6 @@ class CompetitionSpecification(BenchmarkSpecification):
             **kwargs,
         ) as client:
             return client.evaluate_competition(self, predictions)
-
-    def upload_to_hub(
-        self,
-        settings: Optional[PolarisHubSettings] = None,
-        cache_auth_token: bool = True,
-        timeout: TimeoutTypes = (10, 200),
-    ):
-        """Light convenience wrapper around the
-        [`PolarisHubClient.upload_competition`][polaris.hub.client.PolarisHubClient.upload_competition] method."""
-
-        from polaris.hub.client import PolarisHubClient
-
-        with PolarisHubClient(
-            settings=settings,
-            cache_auth_token=cache_auth_token,
-        ) as client:
-            return client.upload_competition(self, timeout)
 
     @field_serializer("start_time", "end_time")
     def _serialize_start_date(self, v):
