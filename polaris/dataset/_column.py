@@ -17,6 +17,7 @@ class Modality(enum.Enum):
     PROTEIN_3D = "protein_3D"
     IMAGE = "image"
 
+
 class ContentType(enum.Enum):
     """Used to specify column's IANA content type in a dataset."""
 
@@ -59,7 +60,7 @@ class ColumnAnnotation(BaseModel):
         if isinstance(v, str):
             v = np.dtype(v)
         return v
-    
+
     @field_validator("content_type")
     def _validate_content_type(cls, v):
         """Tries to convert a string to the Enum"""
@@ -78,7 +79,7 @@ class ColumnAnnotation(BaseModel):
         if v is not None:
             v = v.name
         return v
-    
+
     @field_serializer("content_type")
     def _serialize_content_type(self, v: Optional[ContentType]):
         """Return the conteng type as a string, keeping it serializable"""
