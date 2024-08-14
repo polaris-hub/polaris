@@ -155,4 +155,4 @@ class PDBConverter(Converter):
         annotations = {self.pdb_column: ColumnAnnotation(is_pointer=True, modality=Modality.PROTEIN_3D)}
 
         # Return the dataframe and the annotations
-        return df, annotations, {self.pdb_column: Adapter.PDB_TO_ARRAY}
+        return df, annotations, {self.pdb_column: Adapter.ARRAY_TO_PDB}
