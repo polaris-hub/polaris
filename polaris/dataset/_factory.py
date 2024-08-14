@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional, List, Union
+from typing import Dict, Optional, List, Union, Literal
 
 import datamol as dm
 import pandas as pd
@@ -198,7 +198,7 @@ class DatasetFactory:
             adapter = adapters.get(name)
             self.add_column(series, annotation, adapter)
 
-    def add_from_file(self, path: Union[str, List[str]]):
+    def add_from_file(self, path: str):
         """
         Uses the registered converters to parse the data from a specific file and add it to the dataset.
         If no converter is found for the file extension, it raises an error.
@@ -206,16 +206,40 @@ class DatasetFactory:
         Args:
             path: The path or list of path to the file that should be parsed.
         """
-        if isinstance(path, list):
-            ext = dm.fs.get_extension(path[0])
-        else:
-            ext = dm.fs.get_extension(path)
+        ext = dm.fs.get_extension(path)
         converter = self._converters.get(ext)
         if converter is None:
             raise ValueError(f"No converter found for extension {ext}")
 
         table, annotations, adapters = converter.convert(path, self)
         self.add_columns(table, annotations, adapters)
+
+    def add_from_files(self, paths: List[str], axis =Literal[0,1, 'index', 'columns']):
+        """
+        Uses the registered converters to parse the data from a specific files and add them to the dataset.
+        If no converter is found for the file extension, it raises an error.
+
+        Args:
+            paths: The list of paths that should be parsed.
+            axis: Axis along which the files should be added.
+                - 0 or ‘index’: append the rows with files. Files must be of the same type.
+                - 1 or 'columns': append the columns with files. Files can be of the different types.
+        """
+        if axis in [0, 'index']:
+            ext = dm.fs.get_extension(path[0])
+            converter = self._converters.get(ext)
+            if converter is None:
+                raise ValueError(f"No converter found for extension {ext}")
+
+            tables = []
+            for path in paths:
+                table, annotations, adapters = converter.convert(path, self)
+                tables.append(table)
+            self.add_columns(pd.concat(tables, axis=0), annotations, adapters)
+        else:
+            for path in paths:
+                self.add_from_file(path)
+
 
     def build(self) -> Dataset:
         """Returns a Dataset based on the current state of the factory."""
