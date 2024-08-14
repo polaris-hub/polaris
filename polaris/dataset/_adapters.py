@@ -5,7 +5,7 @@ import datamol as dm
 from polaris.dataset._adapter_utils import zarr_to_pdb
 
 # Map of conversion operations which can be applied to dataset columns
-conversion_map = {"SMILES_TO_MOL": dm.to_mol, "BYTES_TO_MOL": dm.Mol, "PDB_TO_ARRAY": zarr_to_pdb}
+conversion_map = {"SMILES_TO_MOL": dm.to_mol, "BYTES_TO_MOL": dm.Mol, "ARRAY_TO_PDB": zarr_to_pdb}
 
 
 @unique
@@ -21,7 +21,7 @@ class Adapter(Enum):
 
     SMILES_TO_MOL = auto()
     BYTES_TO_MOL = auto()
-    PDB_TO_ARRAY = auto()
+    ARRAY_TO_PDB = auto()
 
     def __call__(self, data):
         if isinstance(data, tuple):
