@@ -1,24 +1,10 @@
-import zarr
 from fastpdb import struc
 
 
-# load nested zarr file to dictionary
-def load_group_as_numpy_arrays(group):
-    """Load zarr group as dictionary of numpy arrays"""
-    arrays = {}
-    for key, item in group.items():
-        if isinstance(item, zarr.core.Array):
-            arrays[key] = item[:]
-        elif isinstance(item, zarr.hierarchy.Group):
-            arrays[key] = load_group_as_numpy_arrays(item)
-    return arrays
-
-
-def zarr_to_pdb(group: zarr.Group):
-    """Load pdb in zarr as fastpdb AtomArray"""
+def zarr_to_pdb(atom_dict: dict):
+    """Load a dictionary of arrays to fastpdb AtomArray"""
 
     atom_array = []
-    atom_dict = load_group_as_numpy_arrays(group)
 
     # convert dictionary to array list of Atom object
     array_length = atom_dict["X"].shape[0]

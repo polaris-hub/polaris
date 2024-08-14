@@ -21,6 +21,7 @@ class Adapter(Enum):
     Attributes:
         SMILES_TO_MOL: Convert a SMILES string to a RDKit molecule.
         BYTES_TO_MOL: Convert a RDKit binary string to a RDKit molecule.
+        ARRAY_TO_PDB: Convert a Zarr arrays to PDB arrays.
     """
 
     SMILES_TO_MOL = auto()

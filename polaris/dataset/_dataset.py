@@ -311,12 +311,6 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
         return self.table.columns.tolist()
 
     def load_to_memory(self):
-        """Pre-load the entire dataset into memory.
-
-        Warning: Make sure the uncompressed dataset fits in-memory.
-            This method will load the **uncompressed** dataset into memory. Make
-            sure you actually have enough memory to store the dataset.
-        """
         data = self.zarr_data
 
         if not isinstance(data, zarr.Group):
@@ -325,10 +319,16 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
                 "Did you call Dataset.load_to_memory() twice?"
             )
 
+        self._zarr_data = {}
+
+        for key, item in data.items():
+            if isinstance(item, zarr.core.Array):
+                self._zarr_data[key] = item[:]
+            elif isinstance(item, zarr.hierarchy.Group):
+                self._zarr_data[key] = self.load_to_memory(item)
         # NOTE (cwognum): If the dataset fits in memory, we are best of using plain NumPy arrays.
         # Even if we disable chunking and compression in Zarr.
         # For more information, see https://github.com/zarr-developers/zarr-python/issues/1395
-        self._zarr_data = {k: data[k][:] for k in data.array_keys()}
 
     def get_data(self, row: str | int, col: str, adapters: Optional[List[Adapter]] = None) -> np.ndarray:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
