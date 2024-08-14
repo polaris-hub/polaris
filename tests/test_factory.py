@@ -2,8 +2,20 @@ import datamol as dm
 import pandas as pd
 import pytest
 
+import biotite.database.rcsb as rcsb
+from fastpdb import struc
+
 from polaris.dataset import DatasetFactory, create_dataset_from_file
-from polaris.dataset.converters import SDFConverter, ZarrConverter
+from polaris.dataset.converters import SDFConverter, ZarrConverter, PDBConverter
+
+
+def _check_pdb_dataset(dataset, ground_truth):
+    assert len(dataset) == len(ground_truth)
+    for i in range(dataset.table.shape[0]):
+        pdb_array = dataset.get_data(row=i, col="pdb")
+        assert isinstance(pdb_array, struc.AtomArray)
+        assert pdb_array[0].__eq__(ground_truth[i][0])
+        assert pdb_array.equal_annotations(ground_truth[i])
 
 
 def _check_dataset(dataset, ground_truth, mol_props_as_col):
@@ -73,3 +85,36 @@ def test_zarr_with_factory_pattern(zarr_archive, tmpdir):
     assert len(dataset.columns) == 4
     assert all(c in dataset.columns for c in ["A", "B", "C", "D"])
     assert dataset.table["C"].apply({1: "W", 2: "X", 3: "Y", 4: "Z"}.get).equals(dataset.table["D"])
+
+
+def test_factory_pdb(pdbs, tmpdir):
+    """Test conversion between PDB file and Zarr with factory pattern"""
+    pdb_id = "1l2y"
+    pdb_path = rcsb.fetch(pdb_id, "pdb", tmpdir)
+
+    factory = DatasetFactory(tmpdir.join("pdb.zarr"))
+
+    converter = PDBConverter()
+    factory.register_converter("pdb", converter)
+
+    factory.add_from_file(pdb_path)
+    dataset = factory.build()
+
+    _check_pdb_dataset(dataset, pdbs[:1])
+
+
+def test_factory_pdbs(pdbs, tmpdir):
+    """Test conversion between PDB files and Zarr with factory pattern"""
+    pdb_ids = ["1l2y", "4i23"]
+    pdb_paths = rcsb.fetch(pdb_ids, "pdb", tmpdir)
+    print(pdb_paths)
+    factory = DatasetFactory(tmpdir.join("pdbs.zarr"))
+
+    converter = PDBConverter()
+    factory.register_converter("pdb", converter)
+
+    factory.add_from_files(pdb_paths, axis=0)
+    dataset = factory.build()
+
+    assert dataset.table.shape[0] == len(pdb_ids)
+    _check_pdb_dataset(dataset, pdbs)

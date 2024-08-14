@@ -242,7 +242,7 @@ class DatasetFactory:
             for path in paths:
                 table, annotations, adapters = converter.convert(path, self)
                 tables.append(table)
-            self.add_columns(pd.concat(tables, axis=0), annotations, adapters)
+            self.add_columns(pd.concat(tables, axis=0, ignore_index=True), annotations, adapters)
         else:
             for path in paths:
                 self.add_from_file(path)

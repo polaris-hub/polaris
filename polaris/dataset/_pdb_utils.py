@@ -35,6 +35,7 @@ def zarr_to_pdb(group: zarr.Group):
             b_factor=atom_dict["b_factor"][ind],
             occupancy=atom_dict["occupancy"][ind],
             charge=atom_dict["charge"][ind],
+            atom_id=atom_dict["atom_id"][ind],
         )
         atom_array.append(atom)
     return struc.array(atom_array)

@@ -122,11 +122,11 @@ class PDBConverter(Converter):
 
         # Create group and add datasets
         if self.pdb_column not in factory.zarr_root:
-            pdb_group = factory.zarr_root.group(self.pdb_column)
+            pdb_group = factory.zarr_root.create_group(self.pdb_column)
         else:
             pdb_group = factory.zarr_root[self.pdb_column]
 
-        group = pdb_group.group(pdb_pointer)
+        group = pdb_group.create_group(pdb_pointer)
         for col_name, col_val in pdb_dict.items():
             col_val = np.array(col_val)
             # get the accepted dtype
