@@ -1,6 +1,5 @@
 import zarr
-import biotite.structure as struc
-from biotite.structure import Atom
+from fastpdb import struc
 
 
 # load nested zarr file to dictionary
@@ -24,7 +23,7 @@ def zarr_to_pdb(group: zarr.Group):
     # convert dictionary to array list of Atom object
     array_length = atom_dict["X"].shape[0]
     for ind in range(array_length):
-        atom = Atom(
+        atom = struc.Atom(
             coord=(atom_dict["X"][ind], atom_dict["Y"][ind], atom_dict["Z"][ind]),
             chain_id=atom_dict["chain_id"][ind],
             res_id=atom_dict["res_id"][ind],
