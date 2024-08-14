@@ -46,10 +46,10 @@ class PDBConverter(Converter):
     Converts PDB files into a Polaris dataset.
     During the conversion, only the most essential structural information is retained, including 3D coordinates, chain ID, residue ID, insertion code, residue name, heteroatom indicator, atom name, element, atom ID, B-factor, occupancy, and charge.
 
-    Info: Numpy array for serialization
-        This class converts the 3D structure to fastpdb array (for ML purposes with key structual information).
-        This might not be the most storage efficient, but is fastest and easiest to maintain.
-        See[fastpdb](https://github.com/biotite-dev/fastpdb) and [biotite](https://github.com/biotite-dev/biotite/blob/main/src/biotite/structure/atoms.py) for more info.
+    Info: PDBs as ND-arrays using `biotite`
+        To save PDBs in a Polaris-compatible format, we convert them to ND-arrays using `fastpdb` and `biotite`.
+        We then save these ND-arrays to Zarr archives. This conversion should be lossless.
+        See [fastpdb](https://github.com/biotite-dev/fastpdb) and [biotite](https://github.com/biotite-dev/biotite/blob/main/src/biotite/structure/atoms.py) for more info.
 
     Args:
         pdb_column: The name of the column that will contain the pointers to the pdbs.
@@ -88,7 +88,7 @@ class PDBConverter(Converter):
             pdb_dict["charge"].append(row.charge)
         return pdb_dict
 
-    def _load_pdf(self, path: str, pdb_pointer=None) -> dict:
+    def _load_pdb(self, path: str, pdb_pointer=None) -> dict:
         """
         Load a single PDB file along with a dictionary that contains structure properties as keys.
 
@@ -100,7 +100,9 @@ class PDBConverter(Converter):
 
         # get the structure as AtomArray
         atom_array = in_file.get_structure(
-            model=1, include_bonds=True, extra_fields=["atom_id", "b_factor", "occupancy", "charge"]
+            model=1,
+            include_bonds=True,
+            extra_fields=["atom_id", "b_factor", "occupancy", "charge"],
         )
 
         # convert AtomArray to dict
@@ -116,20 +118,20 @@ class PDBConverter(Converter):
         """
 
         # load pdb as fastpbd and convert to dict
-        pdb_dict = self._load_pdf(path)
+        pdb_dict = self._load_pdb(path)
 
         # Create group and add datasets
         if self.pdb_column not in factory.zarr_root:
-            pdb_group = factory.zarr_root.create_group(self.pdb_column)
+            pdb_group = factory.zarr_root.group(self.pdb_column)
         else:
             pdb_group = factory.zarr_root[self.pdb_column]
 
-        group = pdb_group.create_group(pdb_pointer)
+        group = pdb_group.group(pdb_pointer)
         for col_name, col_val in pdb_dict.items():
             col_val = np.array(col_val)
             # get the accepted dtype
             dtype = DTYPE_DICT.get(col_name, col_val.dtype)
-            group.create_dataset(col_name, data=col_val, dtype=dtype)
+            group.array(col_name, data=col_val, dtype=dtype)
 
     def convert(self, path: Union[str, List[str]], factory: "DatasetFactory") -> FactoryProduct:
         """Convert one or a list of PDB files into Zarr"""

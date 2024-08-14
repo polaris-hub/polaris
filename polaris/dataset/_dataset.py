@@ -23,7 +23,11 @@ from polaris._artifact import BaseArtifactModel
 from polaris.mixins import ChecksumMixin
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
-from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum, compute_zarr_checksum
+from polaris.dataset.zarr import (
+    MemoryMappedDirectoryStore,
+    ZarrFileChecksum,
+    compute_zarr_checksum,
+)
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
@@ -368,7 +372,9 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
         return arr
 
     def upload_to_hub(
-        self, access: Optional[AccessType] = "private", owner: Optional[Union[HubOwner, str]] = None
+        self,
+        access: Optional[AccessType] = "private",
+        owner: Optional[Union[HubOwner, str]] = None,
     ):
         """
         Very light, convenient wrapper around the
@@ -508,7 +514,7 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
             elif len(ret) == self.n_rows:
                 # Returning a row, the indices are columns
                 ret = {
-                    k: self.get_data(k, ret.name) if self.annotations[ret.name].is_pointer else ret[k]
+                    k: (self.get_data(k, ret.name) if self.annotations[ret.name].is_pointer else ret[k])
                     for k in ret.index
                 }
 

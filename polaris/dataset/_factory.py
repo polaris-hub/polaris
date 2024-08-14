@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional, List, Union, Literal
+from typing import Dict, Optional, List, Literal
 
 import datamol as dm
 import pandas as pd
@@ -8,7 +8,12 @@ from loguru import logger
 
 from polaris.dataset import ColumnAnnotation, Dataset
 from polaris.dataset._adapters import Adapter
-from polaris.dataset.converters import Converter, SDFConverter, ZarrConverter, PDBConverter
+from polaris.dataset.converters import (
+    Converter,
+    SDFConverter,
+    ZarrConverter,
+    PDBConverter,
+)
 
 
 def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) -> Dataset:
@@ -55,7 +60,9 @@ class DatasetFactory:
     """
 
     def __init__(
-        self, zarr_root_path: Optional[str] = None, converters: Optional[Dict[str, Converter]] = None
+        self,
+        zarr_root_path: Optional[str] = None,
+        converters: Optional[Dict[str, Converter]] = None,
     ) -> None:
         """
         Create a new factory object.
@@ -214,7 +221,7 @@ class DatasetFactory:
         table, annotations, adapters = converter.convert(path, self)
         self.add_columns(table, annotations, adapters)
 
-    def add_from_files(self, paths: List[str], axis =Literal[0,1, 'index', 'columns']):
+    def add_from_files(self, paths: List[str], axis=Literal[0, 1, "index", "columns"]):
         """
         Uses the registered converters to parse the data from a specific files and add them to the dataset.
         If no converter is found for the file extension, it raises an error.
@@ -225,8 +232,8 @@ class DatasetFactory:
                 - 0 or ‘index’: append the rows with files. Files must be of the same type.
                 - 1 or 'columns': append the columns with files. Files can be of the different types.
         """
-        if axis in [0, 'index']:
-            ext = dm.fs.get_extension(path[0])
+        if axis in [0, "index"]:
+            ext = dm.fs.get_extension(paths[0])
             converter = self._converters.get(ext)
             if converter is None:
                 raise ValueError(f"No converter found for extension {ext}")
@@ -239,7 +246,6 @@ class DatasetFactory:
         else:
             for path in paths:
                 self.add_from_file(path)
-
 
     def build(self) -> Dataset:
         """Returns a Dataset based on the current state of the factory."""
