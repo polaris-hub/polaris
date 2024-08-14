@@ -77,6 +77,8 @@ doc = [
     "mike >=1.0.0"
 ]
 
+pdb = ["fastpdb"]
+
 [project.scripts]
 polaris = "polaris.cli:app"
 
