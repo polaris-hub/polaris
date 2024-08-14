@@ -50,6 +50,7 @@ class PDBConverter(Converter):
         To save PDBs in a Polaris-compatible format, we convert them to ND-arrays using `fastpdb` and `biotite`.
         We then save these ND-arrays to Zarr archives. This conversion should be lossless.
         See [fastpdb](https://github.com/biotite-dev/fastpdb) and [biotite](https://github.com/biotite-dev/biotite/blob/main/src/biotite/structure/atoms.py) for more info.
+    #todo: Add missing info ...
 
     Args:
         pdb_column: The name of the column that will contain the pointers to the pdbs.
@@ -148,8 +149,8 @@ class PDBConverter(Converter):
             self._convert_pdb(pdb_path, factory, pdb_pointer)
             pdb_pointers.append(pdb_pointer)
 
-        # Add a pointer column to the table
-        pointers = [self.get_pointer(self.pdb_column, pointer) for pointer in pdb_pointers]
+        # Add a pointer column (path) to the table
+        pointers = [f"{self.pdb_column}/{pointer}" for pointer in pdb_pointers]
         df = pd.DataFrame()
         df[self.pdb_column] = pd.Series(pointers)
 
