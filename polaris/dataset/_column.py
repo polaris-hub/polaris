@@ -18,7 +18,7 @@ class Modality(enum.Enum):
     IMAGE = "image"
 
 
-class ContentType(enum.Enum):
+class ContentType(enum.StrEnum):
     """Used to specify column's IANA content type in a dataset."""
 
     SMILES = "chemical/x-daylight-smiles"
@@ -39,11 +39,11 @@ class ColumnAnnotation(BaseModel):
     """
 
     is_pointer: bool = False
-    modality: Union[str, Modality] = Modality.UNKNOWN
-    description: Optional[str] = None
+    modality: str | Modality = Modality.UNKNOWN
+    description: str | None = None
     user_attributes: Dict[str, str] = Field(default_factory=dict)
-    dtype: Optional[Union[np.dtype, str]] = None
-    content_type: Optional[Union[str, ContentType]] = None
+    dtype: np.dtype | str | None = None
+    content_type:  str | ContentType = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_camel, populate_by_name=True)
 
@@ -61,13 +61,6 @@ class ColumnAnnotation(BaseModel):
             v = np.dtype(v)
         return v
 
-    @field_validator("content_type")
-    def _validate_content_type(cls, v):
-        """Tries to convert a string to the Enum"""
-        if isinstance(v, str):
-            v = ContentType[v.upper()]
-        return v
-
     @field_serializer("modality")
     def _serialize_modality(self, v: Modality):
         """Return the modality as a string, keeping it serializable"""
@@ -76,13 +69,6 @@ class ColumnAnnotation(BaseModel):
     @field_serializer("dtype")
     def _serialize_dtype(self, v: Optional[DTypeLike]):
         """Return the dtype as a string, keeping it serializable"""
-        if v is not None:
-            v = v.name
-        return v
-
-    @field_serializer("content_type")
-    def _serialize_content_type(self, v: Optional[ContentType]):
-        """Return the conteng type as a string, keeping it serializable"""
         if v is not None:
             v = v.name
         return v
