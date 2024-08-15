@@ -19,7 +19,7 @@ from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
 from polaris.mixins import ChecksumMixin
-from polaris.dataset import Dataset, Subset, CompetitionDataset
+from polaris.dataset import Dataset, Subset
 from polaris.evaluate import BenchmarkResults, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
@@ -96,7 +96,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     # Public attributes
     # Data
-    dataset: Union[Dataset, CompetitionDataset, str, dict[str, Any]]
+    dataset: Union[Dataset, str, dict[str, Any]]
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
@@ -219,16 +219,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             max_i = len(dataset)
             if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
                 raise InvalidBenchmarkError("The predefined split contains invalid indices")
-
-        # For a given row in the test set, all target columns must not be missing/empty.
-        # NOTE: This could break a bunch of benchmarks already on the hub UNLESS we turn off
-        # validation on download from the Hub.
-        target_cols = m.target_cols
-        test_indices = list(full_test_idx_set)
-        if not dataset.table.loc[test_indices, target_cols].notna().any(axis=1).all():
-            raise InvalidBenchmarkError(
-                "All rows of the test set must have at least one target column with a value."
-            )
 
         return m
 
@@ -488,8 +478,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                 else:
                     #
                     # For single task, multi-set benchmarks
-                    for task_name in self.target_cols:
-                        y_true[test_set_name][task_name] = values.targets
+                    y_true[test_set_name][self.target_cols[0]] = values.targets
         else:
             #
             # For single set benchmarks (single and multiple task)

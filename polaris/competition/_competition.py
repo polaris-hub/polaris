@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import field_serializer
 from polaris.benchmark import BenchmarkSpecification
+from polaris.dataset import CompetitionDataset
 from polaris.evaluate._results import CompetitionPredictions
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.types import HubOwner
@@ -15,6 +15,8 @@ class CompetitionSpecification(BenchmarkSpecification):
     Attributes:
         owner: A slug-compatible name for the owner of the competition. This is redefined such
             that it is required.
+        dataset: The dataset the competition specification is based on. Redefined from the parent class to
+            be of the type [`CompetitionDataset`][polaris.dataset.CompetitionDataset].
         start_time: The time at which the competition becomes active and interactable.
         end_time: The time at which the competition ends and is no longer interactable.
     """
@@ -23,6 +25,7 @@ class CompetitionSpecification(BenchmarkSpecification):
     owner: HubOwner
     start_time: datetime | None = None
     end_time: datetime | None = None
+    dataset: CompetitionDataset
 
     def evaluate(
         self,
@@ -42,9 +45,3 @@ class CompetitionSpecification(BenchmarkSpecification):
             **kwargs,
         ) as client:
             return client.evaluate_competition(self, predictions)
-
-    @field_serializer("start_time", "end_time")
-    def _serialize_start_date(self, v):
-        """Convert from datetime to string to make sure it's serializable"""
-        if v:
-            return v.isoformat()

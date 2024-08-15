@@ -359,16 +359,17 @@ class PolarisHubClient(OAuth2Client):
 
             response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
 
-            dataset = (
-                Dataset(**response)
-                if artifact_type == ArtifactSubtype.STANDARD
-                else CompetitionDataset(**response)
-            )
+            if artifact_type == ArtifactSubtype.COMPETITION:
+                dataset = CompetitionDataset(**response)
+                md5Sum = response["maskedMd5Sum"]
+            else:
+                dataset = Dataset(**response)
+                md5Sum = response["md5Sum"]
 
             if should_verify_checksum(verify_checksum, dataset):
-                dataset.verify_checksum()
+                dataset.verify_checksum(md5Sum)
             else:
-                dataset.md5sum = response["md5Sum"]
+                dataset.md5sum = md5Sum
 
             return dataset
 

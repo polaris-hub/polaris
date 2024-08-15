@@ -5,6 +5,7 @@ from typing import Optional
 from polaris.evaluate import BenchmarkResults, ResultsType
 from polaris.utils.types import PredictionsType
 from polaris.evaluate import Metric
+from numpy.typing import NDArray
 
 
 def is_multi_task_single_test_set(vals: PredictionsType, target_cols: list[str]):
@@ -28,11 +29,17 @@ def normalize_predictions_type(vals: PredictionsType, target_cols: list[str]):
         return {"test": {target_cols[0]: vals}}
 
 
-def safe_mask(dict, test_label, target_label, mask):
-    if dict is None or dict[test_label] is None or dict[test_label][target_label] is None:
+def safe_mask(
+    input_values: dict | dict[str, dict], test_label: str, target_label: str, mask: NDArray[np.bool_]
+):
+    if (
+        input_values is None
+        or input_values.get(test_label) is None
+        or input_values[test_label].get(target_label) is None
+    ):
         return None
     else:
-        return dict[test_label][target_label][mask]
+        return input_values[test_label][target_label][mask]
 
 
 def evaluate_benchmark(

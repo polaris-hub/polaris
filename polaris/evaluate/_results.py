@@ -103,9 +103,6 @@ class ResultsMetadata(BaseArtifactModel):
         """For pretty-printing in Jupyter Notebooks"""
         return dict2html(self._repr_dict_())
 
-    def __len__(self):
-        return len(self.table)
-
     def __repr__(self):
         return json.dumps(self._repr_dict_(), indent=2)
 
@@ -130,7 +127,7 @@ class EvaluationResult(ResultsMetadata):
     Attributes:
         results: Evaluation results are stored directly in a dataframe or in a serialized, JSON compatible dict
             that can be decoded into the associated tabular format.
-    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
+    For additional meta-data attributes, see the [`ResultsMetadata`][polaris.evaluate._results.ResultsMetadata] class.
     """
 
     # Define the columns of the results table
