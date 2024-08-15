@@ -21,7 +21,8 @@ nav:
       - Data Models: tutorials/custom_dataset_benchmark.ipynb
       - Creating Datasets:
           - Zarr Datasets: tutorials/dataset_zarr.ipynb
-          - Dataset Factory: tutorials/dataset_factory.ipynb
+          - PDB Datasets: tutorials/dataset_pdb.ipynb
+          - SDF Datasets: tutorials/dataset_sdf.ipynb
           - Optimization: tutorials/optimization.ipynb
   - API Reference:
       - Load: api/load.md

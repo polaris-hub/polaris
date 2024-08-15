@@ -311,6 +311,7 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
         return self.table.columns.tolist()
 
     def load_to_memory(self):
+        """Load data from zarr files to memeory"""
         data = self.zarr_data
 
         if not isinstance(data, zarr.Group):
