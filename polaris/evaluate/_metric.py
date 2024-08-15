@@ -7,7 +7,7 @@ from scipy import stats
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
-    balanced_accuracy_score,
+    cohen_kappa_score as sk_cohen_kappa_score,
     explained_variance_score,
     f1_score,
     matthews_corrcoef,
@@ -15,9 +15,7 @@ from sklearn.metrics import (
     mean_squared_error,
     r2_score,
     roc_auc_score,
-)
-from sklearn.metrics import (
-    cohen_kappa_score as sk_cohen_kappa_score,
+    balanced_accuracy_score,
 )
 
 from polaris.utils.types import DirectionType

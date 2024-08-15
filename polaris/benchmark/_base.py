@@ -1,6 +1,6 @@
+from itertools import chain
 import json
 from hashlib import md5
-from itertools import chain
 from typing import Any, Callable, Optional, Union
 
 import fsspec
@@ -19,10 +19,10 @@ from pydantic import (
 from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
+from polaris.mixins import ChecksumMixin
 from polaris.dataset import Dataset, Subset
 from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.hub.settings import PolarisHubSettings
-from polaris.mixins import ChecksumMixin
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError

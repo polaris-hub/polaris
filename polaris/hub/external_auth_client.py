@@ -22,7 +22,12 @@ class ExternalAuthClient(OAuth2Client):
         interact with it directly.
     """
 
-    def __init__(self, settings: PolarisHubSettings, cache_auth_token: bool = True, **kwargs: dict):
+    def __init__(
+        self,
+        settings: PolarisHubSettings,
+        cache_auth_token: bool = True,
+        **kwargs: dict,
+    ):
         """
         Args:
             settings: A `PolarisHubSettings` instance.
@@ -61,9 +66,7 @@ class ExternalAuthClient(OAuth2Client):
     def fetch_token(self, **kwargs) -> dict:
         """Light wrapper to automatically pass in the right URL"""
         return super().fetch_token(
-            url=self.settings.token_fetch_url,
-            code_verifier=self.code_verifier,
-            **kwargs,
+            url=self.settings.token_fetch_url, code_verifier=self.code_verifier, **kwargs
         )
 
     def ensure_active_token(self, token) -> bool:
@@ -76,8 +79,7 @@ class ExternalAuthClient(OAuth2Client):
     @property
     def user_info(self) -> dict:
         """
-        Get information about the currently logged-in user through the OAuth2 User Info flow.
-        """
+        Get information about the currently logged-in user through the OAuth2 User Info flow."""
 
         # NOTE (cwognum): We override the default `auth` and `headers` argument, since
         #  the defaults trigger a 530 error (Cloudflare) due to the header ordering.
