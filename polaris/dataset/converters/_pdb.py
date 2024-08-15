@@ -43,13 +43,19 @@ KEYS = [
 
 class PDBConverter(Converter):
     """
-    Converts PDB files into a Polaris dataset.
-    During the conversion, only the most essential structural information is retained, including 3D coordinates, chain ID, residue ID, insertion code, residue name, heteroatom indicator, atom name, element, atom ID, B-factor, occupancy, and charge.
+    Converts PDB files into a Polaris dataset based on fastpdb.
+
+    Info: During the conversion, only the most essential structural information of protein is retained, including 3D coordinates, chain ID,
+          residue ID, insertion code, residue name, heteroatom indicator, atom name, element, atom ID, B-factor, occupancy, and charge.
+          The records such as CONECT(connectivity information), ANISOU(anisotropic Temperature Factors), HETATM(heteroatoms and ligands) are handled by `fastpdb`.
+          Future extensions will address the currently missing information, enabling a more complete representation of structures in PDB files.
+
 
     Info: PDBs as ND-arrays using `biotite`
         To save PDBs in a Polaris-compatible format, we convert them to ND-arrays using `fastpdb` and `biotite`.
         We then save these ND-arrays to Zarr archives. This conversion should be lossless.
         See [fastpdb](https://github.com/biotite-dev/fastpdb) and [biotite](https://github.com/biotite-dev/biotite/blob/main/src/biotite/structure/atoms.py) for more info.
+
     #todo: Add missing info ...
 
     Args:
