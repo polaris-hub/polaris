@@ -10,7 +10,7 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.competition import CompetitionSpecification
-from polaris.dataset import ColumnAnnotation, Dataset
+from polaris.dataset import ColumnAnnotation, Dataset, CompetitionDataset
 from polaris.utils.types import HubOwner
 
 
@@ -74,6 +74,24 @@ def test_dataset(test_data, test_org_owner):
         license="CC-BY-4.0",
         curation_reference="https://www.example.com",
     )
+    check_version(dataset)
+    return dataset
+
+
+@pytest.fixture(scope="function")
+def test_competition_dataset(test_data, test_org_owner):
+    dataset = CompetitionDataset(
+        table=test_data,
+        name="test-competition-dataset",
+        source="https://www.example.com",
+        annotations={"expt": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
+        tags=["tagA", "tagB"],
+        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        owner=test_org_owner,
+        license="CC-BY-4.0",
+        curation_reference="https://www.example.com",
+    )
+
     check_version(dataset)
     return dataset
 
@@ -252,12 +270,12 @@ def test_multi_task_benchmark_clf(test_dataset):
 
 
 @pytest.fixture(scope="function")
-def test_competition(test_dataset, test_org_owner):
+def test_competition(test_competition_dataset, test_org_owner):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     competition = CompetitionSpecification(
         name="test-competition",
-        dataset=test_dataset,
+        dataset=test_competition_dataset,
         owner=test_org_owner,
         metrics=[
             "mean_absolute_error",
