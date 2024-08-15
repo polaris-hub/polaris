@@ -145,7 +145,10 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
 
-        headers = {"Content-Type": "application/octet-stream", **hub_response_body["headers"]}
+        headers = {
+            "Content-Type": "application/octet-stream",
+            **hub_response_body["headers"],
+        }
 
         response = self.polaris_client.request(
             url=signed_url,
@@ -224,7 +227,10 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
 
-        headers = {"Content-Type": "application/octet-stream", **hub_response_body["headers"]}
+        headers = {
+            "Content-Type": "application/octet-stream",
+            **hub_response_body["headers"],
+        }
 
         response = self.polaris_client.request(
             url=signed_url,

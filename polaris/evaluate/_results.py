@@ -20,7 +20,13 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import sluggify
-from polaris.utils.types import AccessType, HttpUrlString, HubOwner, HubUser, SlugCompatibleStringType
+from polaris.utils.types import (
+    AccessType,
+    HttpUrlString,
+    HubOwner,
+    HubUser,
+    SlugCompatibleStringType,
+)
 
 # Define some helpful type aliases
 TestLabelType = str
@@ -97,7 +103,12 @@ class BenchmarkResults(BaseArtifactModel):
     """
 
     # Define the columns of the results table
-    RESULTS_COLUMNS: ClassVar[list[str]] = ["Test set", "Target label", "Metric", "Score"]
+    RESULTS_COLUMNS: ClassVar[list[str]] = [
+        "Test set",
+        "Target label",
+        "Metric",
+        "Score",
+    ]
 
     # Data
     results: ResultsType

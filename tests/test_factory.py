@@ -5,7 +5,7 @@ import pytest
 import biotite.database.rcsb as rcsb
 from fastpdb import struc
 
-from polaris.dataset import DatasetFactory, create_dataset_from_file
+from polaris.dataset import DatasetFactory, create_dataset_from_file, create_dataset_from_files
 from polaris.dataset.converters import SDFConverter, ZarrConverter, PDBConverter
 
 
@@ -115,6 +115,18 @@ def test_factory_pdbs(pdbs, tmpdir):
 
     factory.add_from_files(pdb_paths, axis=0)
     dataset = factory.build()
+
+    assert dataset.table.shape[0] == len(pdb_ids)
+    _check_pdb_dataset(dataset, pdbs)
+
+
+def test_pdbs_zarr_conversion(pdbs, tmpdir):
+    """Test conversion between PDBs and Zarr with utility function"""
+
+    pdb_ids = ["1l2y", "4i23"]
+    pdb_paths = rcsb.fetch(pdb_ids, "pdb", tmpdir)
+
+    dataset = create_dataset_from_files(pdb_paths, tmpdir.join("pdbs_2.zarr"), axis=0)
 
     assert dataset.table.shape[0] == len(pdb_ids)
     _check_pdb_dataset(dataset, pdbs)
