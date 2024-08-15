@@ -128,7 +128,7 @@ extra:
     provider: mike
   analytics:
     provider: google
-    property: G-23R9EJVY37
+    property: G-V4RP8SG194
     # Widget at the bottom of every page to collect information about the user experience
     # The data is collected in Google Analytics
     feedback:
