@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional, List, Literal
+from typing import Dict, List, Literal, Optional
 
 import datamol as dm
 import pandas as pd
@@ -8,12 +8,7 @@ from loguru import logger
 
 from polaris.dataset import ColumnAnnotation, Dataset
 from polaris.dataset._adapters import Adapter
-from polaris.dataset.converters import (
-    Converter,
-    SDFConverter,
-    ZarrConverter,
-    PDBConverter,
-)
+from polaris.dataset.converters import Converter, PDBConverter, SDFConverter, ZarrConverter
 
 
 def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) -> Dataset:
@@ -78,9 +73,7 @@ class DatasetFactory:
     """
 
     def __init__(
-        self,
-        zarr_root_path: Optional[str] = None,
-        converters: Optional[Dict[str, Converter]] = None,
+        self, zarr_root_path: Optional[str] = None, converters: Optional[Dict[str, Converter]] = None
     ) -> None:
         """
         Create a new factory object.

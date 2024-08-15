@@ -5,11 +5,7 @@ import datamol as dm
 from polaris.dataset._pdb_utils import zarr_to_pdb
 
 # Map of conversion operations which can be applied to dataset columns
-conversion_map = {
-    "SMILES_TO_MOL": dm.to_mol,
-    "BYTES_TO_MOL": dm.Mol,
-    "ARRAY_TO_PDB": zarr_to_pdb,
-}
+conversion_map = {"SMILES_TO_MOL": dm.to_mol, "BYTES_TO_MOL": dm.Mol, "ARRAY_TO_PDB": zarr_to_pdb}
 
 
 @unique

@@ -1,6 +1,6 @@
-from itertools import chain
 import json
 from hashlib import md5
+from itertools import chain
 from typing import Any, Callable, Optional, Union
 
 import fsspec
@@ -19,10 +19,10 @@ from pydantic import (
 from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
-from polaris.mixins import ChecksumMixin
 from polaris.dataset import Dataset, Subset
 from polaris.evaluate import BenchmarkResults, Metric, ResultsType
 from polaris.hub.settings import PolarisHubSettings
+from polaris.mixins import ChecksumMixin
 from polaris.utils.context import tmp_attribute_change
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError
@@ -391,9 +391,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return train, test
 
     def evaluate(
-        self,
-        y_pred: Optional[PredictionsType] = None,
-        y_prob: Optional[PredictionsType] = None,
+        self, y_pred: Optional[PredictionsType] = None, y_prob: Optional[PredictionsType] = None
     ) -> BenchmarkResults:
         """Execute the evaluation protocol for the benchmark, given a set of predictions.
 
@@ -467,9 +465,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                 if metric.is_multitask:
                     # Multi-task but with a metric across targets
                     score = metric(
-                        y_true=y_true_subset,
-                        y_pred=y_pred.get(test_label),
-                        y_prob=y_prob.get(test_label),
+                        y_true=y_true_subset, y_pred=y_pred.get(test_label), y_prob=y_prob.get(test_label)
                     )
                     scores.loc[len(scores)] = (test_label, "aggregated", metric, score)
                     continue
@@ -477,9 +473,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                 if not isinstance(y_true_subset, dict):
                     # Single task
                     score = metric(
-                        y_true=y_true_subset,
-                        y_pred=y_pred.get(test_label),
-                        y_prob=y_prob.get(test_label),
+                        y_true=y_true_subset, y_pred=y_pred.get(test_label), y_prob=y_prob.get(test_label)
                     )
                     scores.loc[len(scores)] = (
                         test_label,
@@ -496,12 +490,12 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                     mask = ~np.isnan(y_true_target)
                     score = metric(
                         y_true=y_true_target[mask],
-                        y_pred=(
-                            y_pred[test_label][target_label][mask] if y_pred[test_label] is not None else None
-                        ),
-                        y_prob=(
-                            y_prob[test_label][target_label][mask] if y_prob[test_label] is not None else None
-                        ),
+                        y_pred=y_pred[test_label][target_label][mask]
+                        if y_pred[test_label] is not None
+                        else None,
+                        y_prob=y_prob[test_label][target_label][mask]
+                        if y_prob[test_label] is not None
+                        else None,
                     )
                     scores.loc[len(scores)] = (test_label, target_label, metric, score)
 

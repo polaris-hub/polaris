@@ -228,12 +228,7 @@ class PolarisHubClient(OAuth2Client):
                     "SSL verification by setting the POLARIS_CA_BUNDLE environment variable to `false`."
                 ) from error
             raise error
-        except (
-            MissingTokenError,
-            InvalidTokenError,
-            httpx.HTTPStatusError,
-            OAuthError,
-        ) as error:
+        except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError, OAuthError) as error:
             if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:
                 raise
 
@@ -322,8 +317,7 @@ class PolarisHubClient(OAuth2Client):
                     storage_response.raise_for_status()
                 except HTTPStatusError as error:
                     raise PolarisHubError(
-                        message="Could not get signed URL from Polaris Hub.",
-                        response=storage_response,
+                        message="Could not get signed URL from Polaris Hub.", response=storage_response
                     ) from error
 
             storage_response = storage_response.json()
@@ -342,12 +336,7 @@ class PolarisHubClient(OAuth2Client):
             return dataset
 
     def open_zarr_file(
-        self,
-        owner: str | HubOwner,
-        name: str,
-        path: str,
-        mode: IOMode,
-        as_consolidated: bool = True,
+        self, owner: str | HubOwner, name: str, path: str, mode: IOMode, as_consolidated: bool = True
     ) -> zarr.hierarchy.Group:
         """Open a Zarr file from a Polaris dataset
 
@@ -400,9 +389,7 @@ class PolarisHubClient(OAuth2Client):
         ):
             # TODO (cwognum): What to do with pagination, i.e. limit and offset?
             response = self._base_request_to_hub(
-                url="/benchmark",
-                method="GET",
-                params={"limit": limit, "offset": offset},
+                url="/benchmark", method="GET", params={"limit": limit, "offset": offset}
             )
             benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
 

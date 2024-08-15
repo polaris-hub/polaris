@@ -14,16 +14,13 @@ app = typer.Typer(
 @app.command("login")
 def login(
     client_env_file: Annotated[
-        str,
-        typer.Option(help="Environment file to overwrite the default environment variables"),
+        str, typer.Option(help="Environment file to overwrite the default environment variables")
     ] = ".env",
     auto_open_browser: Annotated[
-        bool,
-        typer.Option(help="Whether to automatically open the link in a browser to retrieve the token"),
+        bool, typer.Option(help="Whether to automatically open the link in a browser to retrieve the token")
     ] = True,
     overwrite: Annotated[
-        bool,
-        typer.Option(help="Whether to overwrite the access token if you are already logged in"),
+        bool, typer.Option(help="Whether to overwrite the access token if you are already logged in")
     ] = False,
 ):
     """Authenticate to the Polaris Hub.

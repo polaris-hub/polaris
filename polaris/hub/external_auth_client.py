@@ -22,12 +22,7 @@ class ExternalAuthClient(OAuth2Client):
         interact with it directly.
     """
 
-    def __init__(
-        self,
-        settings: PolarisHubSettings,
-        cache_auth_token: bool = True,
-        **kwargs: dict,
-    ):
+    def __init__(self, settings: PolarisHubSettings, cache_auth_token: bool = True, **kwargs: dict):
         """
         Args:
             settings: A `PolarisHubSettings` instance.

@@ -1,8 +1,6 @@
 from httpx import Response
 
-from polaris.mixins._format_text import (
-    FormattingMixin,
-)  # Imported with full path to avoid circular import
+from polaris.mixins._format_text import FormattingMixin  # Imported with full path to avoid circular import
 
 
 class InvalidDatasetError(ValueError):
