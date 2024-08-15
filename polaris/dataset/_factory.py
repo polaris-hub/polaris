@@ -32,6 +32,24 @@ def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) ->
     return factory.build()
 
 
+def create_dataset_from_files(
+    paths: List[str], zarr_root_path: Optional[str] = None, axis=Literal[0, 1, "index", "columns"]
+) -> Dataset:
+    """
+    This function is a convenience function to create a dataset from a file.
+
+    It sets up the dataset factory with sensible defaults for the converters.
+    For creating more complicated datasets, please use the `DatasetFactory` directly.
+    """
+    factory = DatasetFactory(zarr_root_path=zarr_root_path)
+    factory.register_converter("sdf", SDFConverter())
+    factory.register_converter("zarr", ZarrConverter())
+    factory.register_converter("pdb", PDBConverter())
+
+    factory.add_from_files(paths, axis)
+    return factory.build()
+
+
 class DatasetFactory:
     """
     The `DatasetFactory` makes it easier to create complex datasets.
@@ -221,7 +239,7 @@ class DatasetFactory:
         table, annotations, adapters = converter.convert(path, self)
         self.add_columns(table, annotations, adapters)
 
-    def add_from_files(self, paths: List[str], axis=Literal[0, 1, "index", "columns"]):
+    def add_from_files(self, paths: List[str], axis: Literal[0, 1, "index", "columns"]):
         """
         Uses the registered converters to parse the data from a specific files and add them to the dataset.
         If no converter is found for the file extension, it raises an error.
