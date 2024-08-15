@@ -43,7 +43,7 @@ class ColumnAnnotation(BaseModel):
     description: str | None = None
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     dtype: np.dtype | str | None = None
-    content_type:  str | ContentType = None
+    content_type: str | ContentType = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_camel, populate_by_name=True)
 
