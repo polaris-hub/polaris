@@ -1,12 +1,10 @@
 import datamol as dm
 import pandas as pd
 import pytest
-
-import biotite.database.rcsb as rcsb
 from fastpdb import struc
 
 from polaris.dataset import DatasetFactory, create_dataset_from_file, create_dataset_from_files
-from polaris.dataset.converters import SDFConverter, ZarrConverter, PDBConverter
+from polaris.dataset.converters import PDBConverter, SDFConverter, ZarrConverter
 
 
 def _check_pdb_dataset(dataset, ground_truth):
@@ -14,7 +12,7 @@ def _check_pdb_dataset(dataset, ground_truth):
     for i in range(dataset.table.shape[0]):
         pdb_array = dataset.get_data(row=i, col="pdb")
         assert isinstance(pdb_array, struc.AtomArray)
-        assert pdb_array[0].__eq__(ground_truth[i][0])
+        assert pdb_array[0] == ground_truth[i][0]
         assert pdb_array.equal_annotations(ground_truth[i])
 
 
@@ -87,27 +85,22 @@ def test_zarr_with_factory_pattern(zarr_archive, tmpdir):
     assert dataset.table["C"].apply({1: "W", 2: "X", 3: "Y", 4: "Z"}.get).equals(dataset.table["D"])
 
 
-def test_factory_pdb(pdbs, tmpdir):
+def test_factory_pdb(pdbs_structs, pdb_paths, tmpdir):
     """Test conversion between PDB file and Zarr with factory pattern"""
-    pdb_id = "1l2y"
-    pdb_path = rcsb.fetch(pdb_id, "pdb", tmpdir)
-
     factory = DatasetFactory(tmpdir.join("pdb.zarr"))
 
     converter = PDBConverter()
     factory.register_converter("pdb", converter)
 
-    factory.add_from_file(pdb_path)
+    factory.add_from_file(pdb_paths[0])
     dataset = factory.build()
 
-    _check_pdb_dataset(dataset, pdbs[:1])
+    _check_pdb_dataset(dataset, pdbs_structs[:1])
 
 
-def test_factory_pdbs(pdbs, tmpdir):
+def test_factory_pdbs(pdbs_structs, pdb_paths, tmpdir):
     """Test conversion between PDB files and Zarr with factory pattern"""
-    pdb_ids = ["1l2y", "4i23"]
-    pdb_paths = rcsb.fetch(pdb_ids, "pdb", tmpdir)
-    print(pdb_paths)
+
     factory = DatasetFactory(tmpdir.join("pdbs.zarr"))
 
     converter = PDBConverter()
@@ -116,17 +109,14 @@ def test_factory_pdbs(pdbs, tmpdir):
     factory.add_from_files(pdb_paths, axis=0)
     dataset = factory.build()
 
-    assert dataset.table.shape[0] == len(pdb_ids)
-    _check_pdb_dataset(dataset, pdbs)
+    assert dataset.table.shape[0] == len(pdb_paths)
+    _check_pdb_dataset(dataset, pdbs_structs)
 
 
-def test_pdbs_zarr_conversion(pdbs, tmpdir):
+def test_pdbs_zarr_conversion(pdbs_structs, pdb_paths, tmpdir):
     """Test conversion between PDBs and Zarr with utility function"""
-
-    pdb_ids = ["1l2y", "4i23"]
-    pdb_paths = rcsb.fetch(pdb_ids, "pdb", tmpdir)
 
     dataset = create_dataset_from_files(pdb_paths, tmpdir.join("pdbs_2.zarr"), axis=0)
 
-    assert dataset.table.shape[0] == len(pdb_ids)
-    _check_pdb_dataset(dataset, pdbs)
+    assert dataset.table.shape[0] == len(pdb_paths)
+    _check_pdb_dataset(dataset, pdbs_structs)

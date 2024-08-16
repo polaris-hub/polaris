@@ -33,6 +33,7 @@ nav:
           - Evaluation: api/evaluation.md
       - Hub:
           - Client: api/hub.client.md
+          - External Auth Client: api/hub.external_auth_client.md
           - PolarisFileSystem: api/hub.polarisfs.md
       - Additional:
           - Dataset Factory: api/factory.md

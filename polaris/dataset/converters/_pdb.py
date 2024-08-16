@@ -1,9 +1,11 @@
-from typing import TYPE_CHECKING, Optional, Sequence, List, Union
-
 from pathlib import Path
+from typing import TYPE_CHECKING, List, Optional, Sequence, Union
+
+import fastpdb
 import numpy as np
 import pandas as pd
-import fastpdb
+import zarr
+from fastpdb import struc
 
 from polaris.dataset import ColumnAnnotation, Modality
 from polaris.dataset._adapters import Adapter
@@ -41,25 +43,52 @@ KEYS = [
 ]
 
 
+def zarr_to_pdb(atom_dict: zarr.Group):
+    """Load a dictionary of arrays to fastpdb AtomArray"""
+
+    atom_array = []
+
+    # convert dictionary to array list of Atom object
+    array_length = atom_dict["X"].shape[0]
+    for ind in range(array_length):
+        atom = struc.Atom(
+            coord=(atom_dict["X"][ind], atom_dict["Y"][ind], atom_dict["Z"][ind]),
+            chain_id=atom_dict["chain_id"][ind],
+            res_id=atom_dict["res_id"][ind],
+            ins_code=atom_dict["ins_code"][ind],
+            res_name=atom_dict["res_name"][ind],
+            hetero=atom_dict["hetero"][ind],
+            atom_name=atom_dict["atom_name"][ind],
+            element=atom_dict["element"][ind],
+            b_factor=atom_dict["b_factor"][ind],
+            occupancy=atom_dict["occupancy"][ind],
+            charge=atom_dict["charge"][ind],
+            atom_id=atom_dict["atom_id"][ind],
+        )
+        atom_array.append(atom)
+    return struc.array(atom_array)
+
+
 class PDBConverter(Converter):
     """
     Converts PDB files into a Polaris dataset based on fastpdb.
 
-    Info: During the conversion, only the most essential structural information of protein is retained, including 3D coordinates, chain ID,
-          residue ID, insertion code, residue name, heteroatom indicator, atom name, element, atom ID, B-factor, occupancy, and charge.
-          The records such as CONECT(connectivity information), ANISOU(anisotropic Temperature Factors), HETATM(heteroatoms and ligands) are handled by `fastpdb`.
-          Future extensions will address the currently missing information, enabling a more complete representation of structures in PDB files.
+    Info: Only the most essential structural information of a protein is retained
+        This conversion saves the 3D coordinates, chain ID, residue ID, insertion code, residue name, heteroatom indicator, atom name, element, atom ID, B-factor, occupancy, and charge.
+        Records such as CONECT (connectivity information), ANISOU (anisotropic Temperature Factors), HETATM (heteroatoms and ligands) are handled by `fastpdb`.
+        We believe this makes for a good _ML-ready_ format, but let us know if you require any other information to be saved.
 
 
     Info: PDBs as ND-arrays using `biotite`
         To save PDBs in a Polaris-compatible format, we convert them to ND-arrays using `fastpdb` and `biotite`.
-        We then save these ND-arrays to Zarr archives. This conversion should be lossless.
-        See [fastpdb](https://github.com/biotite-dev/fastpdb) and [biotite](https://github.com/biotite-dev/biotite/blob/main/src/biotite/structure/atoms.py) for more info.
-
-    #todo: Add missing info ...
+        We then save these ND-arrays to Zarr archives.
+        For more info, see [fastpdb](https://github.com/biotite-dev/fastpdb)
+        and [biotite](https://github.com/biotite-dev/biotite/blob/main/src/biotite/structure/atoms.py)
 
     Args:
         pdb_column: The name of the column that will contain the pointers to the pdbs.
+        n_jobs: The number of jobs to run in parallel.
+        zarr_chunks: The chunk size for the Zarr arrays.
     """
 
     def __init__(

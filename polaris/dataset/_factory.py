@@ -28,13 +28,18 @@ def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) ->
 
 
 def create_dataset_from_files(
-    paths: List[str], zarr_root_path: Optional[str] = None, axis=Literal[0, 1, "index", "columns"]
+    paths: List[str], zarr_root_path: Optional[str] = None, axis: Literal[0, 1, "index", "columns"] = 0
 ) -> Dataset:
     """
-    This function is a convenience function to create a dataset from a file.
+    This function is a convenience function to create a dataset from multiple files.
 
     It sets up the dataset factory with sensible defaults for the converters.
     For creating more complicated datasets, please use the `DatasetFactory` directly.
+
+    Args:
+        axis: Axis along which the files should be added.
+            - 0 or 'index': append the rows with files. Files must be of the same type.
+            - 1 or 'columns': append the columns with files. Files can be of the different types.
     """
     factory = DatasetFactory(zarr_root_path=zarr_root_path)
     factory.register_converter("sdf", SDFConverter())
@@ -222,7 +227,7 @@ class DatasetFactory:
         If no converter is found for the file extension, it raises an error.
 
         Args:
-            path: The path or list of path to the file that should be parsed.
+            path: The path to the file that should be parsed.
         """
         ext = dm.fs.get_extension(path)
         converter = self._converters.get(ext)
@@ -240,7 +245,7 @@ class DatasetFactory:
         Args:
             paths: The list of paths that should be parsed.
             axis: Axis along which the files should be added.
-                - 0 or ‘index’: append the rows with files. Files must be of the same type.
+                - 0 or 'index': append the rows with files. Files must be of the same type.
                 - 1 or 'columns': append the columns with files. Files can be of the different types.
         """
         if axis in [0, "index"]:

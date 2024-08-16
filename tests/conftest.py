@@ -1,10 +1,10 @@
+import biotite.database.rcsb as rcsb
 import datamol as dm
+import fastpdb
 import numpy as np
 import pytest
 import zarr
 from datamol.utils import fs
-import biotite.database.rcsb as rcsb
-import fastpdb
 
 import polaris as po
 from polaris.benchmark import (
@@ -46,10 +46,14 @@ def caffeine():
 
 
 @pytest.fixture(scope="module")
-def pdbs(tmp_path_factory):
-    # Let's generate a toy dataset with a pdb file
+def pdb_paths(tmp_path_factory):
     tmp_dir = tmp_path_factory.mktemp("data")
     pdb_paths = rcsb.fetch(["1l2y", "4i23"], "pdb", tmp_dir)
+    return pdb_paths
+
+
+@pytest.fixture(scope="module")
+def pdbs_structs(pdb_paths):
     pdb_arrays = []
     for pdb_path in pdb_paths:
         in_file = fastpdb.PDBFile.read(pdb_path)

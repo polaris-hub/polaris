@@ -2,11 +2,6 @@ from enum import Enum, auto, unique
 
 import datamol as dm
 
-from polaris.dataset._pdb_utils import zarr_to_pdb
-
-# Map of conversion operations which can be applied to dataset columns
-conversion_map = {"SMILES_TO_MOL": dm.to_mol, "BYTES_TO_MOL": dm.Mol, "ARRAY_TO_PDB": zarr_to_pdb}
-
 
 @unique
 class Adapter(Enum):
@@ -25,6 +20,13 @@ class Adapter(Enum):
     ARRAY_TO_PDB = auto()
 
     def __call__(self, data):
+        # Import here to prevent a cyclic import
+        # Given the close couplingbetween `zarr_to_pdb` and the converter,
+        # we wanted to keep these in one file.
+        from polaris.dataset.converters._pdb import zarr_to_pdb
+
+        conversion_map = {"SMILES_TO_MOL": dm.to_mol, "BYTES_TO_MOL": dm.Mol, "ARRAY_TO_PDB": zarr_to_pdb}
+
         if isinstance(data, tuple):
             return tuple(conversion_map[self.name](d) for d in data)
         return conversion_map[self.name](data)

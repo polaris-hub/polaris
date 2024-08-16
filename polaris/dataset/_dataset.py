@@ -23,6 +23,7 @@ from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum, compute_zarr_checksum
+from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.mixins import ChecksumMixin
 from polaris.utils.constants import DEFAULT_CACHE_DIR
@@ -307,7 +308,13 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
         return self.table.columns.tolist()
 
     def load_to_memory(self):
-        """Load data from zarr files to memeory"""
+        """
+        Load data from zarr files to memeory
+
+        Warning: Make sure the uncompressed dataset fits in-memory.
+            This method will load the **uncompressed** dataset into memory. Make
+            sure you actually have enough memory to store the dataset.
+        """
         data = self.zarr_data
 
         if not isinstance(data, zarr.Group):
@@ -316,16 +323,10 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
                 "Did you call Dataset.load_to_memory() twice?"
             )
 
-        self._zarr_data = {}
-
-        for key, item in data.items():
-            if isinstance(item, zarr.core.Array):
-                self._zarr_data[key] = item[:]
-            elif isinstance(item, zarr.hierarchy.Group):
-                self._zarr_data[key] = self.load_to_memory(item)
-        # NOTE (cwognum): If the dataset fits in memory, we are best of using plain NumPy arrays.
+        # NOTE (cwognum): If the dataset fits in memory, the most performant is to use plain NumPy arrays.
         # Even if we disable chunking and compression in Zarr.
         # For more information, see https://github.com/zarr-developers/zarr-python/issues/1395
+        self._zarr_data = load_zarr_group_to_memory(data)
 
     def get_data(self, row: str | int, col: str, adapters: Optional[List[Adapter]] = None) -> np.ndarray:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
@@ -486,9 +487,7 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
             index = index.split(":")
 
             if len(index) == 1:
-                index = index[0]
-                if index.isdigit():
-                    index = int(index)
+                index = int(index[0])
             elif len(index) == 2:
                 index = slice(int(index[0]), int(index[1]))
             else:
