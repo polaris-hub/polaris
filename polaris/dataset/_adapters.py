@@ -21,8 +21,8 @@ class Adapter(Enum):
 
     def __call__(self, data):
         # Import here to prevent a cyclic import
-        # Given the close couplingbetween `zarr_to_pdb` and the converter,
-        # we wanted to keep these in one file.
+        # Given the close coupling between `zarr_to_pdb` and the PDB converter,
+        # we wanted to keep those functions in one file which was leading to a cyclic import.
         from polaris.dataset.converters._pdb import zarr_to_pdb
 
         conversion_map = {"SMILES_TO_MOL": dm.to_mol, "BYTES_TO_MOL": dm.Mol, "ARRAY_TO_PDB": zarr_to_pdb}
