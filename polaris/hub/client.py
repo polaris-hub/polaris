@@ -339,10 +339,7 @@ class PolarisHubClient(OAuth2Client):
                 else f"/v2/competition/dataset/{owner}/{name}"
             )
             response = self._base_request_to_hub(url=url, method="GET")
-            dataset_info = (
-                "tableContent" if artifact_type == ArtifactSubtype.STANDARD.value else "maskedDatasetInfo"
-            )
-            storage_response = self.get(response[dataset_info]["url"])
+            storage_response = self.get(response["tableContent"]["url"])
 
             # This should be a 307 redirect with the signed URL
             if storage_response.status_code != 307:

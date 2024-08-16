@@ -19,7 +19,7 @@ from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
 from polaris.mixins import ChecksumMixin
-from polaris.dataset import Dataset, Subset
+from polaris.dataset import Dataset, Subset, CompetitionDataset
 from polaris.evaluate import BenchmarkResults, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
@@ -96,7 +96,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     # Public attributes
     # Data
-    dataset: Union[Dataset, str, dict[str, Any]]
+    dataset: Union[Dataset, CompetitionDataset, str, dict[str, Any]]
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
