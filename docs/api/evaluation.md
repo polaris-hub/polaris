@@ -1,3 +1,12 @@
+::: polaris.evaluate.ResultsMetadata
+    options:
+        filters: ["!^_"]
+
+---
+
+::: polaris.evaluate.EvaluationResult
+
+---
 
 ::: polaris.evaluate.BenchmarkResults
 

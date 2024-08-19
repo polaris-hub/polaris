@@ -9,7 +9,8 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.dataset import ColumnAnnotation, Dataset
+from polaris.competition import CompetitionSpecification
+from polaris.dataset import ColumnAnnotation, Dataset, CompetitionDataset
 from polaris.utils.types import HubOwner
 
 
@@ -78,6 +79,24 @@ def test_dataset(test_data, test_org_owner):
 
 
 @pytest.fixture(scope="function")
+def test_competition_dataset(test_data, test_org_owner):
+    dataset = CompetitionDataset(
+        table=test_data,
+        name="test-competition-dataset",
+        source="https://www.example.com",
+        annotations={"expt": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
+        tags=["tagA", "tagB"],
+        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        owner=test_org_owner,
+        license="CC-BY-4.0",
+        curation_reference="https://www.example.com",
+    )
+
+    check_version(dataset)
+    return dataset
+
+
+@pytest.fixture(scope="function")
 def zarr_archive(tmp_path):
     tmp_path = fs.join(tmp_path, "data.zarr")
     root = zarr.open(tmp_path, mode="w")
@@ -92,7 +111,7 @@ def test_single_task_benchmark(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     benchmark = SingleTaskBenchmarkSpecification(
-        name="single-task-benchmark",
+        name="single-task-single-set-benchmark",
         dataset=test_dataset,
         metrics=[
             "mean_absolute_error",
@@ -117,7 +136,7 @@ def test_single_task_benchmark_clf(test_dataset):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     benchmark = SingleTaskBenchmarkSpecification(
-        name="single-task-benchmark",
+        name="single-task-single-set-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
         metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa", "balanced_accuracy"],
@@ -138,7 +157,7 @@ def test_single_task_benchmark_multi_clf(test_dataset):
     test_indices = indices[80:]
 
     benchmark = SingleTaskBenchmarkSpecification(
-        name="single-task-benchmark",
+        name="single-task-single-set-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
         metrics=[
@@ -165,7 +184,7 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
     train_indices = list(range(90))
     test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
     benchmark = SingleTaskBenchmarkSpecification(
-        name="single-task-benchmark",
+        name="single-task-multi-set-benchmark",
         dataset=test_dataset,
         metrics=[
             "mean_absolute_error",
@@ -193,7 +212,7 @@ def test_single_task_benchmark_clf_multiple_test_sets(test_dataset):
     train_indices = indices[:80]
     test_indices = {"test_1": indices[80:90], "test_2": indices[90:]}
     benchmark = SingleTaskBenchmarkSpecification(
-        name="single-task-benchmark-clf",
+        name="single-task-multi-set-benchmark-clf",
         dataset=test_dataset,
         metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
         main_metric="pr_auc",
@@ -244,6 +263,56 @@ def test_multi_task_benchmark_clf(test_dataset):
         metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
         split=(train_indices, test_indices),
         target_cols=["CLASS_expt", "CLASS_calc"],
+        input_cols="smiles",
+    )
+    check_version(benchmark)
+    return benchmark
+
+
+@pytest.fixture(scope="function")
+def test_competition(test_competition_dataset, test_org_owner):
+    train_indices = list(range(90))
+    test_indices = list(range(90, 100))
+    competition = CompetitionSpecification(
+        name="test-competition",
+        dataset=test_competition_dataset,
+        owner=test_org_owner,
+        metrics=[
+            "mean_absolute_error",
+            "mean_squared_error",
+            "r2",
+            "spearmanr",
+            "pearsonr",
+            "explained_var",
+        ],
+        main_metric="mean_absolute_error",
+        split=(train_indices, test_indices),
+        target_cols="expt",
+        input_cols="smiles",
+    )
+    check_version(competition)
+    return competition
+
+
+@pytest.fixture(scope="function")
+def test_multi_task_benchmark_multiple_test_sets(test_dataset):
+    train_indices = list(range(90))
+    test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
+    benchmark = MultiTaskBenchmarkSpecification(
+        name="multi-task-multi-set-benchmark",
+        dataset=test_dataset,
+        metrics=[
+            "mean_absolute_error",
+            "mean_squared_error",
+            "r2",
+            "spearmanr",
+            "pearsonr",
+            "explained_var",
+            "absolute_average_fold_error",
+        ],
+        main_metric="r2",
+        split=(train_indices, test_indices),
+        target_cols=["expt", "calc"],
         input_cols="smiles",
     )
     check_version(benchmark)
