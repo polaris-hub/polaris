@@ -1,4 +1,6 @@
+import biotite.database.rcsb as rcsb
 import datamol as dm
+import fastpdb
 import numpy as np
 import pytest
 import zarr
@@ -42,6 +44,26 @@ def caffeine():
     # Let's also set a molecular property
     mol.SetProp("my_property", "my_value")
     return mol
+
+
+@pytest.fixture(scope="module")
+def pdb_paths(tmp_path_factory):
+    tmp_dir = tmp_path_factory.mktemp("data")
+    pdb_paths = rcsb.fetch(["1l2y", "4i23"], "pdb", tmp_dir)
+    return pdb_paths
+
+
+@pytest.fixture(scope="module")
+def pdbs_structs(pdb_paths):
+    pdb_arrays = []
+    for pdb_path in pdb_paths:
+        in_file = fastpdb.PDBFile.read(pdb_path)
+        atom_array = in_file.get_structure(
+            model=1, include_bonds=True, extra_fields=["atom_id", "b_factor", "occupancy", "charge"]
+        )
+        pdb_arrays.append(atom_array)
+
+    return pdb_arrays
 
 
 @pytest.fixture(scope="module")

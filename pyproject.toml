@@ -50,6 +50,7 @@ dependencies = [
     "scikit-learn",
     "seaborn",
     "datamol >=0.12.1",
+    "fastpdb",
     "zarr",
     "pyarrow",
     "fsspec[http]",
@@ -76,6 +77,7 @@ doc = [
     "nbconvert",
     "mike >=1.0.0"
 ]
+
 
 [project.scripts]
 polaris = "polaris.cli:app"
@@ -121,7 +123,6 @@ omit = [
     "polaris/hub/oauth2.py",
     "polaris/hub/settings.py",
     "polaris/hub/polarisfs.py",
-    "polaris/hub/__init__.py",
     "polaris/hub/__init__.py",
 ]
 

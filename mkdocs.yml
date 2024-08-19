@@ -21,7 +21,8 @@ nav:
       - Data Models: tutorials/custom_dataset_benchmark.ipynb
       - Creating Datasets:
           - Zarr Datasets: tutorials/dataset_zarr.ipynb
-          - Dataset Factory: tutorials/dataset_factory.ipynb
+          - PDB Datasets: tutorials/dataset_pdb.ipynb
+          - SDF Datasets: tutorials/dataset_sdf.ipynb
           - Optimization: tutorials/optimization.ipynb
       - Competitions:
           - tutorials/competition.participate.ipynb
@@ -38,6 +39,7 @@ nav:
           - Competiton Evaluation: api/competition.evaluation.md
       - Hub:
           - Client: api/hub.client.md
+          - External Auth Client: api/hub.external_auth_client.md
           - PolarisFileSystem: api/hub.polarisfs.md
       - Additional:
           - Dataset Factory: api/factory.md

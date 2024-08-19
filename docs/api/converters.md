@@ -16,3 +16,9 @@
         filters: ["!^_"]
 
 ---
+
+::: polaris.dataset.converters.PDBConverter
+    options:
+        filters: ["!^_"]
+
+---

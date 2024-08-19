@@ -20,11 +20,12 @@ from pydantic import (
 )
 
 from polaris._artifact import BaseArtifactModel
-from polaris.mixins import ChecksumMixin
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum, compute_zarr_checksum
+from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 from polaris.hub.polarisfs import PolarisFileSystem
+from polaris.mixins import ChecksumMixin
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
@@ -307,7 +308,8 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
         return self.table.columns.tolist()
 
     def load_to_memory(self):
-        """Pre-load the entire dataset into memory.
+        """
+        Load data from zarr files to memeory
 
         Warning: Make sure the uncompressed dataset fits in-memory.
             This method will load the **uncompressed** dataset into memory. Make
@@ -321,10 +323,10 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
                 "Did you call Dataset.load_to_memory() twice?"
             )
 
-        # NOTE (cwognum): If the dataset fits in memory, we are best of using plain NumPy arrays.
+        # NOTE (cwognum): If the dataset fits in memory, the most performant is to use plain NumPy arrays.
         # Even if we disable chunking and compression in Zarr.
         # For more information, see https://github.com/zarr-developers/zarr-python/issues/1395
-        self._zarr_data = {k: data[k][:] for k in data.array_keys()}
+        self._zarr_data = load_zarr_group_to_memory(data)
 
     def get_data(self, row: str | int, col: str, adapters: Optional[List[Adapter]] = None) -> np.ndarray:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
