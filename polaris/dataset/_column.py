@@ -18,7 +18,7 @@ class Modality(enum.Enum):
     IMAGE = "image"
 
 
-class ContentType(enum.StrEnum):
+class ContentType(str, enum.Enum):
     """Used to specify column's IANA content type in a dataset."""
 
     SMILES = Literal["chemical/x-daylight-smiles"]
