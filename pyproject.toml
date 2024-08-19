@@ -92,7 +92,7 @@ Documentation = "https://polaris-hub.github.io/polaris/"
 include-package-data = true
 
 [tool.setuptools_scm]
-fallback_version = "dev"
+fallback_version = "0.0.0.dev1"
 
 [tool.setuptools.packages.find]
 where = ["."]

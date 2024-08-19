@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from typing import ClassVar, Optional, Union
 
+import numpy as np
 import pandas as pd
 from pydantic import (
     BaseModel,
@@ -20,7 +21,15 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import sluggify
-from polaris.utils.types import AccessType, HttpUrlString, HubOwner, HubUser, SlugCompatibleStringType
+from polaris.utils.types import (
+    AccessType,
+    CompetitionPredictionsType,
+    HttpUrlString,
+    HubOwner,
+    HubUser,
+    PredictionsType,
+    SlugCompatibleStringType,
+)
 
 # Define some helpful type aliases
 TestLabelType = str
@@ -58,15 +67,48 @@ class ResultRecords(BaseModel):
         return {metric.name: score for metric, score in value.items()}
 
 
-ResultsType = Union[pd.DataFrame, list[Union[ResultRecords, dict]]]
+ResultsType = Union[pd.DataFrame, list[ResultRecords | dict]]
 
 
-class BenchmarkResults(BaseArtifactModel):
-    """Class for saving benchmarking results
+class ResultsMetadata(BaseArtifactModel):
+    """Base class for evaluation results
 
-    This object is returned by [`BenchmarkSpecification.evaluate`][polaris.benchmark.BenchmarkSpecification.evaluate].
-    In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
-    the results with the Polaris Hub.
+    Attributes:
+        github_url: The URL to the GitHub repository of the code used to generate these results.
+        paper_url: The URL to the paper describing the methodology used to generate these results.
+        contributors: The users that are credited for these results.
+        _created_at: The time-stamp at which the results were created. Automatically set.
+    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
+    """
+
+    # Additional meta-data
+    github_url: Optional[HttpUrlString] = None
+    paper_url: Optional[HttpUrlString] = None
+    contributors: Optional[list[HubUser]] = None
+
+    # Private attributes
+    _created_at: datetime = PrivateAttr(default_factory=datetime.now)
+
+    def _repr_dict_(self) -> dict:
+        """Utility function for pretty-printing to the command line and jupyter notebooks"""
+        repr_dict = self.model_dump(exclude=["results"])
+
+        df = self.results.copy(deep=True)
+        df["Metric"] = df["Metric"].apply(lambda x: x.name if isinstance(x, Metric) else x)
+        repr_dict["results"] = json.loads(df.to_json(orient="records"))
+
+        return repr_dict
+
+    def _repr_html_(self):
+        """For pretty-printing in Jupyter Notebooks"""
+        return dict2html(self._repr_dict_())
+
+    def __repr__(self):
+        return json.dumps(self._repr_dict_(), indent=2)
+
+
+class EvaluationResult(ResultsMetadata):
+    """Class for saving evaluation results
 
     The actual results are saved in the `results` field using the following tabular format:
 
@@ -79,43 +121,20 @@ class BenchmarkResults(BaseArtifactModel):
 
     question: Categorizing methods
         An open question is how to best categorize a methodology (e.g. a model).
-        This is needed since we would like to be able to aggregate results across benchmarks too,
+        This is needed since we would like to be able to aggregate results across benchmarks/competitions too,
         to say something about which (type of) methods performs best _in general_.
 
     Attributes:
-        results: Benchmark results are stored directly in a dataframe or in a serialized, JSON compatible dict
+        results: Evaluation results are stored directly in a dataframe or in a serialized, JSON compatible dict
             that can be decoded into the associated tabular format.
-        benchmark_name: The name of the benchmark for which these results were generated.
-            Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.
-        benchmark_owner: The owner of the benchmark for which these results were generated.
-            Together with the benchmark name, this uniquely identifies the benchmark on the Hub.
-        github_url: The URL to the GitHub repository of the code used to generate these results.
-        paper_url: The URL to the paper describing the methodology used to generate these results.
-        contributors: The users that are credited for these results.
-        _created_at: The time-stamp at which the results were created. Automatically set.
-    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
+    For additional meta-data attributes, see the [`ResultsMetadata`][polaris.evaluate._results.ResultsMetadata] class.
     """
 
     # Define the columns of the results table
     RESULTS_COLUMNS: ClassVar[list[str]] = ["Test set", "Target label", "Metric", "Score"]
 
-    # Data
+    # Results attribute
     results: ResultsType
-    benchmark_name: SlugCompatibleStringType = Field(..., frozen=True)
-    benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
-
-    # Additional meta-data
-    github_url: Optional[HttpUrlString] = None
-    paper_url: Optional[HttpUrlString] = None
-    contributors: Optional[list[HubUser]] = None
-
-    # Private attributes
-    _created_at: datetime = PrivateAttr(default_factory=datetime.now)
-
-    @computed_field
-    @property
-    def benchmark_artifact_id(self) -> str:
-        return f"{self.benchmark_owner}/{sluggify(self.benchmark_name)}"
 
     @field_validator("results")
     def _validate_results(cls, v):
@@ -175,12 +194,34 @@ class BenchmarkResults(BaseArtifactModel):
 
         return serialized
 
+
+class BenchmarkResults(EvaluationResult):
+    """Class specific to results for standard benchmarks.
+
+    This object is returned by [`BenchmarkSpecification.evaluate`][polaris.benchmark.BenchmarkSpecification.evaluate].
+    In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
+    the results with the Polaris Hub.
+
+    benchmark_name: The name of the benchmark for which these results were generated.
+        Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.
+    benchmark_owner: The owner of the benchmark for which these results were generated.
+        Together with the benchmark name, this uniquely identifies the benchmark on the Hub.
+    """
+
+    benchmark_name: SlugCompatibleStringType = Field(..., frozen=True)
+    benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
+
+    @computed_field
+    @property
+    def benchmark_artifact_id(self) -> str:
+        return f"{self.benchmark_owner}/{sluggify(self.benchmark_name)}"
+
     def upload_to_hub(
         self,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         access: Optional[AccessType] = "private",
-        owner: Optional[Union[HubOwner, str]] = None,
+        owner: Union[HubOwner, str, None] = None,
         **kwargs: dict,
     ):
         """
@@ -192,22 +233,68 @@ class BenchmarkResults(BaseArtifactModel):
         with PolarisHubClient(settings=settings, cache_auth_token=cache_auth_token, **kwargs) as client:
             return client.upload_results(self, access=access, owner=owner)
 
-    def _repr_dict_(self) -> dict:
-        """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude=["results"])
 
-        df = self.results.copy(deep=True)
-        df["Metric"] = df["Metric"].apply(lambda x: x.name if isinstance(x, Metric) else x)
-        repr_dict["results"] = json.loads(df.to_json(orient="records"))
+class CompetitionResults(EvaluationResult):
+    """Class specific to results for competition benchmarks.
 
-        return repr_dict
+    This object is returned by [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
+    In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
+    the results with the Polaris Hub.
 
-    def _repr_html_(self):
-        """For pretty-printing in Jupyter Notebooks"""
-        return dict2html(self._repr_dict_())
+    Attributes:
+        competition_name: The name of the competition for which these results were generated.
+            Together with the competition owner, this uniquely identifies the competition on the Hub.
+        competition_owner: The owner of the competition for which these results were generated.
+            Together with the competition name, this uniquely identifies the competition on the Hub.
+    """
 
-    def __len__(self):
-        return len(self.table)
+    competition_name: SlugCompatibleStringType = Field(..., frozen=True)
+    competition_owner: Optional[HubOwner] = Field(None, frozen=True)
 
-    def __repr__(self):
-        return json.dumps(self._repr_dict_(), indent=2)
+    @computed_field
+    @property
+    def competition_artifact_id(self) -> str:
+        return f"{self.competition_owner}/{sluggify(self.competition_name)}"
+
+
+class CompetitionPredictions(ResultsMetadata):
+    """Class specific to predictions for competition benchmarks.
+
+    This object is to be used as input to [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
+    It is used to ensure that the structure of the predictions are compatible with evaluation methods on the Polaris Hub.
+
+    Attributes:
+        predictions: The predictions created for a given competition's test set(s).
+    """
+
+    predictions: Union[PredictionsType, CompetitionPredictionsType]
+    access: Optional[AccessType] = "private"
+
+    @field_validator("predictions")
+    @classmethod
+    def _convert_predictions(cls, value: Union[PredictionsType, CompetitionPredictionsType]):
+        """Convert prediction arrays from a list type to a numpy array. This is required for certain
+        operations during prediction evaluation"""
+
+        if isinstance(value, list):
+            return np.array(value)
+        elif isinstance(value, np.ndarray):
+            return value
+        elif isinstance(value, dict):
+            for key, val in value.items():
+                value[key] = cls._convert_predictions(val)
+            return value
+
+    @field_serializer("predictions")
+    def _serialize_predictions(self, value: PredictionsType):
+        """Used to serialize a Predictions object such that it can be sent over the wire during
+        external evaluation for competitions"""
+
+        if isinstance(value, np.ndarray):
+            return value.tolist()
+        elif isinstance(value, list):
+            return value
+        elif isinstance(value, dict):
+            for key, val in value.items():
+                value[key] = self._serialize_predictions(val)
+            return value
