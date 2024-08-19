@@ -574,11 +574,32 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorials/dataset_factory.html" class="md-nav__link">
+      <a href="../tutorials/dataset_pdb.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Dataset Factory
+    PDB Datasets
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/dataset_sdf.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SDF Datasets
   </span>
   
 
@@ -1079,6 +1100,27 @@
   
   
     <li class="md-nav__item">
+      <a href="hub.external_auth_client.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    External Auth Client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="hub.polarisfs.html" class="md-nav__link">
         
   
@@ -1263,6 +1305,30 @@
       ZarrConverter
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.PDBConverter" class="md-nav__link">
+    <span class="md-ellipsis">
+      PDBConverter
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PDBConverter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.PDBConverter.convert" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1465,6 +1531,30 @@
       ZarrConverter
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.PDBConverter" class="md-nav__link">
+    <span class="md-ellipsis">
+      PDBConverter
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PDBConverter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset.converters.PDBConverter.convert" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1809,6 +1899,137 @@ to a single column and each array contains the values for all datapoints in that
 
 
 
+
+
+
+  </div>
+
+    </div>
+
+</div><hr />
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="polaris.dataset.converters.PDBConverter" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">polaris.dataset.converters.PDBConverter</span>
+
+
+</h3>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris.dataset.converters._base.Converter" href="#polaris.dataset.converters.Converter">Converter</a></code></p>
+
+
+      <p>Converts PDB files into a Polaris dataset based on fastpdb.</p>
+
+
+<details class="info" open>
+  <summary>Only the most essential structural information of a protein is retained</summary>
+  <p>This conversion saves the 3D coordinates, chain ID, residue ID, insertion code, residue name, heteroatom indicator, atom name, element, atom ID, B-factor, occupancy, and charge.
+Records such as CONECT (connectivity information), ANISOU (anisotropic Temperature Factors), HETATM (heteroatoms and ligands) are handled by <code>fastpdb</code>.
+We believe this makes for a good <em>ML-ready</em> format, but let us know if you require any other information to be saved.</p>
+</details>
+
+<details class="info" open>
+  <summary>PDBs as ND-arrays using <code>biotite</code></summary>
+  <p>To save PDBs in a Polaris-compatible format, we convert them to ND-arrays using <code>fastpdb</code> and <code>biotite</code>.
+We then save these ND-arrays to Zarr archives.
+For more info, see <a href="https://github.com/biotite-dev/fastpdb">fastpdb</a>
+and <a href="https://github.com/biotite-dev/biotite/blob/main/src/biotite/structure/atoms.py">biotite</a></p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>pdb_column</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The name of the column that will contain the pointers to the pdbs.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;pdb&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>n_jobs</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The number of jobs to run in parallel.</p>
+              </div>
+            </td>
+            <td>
+                  <code>1</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>zarr_chunks</code></td>
+            <td>
+                  <code><span title="typing.Sequence">Sequence</span>[<span title="typing.Optional">Optional</span>[int]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The chunk size for the Zarr arrays.</p>
+              </div>
+            </td>
+            <td>
+                  <code>(1)</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.dataset.converters.PDBConverter.convert" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">convert</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">convert</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">factory</span><span class="p">:</span> <span class="n">DatasetFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FactoryProduct</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+      <p>Convert one or a list of PDB files into Zarr</p>
+
+    </div>
+
+</div>
 
 
 

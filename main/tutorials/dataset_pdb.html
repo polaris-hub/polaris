@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/tutorials/optimization.html">
+        <link rel="canonical" href="https://github.com/polaris-hub/polaris/main/tutorials/dataset_pdb.html">
       
       
-        <link rel="prev" href="dataset_sdf.html">
+        <link rel="prev" href="dataset_zarr.html">
       
       
-        <link rel="next" href="competition.participate.html">
+        <link rel="next" href="dataset_sdf.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Optimization - Polaris</title>
+        <title>PDB Datasets - Polaris</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#datasets-that-fit-in-memory" class="md-skip">
+        <a href="#dummy-pdb-example" class="md-skip">
           Skip to content
         </a>
       
@@ -125,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Optimization
+              PDB Datasets
             
           </span>
         </div>
@@ -581,10 +581,28 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="dataset_pdb.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    PDB Datasets
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="dataset_pdb.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -593,6 +611,87 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dummy-pdb-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dummy PDB example
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fetch-pdb-files-from-rcsb-pdb" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fetch PDB files from RCSB PDB
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-dataset-from-pdb-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create dataset from PDB file
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-the-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Check the dataset
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-data-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      Check data table
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#get-pdb-data-from-specific-row" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get PDB data from specific row
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-dataset-from-multiple-pdb-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create dataset from multiple PDB files
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -623,28 +722,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Optimization
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="optimization.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="optimization.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -653,75 +734,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#datasets-that-fit-in-memory" class="md-nav__link">
-    <span class="md-ellipsis">
-      Datasets that fit in memory
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Datasets that fit in memory">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#without-zarr" class="md-nav__link">
-    <span class="md-ellipsis">
-      Without Zarr
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#with-zarr" class="md-nav__link">
-    <span class="md-ellipsis">
-      With Zarr
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#datasets-that-fit-on-a-local-disk" class="md-nav__link">
-    <span class="md-ellipsis">
-      Datasets that fit on a local disk
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#remote-datasets" class="md-nav__link">
-    <span class="md-ellipsis">
-      Remote Datasets
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1454,51 +1466,63 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#datasets-that-fit-in-memory" class="md-nav__link">
+  <a href="#dummy-pdb-example" class="md-nav__link">
     <span class="md-ellipsis">
-      Datasets that fit in memory
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Datasets that fit in memory">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#without-zarr" class="md-nav__link">
-    <span class="md-ellipsis">
-      Without Zarr
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#with-zarr" class="md-nav__link">
-    <span class="md-ellipsis">
-      With Zarr
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#datasets-that-fit-on-a-local-disk" class="md-nav__link">
-    <span class="md-ellipsis">
-      Datasets that fit on a local disk
+      Dummy PDB example
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#remote-datasets" class="md-nav__link">
+  <a href="#fetch-pdb-files-from-rcsb-pdb" class="md-nav__link">
     <span class="md-ellipsis">
-      Remote Datasets
+      Fetch PDB files from RCSB PDB
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-dataset-from-pdb-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create dataset from PDB file
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-the-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Check the dataset
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-data-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      Check data table
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#get-pdb-data-from-specific-row" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get PDB data from specific row
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-dataset-from-multiple-pdb-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create dataset from multiple PDB files
     </span>
   </a>
   
@@ -1522,7 +1546,7 @@
   
 
 
-  <h1>Optimization</h1>
+  <h1>PDB Datasets</h1>
 
 <script>
 (function (global, factory) {
@@ -1967,27 +1991,33 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <div class="admonition abstract highlight">
 <p class="admonition-title">In short</p>
-<p>This tutorial shows how to optimize a Polaris dataset to improve its efficiency.</p>
+<p>This tutorial shows how to create datasets with PDBs through the .zarr format.</p>
 </div>
-<div class="admonition abstract warning">
-<p class="admonition-title">No magic bullet</p>
-<p>What works best really depends on the specific dataset you're using and you will benefit from trying out different ways of storing the data.</p>
+<div class="admonition abstract example">
+<p class="admonition-title">This feature is still very new.</p>
+<p>The features we will show in this tutorial are still experimental. We would love to learn from the community how we can make it easier to create datasets.</p>
 </div>
-<h2 id="datasets-that-fit-in-memory">Datasets that fit in memory<a class="anchor-link" href="#datasets-that-fit-in-memory">¶</a></h2><p>Through the Polaris <code>Subset</code> class, we aim to provide a <em>general purpose</em> data loader that serves as a good default for a variety of use cases.</p>
-<p><strong>As a dataset creator</strong>, it is important to be mindful of some design decisions you can make to improve performance for your downstream users. These design decisions are most impactful!</p>
-<p><strong>As a dataset user</strong>, we provide the <code>Dataset.load_to_memory()</code> method to load the uncompressed dataset into memory. This is limited though, because there is only so much we can do automatically without risking data integrity.</p>
-<p>Despite our best efforts to provide a data loader that is as efficient as possible, you will always be able to optimize things further for a specific use case if needed.</p>
-<h3 id="without-zarr"><em>Without</em> Zarr<a class="anchor-link" href="#without-zarr">¶</a></h3><p>Without pointer columns, the best way to optimize your dataset's performance is by making sure you use the appropriate dtype. A smaller memory footprint not only reduces storage requirements, but also speeds up moving data around (e.g. to the GPU or to create <code>torch.Tensor</code> objects).</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e154bb54">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="dummy-pdb-example">Dummy PDB example<a class="anchor-link" href="#dummy-pdb-example">¶</a></h3>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=7c7d338f-8021-4331-a030-289cc9c7e5cc">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5e201379">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-1">
@@ -2000,23 +2030,46 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">platformdirs</span>
+
+<span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
+
+<span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">DatasetFactory</span>
+<span class="kn">from</span> <span class="nn">polaris.dataset.converters</span> <span class="kn">import</span> <span class="n">PDBConverter</span>
+
+<span class="n">SAVE_DIR</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">platformdirs</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span><span class="n">appname</span><span class="o">=</span><span class="s2">"polaris-tutorials"</span><span class="p">),</span> <span class="s2">"dataset_pdb"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import numpy as np
-import pandas as pd</div>
+<div class="clipboard-copy-txt" id="cell-1">import platformdirs
+
+import datamol as dm
+
+from polaris.dataset import DatasetFactory
+from polaris.dataset.converters import PDBConverter
+
+SAVE_DIR = dm.fs.join(platformdirs.user_cache_dir(appname="polaris-tutorials"), "dataset_pdb")</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f4a4a9c7">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="fetch-pdb-files-from-rcsb-pdb">Fetch PDB files from RCSB PDB<a class="anchor-link" href="#fetch-pdb-files-from-rcsb-pdb">¶</a></h3>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=04920850-621b-4f08-bc2c-6dfaade87c90">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=fda9b878">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-2">
@@ -2029,40 +2082,38 @@ import pandas as pd</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Let's create a dummy dataset with two columns</span>
-<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">col_a</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)),</span> <span class="mi">10000</span><span class="p">)</span>
-<span class="n">col_b</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
-<span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"A"</span><span class="p">:</span> <span class="n">col_a</span><span class="p">,</span> <span class="s2">"B"</span><span class="p">:</span> <span class="n">col_b</span><span class="p">})</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">biotite.database.rcsb</span> <span class="k">as</span> <span class="nn">rcsb</span>
+
+<span class="n">pdb_path</span> <span class="o">=</span> <span class="n">rcsb</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s2">"6s89"</span><span class="p">,</span> <span class="s2">"pdb"</span><span class="p">,</span> <span class="n">SAVE_DIR</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2"># Let's create a dummy dataset with two columns
-rng = np.random.default_rng(0)
-col_a = rng.choice(list(range(100)), 10000)
-col_b = rng.random(10000)
-table = pd.DataFrame({"A": col_a, "B": col_b})</div>
+<div class="clipboard-copy-txt" id="cell-2">import biotite.database.rcsb as rcsb
+
+pdb_path = rcsb.fetch("6s89", "pdb", SAVE_DIR)
+print(pdb_path)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=877b05eb-794c-4770-81fa-c1bdf5a4e103">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8a47ae20">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>By default, Pandas (and NumPy) use the largest dtype available.</p>
+<h3 id="create-dataset-from-pdb-file">Create dataset from PDB file<a class="anchor-link" href="#create-dataset-from-pdb-file">¶</a></h3>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c8531c7b-612b-4ac0-95c1-a085cff6a44d">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=07442028">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-3">
@@ -2075,35 +2126,50 @@ table = pd.DataFrame({"A": col_a, "B": col_b})</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">table</span><span class="o">.</span><span class="n">dtypes</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">save_dst</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"tutorial_pdb.zarr"</span><span class="p">)</span>
+
+<span class="n">factory</span> <span class="o">=</span> <span class="n">DatasetFactory</span><span class="p">(</span><span class="n">zarr_root_path</span><span class="o">=</span><span class="n">save_dst</span><span class="p">)</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)</span>
+
+<span class="n">factory</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">"pdb"</span><span class="p">,</span> <span class="n">PDBConverter</span><span class="p">(</span><span class="n">pdb_column</span><span class="o">=</span><span class="s2">"pdb"</span><span class="p">))</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">add_from_file</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">)</span>
+
+<span class="c1"># Build the dataset</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">table.dtypes</div>
+<div class="clipboard-copy-txt" id="cell-3">save_dst = dm.fs.join(SAVE_DIR, "tutorial_pdb.zarr")
+
+factory = DatasetFactory(zarr_root_path=save_dst)
+factory.reset(save_dst)
+
+factory.register_converter("pdb", PDBConverter(pdb_column="pdb"))
+factory.add_from_file(pdb_path)
+
+# Build the dataset
+dataset = factory.build()</div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>A      int64
-B    float64
-dtype: object</pre>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=35bb183e">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="check-the-dataset">Check the dataset<a class="anchor-link" href="#check-the-dataset">¶</a></h3>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=640fab44-1fd8-473a-ba57-1f7b8284344f">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=05712cbd">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-4">
@@ -2116,9 +2182,9 @@ dtype: object</pre>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">table</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">table.memory_usage().sum()</div>
+<div class="clipboard-copy-txt" id="cell-4">dataset</div>
 </div>
 </div>
 </div>
@@ -2128,32 +2194,32 @@ dtype: object</pre>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>160132</pre>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[15]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<table border="1"><tr><th>name</th><td>None</td></tr><tr><th>description</th><td></td></tr><tr><th>tags</th><td></td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>owner</th><td>None</td></tr><tr><th>polaris_version</th><td>0.7.10.dev22+g8edf177.d20240814</td></tr><tr><th>default_adapters</th><td><table border="1"><tr><th>pdb</th><td>ARRAY_TO_PDB</td></tr></table></td></tr><tr><th>zarr_root_path</th><td>/Users/lu.zhu/Library/Caches/polaris-tutorials/002/tutorial_pdb.zarr</td></tr><tr><th>readme</th><td></td></tr><tr><th>annotations</th><td><table border="1"><tr><th>pdb</th><td><table border="1"><tr><th>is_pointer</th><td>True</td></tr><tr><th>modality</th><td>PROTEIN_3D</td></tr><tr><th>description</th><td>None</td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>dtype</th><td>object</td></tr></table></td></tr></table></td></tr><tr><th>source</th><td>None</td></tr><tr><th>license</th><td>None</td></tr><tr><th>curation_reference</th><td>None</td></tr><tr><th>cache_dir</th><td>/Users/lu.zhu/Library/Caches/polaris/datasets/b0895f92-5a11-4e48-953f-3f969c6a9ca6</td></tr><tr><th>md5sum</th><td>66f3c7774e655bc6d48c907100d6912f</td></tr><tr><th>artifact_id</th><td>None</td></tr><tr><th>n_rows</th><td>1</td></tr><tr><th>n_columns</th><td>1</td></tr></table>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=399b8e83-e08a-48db-805a-a45d36609d79">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e5f904bc">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>However, we know that column A only has values between 0 and 99, so we won't need the full <code>int64</code> dtype. The <code>np.int16</code> is already more appropriate!</p>
+<h3 id="check-data-table">Check data table<a class="anchor-link" href="#check-data-table">¶</a></h3>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=3cc1132b-ebf8-4bb2-815c-71627dc8a3b6">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=6b7017ad">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-5">
@@ -2166,11 +2232,9 @@ dtype: object</pre>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">table</span><span class="p">[</span><span class="s2">"A"</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">"A"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span>
-<span class="n">table</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">table</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">table["A"] = table["A"].astype(np.int16)
-table.memory_usage().sum()</div>
+<div class="clipboard-copy-txt" id="cell-5">dataset.table</div>
 </div>
 </div>
 </div>
@@ -2180,46 +2244,61 @@ table.memory_usage().sum()</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>100132</pre>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[16]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>pdb</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>pdb/6s89</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c55b5c5d-32fb-4a1b-8e23-f6b1ac0628ba">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a89953b8">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>We managed to reduce the number of bytes by ~60k (or 60KB). <strong>That's 37.5% less!</strong></p>
-<p>Now imagine we would be talking about gigabyte-sized dataset!</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=490fd21e-db29-4539-b514-e83493060a55">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="with-zarr"><em>With</em> Zarr<a class="anchor-link" href="#with-zarr">¶</a></h3><p>If part of the dataset is stored in a Zarr archive - and that Zarr archive fits in memory (remember to optimize the <code>dtype</code>) - the most efficient thing to do is to just convert from Zarr to a NumPy array. Zarr is not built to support this use case specifically and NumPy is optimized for it. For more information, see e.g. <a href="https://github.com/zarr-developers/zarr-python/issues/1395">this Github issue</a>.</p>
-<p>Luckily, you don't have to do this yourself. You can use Polaris its <code>Dataset.load_to_memory()</code>.</p>
-<p>Let's again start by creating a dummy dataset!</p>
+<h3 id="get-pdb-data-from-specific-row">Get PDB data from specific row<a class="anchor-link" href="#get-pdb-data-from-specific-row">¶</a></h3><p>A array of list of <code>biotite.Atom</code> will be returned.
+See more details at <a href="https://github.com/biotite-dev/fastpdb">fastpdb</a> and <a href="https://github.com/biotite-dev/biotite/blob/main/src/biotite/structure/atoms.py">Atom</a>.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=624b55c3-389f-4e2c-bc49-58db2542e3a4">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=f2583c8d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-6">
@@ -2232,47 +2311,32 @@ table.memory_usage().sum()</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">zarr</span>
-<span class="kn">from</span> <span class="nn">tempfile</span> <span class="kn">import</span> <span class="n">mkdtemp</span>
-
-<span class="n">tmpdir</span> <span class="o">=</span> <span class="n">mkdtemp</span><span class="p">()</span>
-
-<span class="c1"># For the ones familiar with Zarr, this is not optimized at all.</span>
-<span class="c1"># If you wouldn't want to convert to NumPy, you would want to</span>
-<span class="c1"># optimize the chunking / compression.</span>
-
-<span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">"data.zarr"</span><span class="p">)</span>
-<span class="n">root</span> <span class="o">=</span> <span class="n">zarr</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span>
-<span class="n">root</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="s2">"A"</span><span class="p">,</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10000</span><span class="p">))</span>
-<span class="n">root</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="s2">"B"</span><span class="p">,</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10000</span><span class="p">));</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"pdb"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">import os
-import zarr
-from tempfile import mkdtemp
-
-tmpdir = mkdtemp()
-
-# For the ones familiar with Zarr, this is not optimized at all.
-# If you wouldn't want to convert to NumPy, you would want to
-# optimize the chunking / compression.
-
-path = os.path.join(tmpdir, "data.zarr")
-root = zarr.open(path, "w")
-root.array("A", rng.random(10000))
-root.array("B", rng.random(10000));</div>
+<div class="clipboard-copy-txt" id="cell-6">dataset.get_data(0, "pdb")</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=dcf9f62e-7be3-4d85-b41c-4e45a73e5f34">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5b3c1be6">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="create-dataset-from-multiple-pdb-files">Create dataset from multiple PDB files<a class="anchor-link" href="#create-dataset-from-multiple-pdb-files">¶</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5647c8ff">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-7">
@@ -2285,27 +2349,36 @@ root.array("B", rng.random(10000));</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">create_dataset_from_file</span>
-
-<span class="n">root_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">"data"</span><span class="p">,</span> <span class="s2">"data.zarr"</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">zarr_root_path</span><span class="o">=</span><span class="n">root_path</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">pdb_paths</span> <span class="o">=</span> <span class="n">rcsb</span><span class="o">.</span><span class="n">fetch</span><span class="p">([</span><span class="s2">"1l2y"</span><span class="p">,</span> <span class="s2">"4i23"</span><span class="p">],</span> <span class="s2">"pdb"</span><span class="p">,</span> <span class="n">SAVE_DIR</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pdb_paths</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">from polaris.dataset import create_dataset_from_file
-
-root_path = os.path.join(tmpdir, "data", "data.zarr")
-dataset = create_dataset_from_file(path, zarr_root_path=root_path)</div>
+<div class="clipboard-copy-txt" id="cell-7">pdb_paths = rcsb.fetch(["1l2y", "4i23"], "pdb", SAVE_DIR)
+print(pdb_paths)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>['/Users/lu.zhu/Library/Caches/polaris-tutorials/002/1l2y.pdb', '/Users/lu.zhu/Library/Caches/polaris-tutorials/002/4i23.pdb']
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=e2e441ef-7a9f-4306-81c6-5f2414655130">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1bd32964">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-8">
@@ -2318,36 +2391,33 @@ dataset = create_dataset_from_file(path, zarr_root_path=root_path)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">Subset</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">factory</span> <span class="o">=</span> <span class="n">DatasetFactory</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"pdbs.zarr"</span><span class="p">))</span>
 
-<span class="n">subset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)),</span> <span class="s2">"A"</span><span class="p">,</span> <span class="s2">"B"</span><span class="p">)</span>
+<span class="n">converter</span> <span class="o">=</span> <span class="n">PDBConverter</span><span class="p">()</span>
+<span class="n">factory</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">"pdb"</span><span class="p">,</span> <span class="n">converter</span><span class="p">)</span>
+
+<span class="n">factory</span><span class="o">.</span><span class="n">add_from_files</span><span class="p">(</span><span class="n">pdb_paths</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">from polaris.dataset import Subset
+<div class="clipboard-copy-txt" id="cell-8">factory = DatasetFactory(SAVE_DIR.join("pdbs.zarr"))
 
-subset = Subset(dataset, np.arange(len(dataset)), "A", "B")</div>
+converter = PDBConverter()
+factory.register_converter("pdb", converter)
+
+factory.add_from_files(pdb_paths, axis=0)
+dataset = factory.build()</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9fb12a2d-733b-4e52-83f1-f6a3a3e02054">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>For the sake of this example, we will use PyTorch.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6c562fb4-0a7e-49a7-81bd-0a65cf8c8109">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=1e05109e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-9">
@@ -2360,36 +2430,65 @@ subset = Subset(dataset, np.arange(len(dataset)), "A", "B")</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
-
-<span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">subset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">table</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-9">from torch.utils.data import DataLoader
+<div class="clipboard-copy-txt" id="cell-9">dataset.table</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-dataloader = DataLoader(subset, batch_size=64, shuffle=True)</div>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>pdb</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>pdb/1l2y</td>
+</tr>
+<tr>
+<th>1</th>
+<td>pdb/4i23</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e4f3cca7-4a3f-46ba-b50f-15f6af99120d">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Let's see how fast this is!</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=f53c3249-aa24-4323-8acf-7593bdd12dc0">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=a064942f">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-10">
@@ -2402,183 +2501,11 @@ dataloader = DataLoader(subset, batch_size=64, shuffle=True)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
-    <span class="k">pass</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">"pdb"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10">%%timeit
-for batch in dataloader:
-    pass</div>
+<div class="clipboard-copy-txt" id="cell-10">dataset.get_data(1, "pdb")</div>
 </div>
 </div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>1.45 s ± 22 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2465116b-e69f-47e7-a77f-a93f69a55ec3">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>That's pretty slow... Let's see if Polaris its optimization helps.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=861ecad6-a141-4527-a583-19ec7ed7ea78">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-11">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">load_to_memory</span><span class="p">()</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-11">dataset.load_to_memory()</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=be163e3a-b054-4496-9bc4-bfdc063a42aa">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-12">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="o">%%</span><span class="n">timeit</span>
-<span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
-    <span class="k">pass</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-12">%%timeit
-for batch in dataloader:
-    pass</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>99.4 ms ± 2.45 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e85e1089-9969-4ed0-999d-7b6327148a37">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>That's a lot faster!</p>
-<p>Now all that's left to do, is to clean up the temporary directory.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=24781758-8c10-447f-a56b-d20da5fa297f">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-13">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">rmtree</span>
-
-<span class="n">rmtree</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-13">from shutil import rmtree
-
-rmtree(tmpdir)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=47f8babc-ae30-402e-80e6-1039ac60207e">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="datasets-that-fit-on-a-local-disk">Datasets that fit on a local disk<a class="anchor-link" href="#datasets-that-fit-on-a-local-disk">¶</a></h2><p>For datasets that don't fit in memory, but that can be stored on a local disk, the most impactful design decision is how the dataset is chunked.</p>
-<p>Zarr datasets are chunked. When you try to load one piece of data, the entire chunk that data is part of has to be loaded into memory and decompressed. Remember that in ML, data access is typically random, which is a terrible access pattern because you are likely to reload chunks into memory.</p>
-<p>Most efficient is thus to chunk the data such that each chunk only contains a single data point.</p>
-<ul>
-<li>Benefit: No longer induce a performance penalty due to loading additional data into memory that it might not need.</li>
-<li>Downside: You might be able to compress the data more if you can consider similarities across data points while compressing.</li>
-</ul>
-<p><strong>A note on rechunking</strong>: Within Polaris, you do not have control over how a dataset on the Hub is chunked. In that case, rechunking is needed. This can induce a one-time, but nevertheless big performance penalty (see also the <a href="https://zarr.readthedocs.io/en/stable/tutorial.html#changing-chunk-shapes-rechunking">Zarr docs</a>). I don’t expect this to be an issue in the short-term given the size of the dataset we will be working with, but Zarr recommends using the <a href="https://github.com/pangeo-data/rechunker?tab=readme-ov-file">rechunker</a> Python package to improve performance.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=160b3cb4-0069-402e-ae35-c5410d68285a">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="remote-datasets">Remote Datasets<a class="anchor-link" href="#remote-datasets">¶</a></h2><p>In this case, you really benefit from improving memory storage by trying different compressors.</p>
-<p>See also <a href="https://earthmover.io/blog/cloud-native-dataloader">this article</a>.</p>
 </div>
 </div>
 </div>
@@ -2589,6 +2516,7 @@ rmtree(tmpdir)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>The process of completing the dataset's metadata and uploading it to the hub follows the same steps as outlined in the tutorial <a href="docs/tutorials/dataset_zarr.ipynb">dataset_zarr.ipynb</a></p>
 <p>The End.</p>
 </div>
 </div>
@@ -2678,7 +2606,7 @@ rmtree(tmpdir)</div>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="dataset_sdf.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: SDF Datasets">
+          <a href="dataset_zarr.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Zarr Datasets">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -2688,20 +2616,20 @@ rmtree(tmpdir)</div>
                 Previous
               </span>
               <div class="md-ellipsis">
-                SDF Datasets
+                Zarr Datasets
               </div>
             </div>
           </a>
         
         
           
-          <a href="competition.participate.html" class="md-footer__link md-footer__link--next" aria-label="Next: Participating in a Competition">
+          <a href="dataset_sdf.html" class="md-footer__link md-footer__link--next" aria-label="Next: SDF Datasets">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Participating in a Competition
+                SDF Datasets
               </div>
             </div>
             <div class="md-footer__button md-icon">

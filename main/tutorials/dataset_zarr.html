@@ -16,7 +16,7 @@
         <link rel="prev" href="custom_dataset_benchmark.html">
       
       
-        <link rel="next" href="dataset_factory.html">
+        <link rel="next" href="dataset_pdb.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -701,11 +701,32 @@
   
   
     <li class="md-nav__item">
-      <a href="dataset_factory.html" class="md-nav__link">
+      <a href="dataset_pdb.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Dataset Factory
+    PDB Datasets
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dataset_sdf.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SDF Datasets
   </span>
   
 
@@ -1179,6 +1200,27 @@
   
   <span class="md-ellipsis">
     Client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/hub.external_auth_client.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    External Auth Client
   </span>
   
 
@@ -2029,7 +2071,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="n">SAVE_DIR</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">platformdirs</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span><span class="n">appname</span><span class="o">=</span><span class="s2">"polaris-tutorials"</span><span class="p">),</span> <span class="s2">"002"</span><span class="p">)</span>
+<span class="n">SAVE_DIR</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">platformdirs</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span><span class="n">appname</span><span class="o">=</span><span class="s2">"polaris-tutorials"</span><span class="p">),</span> <span class="s2">"dataset_zarr"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">import zarr
 import platformdirs
@@ -2038,7 +2080,7 @@ import numpy as np
 import datamol as dm
 import pandas as pd
 
-SAVE_DIR = dm.fs.join(platformdirs.user_cache_dir(appname="polaris-tutorials"), "002")</div>
+SAVE_DIR = dm.fs.join(platformdirs.user_cache_dir(appname="polaris-tutorials"), "dataset_zarr")</div>
 </div>
 </div>
 </div>
@@ -3092,13 +3134,13 @@ dataset.source = "https://github.com/polaris-hub/polaris"</div>
         
         
           
-          <a href="dataset_factory.html" class="md-footer__link md-footer__link--next" aria-label="Next: Dataset Factory">
+          <a href="dataset_pdb.html" class="md-footer__link md-footer__link--next" aria-label="Next: PDB Datasets">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Dataset Factory
+                PDB Datasets
               </div>
             </div>
             <div class="md-footer__button md-icon">

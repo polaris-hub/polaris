@@ -574,11 +574,32 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorials/dataset_factory.html" class="md-nav__link">
+      <a href="../tutorials/dataset_pdb.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Dataset Factory
+    PDB Datasets
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/dataset_sdf.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SDF Datasets
   </span>
   
 
@@ -1079,6 +1100,27 @@
   
   
     <li class="md-nav__item">
+      <a href="hub.external_auth_client.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    External Auth Client
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="hub.polarisfs.html" class="md-nav__link">
         
   
@@ -1259,6 +1301,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.add_from_files" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_from_files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.dataset.DatasetFactory.build" class="md-nav__link">
     <span class="md-ellipsis">
       build
@@ -1285,6 +1336,15 @@
   <a href="#polaris.dataset.create_dataset_from_file" class="md-nav__link">
     <span class="md-ellipsis">
       create_dataset_from_file
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.create_dataset_from_files" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_dataset_from_files
     </span>
   </a>
   
@@ -1527,6 +1587,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#polaris.dataset.DatasetFactory.add_from_files" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_from_files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.dataset.DatasetFactory.build" class="md-nav__link">
     <span class="md-ellipsis">
       build
@@ -1553,6 +1622,15 @@
   <a href="#polaris.dataset.create_dataset_from_file" class="md-nav__link">
     <span class="md-ellipsis">
       create_dataset_from_file
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.dataset.create_dataset_from_files" class="md-nav__link">
+    <span class="md-ellipsis">
+      create_dataset_from_files
     </span>
   </a>
   
@@ -1943,6 +2021,71 @@ If no converter is found for the file extension, it raises an error.</p>
 <div class="doc doc-object doc-function">
 
 
+<h4 id="polaris.dataset.DatasetFactory.add_from_files" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">add_from_files</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_from_files</span><span class="p">(</span><span class="n">paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="s1">&#39;columns&#39;</span><span class="p">])</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+      <p>Uses the registered converters to parse the data from a specific files and add them to the dataset.
+If no converter is found for the file extension, it raises an error.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>paths</code></td>
+            <td>
+                  <code><span title="typing.List">List</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The list of paths that should be parsed.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>axis</code></td>
+            <td>
+                  <code><span title="typing.Literal">Literal</span>[0, 1, &#39;index&#39;, &#39;columns&#39;]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Axis along which the files should be added.
+- 0 or 'index': append the rows with files. Files must be of the same type.
+- 1 or 'columns': append the columns with files. Files can be of the different types.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h4 id="polaris.dataset.DatasetFactory.build" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">build</span>
 
@@ -2034,6 +2177,59 @@ for your next dataset, this arguments needs to be passed.</p>
       <p>This function is a convenience function to create a dataset from a file.</p>
 <p>It sets up the dataset factory with sensible defaults for the converters.
 For creating more complicated datasets, please use the <code>DatasetFactory</code> directly.</p>
+
+    </div>
+
+</div><hr />
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="polaris.dataset.create_dataset_from_files" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">polaris.dataset.create_dataset_from_files</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">create_dataset_from_files</span><span class="p">(</span><span class="n">paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">zarr_root_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="s1">&#39;columns&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dataset</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+      <p>This function is a convenience function to create a dataset from multiple files.</p>
+<p>It sets up the dataset factory with sensible defaults for the converters.
+For creating more complicated datasets, please use the <code>DatasetFactory</code> directly.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>axis</code></td>
+            <td>
+                  <code><span title="typing.Literal">Literal</span>[0, 1, &#39;index&#39;, &#39;columns&#39;]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Axis along which the files should be added.
+- 0 or 'index': append the rows with files. Files must be of the same type.
+- 1 or 'columns': append the columns with files. Files can be of the different types.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
     </div>
 

@@ -111,7 +111,12 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://github.com/polaris-hub/polaris/main/tutorials/dataset_factory.html</loc>
+         <loc>https://github.com/polaris-hub/polaris/main/tutorials/dataset_pdb.html</loc>
+         <lastmod>2024-08-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://github.com/polaris-hub/polaris/main/tutorials/dataset_sdf.html</loc>
          <lastmod>2024-08-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
