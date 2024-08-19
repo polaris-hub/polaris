@@ -1,5 +1,5 @@
 import enum
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Literal
 
 import numpy as np
 from numpy.typing import DTypeLike
@@ -21,7 +21,7 @@ class Modality(enum.Enum):
 class ContentType(enum.StrEnum):
     """Used to specify column's IANA content type in a dataset."""
 
-    SMILES = "chemical/x-daylight-smiles"
+    SMILES = Literal["chemical/x-daylight-smiles"]
 
 
 class ColumnAnnotation(BaseModel):
