@@ -44,8 +44,8 @@ dependencies = [
     "httpx",
     "tenacity",
     "filelock",
-    "numpy < 3.0.0",
-    "pandas < 2.2.0",
+    "numpy < 2", # We need to pin numpy to avoid issues with fastpdb/biotite.
+    "pandas",
     "scipy",
     "scikit-learn",
     "seaborn",
@@ -116,7 +116,7 @@ data_file = ".coverage/coverage"
 omit = [
     "polaris/__init__.py",
     "polaris/_version.py",
-    # We cannot yet test the interaction with the Hub. 
+    # We cannot yet test the interaction with the Hub.
     # See e.g. https://github.com/polaris-hub/polaris/issues/30
     "polaris/hub/client.py",
     "polaris/hub/external_auth_client.py",
