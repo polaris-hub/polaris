@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/polaris-hub/polaris/stable/tutorials/custom_dataset_benchmark.html">
+        <link rel="canonical" href="https://github.com/polaris-hub/polaris/stable/tutorials/competition.participate.html">
       
       
-        <link rel="prev" href="basics.html">
+        <link rel="prev" href="optimization.html">
       
       
-        <link rel="next" href="dataset_zarr.html">
+        <link rel="next" href="../api/load.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Data Models - Polaris</title>
+        <title>Participating in a Competition - Polaris</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#create-the-dataset" class="md-skip">
+        <a href="#participating-in-a-competition" class="md-skip">
           Skip to content
         </a>
       
@@ -125,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Data Models
+              Participating in a Competition
             
           </span>
         </div>
@@ -494,28 +494,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Data Models
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="custom_dataset_benchmark.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="custom_dataset_benchmark.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -524,60 +506,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#create-the-dataset" class="md-nav__link">
-    <span class="md-ellipsis">
-      Create the dataset
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#save-and-load-the-dataset" class="md-nav__link">
-    <span class="md-ellipsis">
-      Save and load the dataset
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#create-the-benchmark-specification" class="md-nav__link">
-    <span class="md-ellipsis">
-      Create the benchmark specification
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#save-and-load-the-benchmark" class="md-nav__link">
-    <span class="md-ellipsis">
-      Save and load the benchmark
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -722,6 +650,8 @@
                 
   
   
+    
+  
   
   
     
@@ -736,11 +666,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" checked>
         
           
           <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
@@ -754,7 +684,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_4">
             <span class="md-nav__icon md-icon"></span>
             Competitions
@@ -765,10 +695,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="competition.participate.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Participating in a Competition
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="competition.participate.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -777,6 +727,44 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#fetching-a-competition" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fetching a Competition
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#participate-in-the-competition" class="md-nav__link">
+    <span class="md-ellipsis">
+      Participate in the Competition
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1429,6 +1417,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1437,36 +1427,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#create-the-dataset" class="md-nav__link">
+  <a href="#fetching-a-competition" class="md-nav__link">
     <span class="md-ellipsis">
-      Create the dataset
+      Fetching a Competition
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#save-and-load-the-dataset" class="md-nav__link">
+  <a href="#participate-in-the-competition" class="md-nav__link">
     <span class="md-ellipsis">
-      Save and load the dataset
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#create-the-benchmark-specification" class="md-nav__link">
-    <span class="md-ellipsis">
-      Create the benchmark specification
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#save-and-load-the-benchmark" class="md-nav__link">
-    <span class="md-ellipsis">
-      Save and load the benchmark
+      Participate in the Competition
     </span>
   </a>
   
@@ -1489,8 +1461,6 @@
   
   
 
-
-  <h1>Data Models</h1>
 
 <script>
 (function (global, factory) {
@@ -1927,42 +1897,28 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=172ae3e5">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=40f99374-b47e-4f84-bdb9-148a11f9c07d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<div class="admonition abstract highlight">
+<h1 id="participating-in-a-competition">Participating in a Competition<a class="anchor-link" href="#participating-in-a-competition">¶</a></h1><div class="admonition abstract highlight">
 <p class="admonition-title">In short</p>
-<p>This tutorial walks you through the dataset and benchmark data-structures. After creating our own custom dataset and benchmark, we will learn how to upload it to the Hub!</p>
+<p>This tutorial walks you through how to fetch an active competition from Polaris, prepare your predictions and then submit them for secure evaluation by the Polaris Hub.</p>
 </div>
-<p>We have already seen how easy it is to load a benchmark or dataset from the Polaris Hub. Let's now learn a bit more about the underlying data model by creating our own dataset and benchmark!</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ece200dc">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="create-the-dataset">Create the dataset<a class="anchor-link" href="#create-the-dataset">¶</a></h2><p>A dataset in Polaris is at its core a tabular data-structure in which each row stores a single datapoint. For this example, we will process a multi-task DMPK dataset from <a href="https://doi.org/10.1021/acs.jcim.3c00160">Fang et al.</a>. For the sake of simplicity, we don't do any curation and will just download the dataset as-is from their Github.</p>
-<div class="admonition warning highlight">
-<p class="admonition-title">The importance of curation</p>
-<p>While we do not address it in this tutorial, data curation is essential to an impactful benchmark. Because of this, we have not just made several high-quality benchmarks readily available on the Polaris Hub, but also open-sourced <a href="https://github.com/polaris-hub/auroris">some of the tools</a> we've built to curate these datasets.</p>
-</div>
+<p>Participating in a competition on Polaris is very similar to participating in a standard benchmark. The main difference lies in how predictions are prepared and how they are evaluated. We'll touch on each of these topics later in the tutorial.</p>
+<p>Before continuing, please ensure you are logged into Polaris.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9ecc653f-ec84-4102-aa22-cada0377c964">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9b465ea4-7c71-443b-9908-3f9e567ee4c4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-1">
@@ -1975,21 +1931,23 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">polaris</span> <span class="k">as</span> <span class="nn">po</span>
+<span class="kn">from</span> <span class="nn">polaris.hub.client</span> <span class="kn">import</span> <span class="n">PolarisHubClient</span>
 
-<span class="n">PATH</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s2">"https://raw.githubusercontent.com/molecularinformatics/Computational-ADME/main/ADME_public_set_3521.csv"</span>
-<span class="p">)</span>
-<span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PATH</span><span class="p">)</span>
-<span class="n">table</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="c1"># Don't forget to add your Polaris Hub username below!</span>
+<span class="n">MY_POLARIS_USERNAME</span> <span class="o">=</span> <span class="s2">""</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">PolarisHubClient</span><span class="p">()</span>
+<span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import pandas as pd
+<div class="clipboard-copy-txt" id="cell-1">import polaris as po
+from polaris.hub.client import PolarisHubClient
 
-PATH = (
-    "https://raw.githubusercontent.com/molecularinformatics/Computational-ADME/main/ADME_public_set_3521.csv"
-)
-table = pd.read_csv(PATH)
-table.head(5)</div>
+# Don't forget to add your Polaris Hub username below!
+MY_POLARIS_USERNAME = ""
+
+client = PolarisHubClient()
+client.login()</div>
 </div>
 </div>
 </div>
@@ -1998,131 +1956,34 @@ table.head(5)</div>
 <div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-<div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-<thead>
-<tr style="text-align: right;">
-<th></th>
-<th>Internal ID</th>
-<th>Vendor ID</th>
-<th>SMILES</th>
-<th>CollectionName</th>
-<th>LOG HLM_CLint (mL/min/kg)</th>
-<th>LOG MDR1-MDCK ER (B-A/A-B)</th>
-<th>LOG SOLUBILITY PH 6.8 (ug/mL)</th>
-<th>LOG PLASMA PROTEIN BINDING (HUMAN) (% unbound)</th>
-<th>LOG PLASMA PROTEIN BINDING (RAT) (% unbound)</th>
-<th>LOG RLM_CLint (mL/min/kg)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<th>0</th>
-<td>Mol1</td>
-<td>317714313</td>
-<td>CNc1cc(Nc2cccn(-c3ccccn3)c2=O)nn2c(C(=O)N[C@@H...</td>
-<td>emolecules</td>
-<td>0.675687</td>
-<td>1.493167</td>
-<td>0.089905</td>
-<td>0.991226</td>
-<td>0.518514</td>
-<td>1.392169</td>
-</tr>
-<tr>
-<th>1</th>
-<td>Mol2</td>
-<td>324056965</td>
-<td>CCOc1cc2nn(CCC(C)(C)O)cc2cc1NC(=O)c1cccc(C(F)F)n1</td>
-<td>emolecules</td>
-<td>0.675687</td>
-<td>1.040780</td>
-<td>0.550228</td>
-<td>0.099681</td>
-<td>0.268344</td>
-<td>1.027920</td>
-</tr>
-<tr>
-<th>2</th>
-<td>Mol3</td>
-<td>304005766</td>
-<td>CN(c1ncc(F)cn1)[C@H]1CCCNC1</td>
-<td>emolecules</td>
-<td>0.675687</td>
-<td>-0.358806</td>
-<td>NaN</td>
-<td>2.000000</td>
-<td>2.000000</td>
-<td>1.027920</td>
-</tr>
-<tr>
-<th>3</th>
-<td>Mol4</td>
-<td>194963090</td>
-<td>CC(C)(Oc1ccc(-c2cnc(N)c(-c3ccc(Cl)cc3)c2)cc1)C...</td>
-<td>emolecules</td>
-<td>0.675687</td>
-<td>1.026662</td>
-<td>1.657056</td>
-<td>-1.158015</td>
-<td>-1.403403</td>
-<td>1.027920</td>
-</tr>
-<tr>
-<th>4</th>
-<td>Mol5</td>
-<td>324059015</td>
-<td>CC(C)(O)CCn1cc2cc(NC(=O)c3cccc(C(F)(F)F)n3)c(C...</td>
-<td>emolecules</td>
-<td>0.996380</td>
-<td>1.010597</td>
-<td>NaN</td>
-<td>1.015611</td>
-<td>1.092264</td>
-<td>1.629093</td>
-</tr>
-</tbody>
-</table>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre><span class="ansi-green-fg">2024-08-09 18:05:23.205</span> | <span class="ansi-green-intense-fg ansi-bold">SUCCESS </span> | <span class="ansi-cyan-fg">polaris.hub.client</span>:<span class="ansi-cyan-fg">login</span>:<span class="ansi-cyan-fg">267</span> - <span class="ansi-green-intense-fg ansi-bold">You are successfully logged in to the Polaris Hub.</span>
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b330cf1a-bcb8-44d1-a6d2-54f468749083">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5edee39f-ce29-4ae6-91ce-453d9190541b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>While not required, a good dataset will specify additional meta-data to give further explanations on the data is contained within the dataset. This can be done on both the column level and on the dataset level.</p>
+<h2 id="fetching-a-competition">Fetching a Competition<a class="anchor-link" href="#fetching-a-competition">¶</a></h2><p>As with standard benchmarks, Polaris provides simple APIs that allow you to quickly fetch a competition from the Polaris Hub. All you need is the unique identifier for the competition which follows the format of <code>competition_owner</code>/<code>competition_name</code>.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=3145fc25-e670-413a-8926-8ab9d6fcb3b0">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=4e004589-6c48-4232-b353-b1700536dde6">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-2">
@@ -2135,41 +1996,38 @@ table.head(5)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">ColumnAnnotation</span>
-
-<span class="c1"># Additional meta-data on the column level</span>
-<span class="c1"># Of course, for a real dataset we should annotate all columns.</span>
-<span class="n">annotations</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"LOG HLM_CLint (mL/min/kg)"</span><span class="p">:</span> <span class="n">ColumnAnnotation</span><span class="p">(</span>
-        <span class="n">desription</span><span class="o">=</span><span class="s2">"Microsomal stability"</span><span class="p">,</span>
-        <span class="n">user_attributes</span><span class="o">=</span><span class="p">{</span><span class="s2">"unit"</span><span class="p">:</span> <span class="s2">"mL/min/kg"</span><span class="p">},</span>
-    <span class="p">),</span>
-    <span class="s2">"SMILES"</span><span class="p">:</span> <span class="n">ColumnAnnotation</span><span class="p">(</span><span class="n">desription</span><span class="o">=</span><span class="s2">"Molecule SMILES string"</span><span class="p">,</span> <span class="n">modality</span><span class="o">=</span><span class="s2">"molecule"</span><span class="p">),</span>
-<span class="p">}</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">competition_id</span> <span class="o">=</span> <span class="s2">"polaris/hello-world-competition"</span>
+<span class="n">competition</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_competition</span><span class="p">(</span><span class="n">competition_id</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">from polaris.dataset import ColumnAnnotation
-
-# Additional meta-data on the column level
-# Of course, for a real dataset we should annotate all columns.
-annotations = {
-    "LOG HLM_CLint (mL/min/kg)": ColumnAnnotation(
-        desription="Microsomal stability",
-        user_attributes={"unit": "mL/min/kg"},
-    ),
-    "SMILES": ColumnAnnotation(desription="Molecule SMILES string", modality="molecule"),
-}</div>
+<div class="clipboard-copy-txt" id="cell-2">competition_id = "polaris/hello-world-competition"
+competition = po.load_competition(competition_id)</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=36f3e829">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="participate-in-the-competition">Participate in the Competition<a class="anchor-link" href="#participate-in-the-competition">¶</a></h2><p>The Polaris library is designed to make it easy to participate in a competition. In just a few lines of code, we can get the train and test partition, access the associated data in various ways and evaluate our predictions. There's two main API endpoints.</p>
+<ul>
+<li><code>get_train_test_split()</code>: For creating objects through which we can access the different dataset partitions.</li>
+<li><code>evaluate()</code>: For evaluating a set of predictions in accordance with the competition protocol.</li>
+</ul>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=9e606547-f711-4e4d-8c93-97002a8a2236">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d8605928">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-3">
@@ -2182,62 +2040,32 @@ annotations = {
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span>
-<span class="kn">from</span> <span class="nn">polaris.utils.types</span> <span class="kn">import</span> <span class="n">HubOwner</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span>
-    <span class="c1"># The table is the core data-structure required to construct a dataset</span>
-    <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span>
-    <span class="c1"># Additional meta-data on the dataset level.</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">"Fang_2023_DMPK"</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"120 prospective data sets, collected over 20 months across six ADME in vitro endpoints"</span><span class="p">,</span>
-    <span class="n">source</span><span class="o">=</span><span class="s2">"https://doi.org/10.1021/acs.jcim.3c00160"</span><span class="p">,</span>
-    <span class="n">annotations</span><span class="o">=</span><span class="n">annotations</span><span class="p">,</span>
-    <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">"DMPK"</span><span class="p">,</span> <span class="s2">"ADME"</span><span class="p">],</span>
-    <span class="n">owner</span><span class="o">=</span><span class="n">HubOwner</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="s2">"cwognum"</span><span class="p">,</span> <span class="n">slug</span><span class="o">=</span><span class="s2">"cwognum"</span><span class="p">),</span>
-    <span class="n">license</span><span class="o">=</span><span class="s2">"CC-BY-4.0"</span><span class="p">,</span>
-    <span class="n">user_attributes</span><span class="o">=</span><span class="p">{</span><span class="s2">"year"</span><span class="p">:</span> <span class="s2">"2023"</span><span class="p">},</span>
-<span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">competition</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">from polaris.dataset import Dataset
-from polaris.utils.types import HubOwner
-
-dataset = Dataset(
-    # The table is the core data-structure required to construct a dataset
-    table=table,
-    # Additional meta-data on the dataset level.
-    name="Fang_2023_DMPK",
-    description="120 prospective data sets, collected over 20 months across six ADME in vitro endpoints",
-    source="https://doi.org/10.1021/acs.jcim.3c00160",
-    annotations=annotations,
-    tags=["DMPK", "ADME"],
-    owner=HubOwner(user_id="cwognum", slug="cwognum"),
-    license="CC-BY-4.0",
-    user_attributes={"year": "2023"},
-)</div>
+<div class="clipboard-copy-txt" id="cell-3">train, test = competition.get_train_test_split()</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=19bfee67-cda4-43d8-b9fd-31e8bf09de68">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e78bf878">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="save-and-load-the-dataset">Save and load the dataset<a class="anchor-link" href="#save-and-load-the-dataset">¶</a></h2><p>We can now save the dataset either to a local path or directly to the hub!</p>
+<p>The created test and train objects support various flavours to access the data.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=9c7766c1-ae85-4d0e-9757-aa5c495bc95e">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=7b17bb31">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-4">
@@ -2250,25 +2078,52 @@ dataset = Dataset(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">tempfile</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># The objects are iterable</span>
+<span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">train</span><span class="p">:</span>
+    <span class="k">pass</span>
 
-<span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span><span class="o">.</span><span class="n">name</span>
+<span class="c1"># The objects can be indexed</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">)):</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+<span class="c1"># The objects have properties to access all data at once</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">inputs</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">targets</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">import tempfile
+<div class="clipboard-copy-txt" id="cell-4"># The objects are iterable
+for x, y in train:
+    pass
 
-temp_dir = tempfile.TemporaryDirectory().name</div>
+# The objects can be indexed
+for i in range(len(train)):
+    x, y = train[i]
+
+# The objects have properties to access all data at once
+x = train.inputs
+y = train.targets</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5ec12825">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Now, let's create some predictions against the official Polaris <code>hello-world-competition</code>. We will train a simple random forest model on the ECFP representation through scikit-learn and datamol, and then we will submit our results for secure evaluation by the Polaris Hub.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ff8fff6d">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=902353bc">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-5">
@@ -2282,24 +2137,57 @@ temp_dir = tempfile.TemporaryDirectory().name</div>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
 
-<span class="n">save_dir</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="s2">"dataset"</span><span class="p">)</span>
+<span class="c1"># Load the competition (automatically loads the underlying dataset as well)</span>
+<span class="n">competition</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_competition</span><span class="p">(</span><span class="s2">"polaris/hello-world-benchmark"</span><span class="p">)</span>
+
+<span class="c1"># Get the split and convert SMILES to ECFP fingerprints by specifying an featurize function.</span>
+<span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">competition</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">(</span><span class="n">featurization_fn</span><span class="o">=</span><span class="n">dm</span><span class="o">.</span><span class="n">to_fp</span><span class="p">)</span>
+
+<span class="c1"># Define a model and train</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">train</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-5">import datamol as dm
+from sklearn.ensemble import RandomForestRegressor
 
-save_dir = dm.fs.join(temp_dir, "dataset")</div>
+# Load the competition (automatically loads the underlying dataset as well)
+competition = po.load_competition("polaris/hello-world-benchmark")
+
+# Get the split and convert SMILES to ECFP fingerprints by specifying an featurize function.
+train, test = competition.get_train_test_split(featurization_fn=dm.to_fp)
+
+# Define a model and train
+model = RandomForestRegressor(max_depth=2, random_state=0)
+model.fit(train.X, train.y)
+
+predictions = model.predict(test.X)</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1a36e334">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Now that we have created some predictions, we can construct a <code>CompetitionPredictions</code> object that will prepare our predictions for evaluation by the Polaris Hub. Here, you can also add metadata to your predictions to better describe your results and how you achieved them.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1b8d6aa6-9ca7-41dd-b219-9fbee813bc61">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=2b36e09b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-6">
@@ -2312,32 +2200,48 @@ save_dir = dm.fs.join(temp_dir, "dataset")</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.evaluate</span> <span class="kn">import</span> <span class="n">CompetitionPredictions</span>
+
+<span class="n">competition_predictions</span> <span class="o">=</span> <span class="n">CompetitionPredictions</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"hello-world-result"</span><span class="p">,</span>
+    <span class="n">predictions</span><span class="o">=</span><span class="n">predictions</span><span class="p">,</span>
+    <span class="n">github_url</span><span class="o">=</span><span class="s2">"https://github.com/polaris-hub/polaris-hub"</span><span class="p">,</span>
+    <span class="n">paper_url</span><span class="o">=</span><span class="s2">"https://polarishub.io/"</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"Hello, World!"</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">path = dataset.to_json(save_dir)</div>
+<div class="clipboard-copy-txt" id="cell-6">from polaris.evaluate import CompetitionPredictions
+
+competition_predictions = CompetitionPredictions(
+    name="hello-world-result",
+    predictions=predictions,
+    github_url="https://github.com/polaris-hub/polaris-hub",
+    paper_url="https://polarishub.io/",
+    description="Hello, World!",
+)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=45881174">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5ff06a9c">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Looking at the save destination, we see this created two files: A JSON with all the meta-data and a <code>.parquet</code> file with the tabular data.</p>
+<p>Once your <code>CompetitionPredictions</code> object is created, you're ready to submit them for evaluation! This will automatically save your result to the Polaris Hub, but it will be private. You can choose to make it public through the Polaris web application.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=114f8ceb">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=e684c611">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy for="cell-7">
@@ -2350,526 +2254,26 @@ save_dir = dm.fs.join(temp_dir, "dataset")</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">fs</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">get_mapper</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span><span class="o">.</span><span class="n">fs</span>
-<span class="n">fs</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">competition</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">competition_predictions</span><span class="p">)</span>
+
+<span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">fs = dm.fs.get_mapper(save_dir).fs
-fs.ls(save_dir)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>['/var/folders/1y/1v1blh6x56zdn027g5g9bwph0000gr/T/tmpe_g26lrl/dataset/table.parquet',
- '/var/folders/1y/1v1blh6x56zdn027g5g9bwph0000gr/T/tmpe_g26lrl/dataset/dataset.json']</pre>
+<div class="clipboard-copy-txt" id="cell-7">results = competition.evaluate(competition_predictions)
+
+client.close()</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f7a0d35e">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=44973556">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Loading the dataset can be done through this JSON file.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6161d30d">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-8">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">polaris</span> <span class="k">as</span> <span class="nn">po</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-8">import polaris as po
-
-dataset = po.load_dataset(path)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=637525f8-5d00-4937-8c0c-29876a309e46">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>We can also upload the dataset to the hub!</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=e98d9a66-dcd2-451e-8fb2-b603c344e87f">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-9">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># from polaris.hub.client import PolarisHubClient</span>
-
-<span class="c1"># NOTE: Commented out to not flood the DB</span>
-<span class="c1"># with PolarisHubClient() as client:</span>
-<span class="c1">#     client.upload_dataset(dataset=dataset)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-9"># from polaris.hub.client import PolarisHubClient
-
-# NOTE: Commented out to not flood the DB
-# with PolarisHubClient() as client:
-#     client.upload_dataset(dataset=dataset)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e146f9a6">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="create-the-benchmark-specification">Create the benchmark specification<a class="anchor-link" href="#create-the-benchmark-specification">¶</a></h2><p>A benchmark is represented by the <code>BenchmarkSpecification</code>, which wraps a <code>Dataset</code> with additional data to produce a benchmark.</p>
-<p>It specifies:</p>
-<ol>
-<li>Which dataset to use (see Dataset);</li>
-<li>Which columns are used as input and which columns are used as target;</li>
-<li>Which metrics should be used to evaluate performance on this task;</li>
-<li>A predefined, static train-test split to use during evaluation.</li>
-</ol>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=3313a76b">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-10">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">polaris.benchmark</span> <span class="kn">import</span> <span class="n">SingleTaskBenchmarkSpecification</span>
-
-<span class="c1"># For the sake of simplicity, we use a very simple, ordered split</span>
-<span class="n">split</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">521</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>  <span class="c1"># train  # test</span>
-
-<span class="n">benchmark</span> <span class="o">=</span> <span class="n">SingleTaskBenchmarkSpecification</span><span class="p">(</span>
-    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
-    <span class="n">target_cols</span><span class="o">=</span><span class="s2">"LOG SOLUBILITY PH 6.8 (ug/mL)"</span><span class="p">,</span>
-    <span class="n">input_cols</span><span class="o">=</span><span class="s2">"SMILES"</span><span class="p">,</span>
-    <span class="n">split</span><span class="o">=</span><span class="n">split</span><span class="p">,</span>
-    <span class="n">metrics</span><span class="o">=</span><span class="s2">"mean_absolute_error"</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-10">import numpy as np
-from polaris.benchmark import SingleTaskBenchmarkSpecification
-
-# For the sake of simplicity, we use a very simple, ordered split
-split = (np.arange(3000).tolist(), (np.arange(521) + 3000).tolist())  # train  # test
-
-benchmark = SingleTaskBenchmarkSpecification(
-    dataset=dataset,
-    target_cols="LOG SOLUBILITY PH 6.8 (ug/mL)",
-    input_cols="SMILES",
-    split=split,
-    metrics="mean_absolute_error",
-)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=560c105b-0a01-41ed-a5da-08fcf0db820d">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Metrics should be supported in the polaris framework.</p>
-<p>For more information, see the <code>Metric</code> class.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=103f73d7">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-11">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.evaluate</span> <span class="kn">import</span> <span class="n">Metric</span>
-
-<span class="nb">list</span><span class="p">(</span><span class="n">Metric</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-11">from polaris.evaluate import Metric
-
-list(Metric)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[13]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>[&lt;Metric.mean_absolute_error: MetricInfo(fn=&lt;function mean_absolute_error at 0x169779c60&gt;, is_multitask=False)&gt;,
- &lt;Metric.mean_squared_error: MetricInfo(fn=&lt;function mean_squared_error at 0x16977a020&gt;, is_multitask=False)&gt;,
- &lt;Metric.accuracy: MetricInfo(fn=&lt;function accuracy_score at 0x169758540&gt;, is_multitask=False)&gt;]</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=db0ee4c2">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>To support the vast flexibility in specifying a benchmark, we have different classes that correspond to different types of benchmarks. Each of these subclasses makes the data-model or logic more specific to a particular case. For example, trying to create a multitask benchmark with the same arguments as we used above will throw an error as there is just a single target column specified.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=1a036795">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-12">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.benchmark</span> <span class="kn">import</span> <span class="n">MultiTaskBenchmarkSpecification</span>
-
-<span class="n">benchmark</span> <span class="o">=</span> <span class="n">MultiTaskBenchmarkSpecification</span><span class="p">(</span>
-    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
-    <span class="n">target_cols</span><span class="o">=</span><span class="s2">"LOG SOLUBILITY PH 6.8 (ug/mL)"</span><span class="p">,</span>
-    <span class="n">input_cols</span><span class="o">=</span><span class="s2">"SMILES"</span><span class="p">,</span>
-    <span class="n">split</span><span class="o">=</span><span class="n">split</span><span class="p">,</span>
-    <span class="n">metrics</span><span class="o">=</span><span class="s2">"mean_absolute_error"</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-12">from polaris.benchmark import MultiTaskBenchmarkSpecification
-
-benchmark = MultiTaskBenchmarkSpecification(
-    dataset=dataset,
-    target_cols="LOG SOLUBILITY PH 6.8 (ug/mL)",
-    input_cols="SMILES",
-    split=split,
-    metrics="mean_absolute_error",
-)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ValidationError</span>                           Traceback (most recent call last)
-<span class="ansi-green-intense-fg ansi-bold">/Users/cas.wognum/Documents/repositories/polaris/docs/tutorials/custom_dataset_benchmark.ipynb Cell 25</span> line <span class="ansi-cyan-fg">3
-</span><span class="ansi-green-intense-fg ansi-bold">      &lt;a href='vscode-notebook-cell:/Users/cas.wognum/Documents/repositories/polaris/docs/tutorials/custom_dataset_benchmark.ipynb#X33sZmlsZQ%3D%3D?line=0'&gt;1&lt;/a&gt;</span> from polaris.benchmark import MultiTaskBenchmarkSpecification
-<span class="ansi-green-fg">----&gt; &lt;a href='vscode-notebook-cell:/Users/cas.wognum/Documents/repositories/polaris/docs/tutorials/custom_dataset_benchmark.ipynb#X33sZmlsZQ%3D%3D?line=2'&gt;3&lt;/a&gt;</span> benchmark = MultiTaskBenchmarkSpecification(
-<span class="ansi-green-intense-fg ansi-bold">      &lt;a href='vscode-notebook-cell:/Users/cas.wognum/Documents/repositories/polaris/docs/tutorials/custom_dataset_benchmark.ipynb#X33sZmlsZQ%3D%3D?line=3'&gt;4&lt;/a&gt;</span>     dataset=dataset,
-<span class="ansi-green-intense-fg ansi-bold">      &lt;a href='vscode-notebook-cell:/Users/cas.wognum/Documents/repositories/polaris/docs/tutorials/custom_dataset_benchmark.ipynb#X33sZmlsZQ%3D%3D?line=4'&gt;5&lt;/a&gt;</span>     target_cols="LOG SOLUBILITY PH 6.8 (ug/mL)",
-<span class="ansi-green-intense-fg ansi-bold">      &lt;a href='vscode-notebook-cell:/Users/cas.wognum/Documents/repositories/polaris/docs/tutorials/custom_dataset_benchmark.ipynb#X33sZmlsZQ%3D%3D?line=5'&gt;6&lt;/a&gt;</span>     input_cols="SMILES",
-<span class="ansi-green-intense-fg ansi-bold">      &lt;a href='vscode-notebook-cell:/Users/cas.wognum/Documents/repositories/polaris/docs/tutorials/custom_dataset_benchmark.ipynb#X33sZmlsZQ%3D%3D?line=6'&gt;7&lt;/a&gt;</span>     split=split,
-<span class="ansi-green-intense-fg ansi-bold">      &lt;a href='vscode-notebook-cell:/Users/cas.wognum/Documents/repositories/polaris/docs/tutorials/custom_dataset_benchmark.ipynb#X33sZmlsZQ%3D%3D?line=7'&gt;8&lt;/a&gt;</span>     metrics="mean_absolute_error",
-<span class="ansi-green-intense-fg ansi-bold">      &lt;a href='vscode-notebook-cell:/Users/cas.wognum/Documents/repositories/polaris/docs/tutorials/custom_dataset_benchmark.ipynb#X33sZmlsZQ%3D%3D?line=8'&gt;9&lt;/a&gt;</span> )
-
-File <span class="ansi-green-fg">~/micromamba/envs/polaris/lib/python3.11/site-packages/pydantic/main.py:164</span>, in <span class="ansi-cyan-fg">BaseModel.__init__</span><span class="ansi-blue-fg">(__pydantic_self__, **data)</span>
-<span class="ansi-green-intense-fg ansi-bold">    162</span> # `__tracebackhide__` tells pytest and some other tools to omit this function from tracebacks
-<span class="ansi-green-intense-fg ansi-bold">    163</span> __tracebackhide__ = True
-<span class="ansi-green-fg">--&gt; 164</span> __pydantic_self__.__pydantic_validator__.validate_python(data, self_instance=__pydantic_self__)
-
-<span class="ansi-red-fg">ValidationError</span>: 1 validation error for MultiTaskBenchmarkSpecification
-target_cols
-  Value error, A multi-task benchmark should specify at least two target columns [type=value_error, input_value='LOG SOLUBILITY PH 6.8 (ug/mL)', input_type=str]
-    For further information visit https://errors.pydantic.dev/2.4/v/value_error</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4c1bae4e">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="save-and-load-the-benchmark">Save and load the benchmark<a class="anchor-link" href="#save-and-load-the-benchmark">¶</a></h2><p>Saving the benchmark is easy and can be done with a single line of code.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=bfe454ff">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-13">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="s2">"benchmark"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-13">save_dir = dm.fs.join(temp_dir, "benchmark")</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=adbaf57f">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-14">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-14">path = benchmark.to_json(save_dir)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=06ca03cb">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-15">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">fs</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">get_mapper</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span><span class="o">.</span><span class="n">fs</span>
-<span class="n">fs</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-15">fs = dm.fs.get_mapper(save_dir).fs
-fs.ls(save_dir)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
-<pre>['/var/folders/1y/1v1blh6x56zdn027g5g9bwph0000gr/T/tmpe_g26lrl/benchmark/table.parquet',
- '/var/folders/1y/1v1blh6x56zdn027g5g9bwph0000gr/T/tmpe_g26lrl/benchmark/benchmark.json',
- '/var/folders/1y/1v1blh6x56zdn027g5g9bwph0000gr/T/tmpe_g26lrl/benchmark/dataset.json']</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=73a691ae">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>This created three files. Two <code>json</code> files and a single <code>parquet</code> file. The <code>parquet</code> file saves the tabular structure at the base of the <code>Dataset</code> class, whereas the <code>json</code> files save all the meta-data for the <code>Dataset</code> and <code>BenchmarkSpecification</code>.</p>
-<p>As before, loading the benchmark can be done through the JSON file.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=71e3fe8c">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-16">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">benchmark</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_benchmark</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-16">benchmark = po.load_benchmark(path)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1a88c7b9-63ab-4d33-aa46-614aa0f2bda9">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>And as before, we can also upload the benchmark directly to the hub.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ca2d1529-3773-4caa-b12d-62865c477e76">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-17">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># NOTE: Commented out to not flood the DB</span>
-<span class="c1"># with PolarisHubClient() as client:</span>
-<span class="c1">#     client.upload_benchmark(dataset=dataset)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-17"># NOTE: Commented out to not flood the DB
-# with PolarisHubClient() as client:
-#     client.upload_benchmark(dataset=dataset)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d16789db">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>That's it! Just like that you have partaken in your first Polaris competition. Keep an eye on that leaderboard and best of luck in your future competitions!</p>
 <p>The End.</p>
 <hr/>
 </div>
@@ -2960,7 +2364,7 @@ fs.ls(save_dir)</div>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="basics.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: The Basics">
+          <a href="optimization.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Optimization">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -2970,20 +2374,20 @@ fs.ls(save_dir)</div>
                 Previous
               </span>
               <div class="md-ellipsis">
-                The Basics
+                Optimization
               </div>
             </div>
           </a>
         
         
           
-          <a href="dataset_zarr.html" class="md-footer__link md-footer__link--next" aria-label="Next: Zarr Datasets">
+          <a href="../api/load.html" class="md-footer__link md-footer__link--next" aria-label="Next: Load">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Zarr Datasets
+                Load
               </div>
             </div>
             <div class="md-footer__button md-icon">
