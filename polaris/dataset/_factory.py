@@ -221,20 +221,21 @@ class DatasetFactory:
             adapter = adapters.get(name)
             self.add_column(series, annotation, adapter)
 
-    def add_from_file(self, path: str):
+    def add_from_file(self, path: str, append: bool = False):
         """
         Uses the registered converters to parse the data from a specific file and add it to the dataset.
         If no converter is found for the file extension, it raises an error.
 
         Args:
             path: The path to the file that should be parsed.
+            append: Allow to append an exisiting array.
         """
         ext = dm.fs.get_extension(path)
         converter = self._converters.get(ext)
         if converter is None:
             raise ValueError(f"No converter found for extension {ext}")
 
-        table, annotations, adapters = converter.convert(path, self)
+        table, annotations, adapters = converter.convert(path, self, append=append)
         self.add_columns(table, annotations, adapters)
 
     def add_from_files(self, paths: List[str], axis: Literal[0, 1, "index", "columns"]):
@@ -256,7 +257,7 @@ class DatasetFactory:
 
             tables = []
             for path in paths:
-                table, annotations, adapters = converter.convert(path, self)
+                table, annotations, adapters = converter.convert(path, self, append=True)
                 tables.append(table)
             self.add_columns(pd.concat(tables, axis=0, ignore_index=True), annotations, adapters)
         else:

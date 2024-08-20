@@ -169,7 +169,7 @@ class PDBConverter(Converter):
             dtype = DTYPE_DICT.get(col_name, col_val.dtype)
             group.array(col_name, data=col_val, dtype=dtype)
 
-    def convert(self, path: Union[str, List[str]], factory: "DatasetFactory") -> FactoryProduct:
+    def convert(self, path: Union[str, List[str]], factory: "DatasetFactory", **kwargs) -> FactoryProduct:
         """Convert one or a list of PDB files into Zarr"""
 
         if not isinstance(path, list):

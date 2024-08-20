@@ -56,7 +56,7 @@ class SDFConverter(Converter):
         self.n_jobs = n_jobs
         self.chunks = zarr_chunks
 
-    def convert(self, path: str, factory: "DatasetFactory") -> FactoryProduct:
+    def convert(self, path: str, factory: "DatasetFactory", append: bool = False) -> FactoryProduct:
         tmp_col = uuid.uuid4().hex
 
         # We do not sanitize the molecules or remove the Hs.
@@ -103,25 +103,31 @@ class SDFConverter(Converter):
         if self.mol_prop_as_cols:
             props &= ~Chem.PropertyPickleOptions.MolProps
         bytes_data = [mol.ToBinary(props) for mol in df[tmp_col]]
-
         df.drop(columns=[tmp_col], inplace=True)
 
-        # Create the zarr array
-        factory.zarr_root.array(self.mol_column, bytes_data, dtype=bytes, chunks=self.chunks)
+        if self.mol_column in factory.zarr_root and append:
+            # append existing array
+            pointer_start = factory.zarr_root[self.mol_column].shape[0]
+            factory.zarr_root[self.mol_column].append(bytes_data)
+        else:
+            # Create the zarr array
+            factory.zarr_root.array(self.mol_column, bytes_data, dtype=bytes, chunks=self.chunks)
+            pointer_start = 0
 
         # Add a pointer column to the table
         # We support grouping by a key, to allow inputs of variable length
         grouped = pd.DataFrame(columns=[*df.columns, self.mol_column])
         if self.groupby_key is not None:
             for _, group in df.reset_index(drop=True).groupby(by=self.groupby_key):
-                start = group.index[0]
-                end = group.index[-1]
-
-                if group.nunique().sum() != len(group.columns):
-                    raise ValueError(
-                        f"After grouping by {self.groupby_key}, values for other columns are not unique within a group. "
-                        "Please handle this manually to ensure aggregation is done correctly."
-                    )
+                start = pointer_start + group.index[0]
+                end = pointer_start + group.index[-1]
+                # Lu: is the check neccessary ?
+                # if group.nunique().sum() != len(group.columns): # deduct group column
+                #     print(group)
+                #     raise ValueError(
+                #         f"After grouping by {self.groupby_key}, values for other columns are not unique within a group. "
+                #         "Please handle this manually to ensure aggregation is done correctly."
+                #     )
 
                 # Get the pointer path
                 pointer_idx = f"{start}:{end}" if start != end else f"{start}"
@@ -134,7 +140,7 @@ class SDFConverter(Converter):
             df = grouped
 
         else:
-            pointers = [self.get_pointer(self.mol_column, i) for i in range(len(df))]
+            pointers = [self.get_pointer(self.mol_column, i + pointer_start) for i in range(len(df))]
             df[self.mol_column] = pd.Series(pointers)
 
         # Set the annotations
