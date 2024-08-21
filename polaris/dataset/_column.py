@@ -1,6 +1,5 @@
 import enum
-from typing import Dict, Optional, Literal
-from typing_extensions import TypeAlias
+from typing import Dict, Optional, Literal, Union
 
 import numpy as np
 from numpy.typing import DTypeLike
@@ -22,10 +21,8 @@ class Modality(enum.Enum):
 class KnownContentType(str, enum.Enum):
     """Used to specify column's IANA content type in a dataset."""
 
-    SMILES = Literal["chemical/x-smiles", "chemical/x-pdb"]
-
-
-ContentType: TypeAlias = KnownContentType | str
+    SMILES = Literal["chemical/x-smiles"]
+    PDB = Literal["chemical/x-pdb"]
 
 
 class ColumnAnnotation(BaseModel):
@@ -45,19 +42,19 @@ class ColumnAnnotation(BaseModel):
     """
 
     is_pointer: bool = False
-    modality: str | Modality = Modality.UNKNOWN
-    description: str | None = None
+    modality: Union[str, Modality] = Modality.UNKNOWN
+    description: Optional[str] = None
     user_attributes: Dict[str, str] = Field(default_factory=dict)
-    dtype: np.dtype | str | None = None
-    content_type: ContentType | None = None
+    dtype: Union[np.dtype, str, None] = None
+    content_type: Union[KnownContentType, str, None] = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_camel, populate_by_name=True)
 
     @field_validator("modality")
-    def _validate_modality(cls, v):
+    def _validate_modality(cls, v, values):
         """Tries to convert a string to the Enum"""
         if isinstance(v, str):
-            v = Modality[v.upper()]
+            v = Modality[v.upper()]   
         return v
 
     @field_validator("dtype")
