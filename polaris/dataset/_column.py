@@ -1,5 +1,6 @@
 import enum
 from typing import Dict, Optional, Literal
+from typing_extensions import TypeAlias
 
 import numpy as np
 from numpy.typing import DTypeLike
@@ -17,12 +18,12 @@ class Modality(enum.Enum):
     PROTEIN_3D = "protein_3D"
     IMAGE = "image"
 
-
-class ContentType(str, enum.Enum):
+class KnownContentType(str, enum.Enum):
     """Used to specify column's IANA content type in a dataset."""
 
     SMILES = Literal["chemical/x-smiles", "chemical/x-pdb"]
 
+ContentType: TypeAlias = KnownContentType | str
 
 class ColumnAnnotation(BaseModel):
     """
@@ -45,7 +46,7 @@ class ColumnAnnotation(BaseModel):
     description: str | None = None
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     dtype: np.dtype | str | None = None
-    content_type: str | ContentType | None = None
+    content_type: ContentType | None = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_camel, populate_by_name=True)
 
