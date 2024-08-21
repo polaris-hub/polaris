@@ -140,8 +140,7 @@ class SDFConverter(Converter):
         # Set the annotations
         annotations = {self.mol_column: ColumnAnnotation(is_pointer=True, modality=Modality.MOLECULE_3D)}
         if self.smiles_column is not None:
-            annotations[self.smiles_column] = ColumnAnnotation(modality=Modality.MOLECULE)
-            annotations[self.smiles_column] = ColumnAnnotation(content_type=ContentType.SMILES)
+            annotations[self.smiles_column] = ColumnAnnotation(modality=Modality.MOLECULE, content_type=ContentType.SMILES)
 
         # Return the dataframe and the annotations
         return df, annotations, {self.mol_column: Adapter.BYTES_TO_MOL}
