@@ -54,7 +54,7 @@ class PolarisHubSettings(BaseSettings):
     @field_validator("api_url", mode="before")
     def validate_api_url(cls, v, info: ValidationInfo):
         if v is None:
-            v = urljoin(str(info.data["hub_url"]), "/api/v1")
+            v = urljoin(str(info.data["hub_url"]), "/api")
         return v
 
     @field_validator("hub_token_url", mode="before")
