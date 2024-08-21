@@ -54,7 +54,7 @@ class ColumnAnnotation(BaseModel):
     def _validate_modality(cls, v, values):
         """Tries to convert a string to the Enum"""
         if isinstance(v, str):
-            v = Modality[v.upper()]   
+            v = Modality[v.upper()]
         return v
 
     @field_validator("dtype")
