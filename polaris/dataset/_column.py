@@ -18,12 +18,15 @@ class Modality(enum.Enum):
     PROTEIN_3D = "protein_3D"
     IMAGE = "image"
 
+
 class KnownContentType(str, enum.Enum):
     """Used to specify column's IANA content type in a dataset."""
 
     SMILES = Literal["chemical/x-smiles", "chemical/x-pdb"]
 
+
 ContentType: TypeAlias = KnownContentType | str
+
 
 class ColumnAnnotation(BaseModel):
     """
