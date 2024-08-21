@@ -21,7 +21,7 @@ class Modality(enum.Enum):
 class ContentType(str, enum.Enum):
     """Used to specify column's IANA content type in a dataset."""
 
-    SMILES = Literal["chemical/x-smiles"]
+    SMILES = Literal["chemical/x-smiles", "chemical/x-pdb"]
 
 
 class ColumnAnnotation(BaseModel):
