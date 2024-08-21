@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional
+from typing import Dict, List, Literal, Optional
 
 import datamol as dm
 import pandas as pd
@@ -8,7 +8,7 @@ from loguru import logger
 
 from polaris.dataset import ColumnAnnotation, Dataset
 from polaris.dataset._adapters import Adapter
-from polaris.dataset.converters import Converter, SDFConverter, ZarrConverter
+from polaris.dataset.converters import Converter, PDBConverter, SDFConverter, ZarrConverter
 
 
 def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) -> Dataset:
@@ -21,8 +21,32 @@ def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) ->
     factory = DatasetFactory(zarr_root_path=zarr_root_path)
     factory.register_converter("sdf", SDFConverter())
     factory.register_converter("zarr", ZarrConverter())
+    factory.register_converter("pdb", PDBConverter())
 
     factory.add_from_file(path)
+    return factory.build()
+
+
+def create_dataset_from_files(
+    paths: List[str], zarr_root_path: Optional[str] = None, axis: Literal[0, 1, "index", "columns"] = 0
+) -> Dataset:
+    """
+    This function is a convenience function to create a dataset from multiple files.
+
+    It sets up the dataset factory with sensible defaults for the converters.
+    For creating more complicated datasets, please use the `DatasetFactory` directly.
+
+    Args:
+        axis: Axis along which the files should be added.
+            - 0 or 'index': append the rows with files. Files must be of the same type.
+            - 1 or 'columns': append the columns with files. Files can be of the different types.
+    """
+    factory = DatasetFactory(zarr_root_path=zarr_root_path)
+    factory.register_converter("sdf", SDFConverter())
+    factory.register_converter("zarr", ZarrConverter())
+    factory.register_converter("pdb", PDBConverter())
+
+    factory.add_from_files(paths, axis)
     return factory.build()
 
 
@@ -212,6 +236,32 @@ class DatasetFactory:
 
         table, annotations, adapters = converter.convert(path, self)
         self.add_columns(table, annotations, adapters)
+
+    def add_from_files(self, paths: List[str], axis: Literal[0, 1, "index", "columns"]):
+        """
+        Uses the registered converters to parse the data from a specific files and add them to the dataset.
+        If no converter is found for the file extension, it raises an error.
+
+        Args:
+            paths: The list of paths that should be parsed.
+            axis: Axis along which the files should be added.
+                - 0 or 'index': append the rows with files. Files must be of the same type.
+                - 1 or 'columns': append the columns with files. Files can be of the different types.
+        """
+        if axis in [0, "index"]:
+            ext = dm.fs.get_extension(paths[0])
+            converter = self._converters.get(ext)
+            if converter is None:
+                raise ValueError(f"No converter found for extension {ext}")
+
+            tables = []
+            for path in paths:
+                table, annotations, adapters = converter.convert(path, self)
+                tables.append(table)
+            self.add_columns(pd.concat(tables, axis=0, ignore_index=True), annotations, adapters)
+        else:
+            for path in paths:
+                self.add_from_file(path)
 
     def build(self) -> Dataset:
         """Returns a Dataset based on the current state of the factory."""

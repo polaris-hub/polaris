@@ -11,6 +11,10 @@ class InvalidBenchmarkError(ValueError):
     pass
 
 
+class InvalidCompetitionError(ValueError):
+    pass
+
+
 class InvalidResultError(ValueError):
     pass
 
