@@ -21,7 +21,7 @@ class Modality(enum.Enum):
 class ContentType(str, enum.Enum):
     """Used to specify column's IANA content type in a dataset."""
 
-    SMILES = Literal["chemical/x-daylight-smiles"]
+    SMILES = Literal["chemical/x-smiles"]
 
 
 class ColumnAnnotation(BaseModel):
@@ -36,6 +36,8 @@ class ColumnAnnotation(BaseModel):
             and while it does not affect logic in this library, it does affect the logic of the hub.
         description: Describes how the data was generated.
         user_attributes: Any additional meta-data can be stored in the user attributes.
+        content_type: Specify column's IANA content type. If the the content type matches with a known type for
+            molecules (e.g. "chemical/x-smiles"), visualization for its content will be activated on the Hub side
     """
 
     is_pointer: bool = False
