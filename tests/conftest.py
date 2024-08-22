@@ -42,7 +42,22 @@ def caffeine():
     mol = dm.conformers.generate(mol, align_conformers=True, n_confs=1)
 
     # Let's also set a molecular property
-    mol.SetProp("my_property", "my_value")
+    mol.SetProp("my_property", "my_value_1")
+    return mol
+
+
+@pytest.fixture(scope="module")
+def ibuprofen():
+    # Let's generate a toy dataset with a single molecule
+    smiles = "CC(Cc1ccc(cc1)C(C(=O)O)C)C"
+    mol = dm.to_mol(smiles)
+
+    # We will generate 3D conformers for this molecule with some conformers
+    # NOTE (cwognum): We only generate a single conformer, because dm.to_sdf() only saves one.
+    mol = dm.conformers.generate(mol, align_conformers=True, n_confs=1)
+
+    # Let's also set a molecular property
+    mol.SetProp("my_property", "my_value_2")
     return mol
 
 
@@ -64,6 +79,15 @@ def pdbs_structs(pdb_paths):
         pdb_arrays.append(atom_array)
 
     return pdb_arrays
+
+
+@pytest.fixture(scope="module")
+def sdf_files(tmp_path_factory, caffeine, ibuprofen):
+    path_1 = tmp_path_factory.mktemp("data") / "caffeine.sdf"
+    path_2 = tmp_path_factory.mktemp("data") / "ibuprofen.sdf"
+    dm.to_sdf(caffeine, path_1)
+    dm.to_sdf(ibuprofen, path_2)
+    return [path_1, path_2]
 
 
 @pytest.fixture(scope="module")

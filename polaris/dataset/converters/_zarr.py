@@ -27,7 +27,7 @@ class ZarrConverter(Converter):
     to a single column and each array contains the values for all datapoints in that column.
     """
 
-    def convert(self, path: str, factory: "DatasetFactory") -> FactoryProduct:
+    def convert(self, path: str, factory: "DatasetFactory", **kwargs) -> FactoryProduct:
         src = zarr.open(path, "r")
 
         v = next(src.group_keys(), None)

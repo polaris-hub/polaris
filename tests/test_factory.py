@@ -1,5 +1,6 @@
 import datamol as dm
 import pandas as pd
+from zarr.errors import ContainsArrayError
 import pytest
 from fastpdb import struc
 
@@ -17,27 +18,28 @@ def _check_pdb_dataset(dataset, ground_truth):
 
 
 def _check_dataset(dataset, ground_truth, mol_props_as_col):
-    assert len(dataset) == 1
+    assert len(dataset) == len(ground_truth)
 
-    mol = dataset.get_data(row=0, col="molecule")
+    for row in range(len(dataset)):
+        mol = dataset.get_data(row=row, col="molecule")
 
-    assert isinstance(mol, dm.Mol)
+        assert isinstance(mol, dm.Mol)
 
-    if mol_props_as_col:
-        assert not mol.HasProp("my_property")
-        v = dataset.get_data(row=0, col="my_property")
-        assert v == ground_truth.GetProp("my_property")
+        if mol_props_as_col:
+            assert not mol.HasProp("my_property")
+            v = dataset.get_data(row=row, col="my_property")
+            assert v == ground_truth[row].GetProp("my_property")
 
-    else:
-        assert mol.HasProp("my_property")
-        assert mol.GetProp("my_property") == ground_truth.GetProp("my_property")
-        assert "my_property" not in dataset.columns
+        else:
+            assert mol.HasProp("my_property")
+            assert mol.GetProp("my_property") == ground_truth[row].GetProp("my_property")
+            assert "my_property" not in dataset.columns
 
 
 def test_sdf_zarr_conversion(sdf_file, caffeine, tmpdir):
     """Test conversion between SDF and Zarr with utility function"""
     dataset = create_dataset_from_file(sdf_file, tmpdir.join("archive.zarr"))
-    _check_dataset(dataset, caffeine, True)
+    _check_dataset(dataset, [caffeine], True)
 
 
 @pytest.mark.parametrize("mol_props_as_col", [True, False])
@@ -52,7 +54,7 @@ def test_factory_sdf_with_prop_as_col(sdf_file, caffeine, tmpdir, mol_props_as_c
     factory.add_from_file(sdf_file)
     dataset = factory.build()
 
-    _check_dataset(dataset, caffeine, mol_props_as_col)
+    _check_dataset(dataset, [caffeine], mol_props_as_col)
 
 
 def test_zarr_to_zarr_conversion(zarr_archive, tmpdir):
@@ -120,3 +122,56 @@ def test_pdbs_zarr_conversion(pdbs_structs, pdb_paths, tmpdir):
 
     assert dataset.table.shape[0] == len(pdb_paths)
     _check_pdb_dataset(dataset, pdbs_structs)
+
+
+def test_factory_sdfs(sdf_files, caffeine, ibuprofen, tmpdir):
+    """Test conversion between SDF and Zarr with factory pattern"""
+
+    factory = DatasetFactory(tmpdir.join("sdfs.zarr"))
+
+    converter = SDFConverter(mol_prop_as_cols=True)
+    factory.register_converter("sdf", converter)
+
+    factory.add_from_files(sdf_files, axis=0)
+    dataset = factory.build()
+
+    _check_dataset(dataset, [caffeine, ibuprofen], True)
+
+
+def test_factory_sdf_pdb(sdf_file, pdb_paths, caffeine, pdbs_structs, tmpdir):
+    """Test conversion between SDF and PDB from files to Zarr with factory pattern"""
+
+    factory = DatasetFactory(tmpdir.join("sdf_pdb.zarr"))
+
+    sdf_converter = SDFConverter(mol_prop_as_cols=False)
+    factory.register_converter("sdf", sdf_converter)
+
+    pdb_converter = PDBConverter()
+    factory.register_converter("pdb", pdb_converter)
+
+    factory.add_from_files([sdf_file, pdb_paths[0]], axis=1)
+    dataset = factory.build()
+
+    _check_dataset(dataset, [caffeine], False)
+    _check_pdb_dataset(dataset, pdbs_structs[:1])
+
+
+def test_factory_from_files_same_column(sdf_files, pdb_paths, tmpdir):
+    factory = DatasetFactory(tmpdir.join("files.zarr"))
+
+    sdf_converter = SDFConverter(mol_prop_as_cols=False)
+    factory.register_converter("sdf", sdf_converter)
+
+    pdb_converter = PDBConverter()
+    factory.register_converter("pdb", pdb_converter)
+
+    # do not allow same type of files to be appended in columns by `add_from_files`
+    # in this case, user should define converter for individual columns
+
+    # attempt to append columns by pdbs
+    with pytest.raises(ValueError):
+        factory.add_from_files(pdb_paths, axis=1)
+
+    # attempt to append columns by sdfs
+    with pytest.raises(ContainsArrayError):
+        factory.add_from_files(sdf_files, axis=1)
