@@ -1,5 +1,5 @@
 import enum
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Literal, Union
 
 import numpy as np
 from numpy.typing import DTypeLike
@@ -18,6 +18,13 @@ class Modality(enum.Enum):
     IMAGE = "image"
 
 
+class KnownContentType(str, enum.Enum):
+    """Used to specify column's IANA content type in a dataset."""
+
+    SMILES = Literal["chemical/x-smiles"]
+    PDB = Literal["chemical/x-pdb"]
+
+
 class ColumnAnnotation(BaseModel):
     """
     The `ColumnAnnotation` class is used to annotate the columns of the [`Dataset`][polaris.dataset.Dataset] object.
@@ -30,6 +37,8 @@ class ColumnAnnotation(BaseModel):
             and while it does not affect logic in this library, it does affect the logic of the hub.
         description: Describes how the data was generated.
         user_attributes: Any additional meta-data can be stored in the user attributes.
+        content_type: Specify column's IANA content type. If the the content type matches with a known type for
+            molecules (e.g. "chemical/x-smiles"), visualization for its content will be activated on the Hub side
     """
 
     is_pointer: bool = False
@@ -37,11 +46,12 @@ class ColumnAnnotation(BaseModel):
     description: Optional[str] = None
     user_attributes: Dict[str, str] = Field(default_factory=dict)
     dtype: Union[np.dtype, str, None] = None
+    content_type: Union[KnownContentType, str, None] = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_camel, populate_by_name=True)
 
     @field_validator("modality")
-    def _validate_modality(cls, v):
+    def _validate_modality(cls, v, values):
         """Tries to convert a string to the Enum"""
         if isinstance(v, str):
             v = Modality[v.upper()]
@@ -61,7 +71,7 @@ class ColumnAnnotation(BaseModel):
 
     @field_serializer("dtype")
     def _serialize_dtype(self, v: Optional[DTypeLike]):
-        """Return the modality as a string, keeping it serializable"""
+        """Return the dtype as a string, keeping it serializable"""
         if v is not None:
             v = v.name
         return v
