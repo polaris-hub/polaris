@@ -228,7 +228,6 @@ class DatasetFactory:
 
         Args:
             path: The path to the file that should be parsed.
-            append: Allow to append an exisiting array.
         """
         ext = dm.fs.get_extension(path)
         converter = self._converters.get(ext)
