@@ -1,5 +1,5 @@
 import enum
-from typing import Dict, Optional, Literal, Union
+from typing import Dict, Optional, Union
 
 import numpy as np
 from numpy.typing import DTypeLike
