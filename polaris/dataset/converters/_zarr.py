@@ -1,5 +1,6 @@
 from collections import defaultdict
 from typing import TYPE_CHECKING
+import os
 
 import pandas as pd
 import zarr
@@ -27,7 +28,7 @@ class ZarrConverter(Converter):
     to a single column and each array contains the values for all datapoints in that column.
     """
 
-    def convert(self, path: str, factory: "DatasetFactory") -> FactoryProduct:
+    def convert(self, path: str, factory: "DatasetFactory", append: bool = False) -> FactoryProduct:
         src = zarr.open(path, "r")
 
         v = next(src.group_keys(), None)
@@ -35,7 +36,17 @@ class ZarrConverter(Converter):
             raise ValueError("The root of the zarr hierarchy should only contain arrays.")
 
         # Copy to the source zarr, so everything is in one place
-        zarr.copy_store(source=src.store, dest=factory.zarr_root.store, if_exists="skip")
+        pointer_start_dict = {col: 0 for col, _ in src.arrays()}
+        if append:
+            if not os.path.exists(factory.zarr_root.store.path):
+                raise RuntimeError(f"Zarr store {factory.zarr_root.store.path} doesn't exist. \
+                    Please make sure the zarr store {factory.zarr_root.store.path} is created. Or set `append` to `False`.")
+            else:
+                for col, arr in src.arrays():
+                    pointer_start_dict[col] += factory.zarr_root[col].shape[0]
+                    factory.zarr_root[col].append(arr)
+        else:
+            zarr.copy_store(source=src.store, dest=factory.zarr_root.store, if_exists="skip")
 
         # Construct the table
         # Parse any group into a column

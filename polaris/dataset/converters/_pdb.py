@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Optional, Sequence, Union
 
 import fastpdb
 import numpy as np
@@ -147,7 +147,7 @@ class PDBConverter(Converter):
         return pdb_dict
 
     def _convert_pdb(
-        self, path: str, factory: "DatasetFactory", pdb_pointer: Union[str, int]
+        self, path: str, factory: "DatasetFactory", pdb_pointer: Union[str, int], append: bool = False
     ) -> FactoryProduct:
         """
         Convert a single pdb to zarr file
@@ -156,11 +156,15 @@ class PDBConverter(Converter):
         # load pdb as fastpbd and convert to dict
         pdb_dict = self._load_pdb(path)
 
-        # Create group and add datasets
-        if self.pdb_column not in factory.zarr_root:
-            pdb_group = factory.zarr_root.create_group(self.pdb_column)
+        # Create group and add
+        if append:
+            if self.pdb_column not in factory.zarr_root:
+                raise RuntimeError(f"Group {self.pdb_column} doesn't exist in {factory.zarr_root}. \
+                    Please make sure the Group {self.pdb_column} is created. Or set `append` to `False`.")
+            else:
+                pdb_group = factory.zarr_root[self.pdb_column]
         else:
-            pdb_group = factory.zarr_root[self.pdb_column]
+            pdb_group = factory.zarr_root.create_group(self.pdb_column)
 
         group = pdb_group.create_group(pdb_pointer)
         for col_name, col_val in pdb_dict.items():
@@ -169,20 +173,14 @@ class PDBConverter(Converter):
             dtype = DTYPE_DICT.get(col_name, col_val.dtype)
             group.array(col_name, data=col_val, dtype=dtype)
 
-    def convert(self, path: Union[str, List[str]], factory: "DatasetFactory") -> FactoryProduct:
+    def convert(self, path, factory: "DatasetFactory", append: bool = False) -> FactoryProduct:
         """Convert one or a list of PDB files into Zarr"""
-
-        if not isinstance(path, list):
-            path = [path]
-
         pdb_pointers = []
 
         # load single pdb and convert to zarr
-        for pdb_path in path:
-            # use the pdb file name as pointer
-            pdb_pointer = Path(pdb_path).stem
-            self._convert_pdb(pdb_path, factory, pdb_pointer)
-            pdb_pointers.append(pdb_pointer)
+        pdb_pointer = Path(path).stem
+        self._convert_pdb(path, factory, pdb_pointer, append)
+        pdb_pointers.append(pdb_pointer)
 
         # Add a pointer column (path) to the table
         pointers = [f"{self.pdb_column}/{pointer}" for pointer in pdb_pointers]

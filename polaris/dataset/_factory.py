@@ -255,9 +255,11 @@ class DatasetFactory:
                 raise ValueError(f"No converter found for extension {ext}")
 
             tables = []
+            append = False
             for path in paths:
-                table, annotations, adapters = converter.convert(path, self)
+                table, annotations, adapters = converter.convert(path, self, append=append)
                 tables.append(table)
+                append = True
             self.add_columns(pd.concat(tables, axis=0, ignore_index=True), annotations, adapters)
         else:
             for path in paths:
