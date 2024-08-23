@@ -105,10 +105,14 @@ class SDFConverter(Converter):
         bytes_data = [mol.ToBinary(props) for mol in df[tmp_col]]
         df.drop(columns=[tmp_col], inplace=True)
 
-        if self.mol_column in factory.zarr_root and append:
-            # append existing array
-            pointer_start = factory.zarr_root[self.mol_column].shape[0]
-            factory.zarr_root[self.mol_column].append(bytes_data)
+        if append:
+            if self.mol_column not in factory.zarr_root:
+                raise RuntimeError(f"Array {self.mol_column} doesn't exist in {factory.zarr_root}. \
+                    Please make sure the Array is created. Or set `append` to `False`.")
+            else:
+                # append existing array
+                pointer_start = factory.zarr_root[self.mol_column].shape[0]
+                factory.zarr_root[self.mol_column].append(bytes_data)
         else:
             # Create the zarr array
             factory.zarr_root.array(self.mol_column, bytes_data, dtype=bytes, chunks=self.chunks)
@@ -121,13 +125,11 @@ class SDFConverter(Converter):
             for _, group in df.reset_index(drop=True).groupby(by=self.groupby_key):
                 start = pointer_start + group.index[0]
                 end = pointer_start + group.index[-1]
-                # Lu: is the check neccessary ?
-                # if group.nunique().sum() != len(group.columns): # deduct group column
-                #     print(group)
-                #     raise ValueError(
-                #         f"After grouping by {self.groupby_key}, values for other columns are not unique within a group. "
-                #         "Please handle this manually to ensure aggregation is done correctly."
-                #     )
+                if group.nunique().sum() != len(group.columns):  # deduct group column
+                    raise ValueError(
+                        f"After grouping by {self.groupby_key}, values for other columns are not unique within a group. "
+                        "Please handle this manually to ensure aggregation is done correctly."
+                    )
 
                 # Get the pointer path
                 pointer_idx = f"{start}:{end}" if start != end else f"{start}"

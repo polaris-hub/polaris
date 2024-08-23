@@ -12,7 +12,7 @@ FactoryProduct: TypeAlias = Tuple[pd.DataFrame, Dict[str, ColumnAnnotation], Dic
 
 class Converter(abc.ABC):
     @abc.abstractmethod
-    def convert(self, path: str) -> FactoryProduct:
+    def convert(self, path: str, append: bool = False) -> FactoryProduct:
         """This converts a file into a table and possibly annotations"""
         raise NotImplementedError
 
