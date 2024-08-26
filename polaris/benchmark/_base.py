@@ -308,7 +308,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             hash_fn.update(m.name.encode("utf-8"))
 
         if not isinstance(self.split[1], dict):
-            split = self.split[0], {"test": self.split[1]}
+            split = self.split[0], {
+                "test": self.split[1]
+            }
         else:
             split = self.split
 
@@ -342,7 +344,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     def n_test_datapoints(self) -> dict[str, int]:
         """The size of (each of) the test set(s)."""
         if self.n_test_sets == 1:
-            return {"test": len(self.split[1])}
+            return {
+                "test": len(self.split[1])
+            }
         else:
             return {k: len(v) for k, v in self.split[1].items()}
 

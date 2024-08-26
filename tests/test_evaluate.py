@@ -1,10 +1,9 @@
 import os
 
+import datamol as dm
 import numpy as np
 import pandas as pd
 import pytest
-
-import datamol as dm
 
 import polaris as po
 from polaris.benchmark import (
@@ -31,7 +30,9 @@ def test_result_to_json(tmpdir: str, test_user_owner: HubOwner):
         name="test",
         description="Lorem ipsum!",
         tags=["test"],
-        user_attributes={"key": "value"},
+        user_attributes={
+            "key": "value"
+        },
         owner=test_user_owner,
         results=scores,
         benchmark_name="my-benchmark",

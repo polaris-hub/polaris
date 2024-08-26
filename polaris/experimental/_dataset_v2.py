@@ -196,10 +196,10 @@ class DatasetV2(BaseDataset):
 
     def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
         """Uploads the dataset to the Polaris Hub."""
+        from polaris.hub.client import PolarisHubClient
 
-        # NOTE (cwognum):  Leaving this for a later PR, because I want
-        #  to do it simultaneously with a PR on the Hub side.
-        raise NotImplementedError
+        with PolarisHubClient() as client:
+            client.upload_dataset(self, owner=owner, access=access)
 
     @classmethod
     def from_json(cls, path: str):
@@ -238,7 +238,7 @@ class DatasetV2(BaseDataset):
         dataset_path = str(destination / "dataset.json")
         new_zarr_root_path = str(destination / "data.zarr")
 
-        # Lu: Avoid serilizing and sending None to hub app.
+        # Lu: Avoid serializing and sending None to hub app.
         serialized = self.model_dump(exclude_none=True)
         serialized["zarrRootPath"] = new_zarr_root_path
 
@@ -266,5 +266,5 @@ class DatasetV2(BaseDataset):
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude={"zarr_md5sum_manifest"})
+        repr_dict = self.model_dump()
         return repr_dict

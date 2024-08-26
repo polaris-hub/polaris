@@ -15,4 +15,5 @@ __all__ = [
     "create_dataset_from_file",
     "create_dataset_from_files",
     "DatasetV1",
+    "Dataset"
 ]

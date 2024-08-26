@@ -22,7 +22,6 @@ from typing_extensions import Self
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset, _CACHE_SUBDIR
 from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
-from polaris.mixins import ChecksumMixin
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
@@ -37,7 +36,7 @@ _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
 _INDEX_SEP = "#"
 
 
-class DatasetV1(BaseDataset, ChecksumMixin):
+class DatasetV1(BaseDataset):
     """First version of a Polaris Dataset.
 
     Stores datapoints in a Pandas DataFrame and implements _pointer columns_ to support the storage of XXL data

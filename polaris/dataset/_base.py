@@ -1,7 +1,7 @@
 import abc
 import json
 from pathlib import Path
-from typing import Any, MutableMapping
+from typing import Any, List, MutableMapping
 
 import numpy as np
 import zarr
@@ -19,8 +19,9 @@ from typing_extensions import Self
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
-from polaris.dataset.zarr import MemoryMappedDirectoryStore
+from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
+from polaris.mixins import ChecksumMixin
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
@@ -37,14 +38,17 @@ from polaris.utils.types import (
 _CACHE_SUBDIR = "datasets"
 
 
-class BaseDataset(BaseArtifactModel, abc.ABC):
+class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
     """Base data-model for a Polaris dataset, implemented as a [Pydantic](https://docs.pydantic.dev/latest/) model.
 
-    At its core, a dataset in Polaris can _conceptually_ be thought of as tabular data structure that stores data-points
-    in a row-wise manner, where each column correspond to a variable associated with that datapoint.
-
+    At its core, a dataset in Polaris is a tabular data structure that stores data-points in a row-wise manner.
     A Dataset can have multiple modalities or targets, can be sparse and can be part of one or multiple
      [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] objects.
+
+    Info: Pointer columns
+        Whereas a `Dataset` contains all information required to construct a dataset, it is not ready yet.
+        For complex data, such as images, we support storing the content in external blobs of data.
+        In that case, the table contains _pointers_ to these blobs that are dynamically loaded when needed.
 
     Attributes:
         default_adapters: The adapters that the Dataset recommends to use by default to change the format of the data
@@ -58,7 +62,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         source: The data source, e.g. a DOI, Github repo or URI.
         license: The dataset license. Polaris only supports some Creative Commons licenses. See [`SupportedLicenseType`][polaris.utils.types.SupportedLicenseType] for accepted ID values.
         curation_reference: A reference to the curation process, e.g. a DOI, Github repo or URI.
-        _cache_dir: Where the dataset would be cached if you call the `cache()` method.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
 
     Raises:
@@ -80,9 +83,23 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     # Private attributes
     _zarr_root: zarr.Group | None = PrivateAttr(None)
     _zarr_data: MutableMapping[str, np.ndarray] | None = PrivateAttr(None)
+    _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
     _warn_about_remote_zarr: bool = PrivateAttr(True)
     _cache_dir: str | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.
     _verify_checksum_strategy: ChecksumStrategy = PrivateAttr("verify_unless_zarr")
+
+    # @model_validator(mode="after")
+    # @classmethod
+    # def _validate_model(cls, m: "BaseDataset"):
+    #     """Verifies some dependencies between properties"""
+    #
+    #     # Set the default cache dir if none and make sure it exists
+    #     if m.cache_dir is None:
+    #         dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
+    #         m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
+    #
+    #     m.cache_dir.mkdir(parents=True, exist_ok=True)
+    #     return m
 
     @field_validator("default_adapters", mode="before")
     def _validate_adapters(cls, value):
@@ -115,6 +132,26 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             self.annotations[c].dtype = self.dtypes[c]
 
         return self
+
+    @field_serializer("default_adapters")
+    def _serialize_adapters(self, value: List[Adapter]):
+        """Serializes the adapters"""
+        return {k: v.name for k, v in value.items()}
+
+    @field_serializer("cache_dir")
+    def _serialize_cache_dir(value):
+        """Serialize the cacha_dir"""
+        return str(value)
+
+    @computed_field
+    @property
+    @abc.abstractmethod
+    def zarr_md5sum_manifest(self) -> List[ZarrFileChecksum]:
+        """
+        The Zarr Checksum manifest stores the checksums of all files in a Zarr archive.
+        If the dataset doesn't use Zarr, this will simply return an empty list.
+        """
+        raise NotImplementedError
 
     @property
     def uses_zarr(self) -> bool:

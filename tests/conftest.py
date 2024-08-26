@@ -12,11 +12,10 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.competition import CompetitionSpecification
-from polaris.dataset import ColumnAnnotation, CompetitionDataset, DatasetV1
+from polaris.dataset import ColumnAnnotation, CompetitionDataset, DatasetFactory, DatasetV1
+from polaris.dataset.converters import SDFConverter
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.utils.types import HubOwner
-from polaris.dataset.converters import SDFConverter
-from polaris.dataset import DatasetFactory
 
 
 def check_version(artifact):
@@ -116,9 +115,18 @@ def test_dataset(test_data, test_org_owner) -> DatasetV1:
         table=test_data,
         name="test-dataset",
         source="https://www.example.com",
-        annotations={"expt": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
+        annotations={
+            "expt": ColumnAnnotation(
+                user_attributes={
+                    "unit": "kcal/mol"
+                }
+            )
+        },
         tags=["tagA", "tagB"],
-        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        user_attributes={
+            "attributeA": "valueA",
+            "attributeB": "valueB"
+        },
         owner=test_org_owner,
         license="CC-BY-4.0",
         curation_reference="https://www.example.com",
@@ -132,9 +140,18 @@ def test_dataset_v2(zarr_archive, test_org_owner) -> DatasetV2:
     dataset = DatasetV2(
         name="test-dataset-v2",
         source="https://www.example.com",
-        annotations={"A": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
+        annotations={
+            "A": ColumnAnnotation(
+                user_attributes={
+                    "unit": "kcal/mol"
+                }
+            )
+        },
         tags=["tagA", "tagB"],
-        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        user_attributes={
+            "attributeA": "valueA",
+            "attributeB": "valueB"
+        },
         owner=test_org_owner,
         license="CC-BY-4.0",
         curation_reference="https://www.example.com",
@@ -150,9 +167,18 @@ def test_competition_dataset(test_data, test_org_owner):
         table=test_data,
         name="test-competition-dataset",
         source="https://www.example.com",
-        annotations={"expt": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
+        annotations={
+            "expt": ColumnAnnotation(
+                user_attributes={
+                    "unit": "kcal/mol"
+                }
+            )
+        },
         tags=["tagA", "tagB"],
-        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        user_attributes={
+            "attributeA": "valueA",
+            "attributeB": "valueB"
+        },
         owner=test_org_owner,
         license="CC-BY-4.0",
         curation_reference="https://www.example.com",
@@ -248,7 +274,10 @@ def test_single_task_benchmark_multi_clf(test_dataset):
 @pytest.fixture(scope="function")
 def test_single_task_benchmark_multiple_test_sets(test_dataset):
     train_indices = list(range(90))
-    test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
+    test_indices = {
+        "test_1": list(range(90, 95)),
+        "test_2": list(range(95, 100))
+    }
     benchmark = SingleTaskBenchmarkSpecification(
         name="single-task-multi-set-benchmark",
         dataset=test_dataset,
@@ -276,7 +305,10 @@ def test_single_task_benchmark_clf_multiple_test_sets(test_dataset):
     indices = np.arange(100)
     np.random.shuffle(indices)
     train_indices = indices[:80]
-    test_indices = {"test_1": indices[80:90], "test_2": indices[90:]}
+    test_indices = {
+        "test_1": indices[80:90],
+        "test_2": indices[90:]
+    }
     benchmark = SingleTaskBenchmarkSpecification(
         name="single-task-multi-set-benchmark-clf",
         dataset=test_dataset,
@@ -311,7 +343,9 @@ def test_multi_task_benchmark(test_dataset):
         split=(train_indices, test_indices),
         target_cols=["expt", "calc"],
         input_cols="smiles",
-        target_types={"expt": "regression"},
+        target_types={
+            "expt": "regression"
+        },
     )
     check_version(benchmark)
     return benchmark
@@ -363,7 +397,10 @@ def test_competition(test_competition_dataset, test_org_owner):
 @pytest.fixture(scope="function")
 def test_multi_task_benchmark_multiple_test_sets(test_dataset):
     train_indices = list(range(90))
-    test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
+    test_indices = {
+        "test_1": list(range(90, 95)),
+        "test_2": list(range(95, 100))
+    }
     benchmark = MultiTaskBenchmarkSpecification(
         name="multi-task-multi-set-benchmark",
         dataset=test_dataset,
