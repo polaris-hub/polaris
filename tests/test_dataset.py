@@ -6,7 +6,7 @@ import pytest
 import zarr
 from datamol.utils import fs
 
-from polaris.dataset import Dataset, Subset, create_dataset_from_file
+from polaris.dataset import DatasetV1, Subset, create_dataset_from_file
 from polaris.loader import load_dataset
 
 
@@ -27,7 +27,7 @@ def test_load_data(tmp_path, with_slice, with_caching):
 
     path = "A#0:5" if with_slice else "A#0"
     table = pd.DataFrame({"A": [path]}, index=[0])
-    dataset = Dataset(table=table, annotations={"A": {"is_pointer": True}}, zarr_root_path=zarr_path)
+    dataset = DatasetV1(table=table, annotations={"A": {"is_pointer": True}}, zarr_root_path=zarr_path)
 
     if with_caching:
         dataset.cache(fs.join(tmpdir, "cache"))
@@ -56,28 +56,28 @@ def test_dataset_checksum(test_dataset):
 
     # Without any changes, same hash
     kwargs = test_dataset.model_dump()
-    assert Dataset(**kwargs) == test_dataset
+    assert DatasetV1(**kwargs) == test_dataset
 
     # With unimportant changes, same hash
     kwargs["name"] = "changed"
     kwargs["description"] = "changed"
     kwargs["source"] = "https://changed.com"
-    assert Dataset(**kwargs) == test_dataset
+    assert DatasetV1(**kwargs) == test_dataset
 
     # Check sensitivity to the row and column ordering
     kwargs["table"] = kwargs["table"].iloc[::-1]
     kwargs["table"] = kwargs["table"][kwargs["table"].columns[::-1]]
-    assert Dataset(**kwargs) == test_dataset
+    assert DatasetV1(**kwargs) == test_dataset
 
     # Without any changes, but different hash
-    dataset = Dataset(**kwargs)
+    dataset = DatasetV1(**kwargs)
     dataset._md5sum = "invalid"
     assert dataset != test_dataset
 
     # With changes, but same hash
     kwargs["md5sum"] = test_dataset.md5sum
     kwargs["table"] = kwargs["table"].iloc[:-1]
-    assert Dataset(**kwargs) != test_dataset
+    assert DatasetV1(**kwargs) != test_dataset
 
 
 def test_dataset_from_zarr(zarr_archive, tmpdir):
@@ -97,7 +97,7 @@ def test_dataset_from_json(test_dataset, tmpdir):
 
     path = fs.join(str(tmpdir), "dataset.json")
 
-    new_dataset = Dataset.from_json(path)
+    new_dataset = DatasetV1.from_json(path)
     assert test_dataset == new_dataset
 
     new_dataset = load_dataset(path)
@@ -117,7 +117,7 @@ def test_dataset_from_zarr_to_json_and_back(zarr_archive, tmpdir):
     dataset = create_dataset_from_file(archive, zarr_dir)
     path = dataset.to_json(json_dir)
 
-    new_dataset = Dataset.from_json(path)
+    new_dataset = DatasetV1.from_json(path)
     assert dataset == new_dataset
 
     new_dataset = load_dataset(path)
@@ -140,7 +140,7 @@ def test_dataset_caching(zarr_archive, tmpdir):
 def test_dataset_index():
     """Small test to check whether the dataset resets its index."""
     df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]}, index=["X", "Y", "Z"])
-    dataset = Dataset(table=df)
+    dataset = DatasetV1(table=df)
     subset = Subset(dataset=dataset, indices=[1], input_cols=["A"], target_cols=["B"])
     assert next(iter(subset)) == (np.array([2]), np.array([5]))
 

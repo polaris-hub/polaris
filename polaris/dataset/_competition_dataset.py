@@ -1,11 +1,10 @@
 from pydantic import model_validator
-from polaris.dataset import Dataset
+
+from polaris.dataset._dataset import DatasetV1
 from polaris.utils.errors import InvalidCompetitionError
 
-_CACHE_SUBDIR = "datasets"
 
-
-class CompetitionDataset(Dataset):
+class CompetitionDataset(DatasetV1):
     """Dataset subclass for Polaris competitions.
 
     In addition to the data model and logic of the base Dataset class,

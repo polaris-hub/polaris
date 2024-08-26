@@ -1,6 +1,6 @@
-from itertools import chain
 import json
 from hashlib import md5
+from itertools import chain
 from typing import Any, Callable, Optional, Union
 
 import fsspec
@@ -18,11 +18,11 @@ from pydantic import (
 from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
-from polaris.mixins import ChecksumMixin
-from polaris.dataset import Dataset, Subset, CompetitionDataset
+from polaris.dataset import CompetitionDataset, DatasetV1, Subset
 from polaris.evaluate import BenchmarkResults, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
+from polaris.mixins import ChecksumMixin
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.misc import listit
@@ -96,7 +96,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     # Public attributes
     # Data
-    dataset: Union[Dataset, CompetitionDataset, str, dict[str, Any]]
+    dataset: Union[DatasetV1, CompetitionDataset, str, dict[str, Any]]
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
@@ -114,9 +114,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         TODO (cwognum): Allow multiple datasets to be used as part of a benchmark
         """
         if isinstance(v, dict):
-            v = Dataset(**v)
+            v = DatasetV1(**v)
         elif isinstance(v, str):
-            v = Dataset.from_json(v)
+            v = DatasetV1.from_json(v)
         return v
 
     @field_validator("target_cols", "input_cols")

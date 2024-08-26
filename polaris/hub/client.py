@@ -2,8 +2,7 @@ import json
 import ssl
 from hashlib import md5
 from io import BytesIO
-from typing import Callable, get_args
-from typing import Union
+from typing import Callable, Union, get_args
 from urllib.parse import urljoin
 
 import certifi
@@ -23,14 +22,12 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.dataset import Dataset
-from polaris.evaluate import BenchmarkResults
+from polaris.competition import CompetitionSpecification
+from polaris.dataset import CompetitionDataset, DatasetV1
+from polaris.evaluate import BenchmarkResults, CompetitionResults
 from polaris.evaluate._results import CompetitionPredictions
 from polaris.hub.external_auth_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
-from polaris.dataset import CompetitionDataset
-from polaris.evaluate import CompetitionResults
-from polaris.competition import CompetitionSpecification
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.context import ProgressIndicator, tmp_attribute_change
@@ -296,7 +293,7 @@ class PolarisHubClient(OAuth2Client):
         owner: str | HubOwner,
         name: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
-    ) -> Dataset:
+    ) -> DatasetV1:
         """Load a standard dataset from the Polaris Hub.
 
         Args:
@@ -316,7 +313,7 @@ class PolarisHubClient(OAuth2Client):
         name: str,
         artifact_type: ArtifactSubtype,
         verify_checksum: bool = True,
-    ) -> Dataset:
+    ) -> DatasetV1:
         """Loads either a standard or competition dataset from Polaris Hub
 
         Args:
@@ -360,7 +357,7 @@ class PolarisHubClient(OAuth2Client):
                 dataset = CompetitionDataset(**response)
                 md5Sum = response["maskedMd5Sum"]
             else:
-                dataset = Dataset(**response)
+                dataset = DatasetV1(**response)
                 md5Sum = response["md5Sum"]
 
             if should_verify_checksum(verify_checksum, dataset):
@@ -535,7 +532,7 @@ class PolarisHubClient(OAuth2Client):
 
     def upload_dataset(
         self,
-        dataset: Dataset,
+        dataset: DatasetV1,
         access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
         owner: HubOwner | str | None = None,
@@ -548,7 +545,7 @@ class PolarisHubClient(OAuth2Client):
 
     def _upload_dataset(
         self,
-        dataset: Dataset,
+        dataset: DatasetV1,
         artifact_type: ArtifactSubtype,
         access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),

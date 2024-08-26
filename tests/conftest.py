@@ -12,7 +12,7 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.competition import CompetitionSpecification
-from polaris.dataset import ColumnAnnotation, Dataset, CompetitionDataset
+from polaris.dataset import ColumnAnnotation, CompetitionDataset, DatasetV1
 from polaris.utils.types import HubOwner
 
 
@@ -109,7 +109,7 @@ def test_user_owner():
 
 @pytest.fixture(scope="function")
 def test_dataset(test_data, test_org_owner):
-    dataset = Dataset(
+    dataset = DatasetV1(
         table=test_data,
         name="test-dataset",
         source="https://www.example.com",

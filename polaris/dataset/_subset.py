@@ -2,7 +2,7 @@ from typing import Callable, List, Literal, Optional, Sequence, Union
 
 import numpy as np
 
-from polaris.dataset import Dataset
+from polaris.dataset import DatasetV1
 from polaris.dataset._adapters import Adapter
 from polaris.utils.errors import TestAccessError
 from polaris.utils.types import DatapointType
@@ -61,7 +61,7 @@ class Subset:
 
     def __init__(
         self,
-        dataset: Dataset,
+        dataset: DatasetV1,
         indices: List[Union[int, Sequence[int]]],
         input_cols: Union[List[str], str],
         target_cols: Union[List[str], str],

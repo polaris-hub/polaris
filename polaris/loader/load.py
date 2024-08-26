@@ -7,13 +7,13 @@ from polaris.benchmark._definitions import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.dataset import Dataset, create_dataset_from_file
+from polaris.dataset import DatasetV1, create_dataset_from_file
 from polaris.hub.client import PolarisHubClient
 from polaris.utils.misc import should_verify_checksum
 from polaris.utils.types import ChecksumStrategy
 
 
-def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr") -> Dataset:
+def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr") -> DatasetV1:
     """
     Loads a Polaris dataset.
 
@@ -41,7 +41,7 @@ def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_z
 
     # Load from local file
     if extension == "json":
-        dataset = Dataset.from_json(path)
+        dataset = DatasetV1.from_json(path)
     else:
         dataset = create_dataset_from_file(path)
 

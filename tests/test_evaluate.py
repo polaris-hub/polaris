@@ -1,17 +1,18 @@
 import os
-import pytest
+
 import numpy as np
 import pandas as pd
+import pytest
 
 import polaris as po
 from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
+from polaris.dataset import DatasetV1
 from polaris.evaluate._metric import Metric
 from polaris.evaluate._results import BenchmarkResults
 from polaris.utils.types import HubOwner
-from polaris.dataset import Dataset
 
 
 def test_result_to_json(tmpdir: str, test_user_owner: HubOwner):
@@ -150,7 +151,7 @@ def test_absolute_average_fold_error():
 
 
 def test_metric_y_types(
-    tmpdir: str, test_single_task_benchmark_clf: SingleTaskBenchmarkSpecification, test_data: Dataset
+    tmpdir: str, test_single_task_benchmark_clf: SingleTaskBenchmarkSpecification, test_data: DatasetV1
 ):
     # here we use train split for testing purpose.
     _, test = test_single_task_benchmark_clf.get_train_test_split()
