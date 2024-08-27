@@ -1,6 +1,5 @@
 import abc
 import json
-import uuid
 from pathlib import Path
 from typing import Dict, List, MutableMapping, Optional, Union
 
@@ -15,7 +14,6 @@ from pydantic import (
     computed_field,
     field_serializer,
     field_validator,
-    model_validator,
 )
 
 from polaris._artifact import BaseArtifactModel
@@ -25,7 +23,6 @@ from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.mixins import ChecksumMixin
-from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
@@ -86,19 +83,6 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
     _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
     _warn_about_remote_zarr: bool = PrivateAttr(True)
-
-    @model_validator(mode="after")
-    @classmethod
-    def _validate_model(cls, m: "BaseDataset"):
-        """Verifies some dependencies between properties"""
-
-        # Set the default cache dir if none and make sure it exists
-        if m.cache_dir is None:
-            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
-            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
-
-        m.cache_dir.mkdir(parents=True, exist_ok=True)
-        return m
 
     @field_validator("default_adapters", mode="before")
     def _validate_adapters(cls, value):
