@@ -26,8 +26,18 @@ def test_load_data(tmp_path, with_slice, with_caching):
     zarr.consolidate_metadata(root.store)
 
     path = "A#0:5" if with_slice else "A#0"
-    table = pd.DataFrame({"A": [path]}, index=[0])
-    dataset = DatasetV1(table=table, annotations={"A": {"is_pointer": True}}, zarr_root_path=zarr_path)
+    table = pd.DataFrame(
+        {
+            "A": [path]
+        }, index=[0]
+    )
+    dataset = DatasetV1(
+        table=table, annotations={
+            "A": {
+                "is_pointer": True
+            }
+        }, zarr_root_path=zarr_path
+    )
 
     if with_caching:
         dataset._cache_dir = fs.join(tmpdir, "cache")
@@ -141,7 +151,12 @@ def test_dataset_caching(zarr_archive, tmpdir):
 
 def test_dataset_index():
     """Small test to check whether the dataset resets its index."""
-    df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]}, index=["X", "Y", "Z"])
+    df = pd.DataFrame(
+        {
+            "A": [1, 2, 3],
+            "B": [4, 5, 6]
+        }, index=["X", "Y", "Z"]
+    )
     dataset = DatasetV1(table=df)
     subset = Subset(dataset=dataset, indices=[1], input_cols=["A"], target_cols=["B"])
     assert next(iter(subset)) == (np.array([2]), np.array([5]))
@@ -184,7 +199,13 @@ def test_checksum_verification(test_dataset):
 def test_dataset__get_item__():
     """Test the __getitem__() interface for the dataset."""
 
-    table = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6], "C": [7, 8, 9]}, index=["X", "Y", "Z"])
+    table = pd.DataFrame(
+        {
+            "A": [1, 2, 3],
+            "B": [4, 5, 6],
+            "C": [7, 8, 9]
+        }, index=["X", "Y", "Z"]
+    )
     dataset = DatasetV1(table=table)
 
     # Get a specific cell
@@ -196,9 +217,21 @@ def test_dataset__get_item__():
     assert dataset["Z", "B"] == 6
 
     # Get a row
-    assert dataset["X"] == {"A": 1, "B": 4, "C": 7}
-    assert dataset["Y"] == {"A": 2, "B": 5, "C": 8}
-    assert dataset["Z"] == {"A": 3, "B": 6, "C": 9}
+    assert dataset["X"] == {
+        "A": 1,
+        "B": 4,
+        "C": 7
+    }
+    assert dataset["Y"] == {
+        "A": 2,
+        "B": 5,
+        "C": 8
+    }
+    assert dataset["Z"] == {
+        "A": 3,
+        "B": 6,
+        "C": 9
+    }
 
 
 def test_dataset__get_item__with_pointer_columns(zarr_archive, tmpdir):
@@ -216,5 +249,15 @@ def test_dataset__get_item__with_pointer_columns(zarr_archive, tmpdir):
         for k in d1:
             assert np.array_equal(d1[k], d2[k])
 
-    _check_row_equality(dataset[0], {"A": root["A"][0, :], "B": root["B"][0, :]})
-    _check_row_equality(dataset[10], {"A": root["A"][10, :], "B": root["B"][10, :]})
+    _check_row_equality(
+        dataset[0], {
+            "A": root["A"][0, :],
+            "B": root["B"][0, :]
+        }
+    )
+    _check_row_equality(
+        dataset[10], {
+            "A": root["A"][10, :],
+            "B": root["B"][10, :]
+        }
+    )
