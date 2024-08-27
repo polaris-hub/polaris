@@ -47,11 +47,6 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
     A Dataset can have multiple modalities or targets, can be sparse and can be part of one or multiple
      [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] objects.
 
-    Info: Pointer columns
-        Whereas a `Dataset` contains all information required to construct a dataset, it is not ready yet.
-        For complex data, such as images, we support storing the content in external blobs of data.
-        In that case, the table contains _pointers_ to these blobs that are dynamically loaded when needed.
-
     Attributes:
         default_adapters: The adapters that the Dataset recommends to use by default to change the format of the data
             for specific columns.

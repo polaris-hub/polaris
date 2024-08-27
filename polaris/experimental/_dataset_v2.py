@@ -19,7 +19,25 @@ _INDEX_ARRAY_KEY = "__index__"
 
 
 class DatasetV2(BaseDataset):
-    """Dataset subclass for Polaris"""
+    """Second version of a Polaris Dataset.
+
+    This version gets rid of the DataFrame and stores all data in a Zarr archive.
+
+    V1 stored all datapoints in a Pandas DataFrame. Because a DataFrame is always loaded to memory,
+    this was a bottleneck when the number of data points grew large. Even with the pointer columns, you still
+    need to load all pointers into memory. V2 therefore switches to a Zarr-only format.
+
+    Info: This feature is still experimental
+        The DatasetV2 is in active development and will likely undergo breaking changes before release.
+
+    Attributes:
+        zarr_root_path: The path to the Zarr archive. Different from V1, this is now required.
+
+    For additional meta-data attributes, see the [`BaseDataset`][polaris._dataset.BaseDataset] class.
+
+    Raises:
+        InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
+    """
 
     version: ClassVar[Literal[2]] = 2
 
@@ -91,7 +109,12 @@ class DatasetV2(BaseDataset):
 
     @property
     def rows(self) -> list:
-        """Return all row indices for the dataset"""
+        """Return all row indices for the dataset
+
+        Warning: Memory consumption
+            This feature is added for completeness sake, but when datasets get large could consume a lot of memory.
+            E.g. storing a billion indices with np.in64 would consume 8GB of memory. Use with caution.
+        """
         return np.arange(len(self))
 
     @property
@@ -128,13 +151,11 @@ class DatasetV2(BaseDataset):
         return zarr_hash.md5
 
     def get_data(self, row: int, col: str, adapters: List[Adapter] | None = None) -> np.ndarray:
-        """Since the dataset might contain pointers to external files, data retrieval is more complicated
-        than just indexing the `table` attribute. This method provides an end-point for seamlessly
-        accessing the underlying data.
+        """Indexes the Zarr archive.
 
         Args:
-            row: The row index in the `Dataset.table` attribute
-            col: The column index in the `Dataset.table` attribute
+            row: The index of the data to fetch.
+            col: The label of a direct child of the Zarr root.
             adapters: The adapters to apply to the data before returning it.
                 If None, will use the default adapters specified for the dataset.
 
@@ -149,6 +170,8 @@ class DatasetV2(BaseDataset):
         # Get the data
         group_or_array = self.zarr_data[col]
 
+        # If it is a group, there is no deterministic order for the child keys.
+        # We therefore use a special array that defines the index.
         if isinstance(group_or_array, zarr.Group):
             row = group_or_array[_INDEX_ARRAY_KEY][row]
         arr = group_or_array[row]

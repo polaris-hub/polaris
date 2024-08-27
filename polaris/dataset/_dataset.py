@@ -24,14 +24,12 @@ _INDEX_SEP = "#"
 
 
 class DatasetV1(BaseDataset):
-    """A Polaris Dataset, implemented as a [Pydantic](https://docs.pydantic.dev/latest/) model.
+    """First version of a Polaris Dataset.
 
-    At its core, a dataset in Polaris is a tabular data structure that stores data-points in a row-wise manner.
-    A Dataset can have multiple modalities or targets, can be sparse and can be part of one or multiple
-     [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] objects.
+    Stores datapoints in a Pandas DataFrame and implements _pointer columns_ to support the storage of XXL data
+    outside of the DataFrame in a Zarr archive.
 
     Info: Pointer columns
-        Whereas a `Dataset` contains all information required to construct a dataset, it is not ready yet.
         For complex data, such as images, we support storing the content in external blobs of data.
         In that case, the table contains _pointers_ to these blobs that are dynamically loaded when needed.
 
