@@ -88,19 +88,6 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
     _cache_dir: str | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.
     _verify_checksum_strategy: ChecksumStrategy = PrivateAttr("verify_unless_zarr")
 
-    # @model_validator(mode="after")
-    # @classmethod
-    # def _validate_model(cls, m: "BaseDataset"):
-    #     """Verifies some dependencies between properties"""
-    #
-    #     # Set the default cache dir if none and make sure it exists
-    #     if m.cache_dir is None:
-    #         dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
-    #         m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
-    #
-    #     m.cache_dir.mkdir(parents=True, exist_ok=True)
-    #     return m
-
     @field_validator("default_adapters", mode="before")
     def _validate_adapters(cls, value):
         """Validate the adapters"""
