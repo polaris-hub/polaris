@@ -1,9 +1,13 @@
 from time import perf_counter
 
+import numcodecs
 import numpy as np
+import pytest
+import zarr
 
-from polaris.dataset import Subset, zarr
+from polaris.dataset import Subset
 from polaris.experimental._dataset_v2 import DatasetV2
+from polaris.utils.errors import PolarisChecksumError
 
 
 def test_dataset_v2_get_columns(test_dataset_v2):
@@ -15,19 +19,21 @@ def test_dataset_v2_get_rows(test_dataset_v2, zarr_archive):
 
 
 def test_dataset_v2_get_data(test_dataset_v2, zarr_archive):
+    root = zarr.open(zarr_archive, "r")
     indices = np.random.randint(0, len(test_dataset_v2), 5)
     for idx in indices:
-        assert np.array_equal(test_dataset_v2.get_data(row=idx, col="A"), zarr_archive["A"][idx])
-        assert np.array_equal(test_dataset_v2.get_data(row=idx, col="B"), zarr_archive["B"][idx])
+        assert np.array_equal(test_dataset_v2.get_data(row=idx, col="A"), root["A"][idx])
+        assert np.array_equal(test_dataset_v2.get_data(row=idx, col="B"), root["B"][idx])
 
 
 def test_dataset_v2_with_subset(test_dataset_v2, zarr_archive):
+    root = zarr.open(zarr_archive, "r")
     indices = np.random.randint(0, len(test_dataset_v2), 5)
     subset = Subset(test_dataset_v2, indices, "A", "B")
     for i, (x, y) in enumerate(subset):
         idx = indices[i]
-        assert np.array_equal(x, zarr_archive["A"][idx])
-        assert np.array_equal(y, zarr_archive["B"][idx])
+        assert np.array_equal(x, root["A"][idx])
+        assert np.array_equal(y, root["B"][idx])
 
 
 def test_dataset_v2_load_to_memory(test_dataset_v2):
@@ -84,11 +90,12 @@ def test_dataset_v2_checksum(test_dataset_v2, tmpdir):
     dataset.to_json(save_dir, load_zarr_from_new_location=True)
 
     # Make changes to Zarr archive copy
-    root = zarr.open(dataset.zarr_root_path, "w")
+    root = zarr.open(dataset.zarr_root_path, "a")
     root["A"][0] = np.zeros(2048)
 
     # Checksum should be different
-    assert dataset != test_dataset_v2
+    with pytest.raises(PolarisChecksumError):
+        dataset.verify_checksum()
 
 
 def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
@@ -101,7 +108,7 @@ def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
 def test_dataset_v2_caching(test_dataset_v2, tmpdir):
     cache_dir = tmpdir.join("cache").strpath
     test_dataset_v2.cache(cache_dir, verify_checksum=True)
-    test_dataset_v2.zarr_root_path.startswith(cache_dir)
+    assert str(test_dataset_v2.zarr_root_path).startswith(cache_dir)
 
 
 def test_dataset_v1_v2_compatibility(test_dataset, tmpdir):
@@ -112,11 +119,12 @@ def test_dataset_v1_v2_compatibility(test_dataset, tmpdir):
     path = tmpdir.join("data/v1v2.zarr")
 
     root = zarr.open(path, "w")
-    for c in df.columns:
-        root.array(c, data=df[c].values)
+    root.array("smiles", data=df["smiles"].values, dtype=object, object_codec=numcodecs.VLenUTF8())
+    root.array("calc", data=df["calc"].values)
+    zarr.consolidate_metadata(path)
 
     kwargs = test_dataset.model_dump(exclude=["table", "zarr_root_path"])
-    dataset = DatasetV2(**kwargs, zarr_root_path=path)
+    dataset = DatasetV2(**kwargs, zarr_root_path=str(path))
 
     subset_1 = Subset(dataset=dataset, indices=range(100), input_cols=["smiles"], target_cols=["calc"])
     subset_2 = Subset(dataset=dataset, indices=range(100), input_cols=["smiles"], target_cols=["calc"])

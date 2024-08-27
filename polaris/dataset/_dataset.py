@@ -1,5 +1,6 @@
 import json
 from hashlib import md5
+from pathlib import Path
 from typing import ClassVar, List, Literal, Optional, Tuple, Union
 
 import fsspec
@@ -120,7 +121,7 @@ class DatasetV1(BaseDataset):
         # If the Zarr archive exists, we hash its contents too.
         if self.uses_zarr:
             zarr_hash, self._zarr_md5sum_manifest = compute_zarr_checksum(self.zarr_root_path)
-            hash_fn.update(zarr_hash.encode())
+            hash_fn.update(zarr_hash.digest.encode())
 
         checksum = hash_fn.hexdigest()
         return checksum
@@ -231,10 +232,12 @@ class DatasetV1(BaseDataset):
         Returns:
             The path to the JSON file.
         """
-        dmfs.mkdir(destination, exist_ok=True)
-        table_path = dmfs.join(destination, "table.parquet")
-        dataset_path = dmfs.join(destination, "dataset.json")
-        new_zarr_root_path = dmfs.join(destination, "data.zarr")
+        destination = Path(destination)
+        destination.mkdir(exist_ok=True, parents=True)
+
+        table_path = str(destination / "table.parquet")
+        dataset_path = str(destination / "dataset.json")
+        new_zarr_root_path = str(destination / "data.zarr")
 
         # Lu: Avoid serilizing and sending None to hub app.
         serialized = self.model_dump(exclude={"cache_dir"}, exclude_none=True)
@@ -242,6 +245,8 @@ class DatasetV1(BaseDataset):
 
         # Copy over Zarr data to the destination
         if self.uses_zarr:
+            serialized["zarrRootPath"] = new_zarr_root_path
+
             self._warn_about_remote_zarr = False
 
             logger.info(f"Copying Zarr archive to {new_zarr_root_path}. This may take a while.")

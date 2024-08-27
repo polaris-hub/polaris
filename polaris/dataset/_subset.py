@@ -80,7 +80,7 @@ class Subset:
         # NOTE (cwognum): Note to future self. As we're starting to think about competition-style benchmarks,
         #  we will likely split up datasets. In that case, this default iloc_to_loc mapping won't work.
         #  By that time, we should probably be able to overwrite this mapping.
-        self._iloc_to_loc = self.dataset.table.index
+        self._iloc_to_loc = self.dataset.rows
 
         # For the iterator implementation
         self._pointer = 0
