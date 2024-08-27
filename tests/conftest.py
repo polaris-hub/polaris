@@ -109,7 +109,7 @@ def test_user_owner():
 
 
 @pytest.fixture(scope="function")
-def test_dataset(test_data, test_org_owner):
+def test_dataset(test_data, test_org_owner) -> DatasetV1:
     dataset = DatasetV1(
         table=test_data,
         name="test-dataset",
@@ -126,7 +126,7 @@ def test_dataset(test_data, test_org_owner):
 
 
 @pytest.fixture(scope="function")
-def test_dataset_v2(zarr_archive, test_org_owner):
+def test_dataset_v2(zarr_archive, test_org_owner) -> DatasetV2:
     dataset = DatasetV2(
         name="test-dataset-v2",
         source="https://www.example.com",

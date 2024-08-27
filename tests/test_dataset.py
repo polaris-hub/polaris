@@ -131,7 +131,7 @@ def test_dataset_caching(zarr_archive, tmpdir):
     cached_dataset = create_dataset_from_file(zarr_archive, tmpdir.join("original2"))
     assert original_dataset == cached_dataset
 
-    cache_dir = cached_dataset.cache(tmpdir.join("cached").strpath)
+    cache_dir = cached_dataset.cache(tmpdir.join("cached").strpath, verify_checksum=True)
     assert cached_dataset.zarr_root_path.startswith(cache_dir)
 
     assert cached_dataset == original_dataset
