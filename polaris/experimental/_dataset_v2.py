@@ -6,12 +6,16 @@ import fsspec
 import numpy as np
 import zarr
 from loguru import logger
-from pydantic import computed_field
+from pydantic import computed_field, model_validator
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
+from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr._checksum import ZarrFileChecksum, compute_zarr_checksum
+from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
+
+_INDEX_ARRAY_KEY = "__index__"
 
 
 class DatasetV2(BaseDataset):
@@ -19,10 +23,76 @@ class DatasetV2(BaseDataset):
 
     version: ClassVar[Literal[2]] = 2
 
+    # Redefine this to make it a required field
+    zarr_root_path: str
+
+    @model_validator(mode="after")
+    @classmethod
+    def _validate_model(cls, m: "DatasetV2"):
+        """Verifies some dependencies between properties"""
+
+        # NOTE (cwognum): A good chunk of the below code is shared with the DatasetV1 class.
+        #  I tried moving it to the BaseDataset class, but I'm not understanding Pydantic's behavior very well.
+        #  It seems to not always trigger when part of the base class.
+
+        # Verify that all annotations are for columns that exist
+        if any(k not in m.columns for k in m.annotations):
+            raise InvalidDatasetError(
+                f"There are annotations for columns that do not exist. Columns: {m.columns}. Annotations: {list(m.annotations.keys())}"
+            )
+
+        # Verify that all adapters are for columns that exist
+        if any(k not in m.columns for k in m.default_adapters.keys()):
+            raise InvalidDatasetError(
+                f"There are default adapters for columns that do not exist. Columns: {m.columns}. Adapters: {list(m.annotations.keys())}"
+            )
+
+        # Set a default for missing annotations and convert strings to Modality
+        for c in m.columns:
+            if c not in m.annotations:
+                m.annotations[c] = ColumnAnnotation()
+            if m.annotations[c].is_pointer:
+                raise InvalidDatasetError("Pointer columns are not supported in DatasetV2")
+            m.annotations[c].dtype = m.dtypes[c]
+
+        # Since the keys for subgroups are not ordered, we have no easy way to index these groups.
+        # Any subgroup should therefore have a special array that defines the index for that group.
+        for group in m.zarr_root.group_keys():
+            if _INDEX_ARRAY_KEY not in m.zarr_root[group].array_keys():
+                raise InvalidDatasetError(f"Group {group} does not have an index array.")
+
+            index_arr = m.zarr_root[group][_INDEX_ARRAY_KEY]
+            if len(index_arr) != len(m.zarr_root[group]) - 1:
+                raise InvalidDatasetError(
+                    f"Length of index array for group {group} does not match the size of the group."
+                )
+            if any(x not in m.zarr_root[group] for x in index_arr):
+                raise InvalidDatasetError(
+                    f"Keys of index array for group {group} does not match the group members."
+                )
+
+        # Check the structure of the Zarr archive
+        # All arrays or groups in the root should have the same length.
+        lengths = {len(m.zarr_root[k]) for k in m.zarr_root.array_keys()}
+        lengths.update({len(m.zarr_root[k][_INDEX_ARRAY_KEY]) for k in m.zarr_root.group_keys()})
+        if len(lengths) > 1:
+            raise InvalidDatasetError(
+                f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
+            )
+        return m
+
+    @property
+    def n_rows(self) -> list:
+        """Return all row indices for the dataset"""
+        example = self.zarr_root[self.columns[0]]
+        if isinstance(example, zarr.Group):
+            return len(example[_INDEX_ARRAY_KEY])
+        return len(example)
+
     @property
     def rows(self) -> list:
         """Return all row indices for the dataset"""
-        return np.arange(len(self.zarr_root[self.columns[0]]))
+        return np.arange(len(self))
 
     @property
     def columns(self) -> list:
@@ -32,7 +102,12 @@ class DatasetV2(BaseDataset):
     @property
     def dtypes(self) -> dict[str, np.dtype]:
         """Return the dtype for each of the columns for the dataset"""
-        return {col: self.zarr_root[col].dtype for col in self.columns}
+        dtypes = {}
+        for arr in self.zarr_root.array_keys():
+            dtypes[arr] = self.zarr_root[arr].dtype
+        for group in self.zarr_root.group_keys():
+            dtypes[group] = np.dtype(object)
+        return dtypes
 
     @computed_field
     @property
@@ -72,7 +147,11 @@ class DatasetV2(BaseDataset):
         adapter = adapters.get(col)
 
         # Get the data
-        arr = self.zarr_root[col][row]
+        group_or_array = self.zarr_data[col]
+
+        if isinstance(group_or_array, zarr.Group):
+            row = group_or_array[_INDEX_ARRAY_KEY][row]
+        arr = group_or_array[row]
 
         # Adapt the input to the specified format
         if adapter is not None:
@@ -109,12 +188,12 @@ class DatasetV2(BaseDataset):
         destination = Path(destination)
         destination.mkdir(exist_ok=True, parents=True)
 
-        dataset_path = destination / "dataset.json"
-        new_zarr_root_path = destination / "data.zarr"
+        dataset_path = str(destination / "dataset.json")
+        new_zarr_root_path = str(destination / "data.zarr")
 
         # Lu: Avoid serilizing and sending None to hub app.
         serialized = self.model_dump(exclude={"cache_dir"}, exclude_none=True)
-        serialized["zarrRootPath"] = str(new_zarr_root_path)
+        serialized["zarrRootPath"] = new_zarr_root_path
 
         # Copy over Zarr data to the destination
         self._warn_about_remote_zarr = False
@@ -136,7 +215,7 @@ class DatasetV2(BaseDataset):
 
         with fsspec.open(dataset_path, "w") as f:
             json.dump(serialized, f)
-        return str(dataset_path)
+        return dataset_path
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""

@@ -76,13 +76,21 @@ class DatasetV1(BaseDataset):
     def _validate_model(cls, m: "DatasetV1"):
         """Verifies some dependencies between properties"""
 
+        # NOTE (cwognum): A good chunk of the below code is shared with the DatasetV2 class.
+        #  I tried moving it to the BaseDataset class, but I'm not understanding Pydantic's behavior very well.
+        #  It seems to not always trigger when part of the base class.
+
         # Verify that all annotations are for columns that exist
         if any(k not in m.columns for k in m.annotations):
-            raise InvalidDatasetError("There are annotations for columns that do not exist")
+            raise InvalidDatasetError(
+                f"There are annotations for columns that do not exist. Columns: {m.columns}. Annotations: {list(m.annotations.keys())}"
+            )
 
         # Verify that all adapters are for columns that exist
         if any(k not in m.columns for k in m.default_adapters.keys()):
-            raise InvalidDatasetError("There are default adapters for columns that do not exist")
+            raise InvalidDatasetError(
+                f"There are default adapters for columns that do not exist. Columns: {m.columns}. Adapters: {list(m.annotations.keys())}"
+            )
 
         # Set a default for missing annotations and convert strings to Modality
         for c in m.columns:

@@ -42,22 +42,22 @@ class ColumnAnnotation(BaseModel):
     """
 
     is_pointer: bool = False
-    modality: Union[str, Modality] = Modality.UNKNOWN
+    modality: Modality = Modality.UNKNOWN
     description: Optional[str] = None
     user_attributes: Dict[str, str] = Field(default_factory=dict)
-    dtype: Union[np.dtype, str, None] = None
+    dtype: np.dtype | None = None
     content_type: Union[KnownContentType, str, None] = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_camel, populate_by_name=True)
 
-    @field_validator("modality")
-    def _validate_modality(cls, v, values):
+    @field_validator("modality", mode="before")
+    def _validate_modality(cls, v):
         """Tries to convert a string to the Enum"""
         if isinstance(v, str):
             v = Modality[v.upper()]
         return v
 
-    @field_validator("dtype")
+    @field_validator("dtype", mode="before")
     def _validate_dtype(cls, v):
         """Tries to convert a string to the Enum"""
         if isinstance(v, str):

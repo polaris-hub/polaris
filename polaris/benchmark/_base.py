@@ -111,7 +111,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     def _validate_dataset(cls, v):
         """
         Allows either passing a Dataset object or the kwargs to create one
-        TODO (cwognum): Allow multiple datasets to be used as part of a benchmark
         """
         if isinstance(v, dict):
             v = DatasetV1(**v)

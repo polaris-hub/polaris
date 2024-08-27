@@ -1,12 +1,16 @@
+from copy import deepcopy
 from time import perf_counter
 
 import numcodecs
 import numpy as np
 import pytest
 import zarr
+from pydantic import ValidationError
 
 from polaris.dataset import Subset
-from polaris.experimental._dataset_v2 import DatasetV2
+from polaris.dataset._factory import DatasetFactory
+from polaris.dataset.converters._pdb import PDBConverter
+from polaris.experimental._dataset_v2 import _INDEX_ARRAY_KEY, DatasetV2
 from polaris.utils.errors import PolarisChecksumError
 
 
@@ -120,17 +124,137 @@ def test_dataset_v1_v2_compatibility(test_dataset, tmpdir):
 
     root = zarr.open(path, "w")
     root.array("smiles", data=df["smiles"].values, dtype=object, object_codec=numcodecs.VLenUTF8())
-    root.array("calc", data=df["calc"].values)
+    root.array("iupac", data=df["iupac"].values, dtype=object, object_codec=numcodecs.VLenUTF8())
+    for col in set(df.columns) - {"smiles", "iupac"}:
+        root.array(col, data=df[col].values)
     zarr.consolidate_metadata(path)
 
     kwargs = test_dataset.model_dump(exclude=["table", "zarr_root_path"])
     dataset = DatasetV2(**kwargs, zarr_root_path=str(path))
 
-    subset_1 = Subset(dataset=dataset, indices=range(100), input_cols=["smiles"], target_cols=["calc"])
-    subset_2 = Subset(dataset=dataset, indices=range(100), input_cols=["smiles"], target_cols=["calc"])
+    subset_1 = Subset(dataset=test_dataset, indices=range(5), input_cols=["smiles"], target_cols=["calc"])
+    subset_2 = Subset(dataset=dataset, indices=range(5), input_cols=["smiles"], target_cols=["calc"])
 
     for idx in range(5):
         x1, y1 = subset_1[idx]
         x2, y2 = subset_2[idx]
         assert x1 == x2
         assert y1 == y2
+
+
+def test_dataset_v2_with_pdbs(pdb_paths, tmpdir):
+    # The PDB example is interesting because it creates a more complex Zarr archive
+    # that includes subgroups
+    zarr_root_path = str(tmpdir.join("pdbs.zarr"))
+    factory = DatasetFactory(zarr_root_path)
+
+    # Build a V1 dataset
+    converter = PDBConverter()
+    factory.register_converter("pdb", converter)
+    factory.add_from_files(pdb_paths, axis=0)
+    dataset_v1 = factory.build()
+
+    # Build a V2 dataset based on the V1 dataset
+
+    # Add the magic index column to the Zarr subgroup
+    root = zarr.open(zarr_root_path, "a")
+    ordered_keys = [v.split("/")[-1] for v in dataset_v1.table["pdb"].values]
+    root["pdb"].array(_INDEX_ARRAY_KEY, data=ordered_keys, dtype=object, object_codec=numcodecs.VLenUTF8())
+    zarr.consolidate_metadata(zarr_root_path)
+
+    # Update annotations to no longer have pointer columns
+    annotations = deepcopy(dataset_v1.annotations)
+    for anno in annotations.values():
+        anno.is_pointer = False
+
+    # Create the dataset
+    dataset_v2 = DatasetV2(
+        zarr_root_path=zarr_root_path,
+        annotations=annotations,
+        default_adapters=dataset_v1.default_adapters,
+    )
+
+    assert len(dataset_v1) == len(dataset_v2)
+    for idx in range(len(dataset_v1)):
+        pdb_1 = dataset_v1.get_data(idx, "pdb")
+        pdb_2 = dataset_v2.get_data(idx, "pdb")
+        assert pdb_1 == pdb_2
+
+
+def test_dataset_v2_indexing(zarr_archive):
+    # Create a subgroup with 100 arrays
+    root = zarr.open(zarr_archive, "a")
+    subgroup = root.create_group("X")
+    for i in range(100):
+        subgroup.array(f"{i}", data=np.array([i] * 100))
+
+    # Index it in reverse (element 0 is the last element in the array)
+    indices = [f"{idx}" for idx in range(100)][::-1]
+    subgroup.array(_INDEX_ARRAY_KEY, data=indices, dtype=object, object_codec=numcodecs.VLenUTF8())
+    zarr.consolidate_metadata(zarr_archive)
+
+    # Create the dataset
+    dataset = DatasetV2(zarr_root_path=zarr_archive)
+
+    # Check that the dataset is indexed correctly
+    for idx in range(100):
+        assert np.array_equal(dataset.get_data(row=idx, col="X"), np.array([99 - idx] * 100))
+
+
+def test_dataset_v2_validation_index_array(zarr_archive):
+    root = zarr.open(zarr_archive, "a")
+
+    # Create subgroup that lacks the index array
+    subgroup = root.create_group("X")
+    zarr.consolidate_metadata(zarr_archive)
+
+    with pytest.raises(ValidationError, match="does not have an index array"):
+        DatasetV2(zarr_root_path=zarr_archive)
+
+    indices = [f"{idx}" for idx in range(100)]
+    indices[-1] = "invalid"
+
+    # Create index array that doesn't match group length (zero arrays in group, but 100 indices)
+    subgroup.array(_INDEX_ARRAY_KEY, data=indices, dtype=object, object_codec=numcodecs.VLenUTF8())
+    zarr.consolidate_metadata(zarr_archive)
+
+    with pytest.raises(ValidationError, match="Length of index array"):
+        DatasetV2(zarr_root_path=zarr_archive)
+
+    for i in range(100):
+        subgroup.array(f"{i}", data=np.random.random(100))
+    zarr.consolidate_metadata(zarr_archive)
+
+    # Create index array that has invalid keys (last keys = 'invalid' rather than '99')
+    with pytest.raises(ValidationError, match="Keys of index array"):
+        DatasetV2(zarr_root_path=zarr_archive)
+
+
+def test_dataset_v2_validation_consistent_lengths(zarr_archive):
+    root = zarr.open(zarr_archive, "a")
+
+    # Change the length of one of the arrays
+    root["A"].append(np.random.random((1, 2048)))
+    zarr.consolidate_metadata(zarr_archive)
+
+    # Subgroup has a false number of indices
+    with pytest.raises(ValidationError, match="should have the same length"):
+        DatasetV2(zarr_root_path=zarr_archive)
+
+    # Make the length of the two arrays equal again
+    # shouldn't crash
+    root["B"].append(np.random.random((1, 2048)))
+    zarr.consolidate_metadata(zarr_archive)
+    DatasetV2(zarr_root_path=zarr_archive)
+
+    # Create subgroup with inconsistent length
+    subgroup = root.create_group("X")
+    for i in range(100):
+        subgroup.array(f"{i}", data=np.random.random(100))
+    indices = [f"{idx}" for idx in range(100)]
+    subgroup.array(_INDEX_ARRAY_KEY, data=indices, dtype=object, object_codec=numcodecs.VLenUTF8())
+    zarr.consolidate_metadata(zarr_archive)
+
+    # Subgroup has a false number of indices
+    with pytest.raises(ValidationError, match="should have the same length"):
+        DatasetV2(zarr_root_path=zarr_archive)
