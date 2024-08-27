@@ -155,14 +155,6 @@ class DatasetV2(BaseDataset):
         return m
 
     @property
-    def n_rows(self) -> list:
-        """Return all row indices for the dataset"""
-        example = self.zarr_root[self.columns[0]]
-        if isinstance(example, zarr.Group):
-            return len(example[_INDEX_ARRAY_KEY])
-        return len(example)
-
-    @property
     def n_rows(self) -> int:
         """Return all row indices for the dataset"""
         example = self.zarr_root[self.columns[0]]

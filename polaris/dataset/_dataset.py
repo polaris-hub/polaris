@@ -40,7 +40,11 @@ class DatasetV1(BaseDataset):
     """First version of a Polaris Dataset.
 
     Stores datapoints in a Pandas DataFrame and implements _pointer columns_ to support the storage of XXL data
+<<<<<<< HEAD
     outside the DataFrame in a Zarr archive.
+=======
+    outside of the DataFrame in a Zarr archive.
+>>>>>>> df33bfc (Improved docs)
 
     Info: Pointer columns
         For complex data, such as images, we support storing the content in external blobs of data.
