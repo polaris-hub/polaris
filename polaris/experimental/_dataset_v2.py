@@ -108,7 +108,7 @@ class DatasetV2(BaseDataset):
         """Return all row indices for the dataset
 
         Warning: Memory consumption
-            This feature is added for completeness sake, but when datasets get large could consume a lot of memory.
+            This feature is added for completeness' sake, but when datasets get large could consume a lot of memory.
             E.g. storing a billion indices with np.in64 would consume 8GB of memory. Use with caution.
         """
         return np.arange(len(self), dtype=int)
@@ -238,7 +238,7 @@ class DatasetV2(BaseDataset):
         dataset_path = str(destination / "dataset.json")
         new_zarr_root_path = str(destination / "data.zarr")
 
-        # Lu: Avoid serilizing and sending None to hub app.
+        # Lu: Avoid serializing and sending None to hub app.
         serialized = self.model_dump(exclude_none=True)
         serialized["zarrRootPath"] = new_zarr_root_path
 

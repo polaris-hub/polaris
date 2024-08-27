@@ -312,7 +312,7 @@ def test_dataset_v2_checksum(test_dataset_v2, tmpdir):
     dataset.to_json(save_dir, load_zarr_from_new_location=True)
 
     # Make changes to Zarr archive copy
-    root = zarr.open(dataset.zarr_root_path, "w")
+    root = zarr.open(dataset.zarr_root_path, "a")
     root["A"][0] = np.zeros(2048)
 
     # Checksum should be different

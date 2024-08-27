@@ -77,7 +77,7 @@ class Subset:
         self._adapters = adapters
         self._featurization_fn = featurization_fn
 
-        # Storing all indices in memory can be memory consuming for XXL datasets.
+        # Storing all indices in memory can be memory consuming for XL datasets.
         # This is why we constrain the iloc to loc mapping to be the identity function for Dataset V2.
         match self.dataset:
             case DatasetV1():

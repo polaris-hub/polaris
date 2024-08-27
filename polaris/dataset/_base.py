@@ -125,10 +125,12 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
 
-    @field_serializer("cache_dir")
-    def _serialize_cache_dir(value):
-        """Serialize the cacha_dir"""
-        return str(value)
+    @field_serializer("cache_dir", "zarr_root_path")
+    def _serialize_paths(value):
+        """Serialize the paths"""
+        if value is not None:
+            value = str(value)
+        return value
 
     @computed_field
     @property
