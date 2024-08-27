@@ -1,5 +1,5 @@
 import enum
-from typing import Dict, Literal, Optional, TypeAlias
+from typing import Literal, TypeAlias
 
 import numpy as np
 from numpy.typing import DTypeLike
@@ -39,8 +39,8 @@ class ColumnAnnotation(BaseModel):
 
     is_pointer: bool = False
     modality: Modality = Modality.UNKNOWN
-    description: Optional[str] = None
-    user_attributes: Dict[str, str] = Field(default_factory=dict)
+    description: str | None = None
+    user_attributes: dict[str, str] = Field(default_factory=dict)
     dtype: np.dtype | None = None
     content_type: KnownContentType | str | None = None
 
@@ -66,7 +66,7 @@ class ColumnAnnotation(BaseModel):
         return v.name
 
     @field_serializer("dtype")
-    def _serialize_dtype(self, v: Optional[DTypeLike]):
+    def _serialize_dtype(self, v: DTypeLike | None):
         """Return the dtype as a string, keeping it serializable"""
         if v is not None:
             v = v.name
