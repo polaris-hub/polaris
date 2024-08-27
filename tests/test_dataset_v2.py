@@ -3,6 +3,7 @@ from time import perf_counter
 
 import numcodecs
 import numpy as np
+import pandas as pd
 import pytest
 import zarr
 from pydantic import ValidationError
@@ -93,9 +94,10 @@ def test_dataset_v2_checksum(test_dataset_v2, tmpdir):
     save_dir = tmpdir.join("save_dir")
     dataset.to_json(save_dir, load_zarr_from_new_location=True)
 
-    # Make changes to Zarr archive copy
+    # Make changes to Zarr archive copy & rebuild the manifest
     root = zarr.open(dataset.zarr_root_path, "a")
     root["A"][0] = np.zeros(2048)
+    dataset.generate_zarr_manifest()
 
     # Checksum should be different
     with pytest.raises(PolarisChecksumError):
@@ -258,3 +260,16 @@ def test_dataset_v2_validation_consistent_lengths(zarr_archive):
     # Subgroup has a false number of indices
     with pytest.raises(ValidationError, match="should have the same length"):
         DatasetV2(zarr_root_path=zarr_archive)
+
+
+def test_zarr_manifest_created(test_dataset_v2):
+    # Assert the manifest Parquet is created
+    assert test_dataset_v2.zarr_manifest_path is not None
+
+    # Assert the manifest hash is calculated
+    assert test_dataset_v2.zarr_md5sum_manifest is not None
+
+    # Assert the manifest contains 204 rows (the number "204" is chosen because
+    # the Zarr archive defined in `conftest.py` contains 204 unique files)
+    df = pd.read_parquet(test_dataset_v2.zarr_manifest_path)
+    assert len(df) == 204
