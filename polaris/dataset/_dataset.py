@@ -37,7 +37,7 @@ class DatasetV1(BaseDataset):
         table: The core data-structure, storing data-points in a row-wise manner. Can be specified as either a
             path to a `.parquet` file or a `pandas.DataFrame`.
 
-    For additional meta-data attributes, see the [`BaseDataset`][polaris._dataset.BaseDataset] class.
+    For additional meta-data attributes, see the [`BaseDataset`][polaris.dataset._base.BaseDataset] class.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
@@ -222,8 +222,7 @@ class DatasetV1(BaseDataset):
         Warning: Multiple files
             Perhaps unintuitive, this method creates multiple files.
 
-            1. `/path/to/destination/dataset.json`: This file can be loaded with
-                [`Dataset.from_json`][polaris.dataset.Dataset.from_json].
+            1. `/path/to/destination/dataset.json`: This file can be loaded with `Dataset.from_json`.
             2. `/path/to/destination/table.parquet`: The `Dataset.table` attribute is saved here.
             3. _(Optional)_ `/path/to/destination/data/*`: Any additional blobs of data referenced by the
                     pointer columns will be stored here.
