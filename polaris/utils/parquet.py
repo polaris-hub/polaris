@@ -1,10 +1,10 @@
-import pandas as pd
+from typing import List
 import pyarrow as pa
 import pyarrow.parquet as pq
 
 
-def write_parquet_from_dataframe(table, path_to_file, file_name_suffix):
-    """Function that leverage Pyarrow to write a Pandas dataframe
+def write_parquet_from_dataframe(table: pa.Table, path_to_file: str, file_name_suffix: str):
+    """Function that leverage PyArrow to write a PyArrow dataframe
     to disk as a Parquet file"""
 
     # Write dataframe to parquet file
@@ -15,7 +15,7 @@ def write_parquet_from_dataframe(table, path_to_file, file_name_suffix):
     return PARQUET_PATH
 
 
-def append_parquet_files(input_files, output_file):
+def append_parquet_files(input_files: List[str], output_file: str):
     """Combine numerous Parquet files (of the same schema) into a single
     Parquet file. This function attempts to be memory efficient via
     sequentially reading one Parquet file into memory and appending it to
