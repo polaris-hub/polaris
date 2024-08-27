@@ -1,5 +1,5 @@
 import enum
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
 import numpy as np
 from numpy.typing import DTypeLike
@@ -63,7 +63,7 @@ class ColumnAnnotation(BaseModel):
         if isinstance(v, str):
             v = KnownContentType[v.upper()]
         return v
-    
+
     @field_validator("dtype", mode="before")
     def _validate_dtype(cls, v):
         """Tries to convert a string to the Enum"""
