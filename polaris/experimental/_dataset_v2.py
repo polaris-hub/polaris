@@ -13,6 +13,7 @@ from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset, _CACHE_SUBDIR
+from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
@@ -94,6 +95,72 @@ class DatasetV2(BaseDataset):
         fs.mkdirs(path, exist_ok=True)
 
         return self
+
+    # Redefine this to make it a required field
+    zarr_root_path: str
+
+    @model_validator(mode="after")
+    @classmethod
+    def _validate_model(cls, m: "DatasetV2"):
+        """Verifies some dependencies between properties"""
+
+        # NOTE (cwognum): A good chunk of the below code is shared with the DatasetV1 class.
+        #  I tried moving it to the BaseDataset class, but I'm not understanding Pydantic's behavior very well.
+        #  It seems to not always trigger when part of the base class.
+
+        # Verify that all annotations are for columns that exist
+        if any(k not in m.columns for k in m.annotations):
+            raise InvalidDatasetError(
+                f"There are annotations for columns that do not exist. Columns: {m.columns}. Annotations: {list(m.annotations.keys())}"
+            )
+
+        # Verify that all adapters are for columns that exist
+        if any(k not in m.columns for k in m.default_adapters.keys()):
+            raise InvalidDatasetError(
+                f"There are default adapters for columns that do not exist. Columns: {m.columns}. Adapters: {list(m.annotations.keys())}"
+            )
+
+        # Set a default for missing annotations and convert strings to Modality
+        for c in m.columns:
+            if c not in m.annotations:
+                m.annotations[c] = ColumnAnnotation()
+            if m.annotations[c].is_pointer:
+                raise InvalidDatasetError("Pointer columns are not supported in DatasetV2")
+            m.annotations[c].dtype = m.dtypes[c]
+
+        # Since the keys for subgroups are not ordered, we have no easy way to index these groups.
+        # Any subgroup should therefore have a special array that defines the index for that group.
+        for group in m.zarr_root.group_keys():
+            if _INDEX_ARRAY_KEY not in m.zarr_root[group].array_keys():
+                raise InvalidDatasetError(f"Group {group} does not have an index array.")
+
+            index_arr = m.zarr_root[group][_INDEX_ARRAY_KEY]
+            if len(index_arr) != len(m.zarr_root[group]) - 1:
+                raise InvalidDatasetError(
+                    f"Length of index array for group {group} does not match the size of the group."
+                )
+            if any(x not in m.zarr_root[group] for x in index_arr):
+                raise InvalidDatasetError(
+                    f"Keys of index array for group {group} does not match the group members."
+                )
+
+        # Check the structure of the Zarr archive
+        # All arrays or groups in the root should have the same length.
+        lengths = {len(m.zarr_root[k]) for k in m.zarr_root.array_keys()}
+        lengths.update({len(m.zarr_root[k][_INDEX_ARRAY_KEY]) for k in m.zarr_root.group_keys()})
+        if len(lengths) > 1:
+            raise InvalidDatasetError(
+                f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
+            )
+        return m
+
+    @property
+    def n_rows(self) -> list:
+        """Return all row indices for the dataset"""
+        example = self.zarr_root[self.columns[0]]
+        if isinstance(example, zarr.Group):
+            return len(example[_INDEX_ARRAY_KEY])
+        return len(example)
 
     @property
     def n_rows(self) -> int:
