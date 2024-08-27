@@ -1,6 +1,6 @@
 import json
 from hashlib import md5
-from typing import List, Optional, Tuple, Union
+from typing import ClassVar, List, Literal, Optional, Tuple, Union
 
 import fsspec
 import numpy as np
@@ -47,6 +47,8 @@ class DatasetV1(BaseDataset):
     # Public attributes
     # Data
     table: pd.DataFrame
+
+    version: ClassVar[Literal[1]] = 1
 
     @field_validator("table", mode="before")
     def _validate_table(cls, v):
@@ -205,6 +207,7 @@ class DatasetV1(BaseDataset):
         self,
         destination: str,
         if_exists: ZarrConflictResolution = "replace",
+        load_zarr_from_new_location: bool = False,
     ) -> str:
         """
         Save the dataset to a destination directory as a JSON file.
@@ -222,6 +225,8 @@ class DatasetV1(BaseDataset):
             destination: The _directory_ to save the associated data to.
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
+            load_zarr_from_new_location: Whether to update the current instance to load data from the location
+                the data is saved to. Only relevant for Zarr-datasets.
 
         Returns:
             The path to the JSON file.
@@ -250,37 +255,16 @@ class DatasetV1(BaseDataset):
                 if_exists=if_exists,
             )
 
+            if load_zarr_from_new_location:
+                self.zarr_root_path = new_zarr_root_path
+                self._zarr_root = None
+                self._zarr_data = None
+
         self.table.to_parquet(table_path)
         with fsspec.open(dataset_path, "w") as f:
             json.dump(serialized, f)
 
         return dataset_path
-
-    def cache(self, cache_dir: Optional[str] = None, verify_checksum: bool = True) -> str:
-        """Caches the dataset by downloading all additional data for pointer columns to a local directory.
-
-        Args:
-            cache_dir: The directory to cache the data to. If not provided,
-                this will fall back to the `Dataset.cache_dir` attribute
-            verify_checksum: Whether to verify the checksum of the dataset after caching.
-
-        Returns:
-            The path to the cache directory.
-        """
-
-        if cache_dir is not None:
-            self.cache_dir = cache_dir
-
-        self.to_json(self.cache_dir)
-
-        if self.uses_zarr:
-            self.zarr_root_path = dmfs.join(self.cache_dir, "data.zarr")
-            self._zarr_root = None
-
-        if verify_checksum:
-            self.verify_checksum()
-
-        return self.cache_dir
 
     def _split_index_from_path(self, path: str) -> Tuple[str, Optional[int]]:
         """

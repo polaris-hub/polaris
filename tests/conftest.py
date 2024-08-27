@@ -13,6 +13,7 @@ from polaris.benchmark import (
 )
 from polaris.competition import CompetitionSpecification
 from polaris.dataset import ColumnAnnotation, CompetitionDataset, DatasetV1
+from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.utils.types import HubOwner
 
 
@@ -119,6 +120,23 @@ def test_dataset(test_data, test_org_owner):
         owner=test_org_owner,
         license="CC-BY-4.0",
         curation_reference="https://www.example.com",
+    )
+    check_version(dataset)
+    return dataset
+
+
+@pytest.fixture(scope="function")
+def test_dataset_v2(zarr_archive, test_org_owner):
+    dataset = DatasetV2(
+        name="test-dataset-v2",
+        source="https://www.example.com",
+        annotations={"A": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
+        tags=["tagA", "tagB"],
+        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        owner=test_org_owner,
+        license="CC-BY-4.0",
+        curation_reference="https://www.example.com",
+        zarr_root_path=zarr_archive,
     )
     check_version(dataset)
     return dataset

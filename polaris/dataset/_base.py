@@ -8,7 +8,6 @@ import fsspec
 import numpy as np
 import pandas as pd
 import zarr
-from datamol.utils import fs as dmfs
 from loguru import logger
 from pydantic import (
     Field,
@@ -302,6 +301,7 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         self,
         destination: str,
         if_exists: ZarrConflictResolution = "replace",
+        load_zarr_from_new_location: bool = False,
     ) -> str:
         """
         Save the dataset to a destination directory as a JSON file.
@@ -310,6 +310,8 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
             destination: The _directory_ to save the associated data to.
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
+            load_zarr_from_new_location: Whether to update the current instance to load data from the location
+                the data is saved to. Only relevant for Zarr-datasets.
 
         Returns:
             The path to the JSON file.
@@ -331,11 +333,7 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         if cache_dir is not None:
             self.cache_dir = cache_dir
 
-        self.to_json(self.cache_dir)
-
-        if self.uses_zarr:
-            self.zarr_root_path = dmfs.join(self.cache_dir, "data.zarr")
-            self._zarr_root = None
+        self.to_json(self.cache_dir, load_zarr_from_new_location=True)
 
         if verify_checksum:
             self.verify_checksum()
