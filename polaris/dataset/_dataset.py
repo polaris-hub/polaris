@@ -2,7 +2,6 @@ import json
 from hashlib import md5
 from pathlib import Path
 from typing import ClassVar, List, Literal, Optional, Tuple, Union
-import uuid
 
 import fsspec
 import numpy as np
@@ -13,10 +12,9 @@ from loguru import logger
 from pydantic import computed_field, field_validator, model_validator
 
 from polaris.dataset._adapters import Adapter
-from polaris.dataset._base import _CACHE_SUBDIR, BaseDataset
+from polaris.dataset._base import BaseDataset
 from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
-from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
 
@@ -73,7 +71,7 @@ class DatasetV1(BaseDataset):
 
     @model_validator(mode="after")
     @classmethod
-    def _validate_model(cls, m: "DatasetV1"):
+    def _validate_v1_dataset_model(cls, m: "DatasetV1"):
         """Verifies some dependencies between properties"""
 
         # NOTE (cwognum): A good chunk of the below code is shared with the DatasetV2 class.
@@ -105,14 +103,6 @@ class DatasetV1(BaseDataset):
             raise InvalidDatasetError(
                 "The zarr_root_path should only be specified when there are pointer columns"
             )
-
-        # Set the default cache dir if none and make sure it exists. Added here because some validators were
-        # not being triggered correctly in the parent `BaseDataset` class.
-        if m.cache_dir is None:
-            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
-            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
-
-        m.cache_dir.mkdir(parents=True, exist_ok=True)
 
         return m
 

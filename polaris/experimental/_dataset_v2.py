@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import ClassVar, List, Literal, Optional
-import uuid
 
 import fsspec
 import numpy as np
@@ -13,9 +12,8 @@ from loguru import logger
 from pydantic import computed_field, model_validator, PrivateAttr
 
 from polaris.dataset._adapters import Adapter
-from polaris.dataset._base import _CACHE_SUBDIR, BaseDataset
+from polaris.dataset._base import BaseDataset
 from polaris.dataset._column import ColumnAnnotation
-from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
 
 from polaris.utils.checksum import calculate_file_md5
@@ -56,7 +54,7 @@ class DatasetV2(BaseDataset):
 
     @model_validator(mode="after")
     @classmethod
-    def _validate_model(cls, m: "DatasetV2"):
+    def _validate_v2_dataset_model(cls, m: "DatasetV2"):
         """Verifies some dependencies between properties"""
 
         # NOTE (cwognum): A good chunk of the below code is shared with the DatasetV1 class.
@@ -107,14 +105,6 @@ class DatasetV2(BaseDataset):
             raise InvalidDatasetError(
                 f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
             )
-
-        # Set the default cache dir if none and make sure it exists. Added here because some validators were
-        # not being triggered correctly in the parent `BaseDataset` class.
-        if m.cache_dir is None:
-            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
-            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
-
-        m.cache_dir.mkdir(parents=True, exist_ok=True)
 
         return m
 

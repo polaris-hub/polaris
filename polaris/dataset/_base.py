@@ -2,6 +2,7 @@ import abc
 import json
 from pathlib import Path
 from typing import Dict, List, MutableMapping, Optional, Union
+import uuid
 
 import fsspec
 import numpy as np
@@ -14,6 +15,7 @@ from pydantic import (
     computed_field,
     field_serializer,
     field_validator,
+    model_validator,
 )
 
 from polaris._artifact import BaseArtifactModel
@@ -23,6 +25,7 @@ from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.mixins import ChecksumMixin
+from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
@@ -100,6 +103,18 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         if value is not None:
             value = str(value)
         return value
+
+    @model_validator(mode="after")
+    def _validate_base_dataset_model(cls, m: "BaseDataset"):
+        #
+        # Set the default cache dir if none and make sure it exists
+        if m.cache_dir is None:
+            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
+            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
+
+        m.cache_dir.mkdir(parents=True, exist_ok=True)
+
+        return m
 
     @computed_field
     @property
