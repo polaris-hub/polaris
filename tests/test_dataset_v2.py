@@ -105,7 +105,9 @@ def test_dataset_v2_checksum(test_dataset_v2, tmpdir):
     with pq.ParquetWriter(zarr_manifest_path, ZARR_MANIFEST_SCHEMA) as writer:
         generate_zarr_manifest(dataset.zarr_root_path, writer)
 
-    # Checksum should be different
+    # Checksum of altered Zarr dataset should be different. This does not provide
+    # much information because manifest files are not created deterministically. This
+    # means the checksum _could_ change even if the dataset does not.
     with pytest.raises(PolarisChecksumError):
         dataset.verify_checksum()
 
@@ -268,7 +270,7 @@ def test_dataset_v2_validation_consistent_lengths(zarr_archive):
         DatasetV2(zarr_root_path=zarr_archive)
 
 
-def test_zarr_manifest_created(test_dataset_v2):
+def test_zarr_manifest(test_dataset_v2):
     # Assert the manifest Parquet is created
     assert test_dataset_v2.zarr_manifest_path is not None
     assert os.path.isfile(test_dataset_v2.zarr_manifest_path)
@@ -280,3 +282,21 @@ def test_zarr_manifest_created(test_dataset_v2):
 
     # Assert the manifest hash is calculated
     assert test_dataset_v2.md5sum is not None
+
+    # Get the length of the Zarr manifest prior to any changes
+    pre_change_manifest_length = len(df)
+
+    # Add array to Zarr archive to change the number of chunks in the dataset
+    root = zarr.open(test_dataset_v2.zarr_root_path, "a")
+    root.array("C", data=np.random.random((100, 2048)), chunks=(1, None))
+
+    # Regenerate the Zarr manifest after the archive was changed
+    with pq.ParquetWriter(test_dataset_v2.zarr_manifest_path, ZARR_MANIFEST_SCHEMA) as writer:
+        generate_zarr_manifest(test_dataset_v2.zarr_root_path, writer)
+
+    # Get the length of the updated manifest file
+    post_change_manifest_length = len(pd.read_parquet(test_dataset_v2.zarr_manifest_path))
+
+    # The lengths of the Zarr manifests should be different because the Zarr archive now
+    # includes additional chunks
+    assert pre_change_manifest_length != post_change_manifest_length
