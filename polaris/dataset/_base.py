@@ -21,7 +21,7 @@ from pydantic import (
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
-from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum
+from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.mixins import ChecksumMixin
@@ -83,7 +83,6 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
     # Private attributes
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
     _zarr_data: Optional[MutableMapping[str, np.ndarray]] = PrivateAttr(None)
-    _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
     _warn_about_remote_zarr: bool = PrivateAttr(True)
 
@@ -115,16 +114,6 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         m.cache_dir.mkdir(parents=True, exist_ok=True)
 
         return m
-
-    @computed_field
-    @property
-    @abc.abstractmethod
-    def zarr_md5sum_manifest(self) -> List[ZarrFileChecksum]:
-        """
-        The Zarr Checksum manifest stores the checksums of all files in a Zarr archive.
-        If the dataset doesn't use Zarr, this will simply return an empty list.
-        """
-        raise NotImplementedError
 
     @property
     def client(self):

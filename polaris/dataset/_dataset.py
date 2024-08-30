@@ -9,7 +9,7 @@ import pandas as pd
 import zarr
 from datamol.utils import fs as dmfs
 from loguru import logger
-from pydantic import computed_field, field_validator, model_validator
+from pydantic import PrivateAttr, computed_field, field_validator, model_validator
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
@@ -48,6 +48,7 @@ class DatasetV1(BaseDataset):
     table: pd.DataFrame
 
     version: ClassVar[Literal[1]] = 1
+    _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
 
     @field_validator("table", mode="before")
     def _validate_table(cls, v):

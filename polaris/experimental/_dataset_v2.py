@@ -1,25 +1,21 @@
 import json
-import os
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from typing import ClassVar, List, Literal, Optional
 
 import fsspec
 import numpy as np
-import pandas as pd
 import zarr
 from loguru import logger
-from pydantic import computed_field, model_validator, PrivateAttr
+from pydantic import model_validator, PrivateAttr
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
 from polaris.dataset._column import ColumnAnnotation
 from polaris.utils.errors import InvalidDatasetError
 
-from polaris.utils.checksum import calculate_file_md5
-from polaris.utils.parquet import append_parquet_files, write_parquet_from_dataframe
+from polaris.utils.v2_manifest import ZARR_MANIFEST_SCHEMA, calculate_file_md5, generate_zarr_manifest
 from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
-import pyarrow as pa
+import pyarrow.parquet as pq
 
 _INDEX_ARRAY_KEY = "__index__"
 
@@ -46,7 +42,6 @@ class DatasetV2(BaseDataset):
     """
 
     version: ClassVar[Literal[2]] = 2
-    _zarr_md5sum_manifest: str | None = PrivateAttr(None)
     _zarr_md5sum_manifest_path: str | None = PrivateAttr(None)
 
     # Redefine this to make it a required field
@@ -142,80 +137,22 @@ class DatasetV2(BaseDataset):
         return dtypes
 
     @property
-    def has_zarr_md5sum_manifest(self) -> bool:
-        """Whether the md5sum for this dataset's manifest has been computed and stored."""
-        return self._zarr_md5sum_manifest is not None
-
-    @property
     def zarr_manifest_path(self) -> str:
-        if not self.has_zarr_md5sum_manifest:
-            manifest_path = self.generate_zarr_manifest()
-            self._zarr_md5sum_manifest_path = manifest_path
+        if not self.has_md5sum:
+            #
+            # Use a PyArrow writer object to generate the Dataset's Zarr manifest
+            zarr_manifest_path = f"{self.cache_dir}/{self.name}_zarr_manifest.parquet"
+            with pq.ParquetWriter(zarr_manifest_path, ZARR_MANIFEST_SCHEMA) as writer:
+                generate_zarr_manifest(self.zarr_root_path, writer)
+
+            self._zarr_md5sum_manifest_path = zarr_manifest_path
+
         return self._zarr_md5sum_manifest_path
-
-    @computed_field
-    @property
-    def zarr_md5sum_manifest(self) -> str:
-        """This variable stores the checksum of the Parquet file representing the Zarr manifest"""
-        if not self.has_zarr_md5sum_manifest:
-            manifest_md5 = self._compute_checksum()
-            self._zarr_md5sum_manifest = manifest_md5
-
-        return self._zarr_md5sum_manifest
 
     def _compute_checksum(self) -> str:
         """Compute the checksum of the Zarr manifest file."""
         manifest_md5 = calculate_file_md5(self.zarr_manifest_path)
         return manifest_md5
-
-    def generate_zarr_manifest(self) -> str:
-        #
-        # Init temporary chunk variables
-        MAX_ROWS_IN_CHUNK = 1000
-        temp_chunks = []
-        temp_chunk_count = 0
-        temp_parquet_paths = []
-
-        # Use temporary directory for holding manifest chunks
-        with TemporaryDirectory() as temp_dir_name:
-            #
-            # Traverse files and directories in Zarr archive
-            for root, dirs, files in os.walk(self.zarr_root_path):
-                #
-                # Loop thru contents at each directory
-                for name in files + dirs:
-                    item_path = os.path.join(root, name)
-
-                    # Create a table row for each file in the Zarr archive
-                    if os.path.isfile(item_path):
-                        file_info = {
-                            "path": os.path.relpath(item_path, self.zarr_root_path),
-                            "checksum": calculate_file_md5(item_path),
-                        }
-
-                        # Add the row info to the chunk list
-                        temp_chunks.append(file_info)
-
-                        # If the number of rows in the temporary chunk list is greater
-                        # than the MAX_ROWS_IN_CHUNK threshold, write the chunks to a temporary parquet file
-                        if len(temp_chunks) > MAX_ROWS_IN_CHUNK:
-                            self._write_chunks_to_parquet(
-                                temp_chunks, temp_dir_name, temp_chunk_count, temp_parquet_paths
-                            )
-
-                            # Reset temporary chunk variables
-                            temp_chunks = []
-                            temp_chunk_count += 1
-
-            # Once we walk the Zarr archive, there will likely be a temporary chunk which has not been
-            # written to a temporary parquet yet. We do that here to ensure all chunks are accounted for.
-            self._write_chunks_to_parquet(temp_chunks, temp_dir_name, temp_chunk_count, temp_parquet_paths)
-
-            # Finally, merge all the temporary parquets into a single Zarr manifest parquet
-            ZARR_MANIFEST_PATH = f"{self.cache_dir}/{self.name}_zarr_manifest.parquet"
-            append_parquet_files(temp_parquet_paths, ZARR_MANIFEST_PATH)
-
-        return ZARR_MANIFEST_PATH
 
     def get_data(self, row: int, col: str, adapters: List[Adapter] | None = None) -> np.ndarray:
         """Indexes the Zarr archive.
@@ -311,12 +248,3 @@ class DatasetV2(BaseDataset):
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
         repr_dict = self.model_dump(exclude={"zarr_md5sum_manifest"})
         return repr_dict
-
-    def _write_chunks_to_parquet(
-        self, chunks: List[dict], dir_name: str, chunk_count: int, parquet_paths: List[str]
-    ):
-        df = pd.DataFrame(chunks)
-        table = pa.Table.from_pandas(df)
-
-        TEMP_PARQUET_PATH = write_parquet_from_dataframe(table, dir_name, chunk_count)
-        parquet_paths.append(TEMP_PARQUET_PATH)

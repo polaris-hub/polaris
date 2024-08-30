@@ -1,4 +1,5 @@
 from copy import deepcopy
+import os
 from time import perf_counter
 
 import numcodecs
@@ -13,6 +14,8 @@ from polaris.dataset._factory import DatasetFactory
 from polaris.dataset.converters._pdb import PDBConverter
 from polaris.experimental._dataset_v2 import _INDEX_ARRAY_KEY, DatasetV2
 from polaris.utils.errors import PolarisChecksumError
+from polaris.utils.v2_manifest import ZARR_MANIFEST_SCHEMA, generate_zarr_manifest
+import pyarrow.parquet as pq
 
 
 def test_dataset_v2_get_columns(test_dataset_v2):
@@ -97,7 +100,10 @@ def test_dataset_v2_checksum(test_dataset_v2, tmpdir):
     # Make changes to Zarr archive copy & rebuild the manifest
     root = zarr.open(dataset.zarr_root_path, "a")
     root["A"][0] = np.zeros(2048)
-    dataset.generate_zarr_manifest()
+
+    zarr_manifest_path = f"{dataset.cache_dir}/{dataset.name}_zarr_manifest.parquet"
+    with pq.ParquetWriter(zarr_manifest_path, ZARR_MANIFEST_SCHEMA) as writer:
+        generate_zarr_manifest(dataset.zarr_root_path, writer)
 
     # Checksum should be different
     with pytest.raises(PolarisChecksumError):
@@ -265,11 +271,12 @@ def test_dataset_v2_validation_consistent_lengths(zarr_archive):
 def test_zarr_manifest_created(test_dataset_v2):
     # Assert the manifest Parquet is created
     assert test_dataset_v2.zarr_manifest_path is not None
-
-    # Assert the manifest hash is calculated
-    assert test_dataset_v2.zarr_md5sum_manifest is not None
+    assert os.path.isfile(test_dataset_v2.zarr_manifest_path)
 
     # Assert the manifest contains 204 rows (the number "204" is chosen because
     # the Zarr archive defined in `conftest.py` contains 204 unique files)
     df = pd.read_parquet(test_dataset_v2.zarr_manifest_path)
     assert len(df) == 204
+
+    # Assert the manifest hash is calculated
+    assert test_dataset_v2.md5sum is not None
