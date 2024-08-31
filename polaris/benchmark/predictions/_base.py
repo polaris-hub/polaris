@@ -1,10 +1,8 @@
 import numpy as np
-from typing import Annotated, Any
 from polaris.utils.types import IncomingPredictionsType, ListOrArrayType, PredictionsType
 from pydantic import (
     BaseModel,
     ConfigDict,
-    BeforeValidator,
     model_validator,
 )
 
@@ -55,13 +53,7 @@ class BenchmarkPredictions(BaseModel):
             raise ValueError("target_cols must be provided")
 
         predictions_in_correct_shape = cls._normalize_predictions(vals, target_cols)
-        print("1+++++++++++++++++++++++++++++++++++++")
-        print(predictions_in_correct_shape)
-        print("+++++++++++++++++++++++++++++++++++++")
         predictions_with_correct_types = cls._convert_lists_to_numpy_arrays(predictions_in_correct_shape)
-        print("2+++++++++++++++++++++++++++++++++++++")
-        print(predictions_with_correct_types)
-        print("+++++++++++++++++++++++++++++++++++++")
         data["predictions"] = predictions_with_correct_types
 
         return data
@@ -78,19 +70,8 @@ class BenchmarkPredictions(BaseModel):
             return {"test": vals}
         elif cls._is_single_task_multi_test_set(vals, target_cols):
             return {test_set_name: cls._set_col_name(v, target_cols) for test_set_name, v in vals.items()}
-        # elif not isinstance(vals, dict):
-        #     return {"test": cls._set_col_name(vals, target_cols)}
-        # else
-        # # else:
-        #     for test_set, targets in vals.items():
-        #         if not isinstance(targets, dict):
-        #             raise ValueError(f"Invalid structure for test set '{test_set}'. "
-        #                              "Expected a dictionary of \\{col_name: predictions\\}")
-        #         for target, predictions in targets.items():
-        #             if not isinstance(predictions, np.ndarray):
-        #                 raise ValueError(f"Invalid predictions for test set '{test_set}'"
-        #                                  f"target '{target}'. Expected a numpy array.")
-
+        else:
+            cls._give_feedback(vals)
         return vals
 
     @classmethod
@@ -136,3 +117,18 @@ class BenchmarkPredictions(BaseModel):
             return vals
         else:
             return {target_cols[0]: vals}
+
+    @classmethod
+    def _give_feedback(cls, vals):
+        for test_set, targets in vals.items():
+            if not isinstance(targets, dict):
+                raise ValueError(f"Invalid structure for test set '{test_set}'. "
+                                 "Expected a dictionary of {col_name: predictions}")
+            for target, predictions in targets.items():
+                if not (isinstance(predictions, np.ndarray) or
+                        (isinstance(predictions, list) and
+                         all(isinstance(x, (int, float)) for x in predictions))):
+                    raise ValueError(
+                        f"Invalid predictions for test set '{test_set}', target '{target}'. "
+                        "Expected a numpy array or list of numbers."
+                    )
