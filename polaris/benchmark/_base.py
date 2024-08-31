@@ -420,16 +420,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             Contrary to other frameworks that you might be familiar with, we opted for a signature that includes just
             the predictions. This reduces the chance of accidentally using the test targets during training.
 
-        info: Expected structure for `y_pred` and `y_prob` arguments
-            The supplied `y_pred` and `y_prob` arguments must adhere to a certain structure depending on the number of
-            tasks and test sets included in the benchmark. Refer to the following for guidance on the correct structure when
-            creating your `y_pred` and `y_prod` objects:
-
-            - Single task, single set: `[values...]`
-            - Multi-task, single set: `{task_name_1: [values...], task_name_2: [values...]}`
-            - Single task, multi-set: `{test_set_1: {task_name: [values...]}, test_set_2: {task_name: [values...]}}`
-            - Multi-task, multi-set: `{test_set_1: {task_name_1: [values...], task_name_2: [values...]}, test_set_2: {task_name_1: [values...], task_name_2: [values...]}}`
-
         For this method, we make the following assumptions:
 
         1. There can be one or multiple test set(s);
