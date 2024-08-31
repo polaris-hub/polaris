@@ -1,41 +1,41 @@
 from polaris.benchmark.predictions import BenchmarkPredictions
-import pytest
+import numpy as np
 
 def test_benchmark_predictions_initialization():
     "Single task, single test set"
-    assert {"test": {"col1": [1, 2, 3]}} == BenchmarkPredictions(
+    assert {"test": {"col1": np.array([1, 2, 3])}} == BenchmarkPredictions(
         predictions=[1, 2, 3], target_cols=["col1"]).predictions
-    assert {"test": {"col1": [1, 2, 3]}} == BenchmarkPredictions(
+    assert {"test": {"col1": np.array([1, 2, 3])}} == BenchmarkPredictions(
         predictions={"col1": [1, 2, 3]}, target_cols=["col1"]
     ).predictions
-    assert {"test": {"col1": [1, 2, 3]}} == BenchmarkPredictions(
+    assert {"test": {"col1": np.array([1, 2, 3])}} == BenchmarkPredictions(
         predictions={"test": {"col1": [1, 2, 3]}}, target_cols=["col1"]
     ).predictions
 
     "Single task, multiple test sets"
-    assert {"test": {"col1": [1, 2, 3]},
-            "test2": {"col1": [4, 5, 6]}} == BenchmarkPredictions(
+    assert {"test": {"col1": np.array([1, 2, 3])},
+            "test2": {"col1": np.array([4, 5, 6])   }} == BenchmarkPredictions(
         predictions={"test": [1, 2, 3], "test2": [4, 5, 6]}, target_cols=["col1"]
     ).predictions
-    assert {"test1": {"col1": [1, 2, 3]},
-            "test2": {"col1": [4, 5, 6]}} == BenchmarkPredictions(
+    assert {"test1": {"col1": np.array([1, 2, 3])},
+            "test2": {"col1": np.array([4, 5, 6])}} == BenchmarkPredictions(
         predictions={"test1": {"col1": [1, 2, 3]}, "test2": {"col1": [4, 5, 6]}},
         target_cols=["col1"]
     ).predictions
 
     "Multi-task, single test set"
-    assert {"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}} == BenchmarkPredictions(
+    assert {"test": {"col1": np.array([1, 2, 3]), "col2": np.array([4, 5, 6])}} == BenchmarkPredictions(
         predictions={"col1": [1, 2, 3], "col2": [4, 5, 6]},
         target_cols=["col1", "col2"]
     ).predictions
-    assert {"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}} == BenchmarkPredictions(
+    assert {"test": {"col1": np.array([1, 2, 3]), "col2": np.array([4, 5, 6])}} == BenchmarkPredictions(
         predictions={"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}},
         target_cols=["col1", "col2"]
     ).predictions
 
     "Multi-task, multiple test sets"
     assert {
-        "test1": {"col1": [1, 2, 3], "col2": [4, 5, 6]},
+        "test1": {"col1": np.array([1, 2, 3]), "col2": np.array([4, 5, 6])},
         "test2": {"col1": [7, 8, 9], "col2": [10, 11, 12]}
     } == BenchmarkPredictions(
         predictions={"test1": {"col1": [1, 2, 3], "col2": [4, 5, 6]},
