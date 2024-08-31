@@ -24,7 +24,7 @@ A split is a pair of which the first item is always assumed to be the train set.
 The second item can either be a single test set or a dictionary with multiple, named test sets.
 """
 
-PredictionsType: TypeAlias = Union[np.ndarray, dict[str, Union[np.ndarray, dict[str, np.ndarray]]]]
+PredictionsType: TypeAlias = dict[str, dict[str, np.ndarray]]
 """
 A prediction is one of three things:
 

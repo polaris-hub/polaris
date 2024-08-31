@@ -441,7 +441,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                 If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
                 If there are multiple test sets, the predictions should be further wrapped in a dictionary
                     with the test subset labels as keys.
-            y_prob: The predicted probabilities for the test set, as NumPy arrays.
+            y_prob: The predicted probabilities for the test set, formatted similarly to predictions, based on the
+                number of tasks and test sets.
 
         Returns:
             A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
@@ -460,30 +461,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
-        # The `evaluate_benchmark` function expects the benchmark labels to be of a certain structure which
-        # depends on the number of tasks and test sets defined for the benchmark. Below, we build the structure
-        # of the benchmark labels based on the aforementioned factors.
-        test = self._get_test_set(hide_targets=False)
-        if isinstance(test, dict):
-            #
-            # For multi-set benchmarks
-            y_true = {}
-            for test_set_name, values in test.items():
-                y_true[test_set_name] = {}
-                if isinstance(values.targets, dict):
-                    #
-                    # For multi-task, multi-set benchmarks
-                    for task_name, values in values.targets.items():
-                        y_true[test_set_name][task_name] = values
-                else:
-                    #
-                    # For single task, multi-set benchmarks
-                    y_true[test_set_name][self.target_cols[0]] = values.targets
-        else:
-            #
-            # For single set benchmarks (single and multiple task)
-            y_true = test.targets
 
+        y_true = self._get_test_set(hide_targets=False)
         scores = evaluate_benchmark(self.target_cols, self.metrics, y_true, y_pred=y_pred, y_prob=y_prob)
 
         return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)

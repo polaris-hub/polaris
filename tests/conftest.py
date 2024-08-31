@@ -124,7 +124,7 @@ def test_dataset(test_data, test_org_owner):
     return dataset
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def test_competition_dataset(test_data, test_org_owner):
     dataset = CompetitionDataset(
         table=test_data,

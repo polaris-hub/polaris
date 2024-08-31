@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from polaris.evaluate.utils import evaluate_benchmark, normalize_predictions_type
+from polaris.evaluate.utils import evaluate_benchmark
 from polaris.competition import CompetitionSpecification
 
 
@@ -69,35 +69,3 @@ def test_single_col_competition_evaluation(test_competition):
         "Metric",
         "Score",
     }
-
-
-def test_normalize_predictions_type():
-    "Single column, single test set"
-    assert {"test": {"col1": [1, 2, 3]}} == normalize_predictions_type([1, 2, 3], ["col1"])
-    assert {"test": {"col1": [1, 2, 3]}} == normalize_predictions_type({"col1": [1, 2, 3]}, ["col1"])
-    assert {"test": {"col1": [1, 2, 3]}} == normalize_predictions_type(
-        {"test": {"col1": [1, 2, 3]}}, ["col1"]
-    )
-
-    "Multi-column, single test set"
-    assert {"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}} == normalize_predictions_type(
-        {"col1": [1, 2, 3], "col2": [4, 5, 6]}, ["col1", "col2"]
-    )
-
-    assert {"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}} == normalize_predictions_type(
-        {"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}}, ["col1", "col2"]
-    )
-
-    "Single column, multi-test set"
-    assert {"test1": {"col1": [1, 2, 3]}, "test2": {"col1": [4, 5, 6]}} == normalize_predictions_type(
-        {"test1": {"col1": [1, 2, 3]}, "test2": {"col1": [4, 5, 6]}}, ["col1"]
-    )
-
-    "Multi-column, multi-test set"
-    assert {
-        "test1": {"col1": [1, 2, 3], "col2": [4, 5, 6]},
-        "test2": {"col1": [7, 8, 9], "col2": [10, 11, 12]},
-    } == normalize_predictions_type(
-        {"test1": {"col1": [1, 2, 3], "col2": [4, 5, 6]}, "test2": {"col1": [7, 8, 9], "col2": [10, 11, 12]}},
-        ["col1", "col2"],
-    )
