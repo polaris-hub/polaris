@@ -25,7 +25,7 @@ from polaris.benchmark import (
 )
 from polaris.dataset import Dataset
 from polaris.evaluate import BenchmarkResults
-from polaris.evaluate._results import CompetitionPredictions
+from polaris.benchmark.predictions import BenchmarkPredictions
 from polaris.hub.external_auth_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.dataset import CompetitionDataset
@@ -846,7 +846,7 @@ class PolarisHubClient(OAuth2Client):
     def evaluate_competition(
         self,
         competition: CompetitionSpecification,
-        competition_predictions: CompetitionPredictions,
+        competition_predictions: BenchmarkPredictions,
     ) -> CompetitionResults:
         """Evaluate the predictions for a competition on the Polaris Hub. Target labels are fetched
         by Polaris Hub and used only internally.

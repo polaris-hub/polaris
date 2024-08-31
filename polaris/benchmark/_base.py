@@ -29,7 +29,7 @@ from polaris.utils.misc import listit
 from polaris.utils.types import (
     AccessType,
     HubOwner,
-    PredictionsType,
+    IncomingPredictionsType,
     SplitType,
     TargetType,
     TaskType,
@@ -410,7 +410,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return train, test
 
     def evaluate(
-        self, y_pred: Optional[PredictionsType] = None, y_prob: Optional[PredictionsType] = None
+        self,
+        y_pred: Optional[IncomingPredictionsType] = None,
+        y_prob: Optional[IncomingPredictionsType] = None
     ) -> BenchmarkResults:
         """Execute the evaluation protocol for the benchmark, given a set of predictions.
 
@@ -461,7 +463,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
-
         y_true = self._get_test_set(hide_targets=False)
         scores = evaluate_benchmark(self.target_cols, self.metrics, y_true, y_pred=y_pred, y_prob=y_prob)
 

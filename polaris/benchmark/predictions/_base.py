@@ -4,15 +4,14 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     model_validator,
+    field_serializer,
 )
 
 class BenchmarkPredictions(BaseModel):
     predictions: PredictionsType
-    # predictions: Any
     target_cols: list[str]
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    # # benchmark: BenchmarkSpecification = Field(..., exclude=True)
 
     # @field_serializer("predictions")
     # def _serialize_predictions(self, predictions: PredictionsType):
@@ -21,24 +20,17 @@ class BenchmarkPredictions(BaseModel):
     #         for k1, v1 in predictions.items()
     #     }
 
-    # @property
-    # def predictions(self):
-    #     return self._predictions
+    @field_serializer("predictions")
+    def _serialize_predictions(self, predictions: PredictionsType):
+        """Converts all numpy values in the predictions dictionary to lists so
+        they can be sent over the wire."""
+        def convert_to_list(v):
+            if isinstance(v, np.ndarray):
+                 return v.tolist()
+            elif isinstance(v, dict):
+                return {k: convert_to_list(v) for k, v in v.items()}
 
-    # @field_validator("predictions")
-    # @classmethod
-    # def _validate_predictions(cls, value):
-    #     if isinstance(value, list):
-    #         return np.array(value)
-    #     elif isinstance(value, np.ndarray):
-    #         return value
-    #     elif isinstance(value, dict):
-    #         for key, val in value.items():
-    #             value[key] = cls._validate_predictions(val)
-    #         return value
-    #     else:
-    #         raise ValueError("Invalid predictions."
-    #                          f"Expected target values to be a list or numpy array, got {type(value)}")
+        return convert_to_list(predictions)
 
     @model_validator(mode="before")
     @classmethod
