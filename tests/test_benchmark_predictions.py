@@ -1,11 +1,7 @@
 from polaris.benchmark.predictions import BenchmarkPredictions
+import pytest
 
 def test_benchmark_predictions_initialization():
-    "Missing predictions"
-    assert None is BenchmarkPredictions(
-        predictions=None, target_cols=["col1"]
-    ).predictions
-
     "Single task, single test set"
     assert {"test": {"col1": [1, 2, 3]}} == BenchmarkPredictions(
         predictions=[1, 2, 3], target_cols=["col1"]).predictions
@@ -17,6 +13,10 @@ def test_benchmark_predictions_initialization():
     ).predictions
 
     "Single task, multiple test sets"
+    assert {"test": {"col1": [1, 2, 3]},
+            "test2": {"col1": [4, 5, 6]}} == BenchmarkPredictions(
+        predictions={"test": [1, 2, 3], "test2": [4, 5, 6]}, target_cols=["col1"]
+    ).predictions
     assert {"test1": {"col1": [1, 2, 3]},
             "test2": {"col1": [4, 5, 6]}} == BenchmarkPredictions(
         predictions={"test1": {"col1": [1, 2, 3]}, "test2": {"col1": [4, 5, 6]}},
@@ -43,7 +43,19 @@ def test_benchmark_predictions_initialization():
         target_cols=["col1", "col2"]
     ).predictions
 
-#
+    # "Invalid predictions"
+    # with pytest.raises(ValueError,
+    #                    match="Invalid structure for test set 'test'."
+    #                    "Expected a dictionary of \\{col_name: predictions\\}"):
+    #     BenchmarkPredictions(predictions={"test": [1, 2, 3]}, target_cols=["col1"])
+
+    # with pytest.raises(ValueError,
+    #                    match="Invalid predictions for test set 'test', target 'col1'."
+    #                    "Expected a numpy array or list."):
+    #     BenchmarkPredictions(predictions={"test": {"col1": "not an array"}},
+    #                          target_cols=["col1"])
+
+
 # def test_benchmark_predictions_to_dataframe():
 #     y_pred = {"target1": np.array([0, 1, 0]), "target2": np.array([1, 1, 0])}
 #     y_prob = {"target1": np.array([0.2, 0.8, 0.3]), "target2": np.array([0.9, 0.7, 0.4])}

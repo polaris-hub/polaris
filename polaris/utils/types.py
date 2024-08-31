@@ -24,6 +24,23 @@ A split is a pair of which the first item is always assumed to be the train set.
 The second item can either be a single test set or a dictionary with multiple, named test sets.
 """
 
+ListOrArrayType: TypeAlias = Union[list[Union[int, float]], np.ndarray]
+"""
+A list of numbers or a numpy array. Predictions can be provided as either a list or a numpy array.
+"""
+
+IncomingPredictionsType: TypeAlias = Union[ListOrArrayType,
+                                           dict[str, Union[ListOrArrayType,
+                                                           dict[str, ListOrArrayType]]]]
+"""
+The type of the predictions that are ingested into the Polaris BenchmarkPredictions object. Can be one
+of the following:
+
+- A single array (single-task, single test set)
+- A dictionary of arrays (single-task, multiple test sets)
+- A dictionary of dictionaries of arrays (multi-task, multiple test sets)
+"""
+
 PredictionsType: TypeAlias = dict[str, dict[str, np.ndarray]]
 """
 A prediction is one of three things:
