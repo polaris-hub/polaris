@@ -43,17 +43,9 @@ of the following:
 
 PredictionsType: TypeAlias = dict[str, dict[str, np.ndarray]]
 """
-A prediction is one of three things:
-
-- A single array (single-task, single test set)
-- A dictionary of arrays (single-task, multiple test sets)
-- A dictionary of dictionaries of arrays (multi-task, multiple test sets)
-"""
-
-CompetitionPredictionsType: TypeAlias = Union[list, dict[str, Union[list, dict[str, list]]]]
-"""
-An additional type to represent the structure of predictions which are specific to competitions. This
-type allows for the predictions to be sent over the wire for external evaluation.
+The normalized format for predictions for internal use. Predictions are accepted in a generous
+variety of representations and normalized into this standard format, a dictionary of dictionaries
+that looks like {"test_set_name": {"target_name": np.ndarray}}.
 """
 
 DatapointPartType = Union[Any, tuple[Any], dict[str, Any]]

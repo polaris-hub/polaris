@@ -3,7 +3,6 @@ from polaris.evaluate._results import (
     BenchmarkResults,
     ResultsType,
     CompetitionResults,
-    CompetitionPredictions,
     ResultsMetadata,
     EvaluationResult,
 )
@@ -18,5 +17,4 @@ __all__ = [
     "CompetitionResults",
     "ResultsType",
     "evaluate_benchmark",
-    "CompetitionPredictions",
 ]
