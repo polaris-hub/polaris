@@ -13,13 +13,6 @@ class BenchmarkPredictions(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    # @field_serializer("predictions")
-    # def _serialize_predictions(self, predictions: PredictionsType):
-    #     return {
-    #         k1: {k2: v2.tolist() for k2, v2 in v1.items()}
-    #         for k1, v1 in predictions.items()
-    #     }
-
     @field_serializer("predictions")
     def _serialize_predictions(self, predictions: PredictionsType):
         """Converts all numpy values in the predictions dictionary to lists so

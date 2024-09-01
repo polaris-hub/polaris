@@ -44,13 +44,13 @@ def evaluate_benchmark(
     scores: ResultsType = pd.DataFrame(columns=BenchmarkResults.RESULTS_COLUMNS)
 
     # For every test set...
-    for test_label, y_true_subset in y_true.predictions.items():
+    for test_label, y_true_test in y_true.predictions.items():
         # For every metric...
         for metric in metrics:
             if metric.is_multitask:
                 # Multi-task but with a metric across targets
                 score = metric(
-                    y_true=y_true_subset,
+                    y_true=y_true_test,
                     y_pred=y_pred.predictions.get(test_label),
                     y_prob=y_prob.predictions.get(test_label),
                 )
@@ -58,10 +58,10 @@ def evaluate_benchmark(
                 scores.loc[len(scores)] = (test_label, "aggregated", metric, score)
                 continue
 
-            if not isinstance(y_true_subset, dict):
+            if not isinstance(y_true_test, dict):
                 # Single task
                 score = metric(
-                    y_true=y_true_subset,
+                    y_true=y_true_test,
                     y_pred=y_pred.predictions.get(test_label),
                     y_prob=y_prob.predictions.get(test_label),
                 )
@@ -69,7 +69,7 @@ def evaluate_benchmark(
                 continue
 
             # Otherwise, for every target...
-            for target_label, y_true_target in y_true_subset.items():
+            for target_label, y_true_target in y_true_test.items():
                 # Single-task metrics for a multi-task benchmark
                 # In such a setting, there can be NaN values, which we thus have to filter out.
                 mask = ~np.isnan(y_true_target)

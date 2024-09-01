@@ -453,8 +453,14 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
-        y_true = self._get_test_set(hide_targets=False)
-        scores = evaluate_benchmark(self.target_cols, self.metrics, y_true, y_pred=y_pred, y_prob=y_prob)
+        y_true_subset = self._get_test_set(hide_targets=False)
+
+        if isinstance(y_true_subset, dict):
+            y_true_values = {k: v.targets for k, v in y_true_subset.items()}
+        else:
+            y_true_values = y_true_subset.targets
+
+        scores = evaluate_benchmark(self.target_cols, self.metrics, y_true_values, y_pred=y_pred, y_prob=y_prob)
 
         return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)
 
