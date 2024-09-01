@@ -13,9 +13,7 @@ from polaris.dataset import Subset
 from polaris.dataset._factory import DatasetFactory
 from polaris.dataset.converters._pdb import PDBConverter
 from polaris.experimental._dataset_v2 import _INDEX_ARRAY_KEY, DatasetV2
-from polaris.utils.errors import PolarisChecksumError
-from polaris.utils.v2_manifest import ZARR_MANIFEST_SCHEMA, generate_zarr_manifest
-import pyarrow.parquet as pq
+from polaris.utils.v2_manifest import generate_zarr_manifest
 
 
 def test_dataset_v2_get_columns(test_dataset_v2):
@@ -87,29 +85,6 @@ def test_dataset_v2_checksum(test_dataset_v2, tmpdir):
     dataset = DatasetV2(**kwargs)
     dataset._md5sum = "invalid"
     assert dataset != test_dataset_v2
-
-    # (4) With changes, but same hash
-    # Reset hash
-    kwargs["md5sum"] = test_dataset_v2.md5sum
-
-    # Copy Zarr data to local
-    dataset = DatasetV2(**kwargs)
-    save_dir = tmpdir.join("save_dir")
-    dataset.to_json(save_dir, load_zarr_from_new_location=True)
-
-    # Make changes to Zarr archive copy & rebuild the manifest
-    root = zarr.open(dataset.zarr_root_path, "a")
-    root["A"][0] = np.zeros(2048)
-
-    zarr_manifest_path = f"{dataset.cache_dir}/{dataset.name}_zarr_manifest.parquet"
-    with pq.ParquetWriter(zarr_manifest_path, ZARR_MANIFEST_SCHEMA) as writer:
-        generate_zarr_manifest(dataset.zarr_root_path, writer)
-
-    # Checksum of altered Zarr dataset should be different. This does not provide
-    # much information because manifest files are not created deterministically. This
-    # means the checksum _could_ change even if the dataset does not.
-    with pytest.raises(PolarisChecksumError):
-        dataset.verify_checksum()
 
 
 def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
@@ -283,20 +258,14 @@ def test_zarr_manifest(test_dataset_v2):
     # Assert the manifest hash is calculated
     assert test_dataset_v2.md5sum is not None
 
-    # Get the length of the Zarr manifest prior to any changes
-    pre_change_manifest_length = len(df)
-
     # Add array to Zarr archive to change the number of chunks in the dataset
     root = zarr.open(test_dataset_v2.zarr_root_path, "a")
     root.array("C", data=np.random.random((100, 2048)), chunks=(1, None))
 
-    # Regenerate the Zarr manifest after the archive was changed
-    with pq.ParquetWriter(test_dataset_v2.zarr_manifest_path, ZARR_MANIFEST_SCHEMA) as writer:
-        generate_zarr_manifest(test_dataset_v2.zarr_root_path, writer)
+    generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2.cache_dir)
 
     # Get the length of the updated manifest file
     post_change_manifest_length = len(pd.read_parquet(test_dataset_v2.zarr_manifest_path))
 
-    # The lengths of the Zarr manifests should be different because the Zarr archive now
-    # includes additional chunks
-    assert pre_change_manifest_length != post_change_manifest_length
+    # Ensure Zarr manifest has an additional 100 chunks + 1 array metadata file
+    assert post_change_manifest_length == 305

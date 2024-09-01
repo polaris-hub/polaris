@@ -13,9 +13,8 @@ from polaris.dataset._base import BaseDataset
 from polaris.dataset._column import ColumnAnnotation
 from polaris.utils.errors import InvalidDatasetError
 
-from polaris.utils.v2_manifest import ZARR_MANIFEST_SCHEMA, calculate_file_md5, generate_zarr_manifest
+from polaris.utils.v2_manifest import calculate_file_md5, generate_zarr_manifest
 from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
-import pyarrow.parquet as pq
 
 _INDEX_ARRAY_KEY = "__index__"
 
@@ -138,13 +137,8 @@ class DatasetV2(BaseDataset):
 
     @property
     def zarr_manifest_path(self) -> str:
-        if not self.has_md5sum:
-            #
-            # Use a PyArrow writer object to generate the Dataset's Zarr manifest
-            zarr_manifest_path = f"{self.cache_dir}/{self.name}_zarr_manifest.parquet"
-            with pq.ParquetWriter(zarr_manifest_path, ZARR_MANIFEST_SCHEMA) as writer:
-                generate_zarr_manifest(self.zarr_root_path, writer)
-
+        if self._zarr_md5sum_manifest_path is None:
+            zarr_manifest_path = generate_zarr_manifest(self.zarr_root_path, self.cache_dir)
             self._zarr_md5sum_manifest_path = zarr_manifest_path
 
         return self._zarr_md5sum_manifest_path
