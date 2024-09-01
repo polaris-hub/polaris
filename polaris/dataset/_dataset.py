@@ -2,7 +2,6 @@ import json
 from hashlib import md5
 from pathlib import Path
 from typing import Any, ClassVar, List, Literal
-from uuid import uuid4
 
 import fsspec
 import numpy as np
@@ -10,23 +9,15 @@ import pandas as pd
 import zarr
 from datamol.utils import fs as dmfs
 from loguru import logger
-from pydantic import (
-    PrivateAttr,
-    computed_field,
-    field_serializer,
-    field_validator,
-    model_validator,
-)
+from pydantic import PrivateAttr, computed_field, field_serializer, field_validator, model_validator
 from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
-from polaris.dataset._base import BaseDataset, _CACHE_SUBDIR
+from polaris.dataset._base import BaseDataset
 from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
-from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
-    ChecksumStrategy,
     HubOwner,
     ZarrConflictResolution,
 )
@@ -39,12 +30,8 @@ _INDEX_SEP = "#"
 class DatasetV1(BaseDataset):
     """First version of a Polaris Dataset.
 
-    Stores datapoints in a Pandas DataFrame and implements _pointer columns_ to support the storage of XXL data
-<<<<<<< HEAD
+    Stores datapoints in a Pandas DataFrame and implements _pointer columns_ to support the storage of XL data
     outside the DataFrame in a Zarr archive.
-=======
-    outside of the DataFrame in a Zarr archive.
->>>>>>> df33bfc (Improved docs)
 
     Info: Pointer columns
         For complex data, such as images, we support storing the content in external blobs of data.
@@ -111,19 +98,6 @@ class DatasetV1(BaseDataset):
 
         return self
 
-    @model_validator(mode="after")
-    def _ensure_cache_dir_exists(self) -> Self:
-        """
-        Set the default cache dir if none and make sure it exists
-        """
-        if self._cache_dir is None:
-            dataset_id = self._md5sum if self.has_md5sum else str(uuid4())
-            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id)
-        fs, path = fsspec.url_to_fs(self._cache_dir)
-        fs.mkdirs(path, exist_ok=True)
-
-        return self
-
     @field_validator("default_adapters", mode="before")
     def _validate_adapters(cls, value):
         """Validate the adapters"""
@@ -133,18 +107,6 @@ class DatasetV1(BaseDataset):
     def _serialize_adapters(self, value: dict[str, Adapter]) -> dict[str, str]:
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
-
-    def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
-        """
-        Determines whether to verify the checksum of the dataset based on the strategy.
-        """
-        match strategy:
-            case "ignore":
-                return False
-            case "verify":
-                return True
-            case "verify_unless_zarr":
-                return not self.uses_zarr
 
     def _compute_checksum(self):
         """Computes a hash of the dataset.

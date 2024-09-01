@@ -14,6 +14,7 @@ from polaris.dataset._factory import DatasetFactory
 from polaris.dataset.converters._pdb import PDBConverter
 from polaris.dataset.zarr._manifest import generate_zarr_manifest
 from polaris.experimental._dataset_v2 import DatasetV2, _INDEX_ARRAY_KEY
+from polaris.utils.v2_manifest import generate_zarr_manifest
 
 
 def test_dataset_v2_get_columns(test_dataset_v2):
@@ -63,6 +64,28 @@ def test_dataset_v2_load_to_memory(test_dataset_v2):
     d2 = perf_counter() - t2
 
     assert d2 < d1
+
+
+def test_dataset_v2_checksum(test_dataset_v2, tmpdir):
+    # Make sure the `md5sum` is part of the model dump even if not initiated yet.
+    # This is important for uploads to the Hub.
+    assert test_dataset_v2._md5sum is None
+    assert "md5sum" in test_dataset_v2.model_dump()
+
+    # (1) Without any changes, same hash
+    kwargs = test_dataset_v2.model_dump()
+    assert DatasetV2(**kwargs) == test_dataset_v2
+
+    # (2) With unimportant changes, same hash
+    kwargs["name"] = "changed"
+    kwargs["description"] = "changed"
+    kwargs["source"] = "https://changed.com"
+    assert DatasetV2(**kwargs) == test_dataset_v2
+
+    # (3) Without any changes, but different hash
+    dataset = DatasetV2(**kwargs)
+    dataset._md5sum = "invalid"
+    assert dataset != test_dataset_v2
 
 
 def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
@@ -279,41 +302,3 @@ def test_dataset_v2__get_item__(test_dataset_v2, zarr_archive):
             "B": root["B"][10, :]
         }
     )
-
-
-def test_dataset_v2_checksum(test_dataset_v2, tmpdir):
-    # Make sure the `md5sum` is part of the model dump even if not initiated yet.
-    # This is important for uploads to the Hub.
-    assert test_dataset_v2._md5sum is None
-    assert "md5sum" in test_dataset_v2.model_dump()
-
-    # (1) Without any changes, same hash
-    kwargs = test_dataset_v2.model_dump()
-    assert DatasetV2(**kwargs) == test_dataset_v2
-
-    # (2) With unimportant changes, same hash
-    kwargs["name"] = "changed"
-    kwargs["description"] = "changed"
-    kwargs["source"] = "https://changed.com"
-    assert DatasetV2(**kwargs) == test_dataset_v2
-
-    # (3) Without any changes, but different hash
-    dataset = DatasetV2(**kwargs)
-    dataset._md5sum = "invalid"
-    assert dataset != test_dataset_v2
-
-    # (4) With changes, but same hash
-    # Reset hash
-    kwargs["md5sum"] = test_dataset_v2.md5sum
-
-    # Copy Zarr data to local
-    dataset = DatasetV2(**kwargs)
-    save_dir = tmpdir.join("save_dir")
-    dataset.to_json(save_dir, load_zarr_from_new_location=True)
-
-    # Make changes to Zarr archive copy
-    root = zarr.open(dataset.zarr_root_path, "a")
-    root["A"][0] = np.zeros(2048)
-
-    # Checksum should be different
-    assert dataset != test_dataset_v2

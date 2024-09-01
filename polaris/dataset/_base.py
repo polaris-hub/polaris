@@ -2,7 +2,9 @@ import abc
 import json
 from pathlib import Path
 from typing import Any, List, MutableMapping
+from uuid import uuid4
 
+import fsspec
 import numpy as np
 import zarr
 from loguru import logger
@@ -22,6 +24,7 @@ from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 from polaris.mixins import ChecksumMixin
+from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
@@ -78,7 +81,7 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
     # Private attributes
     _zarr_root: zarr.Group | None = PrivateAttr(None)
     _zarr_data: MutableMapping[str, np.ndarray] | None = PrivateAttr(None)
-    _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
+    _zarr_md5sum_manifest: list[ZarrFileChecksum] = PrivateAttr(default_factory=list)
     _warn_about_remote_zarr: bool = PrivateAttr(True)
     _cache_dir: str | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.
     _verify_checksum_strategy: ChecksumStrategy = PrivateAttr("verify_unless_zarr")
@@ -115,6 +118,19 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
 
         return self
 
+    @model_validator(mode="after")
+    def _ensure_cache_dir_exists(self) -> Self:
+        """
+        Set the default cache dir if none and make sure it exists
+        """
+        if self._cache_dir is None:
+            dataset_id = self._md5sum if self.has_md5sum else str(uuid4())
+            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id)
+        fs, path = fsspec.url_to_fs(self._cache_dir)
+        fs.mkdirs(path, exist_ok=True)
+
+        return self
+
     @field_serializer("default_adapters")
     def _serialize_adapters(self, value: List[Adapter]):
         """Serializes the adapters"""
@@ -126,16 +142,6 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         if value is not None:
             value = str(value)
         return value
-
-    @computed_field
-    @property
-    @abc.abstractmethod
-    def zarr_md5sum_manifest(self) -> List[ZarrFileChecksum]:
-        """
-        The Zarr Checksum manifest stores the checksums of all files in a Zarr archive.
-        If the dataset doesn't use Zarr, this will simply return an empty list.
-        """
-        raise NotImplementedError
 
     @property
     def uses_zarr(self) -> bool:
@@ -235,6 +241,18 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
     def dtypes(self) -> dict[str, np.dtype]:
         """Return the dtype for each of the columns for the dataset"""
         raise NotImplementedError
+
+    def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
+        """
+        Determines whether to verify the checksum of the dataset based on the strategy.
+        """
+        match strategy:
+            case "ignore":
+                return False
+            case "verify":
+                return True
+            case "verify_unless_zarr":
+                return not self.uses_zarr
 
     def load_to_memory(self):
         """

@@ -2,7 +2,6 @@ import json
 import re
 from pathlib import Path
 from typing import Any, ClassVar, Literal
-from uuid import uuid4
 
 import fsspec
 import numpy as np
@@ -12,12 +11,11 @@ from pydantic import PrivateAttr, computed_field, model_validator
 from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
-from polaris.dataset._base import BaseDataset, _CACHE_SUBDIR
-from polaris.dataset._column import ColumnAnnotation
+from polaris.dataset._base import BaseDataset
 from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
-from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
+from polaris.utils.v2_manifest import calculate_file_md5, generate_zarr_manifest
 
 _INDEX_ARRAY_KEY = "__index__"
 
@@ -48,6 +46,7 @@ class DatasetV2(BaseDataset):
     version: ClassVar[Literal[2]] = 2
     _zarr_manifest_path: str | None = PrivateAttr(None)
     _zarr_manifest_md5sum: str | None = PrivateAttr(None)
+    _zarr_md5sum_manifest_path: str | None = PrivateAttr(None)
 
     # Redefine this to make it a required field
     zarr_root_path: str
@@ -82,77 +81,6 @@ class DatasetV2(BaseDataset):
             )
 
         return self
-
-    @model_validator(mode="after")
-    def _ensure_cache_dir_exists(self) -> Self:
-        """
-        Set the default cache dir if none and make sure it exists
-        """
-        if self._cache_dir is None:
-            dataset_id = self._zarr_manifest_md5sum if self.has_zarr_manifest_md5sum else str(uuid4())
-            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id)
-        fs, path = fsspec.url_to_fs(self._cache_dir)
-        fs.mkdirs(path, exist_ok=True)
-
-        return self
-
-    # Redefine this to make it a required field
-    zarr_root_path: str
-
-    @model_validator(mode="after")
-    @classmethod
-    def _validate_model(cls, m: "DatasetV2"):
-        """Verifies some dependencies between properties"""
-
-        # NOTE (cwognum): A good chunk of the below code is shared with the DatasetV1 class.
-        #  I tried moving it to the BaseDataset class, but I'm not understanding Pydantic's behavior very well.
-        #  It seems to not always trigger when part of the base class.
-
-        # Verify that all annotations are for columns that exist
-        if any(k not in m.columns for k in m.annotations):
-            raise InvalidDatasetError(
-                f"There are annotations for columns that do not exist. Columns: {m.columns}. Annotations: {list(m.annotations.keys())}"
-            )
-
-        # Verify that all adapters are for columns that exist
-        if any(k not in m.columns for k in m.default_adapters.keys()):
-            raise InvalidDatasetError(
-                f"There are default adapters for columns that do not exist. Columns: {m.columns}. Adapters: {list(m.annotations.keys())}"
-            )
-
-        # Set a default for missing annotations and convert strings to Modality
-        for c in m.columns:
-            if c not in m.annotations:
-                m.annotations[c] = ColumnAnnotation()
-            if m.annotations[c].is_pointer:
-                raise InvalidDatasetError("Pointer columns are not supported in DatasetV2")
-            m.annotations[c].dtype = m.dtypes[c]
-
-        # Since the keys for subgroups are not ordered, we have no easy way to index these groups.
-        # Any subgroup should therefore have a special array that defines the index for that group.
-        for group in m.zarr_root.group_keys():
-            if _INDEX_ARRAY_KEY not in m.zarr_root[group].array_keys():
-                raise InvalidDatasetError(f"Group {group} does not have an index array.")
-
-            index_arr = m.zarr_root[group][_INDEX_ARRAY_KEY]
-            if len(index_arr) != len(m.zarr_root[group]) - 1:
-                raise InvalidDatasetError(
-                    f"Length of index array for group {group} does not match the size of the group."
-                )
-            if any(x not in m.zarr_root[group] for x in index_arr):
-                raise InvalidDatasetError(
-                    f"Keys of index array for group {group} does not match the group members."
-                )
-
-        # Check the structure of the Zarr archive
-        # All arrays or groups in the root should have the same length.
-        lengths = {len(m.zarr_root[k]) for k in m.zarr_root.array_keys()}
-        lengths.update({len(m.zarr_root[k][_INDEX_ARRAY_KEY]) for k in m.zarr_root.group_keys()})
-        if len(lengths) > 1:
-            raise InvalidDatasetError(
-                f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
-            )
-        return m
 
     @property
     def n_rows(self) -> int:
@@ -214,6 +142,11 @@ class DatasetV2(BaseDataset):
         if not re.fullmatch(r"^[a-f0-9]{32}$", value):
             raise ValueError("The checksum should be the 32-character hexdigest of a 128 bit MD5 hash.")
         self._zarr_manifest_md5sum = value
+
+    def _compute_checksum(self) -> str:
+        """Compute the checksum of the Zarr manifest file."""
+        manifest_md5 = calculate_file_md5(self.zarr_manifest_path)
+        return manifest_md5
 
     @property
     def has_zarr_manifest_md5sum(self) -> bool:
