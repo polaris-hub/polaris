@@ -7,6 +7,7 @@ from pydantic import (
     field_serializer,
 )
 
+
 class BenchmarkPredictions(BaseModel):
     predictions: PredictionsType
     target_cols: list[str]
@@ -17,9 +18,10 @@ class BenchmarkPredictions(BaseModel):
     def _serialize_predictions(self, predictions: PredictionsType):
         """Converts all numpy values in the predictions dictionary to lists so
         they can be sent over the wire."""
+
         def convert_to_list(v):
             if isinstance(v, np.ndarray):
-                 return v.tolist()
+                return v.tolist()
             elif isinstance(v, dict):
                 return {k: convert_to_list(v) for k, v in v.items()}
 
@@ -44,8 +46,9 @@ class BenchmarkPredictions(BaseModel):
         return data
 
     @classmethod
-    def _normalize_predictions(cls, vals: IncomingPredictionsType,
-                               target_cols: list[str]) -> dict[str, dict[str, ListOrArrayType]]:
+    def _normalize_predictions(
+        cls, vals: IncomingPredictionsType, target_cols: list[str]
+    ) -> dict[str, dict[str, ListOrArrayType]]:
         """Normalizes the predictions so they are always in the standard format,
         {"test-set-name": {"target-name": np.ndarray}} regardless of how they are provided."""
 
@@ -60,13 +63,14 @@ class BenchmarkPredictions(BaseModel):
         return vals
 
     @classmethod
-    def _convert_lists_to_numpy_arrays(cls,
-                                       predictions: dict[str, dict[str, ListOrArrayType]]
-                                       ) -> PredictionsType:
+    def _convert_lists_to_numpy_arrays(
+        cls, predictions: dict[str, dict[str, ListOrArrayType]]
+    ) -> PredictionsType:
         """Converts all values in the predictions dictionary to numpy arrays."""
+
         def convert_to_numpy(v):
             if isinstance(v, (list, np.ndarray)):
-                 return np.array(v)
+                return np.array(v)
             elif isinstance(v, dict):
                 return {k: convert_to_numpy(v) for k, v in v.items()}
 
@@ -107,12 +111,18 @@ class BenchmarkPredictions(BaseModel):
     def _give_feedback(cls, vals):
         for test_set, targets in vals.items():
             if not isinstance(targets, dict):
-                raise ValueError(f"Invalid structure for test set '{test_set}'. "
-                                 "Expected a dictionary of {col_name: predictions}")
+                raise ValueError(
+                    f"Invalid structure for test set '{test_set}'. "
+                    "Expected a dictionary of {col_name: predictions}"
+                )
             for target, predictions in targets.items():
-                if not (isinstance(predictions, np.ndarray) or
-                        (isinstance(predictions, list) and
-                         all(isinstance(x, (int, float)) for x in predictions))):
+                if not (
+                    isinstance(predictions, np.ndarray)
+                    or (
+                        isinstance(predictions, list)
+                        and all(isinstance(x, (int, float)) for x in predictions)
+                    )
+                ):
                     raise ValueError(
                         f"Invalid predictions for test set '{test_set}', target '{target}'. "
                         "Expected a numpy array or list of numbers."

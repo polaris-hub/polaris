@@ -412,7 +412,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     def evaluate(
         self,
         y_pred: Optional[IncomingPredictionsType] = None,
-        y_prob: Optional[IncomingPredictionsType] = None
+        y_prob: Optional[IncomingPredictionsType] = None,
     ) -> BenchmarkResults:
         """Execute the evaluation protocol for the benchmark, given a set of predictions.
 
@@ -460,7 +460,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         else:
             y_true_values = y_true_subset.targets
 
-        scores = evaluate_benchmark(self.target_cols, self.metrics, y_true_values, y_pred=y_pred, y_prob=y_prob)
+        scores = evaluate_benchmark(
+            self.target_cols, self.metrics, y_true_values, y_pred=y_pred, y_prob=y_prob
+        )
 
         return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)
 

@@ -29,9 +29,9 @@ ListOrArrayType: TypeAlias = Union[list[Union[int, float]], np.ndarray]
 A list of numbers or a numpy array. Predictions can be provided as either a list or a numpy array.
 """
 
-IncomingPredictionsType: TypeAlias = Union[ListOrArrayType,
-                                           dict[str, Union[ListOrArrayType,
-                                                           dict[str, ListOrArrayType]]]]
+IncomingPredictionsType: TypeAlias = Union[
+    ListOrArrayType, dict[str, Union[ListOrArrayType, dict[str, ListOrArrayType]]]
+]
 """
 The type of the predictions that are ingested into the Polaris BenchmarkPredictions object. Can be one
 of the following:

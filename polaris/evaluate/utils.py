@@ -9,9 +9,7 @@ from polaris.evaluate import Metric
 from numpy.typing import NDArray
 
 
-def safe_mask(
-    input_values: PredictionsType, test_label: str, target_label: str, mask: NDArray[np.bool_]
-):
+def safe_mask(input_values: PredictionsType, test_label: str, target_label: str, mask: NDArray[np.bool_]):
     if (
         input_values is None
         or input_values.predictions.get(test_label) is None
