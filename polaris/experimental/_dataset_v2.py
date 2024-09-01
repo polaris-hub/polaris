@@ -6,13 +6,14 @@ import fsspec
 import numpy as np
 import zarr
 from loguru import logger
-from pydantic import computed_field, model_validator
+from pydantic import model_validator, PrivateAttr
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
 from polaris.dataset._column import ColumnAnnotation
-from polaris.dataset.zarr._checksum import ZarrFileChecksum, compute_zarr_checksum
 from polaris.utils.errors import InvalidDatasetError
+
+from polaris.utils.v2_manifest import calculate_file_md5, generate_zarr_manifest
 from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
 
 _INDEX_ARRAY_KEY = "__index__"
@@ -40,13 +41,14 @@ class DatasetV2(BaseDataset):
     """
 
     version: ClassVar[Literal[2]] = 2
+    _zarr_md5sum_manifest_path: str | None = PrivateAttr(None)
 
     # Redefine this to make it a required field
     zarr_root_path: str
 
     @model_validator(mode="after")
     @classmethod
-    def _validate_model(cls, m: "DatasetV2"):
+    def _validate_v2_dataset_model(cls, m: "DatasetV2"):
         """Verifies some dependencies between properties"""
 
         # NOTE (cwognum): A good chunk of the below code is shared with the DatasetV1 class.
@@ -97,6 +99,7 @@ class DatasetV2(BaseDataset):
             raise InvalidDatasetError(
                 f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
             )
+
         return m
 
     @property
@@ -132,23 +135,18 @@ class DatasetV2(BaseDataset):
             dtypes[group] = np.dtype(object)
         return dtypes
 
-    @computed_field
     @property
-    def zarr_md5sum_manifest(self) -> List[ZarrFileChecksum]:
-        """
-        The Zarr Checksum manifest stores the checksums of all files in a Zarr archive.
-        If the dataset doesn't use Zarr, this will simply return an empty list.
-        """
-        if len(self._zarr_md5sum_manifest) == 0 and not self.has_md5sum:
-            # The manifest is set as an instance variable
-            # as a side-effect of the compute_checksum method
-            self.md5sum = self._compute_checksum()
-        return self._zarr_md5sum_manifest
+    def zarr_manifest_path(self) -> str:
+        if self._zarr_md5sum_manifest_path is None:
+            zarr_manifest_path = generate_zarr_manifest(self.zarr_root_path, self.cache_dir)
+            self._zarr_md5sum_manifest_path = zarr_manifest_path
+
+        return self._zarr_md5sum_manifest_path
 
     def _compute_checksum(self) -> str:
-        """Compute the checksum of the dataset."""
-        zarr_hash, self._zarr_md5sum_manifest = compute_zarr_checksum(self.zarr_root_path)
-        return zarr_hash.md5
+        """Compute the checksum of the Zarr manifest file."""
+        manifest_md5 = calculate_file_md5(self.zarr_manifest_path)
+        return manifest_md5
 
     def get_data(self, row: int, col: str, adapters: List[Adapter] | None = None) -> np.ndarray:
         """Indexes the Zarr archive.

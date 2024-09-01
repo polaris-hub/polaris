@@ -1,8 +1,10 @@
 from copy import deepcopy
+import os
 from time import perf_counter
 
 import numcodecs
 import numpy as np
+import pandas as pd
 import pytest
 import zarr
 from pydantic import ValidationError
@@ -11,7 +13,7 @@ from polaris.dataset import Subset
 from polaris.dataset._factory import DatasetFactory
 from polaris.dataset.converters._pdb import PDBConverter
 from polaris.experimental._dataset_v2 import _INDEX_ARRAY_KEY, DatasetV2
-from polaris.utils.errors import PolarisChecksumError
+from polaris.utils.v2_manifest import generate_zarr_manifest
 
 
 def test_dataset_v2_get_columns(test_dataset_v2):
@@ -83,23 +85,6 @@ def test_dataset_v2_checksum(test_dataset_v2, tmpdir):
     dataset = DatasetV2(**kwargs)
     dataset._md5sum = "invalid"
     assert dataset != test_dataset_v2
-
-    # (4) With changes, but same hash
-    # Reset hash
-    kwargs["md5sum"] = test_dataset_v2.md5sum
-
-    # Copy Zarr data to local
-    dataset = DatasetV2(**kwargs)
-    save_dir = tmpdir.join("save_dir")
-    dataset.to_json(save_dir, load_zarr_from_new_location=True)
-
-    # Make changes to Zarr archive copy
-    root = zarr.open(dataset.zarr_root_path, "a")
-    root["A"][0] = np.zeros(2048)
-
-    # Checksum should be different
-    with pytest.raises(PolarisChecksumError):
-        dataset.verify_checksum()
 
 
 def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
@@ -258,3 +243,29 @@ def test_dataset_v2_validation_consistent_lengths(zarr_archive):
     # Subgroup has a false number of indices
     with pytest.raises(ValidationError, match="should have the same length"):
         DatasetV2(zarr_root_path=zarr_archive)
+
+
+def test_zarr_manifest(test_dataset_v2):
+    # Assert the manifest Parquet is created
+    assert test_dataset_v2.zarr_manifest_path is not None
+    assert os.path.isfile(test_dataset_v2.zarr_manifest_path)
+
+    # Assert the manifest contains 204 rows (the number "204" is chosen because
+    # the Zarr archive defined in `conftest.py` contains 204 unique files)
+    df = pd.read_parquet(test_dataset_v2.zarr_manifest_path)
+    assert len(df) == 204
+
+    # Assert the manifest hash is calculated
+    assert test_dataset_v2.md5sum is not None
+
+    # Add array to Zarr archive to change the number of chunks in the dataset
+    root = zarr.open(test_dataset_v2.zarr_root_path, "a")
+    root.array("C", data=np.random.random((100, 2048)), chunks=(1, None))
+
+    generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2.cache_dir)
+
+    # Get the length of the updated manifest file
+    post_change_manifest_length = len(pd.read_parquet(test_dataset_v2.zarr_manifest_path))
+
+    # Ensure Zarr manifest has an additional 100 chunks + 1 array metadata file
+    assert post_change_manifest_length == 305

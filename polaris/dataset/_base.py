@@ -1,8 +1,8 @@
 import abc
 import json
-import uuid
 from pathlib import Path
 from typing import Dict, List, MutableMapping, Optional, Union
+import uuid
 
 import fsspec
 import numpy as np
@@ -21,7 +21,7 @@ from pydantic import (
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
-from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum
+from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.mixins import ChecksumMixin
@@ -83,22 +83,8 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
     # Private attributes
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
     _zarr_data: Optional[MutableMapping[str, np.ndarray]] = PrivateAttr(None)
-    _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
     _warn_about_remote_zarr: bool = PrivateAttr(True)
-
-    @model_validator(mode="after")
-    @classmethod
-    def _validate_model(cls, m: "BaseDataset"):
-        """Verifies some dependencies between properties"""
-
-        # Set the default cache dir if none and make sure it exists
-        if m.cache_dir is None:
-            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
-            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
-
-        m.cache_dir.mkdir(parents=True, exist_ok=True)
-        return m
 
     @field_validator("default_adapters", mode="before")
     def _validate_adapters(cls, value):
@@ -117,15 +103,17 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
             value = str(value)
         return value
 
-    @computed_field
-    @property
-    @abc.abstractmethod
-    def zarr_md5sum_manifest(self) -> List[ZarrFileChecksum]:
-        """
-        The Zarr Checksum manifest stores the checksums of all files in a Zarr archive.
-        If the dataset doesn't use Zarr, this will simply return an empty list.
-        """
-        raise NotImplementedError
+    @model_validator(mode="after")
+    def _validate_base_dataset_model(cls, m: "BaseDataset"):
+        #
+        # Set the default cache dir if none and make sure it exists
+        if m.cache_dir is None:
+            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
+            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
+
+        m.cache_dir.mkdir(parents=True, exist_ok=True)
+
+        return m
 
     @property
     def client(self):
