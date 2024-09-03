@@ -13,7 +13,6 @@ from pydantic import PrivateAttr, computed_field, field_validator, model_validat
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
-from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
@@ -74,28 +73,6 @@ class DatasetV1(BaseDataset):
     @classmethod
     def _validate_v1_dataset_model(cls, m: "DatasetV1"):
         """Verifies some dependencies between properties"""
-
-        # NOTE (cwognum): A good chunk of the below code is shared with the DatasetV2 class.
-        #  I tried moving it to the BaseDataset class, but I'm not understanding Pydantic's behavior very well.
-        #  It seems to not always trigger when part of the base class.
-
-        # Verify that all annotations are for columns that exist
-        if any(k not in m.columns for k in m.annotations):
-            raise InvalidDatasetError(
-                f"There are annotations for columns that do not exist. Columns: {m.columns}. Annotations: {list(m.annotations.keys())}"
-            )
-
-        # Verify that all adapters are for columns that exist
-        if any(k not in m.columns for k in m.default_adapters.keys()):
-            raise InvalidDatasetError(
-                f"There are default adapters for columns that do not exist. Columns: {m.columns}. Adapters: {list(m.annotations.keys())}"
-            )
-
-        # Set a default for missing annotations and convert strings to Modality
-        for c in m.columns:
-            if c not in m.annotations:
-                m.annotations[c] = ColumnAnnotation()
-            m.annotations[c].dtype = m.dtypes[c]
 
         has_pointers = any(anno.is_pointer for anno in m.annotations.values())
         if has_pointers and m.zarr_root_path is None:

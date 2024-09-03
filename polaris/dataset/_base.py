@@ -1,8 +1,8 @@
 import abc
 import json
+import uuid
 from pathlib import Path
 from typing import Dict, List, MutableMapping, Optional, Union
-import uuid
 
 import fsspec
 import numpy as np
@@ -105,6 +105,24 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
 
     @model_validator(mode="after")
     def _validate_base_dataset_model(cls, m: "BaseDataset"):
+        # Verify that all annotations are for columns that exist
+        if any(k not in m.columns for k in m.annotations):
+            raise InvalidDatasetError(
+                f"There are annotations for columns that do not exist. Columns: {m.columns}. Annotations: {list(m.annotations.keys())}"
+            )
+
+        # Verify that all adapters are for columns that exist
+        if any(k not in m.columns for k in m.default_adapters.keys()):
+            raise InvalidDatasetError(
+                f"There are default adapters for columns that do not exist. Columns: {m.columns}. Adapters: {list(m.annotations.keys())}"
+            )
+
+        # Set a default for missing annotations and convert strings to Modality
+        for c in m.columns:
+            if c not in m.annotations:
+                m.annotations[c] = ColumnAnnotation()
+            m.annotations[c].dtype = m.dtypes[c]
+
         #
         # Set the default cache dir if none and make sure it exists
         if m.cache_dir is None:
