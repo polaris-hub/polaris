@@ -1,7 +1,7 @@
 import abc
 import json
 from pathlib import Path
-from typing import Any, List, MutableMapping
+from typing import Any, MutableMapping
 from uuid import uuid4
 
 import fsspec
@@ -132,7 +132,7 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         return self
 
     @field_serializer("default_adapters")
-    def _serialize_adapters(self, value: List[Adapter]):
+    def _serialize_adapters(self, value: dict[str, Adapter]):
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
 
