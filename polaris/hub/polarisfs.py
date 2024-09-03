@@ -54,7 +54,8 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
 
         # Prefix to remove from ls entries
         self.prefix = f"dataset/{dataset_owner}/{sluggify(dataset_name)}/"
-        self.base_path = f"/storage/{self.prefix.rstrip('/')}"
+        # Base path for uploading. Please pay attention on path version update.
+        self.base_path = f"/v1/storage/{self.prefix.rstrip('/')}"
 
     @staticmethod
     def is_polarisfs_path(path: str) -> bool:
@@ -89,6 +90,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             timeout = self.default_timeout
 
         ls_path = self.sep.join([self.base_path, "ls", path])
+        print('ls_path.rstrip("/") - ', ls_path.rstrip("/"))
 
         # GET request to Polaris Hub to list objects in path
         response = self.polaris_client.get(ls_path.rstrip("/"), timeout=timeout)
