@@ -404,6 +404,9 @@ class PolarisHubClient(OAuth2Client):
         except HTTPStatusError as error:
             # In this case, we can pass the response to provide more information
             raise PolarisHubError(message="Error opening Zarr store", response=error.response) from error
+        # This catches all other types of exceptions
+        except Exception as error:
+            raise PolarisHubError(message="Error opening Zarr store") from error
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.
