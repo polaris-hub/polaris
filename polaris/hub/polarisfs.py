@@ -90,7 +90,6 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
             timeout = self.default_timeout
 
         ls_path = self.sep.join([self.base_path, "ls", path])
-        print('ls_path.rstrip("/") - ', ls_path.rstrip("/"))
 
         # GET request to Polaris Hub to list objects in path
         response = self.polaris_client.get(ls_path.rstrip("/"), timeout=timeout)
