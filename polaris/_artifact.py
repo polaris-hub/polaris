@@ -1,5 +1,5 @@
 import json
-from typing import Dict, Optional, Union
+from typing import ClassVar, Dict, Self
 
 import fsspec
 from loguru import logger
@@ -15,8 +15,8 @@ from pydantic import (
 from pydantic.alias_generators import to_camel
 
 import polaris as po
-from polaris.utils.misc import sluggify
-from polaris.utils.types import HubOwner, SlugCompatibleStringType
+from polaris.utils.misc import slugify
+from polaris.utils.types import HubOwner, SlugCompatibleStringType, SlugStringType
 
 
 class BaseArtifactModel(BaseModel):
@@ -40,19 +40,36 @@ class BaseArtifactModel(BaseModel):
         polaris_version: The version of the Polaris library that was used to create the artifact.
     """
 
+    artifact_type: ClassVar[str] = "baseArtifact"
+
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, arbitrary_types_allowed=True)
 
-    name: Optional[SlugCompatibleStringType] = None
+    # Model attributes
+    name: SlugCompatibleStringType | None = None
     description: str = ""
     tags: list[str] = Field(default_factory=list)
     user_attributes: Dict[str, str] = Field(default_factory=dict)
-    owner: Optional[HubOwner] = None
+    owner: HubOwner | None = None
     polaris_version: str = po.__version__
 
     @computed_field
     @property
-    def artifact_id(self) -> Optional[str]:
-        return f"{self.owner}/{sluggify(self.name)}" if self.owner and self.name else None
+    def slug(self) -> SlugStringType | None:
+        return slugify(self.name)
+
+    @computed_field
+    @property
+    def artifact_id(self) -> str | None:
+        if self.owner and self.slug:
+            return f"{self.owner}/{self.slug}"
+        return None
+
+    @computed_field
+    @property
+    def urn(self) -> str | None:
+        if self.owner and self.slug:
+            return f"urn:polaris:{self.artifact_type}:{self.owner}:{self.slug}"
+        return None
 
     @field_validator("polaris_version")
     @classmethod
@@ -71,17 +88,17 @@ class BaseArtifactModel(BaseModel):
 
     @field_validator("owner", mode="before")
     @classmethod
-    def _validate_owner(cls, value: Union[str, HubOwner, None]):
+    def _validate_owner(cls, value: str | HubOwner | None):
         if isinstance(value, str):
             return HubOwner(slug=value)
         return value
 
     @field_serializer("owner")
-    def _serialize_owner(self, value: HubOwner) -> Union[str, None]:
+    def _serialize_owner(self, value: HubOwner) -> str | None:
         return value.slug if value else None
 
     @classmethod
-    def from_json(cls, path: str):
+    def from_json(cls, path: str) -> Self:
         """Loads a benchmark from a JSON file.
 
         Args:
@@ -91,7 +108,7 @@ class BaseArtifactModel(BaseModel):
             data = json.load(f)
         return cls.model_validate(data)
 
-    def to_json(self, path: str):
+    def to_json(self, path: str) -> None:
         """Saves the benchmark to a JSON file.
 
         Args:

@@ -54,7 +54,8 @@ dependencies = [
     "zarr",
     "pyarrow",
     "fsspec[http]",
-    "yaspin"
+    "yaspin",
+    "s3fs>=2024.6.1",
 ]
 
 [project.optional-dependencies]
@@ -133,10 +134,10 @@ output = "coverage.xml"
 lint.ignore = [
     "E501", # Never enforce `E501` (line length violations).
 ]
-line-length = 110
-target-version = "py310"
 
 lint.per-file-ignores."__init__.py" = [
     "F401", # imported but unused
     "E402", # Module level import not at top of file
 ]
+line-length = 110
+target-version = "py310"

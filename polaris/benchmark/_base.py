@@ -95,6 +95,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
     """
 
+    artifact_type = "benchmark"
+
     # Public attributes
     # Data
     dataset: Union[DatasetV1, CompetitionDataset, str, dict[str, Any]]

@@ -1,11 +1,11 @@
 from hashlib import md5
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fsspec
 from loguru import logger
 
 from polaris.utils.errors import PolarisChecksumError, PolarisHubError
-from polaris.utils.misc import sluggify
+from polaris.utils.misc import slugify
 from polaris.utils.types import TimeoutTypes
 
 if TYPE_CHECKING:
@@ -53,7 +53,7 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         self.default_timeout = self.polaris_client.settings.default_timeout
 
         # Prefix to remove from ls entries
-        self.prefix = f"dataset/{dataset_owner}/{sluggify(dataset_name)}/"
+        self.prefix = f"dataset/{dataset_owner}/{slugify(dataset_name)}/"
         # Base path for uploading. Please pay attention on path version update.
         self.base_path = f"/v1/storage/{self.prefix.rstrip('/')}"
 
@@ -146,7 +146,9 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
 
-        headers = {"Content-Type": "application/octet-stream", **hub_response_body["headers"]}
+        headers = {
+            "Content-Type": "application/octet-stream", **hub_response_body["headers"]
+        }
 
         response = self.polaris_client.request(
             url=signed_url,
@@ -225,7 +227,9 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         hub_response_body = response.json()
         signed_url = hub_response_body["url"]
 
-        headers = {"Content-Type": "application/octet-stream", **hub_response_body["headers"]}
+        headers = {
+            "Content-Type": "application/octet-stream", **hub_response_body["headers"]
+        }
 
         response = self.polaris_client.request(
             url=signed_url,
@@ -237,7 +241,11 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
         )
         response.raise_for_status()
 
-        new_listing = [{"name": path, "type": "file", "size": len(content)}]
+        new_listing = [{
+            "name": path,
+            "type": "file",
+            "size": len(content)
+        }]
         try:
             current_listings = self._ls_from_cache(self._parent(path))
             new_listing.extend(current_listings)

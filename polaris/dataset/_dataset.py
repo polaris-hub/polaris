@@ -2,7 +2,7 @@ import json
 import uuid
 from hashlib import md5
 from pathlib import Path
-from typing import Any, ClassVar, List, Literal, Optional, Union
+from typing import Any, ClassVar, Dict, List, Literal, MutableMapping
 
 import fsspec
 import numpy as np
@@ -10,20 +10,20 @@ import pandas as pd
 import zarr
 from datamol.utils import fs as dmfs
 from loguru import logger
-from pydantic import PrivateAttr, computed_field, field_validator, model_validator
+from pydantic import Field, PrivateAttr, computed_field, field_serializer, field_validator, model_validator
 from typing_extensions import Self
 
+from polaris.dataset import ColumnAnnotation
 from polaris.dataset._adapters import Adapter
-from polaris.dataset._base import _CACHE_SUBDIR, BaseDataset
+from polaris.dataset._base import BaseDataset, _CACHE_SUBDIR
 from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
 from polaris.mixins._checksum import ChecksumMixin
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
-    HubOwner,
-    TimeoutTypes,
-    ZarrConflictResolution,
+    HttpUrlString, HubOwner,
+    SupportedLicenseType, ZarrConflictResolution,
 )
 
 # Constants
@@ -51,12 +51,31 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
     """
 
+    artifact_type = "dataset"
+    version: ClassVar[Literal[1]] = 1
+
     # Public attributes
     # Data
     table: pd.DataFrame
 
-    version: ClassVar[Literal[1]] = 1
-    _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
+    default_adapters: Dict[str, Adapter] = Field(default_factory=dict)
+    zarr_root_path: str | None = None
+
+    # Additional meta-data
+    readme: str = ""
+    annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
+    source: HttpUrlString | None = None
+    license: SupportedLicenseType | None = None
+    curation_reference: HttpUrlString | None = None
+
+    # Config
+    cache_dir: Path | None = None  # Where to cache the data to if cache() is called.
+
+    # Private attributes
+    _zarr_root: zarr.Group | None = PrivateAttr(None)
+    _zarr_data: MutableMapping[str, np.ndarray] | None = PrivateAttr(None)
+    _md5sum: str | None = PrivateAttr(None)
+    _zarr_md5sum_manifest: list[ZarrFileChecksum] = PrivateAttr(default_factory=list)
 
     @field_validator("table", mode="before")
     def _validate_table(cls, v):
@@ -98,7 +117,22 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         return self
 
-    def _compute_checksum(self) -> str:
+    @field_validator("default_adapters", mode="before")
+    def _validate_adapters(cls, value):
+        """Validate the adapters"""
+        return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
+
+    @field_serializer("default_adapters")
+    def _serialize_adapters(self, value: List[Adapter]):
+        """Serializes the adapters"""
+        return {k: v.name for k, v in value.items()}
+
+    @field_serializer("cache_dir")
+    def _serialize_cache_dir(value):
+        """Serialize the cache_dir"""
+        return str(value)
+
+    def _compute_checksum(self):
         """Computes a hash of the dataset.
 
         This is meant to uniquely identify the dataset and can be used to verify the version.
@@ -197,17 +231,12 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         return arr
 
-    def upload_to_hub(
-        self,
-        access: Optional[AccessType] = "private",
-        owner: Union[HubOwner, str, None] = None,
-        timeout: TimeoutTypes = (10, 200),
-    ):
+    def upload_to_hub(self, owner: HubOwner | str, access: AccessType = "private"):
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
         """
-        self.client.upload_dataset(self, access=access, owner=owner, timeout=timeout)
+        self.client.upload_dataset(self, owner=owner, access=access)
 
     @classmethod
     def from_json(cls, path: str):
@@ -215,7 +244,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         Loads a dataset from a JSON file.
 
         Args:
-            path: The path to the JSON file to load the dataset from.
+            path: The path to the JSON file to load the dataset from .ColumnAnnotation
         """
         with fsspec.open(path, "r") as f:
             data = json.load(f)
@@ -256,7 +285,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         dataset_path = str(destination / "dataset.json")
         new_zarr_root_path = str(destination / "data.zarr")
 
-        # Lu: Avoid serilizing and sending None to hub app.
+        # Lu: Avoid serializing and sending None to hub app.
         serialized = self.model_dump(exclude={"cache_dir"}, exclude_none=True)
         serialized["table"] = table_path
 
@@ -288,7 +317,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         return dataset_path
 
-    def cache(self, verify_checksum: bool = False):
+    def cache(self, verify_checksum: bool = True) -> str:
         """Cache the dataset to the cache directory.
 
         Args:

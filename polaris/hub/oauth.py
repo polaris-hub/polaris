@@ -50,3 +50,19 @@ class ExternalCachedTokenAuth(CachedTokenAuth):
         filename="external_auth_token.json",
     ):
         super().__init__(token, token_placement, client, cache_dir, filename)
+
+
+class StorageCachedTokenAuth(CachedTokenAuth):
+    """
+    Cached token for storage authentication.
+    """
+
+    def __init__(
+        self,
+        token: dict | None = None,
+        token_placement="header",
+        client=None,
+        cache_dir=DEFAULT_CACHE_DIR,
+        filename="storage_auth_token.json",
+    ):
+        super().__init__(token, token_placement, client, cache_dir, filename)

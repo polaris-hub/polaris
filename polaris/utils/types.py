@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated, Any, Literal, Optional, Tuple, Union
+from typing import Annotated, Any, Literal, Optional, Self, Tuple, Union
 
 import numpy as np
 from pydantic import (
@@ -150,7 +150,7 @@ class HubOwner(BaseModel):
         return self.slug
 
     @staticmethod
-    def normalize(owner: Union[str, "HubOwner"]) -> "HubOwner":
+    def normalize(owner: str | Self) -> Self:
         """
         Normalize a string or `HubOwner` instance to a `HubOwner` instance.
         """
