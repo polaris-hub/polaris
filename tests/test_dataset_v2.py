@@ -14,7 +14,6 @@ from polaris.dataset._factory import DatasetFactory
 from polaris.dataset.converters._pdb import PDBConverter
 from polaris.dataset.zarr._manifest import generate_zarr_manifest
 from polaris.experimental._dataset_v2 import DatasetV2, _INDEX_ARRAY_KEY
-from polaris.utils.v2_manifest import generate_zarr_manifest
 
 
 def test_dataset_v2_get_columns(test_dataset_v2):
@@ -66,7 +65,7 @@ def test_dataset_v2_load_to_memory(test_dataset_v2):
     assert d2 < d1
 
 
-def test_dataset_v2_checksum(test_dataset_v2, tmpdir):
+def test_dataset_v2_checksum(test_dataset_v2):
     # Make sure the `md5sum` is part of the model dump even if not initiated yet.
     # This is important for uploads to the Hub.
     assert test_dataset_v2._md5sum is None

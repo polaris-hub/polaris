@@ -23,14 +23,12 @@ from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
-from polaris.mixins import ChecksumMixin
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
     ChecksumStrategy,
-    DatasetIndex,
     HttpUrlString,
     HubOwner,
     SupportedLicenseType,
@@ -41,10 +39,12 @@ from polaris.utils.types import (
 _CACHE_SUBDIR = "datasets"
 
 
-class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
+class BaseDataset(BaseArtifactModel, abc.ABC):
     """Base data-model for a Polaris dataset, implemented as a [Pydantic](https://docs.pydantic.dev/latest/) model.
 
-    At its core, a dataset in Polaris is a tabular data structure that stores data-points in a row-wise manner.
+    At its core, a dataset in Polaris can _conceptually_ be thought of as tabular data structure that stores data-points
+    in a row-wise manner, where each column correspond to a variable associated with that datapoint.
+
     A Dataset can have multiple modalities or targets, can be sparse and can be part of one or multiple
      [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] objects.
 
@@ -60,6 +60,7 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         source: The data source, e.g. a DOI, Github repo or URI.
         license: The dataset license. Polaris only supports some Creative Commons licenses. See [`SupportedLicenseType`][polaris.utils.types.SupportedLicenseType] for accepted ID values.
         curation_reference: A reference to the curation process, e.g. a DOI, Github repo or URI.
+        cache_dir: Where the dataset would be cached if you call the `cache()` method.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
 
     Raises:
@@ -333,28 +334,24 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         """
         raise NotImplementedError
 
-    def cache(self) -> str:
+    def cache(self, verify_checksum: bool = True) -> str:
         """Caches the dataset by downloading all additional data for pointer columns to a local directory.
+
+        Args:
+            verify_checksum: Whether to verify the checksum of the dataset after caching.
 
         Returns:
             The path to the cache directory.
         """
         self.to_json(self._cache_dir, load_zarr_from_new_location=True)
+
+        if verify_checksum:
+            self.verify_checksum()
+
         return self._cache_dir
 
     def size(self) -> tuple[int, int]:
         return self.n_rows, self.n_columns
-
-    def __getitem__(self, item: DatasetIndex) -> Any | np.ndarray | dict[str, np.ndarray]:
-        """Allows for indexing the dataset directly"""
-
-        # If a tuple, we assume it's the row and column index pair
-        if isinstance(item, tuple):
-            row, col = item
-            return self.get_data(row, col)
-
-        # Otherwise, we assume you're indexing the row
-        return {col: self.get_data(item, col) for col in self.columns}
 
     @abc.abstractmethod
     def _repr_dict_(self) -> dict:

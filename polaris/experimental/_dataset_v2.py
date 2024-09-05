@@ -15,7 +15,6 @@ from polaris.dataset._base import BaseDataset
 from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
-from polaris.utils.v2_manifest import calculate_file_md5, generate_zarr_manifest
 
 _INDEX_ARRAY_KEY = "__index__"
 
@@ -47,6 +46,7 @@ class DatasetV2(BaseDataset):
     _zarr_manifest_path: str | None = PrivateAttr(None)
     _zarr_manifest_md5sum: str | None = PrivateAttr(None)
     _zarr_md5sum_manifest_path: str | None = PrivateAttr(None)
+    _md5sum: str | None = PrivateAttr(None)
 
     # Redefine this to make it a required field
     zarr_root_path: str
@@ -143,15 +143,35 @@ class DatasetV2(BaseDataset):
             raise ValueError("The checksum should be the 32-character hexdigest of a 128 bit MD5 hash.")
         self._zarr_manifest_md5sum = value
 
-    def _compute_checksum(self) -> str:
-        """Compute the checksum of the Zarr manifest file."""
-        manifest_md5 = calculate_file_md5(self.zarr_manifest_path)
-        return manifest_md5
-
     @property
     def has_zarr_manifest_md5sum(self) -> bool:
         """Whether the md5sum for this dataset's zarr manifest has been computed and stored."""
         return self._zarr_manifest_md5sum is not None
+
+    @computed_field
+    @property
+    def md5sum(self) -> str:
+        """
+        Lazily compute the checksum once needed.
+
+        The checksum of the DatasetV2 is computed from the Zarr Manifest and is _not_ deterministic.
+        """
+        if not self.has_md5sum:
+            logger.info("Computing the checksum. This can be slow for large datasets.")
+            self.md5sum = calculate_file_md5(self.zarr_manifest_path)
+        return self._md5sum
+
+    @md5sum.setter
+    def md5sum(self, value: str):
+        """Set the checksum."""
+        if not re.fullmatch(r"^[a-f0-9]{32}$", value):
+            raise ValueError("The checksum should be the 32-character hexdigest of a 128 bit MD5 hash.")
+        self._md5sum = value
+
+    @property
+    def has_md5sum(self) -> bool:
+        """Whether the md5sum for this class has been computed and stored."""
+        return self._md5sum is not None
 
     def get_data(self, row: int, col: str, adapters: dict[str, Adapter] | None = None) -> np.ndarray | Any:
         """Indexes the Zarr archive.
@@ -256,7 +276,21 @@ class DatasetV2(BaseDataset):
             json.dump(serialized, f)
         return dataset_path
 
+    def cache(self, verify_checksum: bool = True) -> str:
+        """Caches the dataset by downloading all additional data for pointer columns to a local directory.
+
+        Args:
+            verify_checksum: Whether to verify the checksum of the dataset after caching.
+
+        Returns:
+            The path to the cache directory.
+        """
+        # NOTE (cwognum): We don't support a deterministic checksum for the Dataset V2 yet,
+        #  so verification doesn't make sense. See also:
+        #  https://github.com/polaris-hub/polaris/issues/188
+        return super().cache(verify_checksum=False)
+
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude={"zarr_md5sum_manifest"})
+        repr_dict = self.model_dump()
         return repr_dict

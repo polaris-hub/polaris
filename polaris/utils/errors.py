@@ -53,6 +53,7 @@ class PolarisHubError(Exception):
 
 
 class PolarisUnauthorizedError(PolarisHubError):
+
     def __init__(self, response: Response | None = None):
         message = (
             "You are not logged in to Polaris or your login has expired. "
@@ -62,6 +63,7 @@ class PolarisUnauthorizedError(PolarisHubError):
 
 
 class PolarisCreateArtifactError(PolarisHubError):
+
     def __init__(self, response: Response | None = None):
         message = (
             "Note: If you can confirm that you are authorized to perform this action, "
@@ -71,6 +73,7 @@ class PolarisCreateArtifactError(PolarisHubError):
 
 
 class PolarisRetrieveArtifactError(PolarisHubError):
+
     def __init__(self, response: Response | None = None):
         message = (
             "Note: If this artifact exists and you can confirm that you are authorized to retrieve it, "

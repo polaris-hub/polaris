@@ -15,6 +15,7 @@ from typing_extensions import Self
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
 from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
+from polaris.mixins._checksum import ChecksumMixin
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
@@ -27,7 +28,7 @@ _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
 _INDEX_SEP = "#"
 
 
-class DatasetV1(BaseDataset):
+class DatasetV1(BaseDataset, ChecksumMixin):
     """First version of a Polaris Dataset.
 
     Stores datapoints in a Pandas DataFrame and implements _pointer columns_ to support the storage of XL data
@@ -108,7 +109,7 @@ class DatasetV1(BaseDataset):
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
 
-    def _compute_checksum(self):
+    def _compute_checksum(self) -> str:
         """Computes a hash of the dataset.
 
         This is meant to uniquely identify the dataset and can be used to verify the version.
@@ -294,17 +295,6 @@ class DatasetV1(BaseDataset):
 
         return dataset_path
 
-    def cache(self, verify_checksum: bool = False) -> str:
-        """Cache the dataset to the cache directory.
-
-        Args:
-            verify_checksum: Whether to verify the checksum of the dataset after caching.
-        """
-        dst = super().cache()
-        if verify_checksum:
-            self.verify_checksum()
-        return dst
-
     def _split_index_from_path(self, path: str) -> tuple[str, int | None]:
         """
         Paths can have an additional index appended to them.
@@ -322,6 +312,33 @@ class DatasetV1(BaseDataset):
             else:
                 raise ValueError(f"Invalid index format: {index}")
         return path, index
+
+    def __getitem__(self, item):
+        """Allows for indexing the dataset directly"""
+        ret = self.table.loc[item]
+        if isinstance(ret, pd.Series):
+            # Load the data from the pointer columns
+
+            if ret.name in self.table.columns:
+                # Returning a column, the indices are rows
+                if self.annotations[ret.name].is_pointer:
+                    ret = np.array([self.get_data(k, ret.name) for k in ret.index])
+
+            elif len(ret) == self.n_rows:
+                # Returning a row, the indices are columns
+                ret = {
+                    k: self.get_data(k, ret.name) if self.annotations[ret.name].is_pointer else ret[k]
+                    for k in ret.index
+                }
+
+        # Returning a dataframe
+        if isinstance(ret, pd.DataFrame):
+            for c in ret.columns:
+                if self.annotations[c].is_pointer:
+                    ret[c] = [self.get_data(item, c) for item in ret.index]
+            return ret
+
+        return ret
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
