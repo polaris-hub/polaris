@@ -14,19 +14,15 @@
 
 ---
 
-[![PyPI](https://img.shields.io/pypi/v/polaris-lib)](https://pypi.org/project/polaris-lib/)
-[![Conda](https://img.shields.io/conda/v/conda-forge/polaris?label=conda&color=success)](https://anaconda.org/conda-forge/polaris)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/polaris-lib)](https://pypi.org/project/polaris-lib/)
-[![Conda](https://img.shields.io/conda/dn/conda-forge/polaris)](https://anaconda.org/conda-forge/polaris)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/polaris-lib)](https://pypi.org/project/polaris-lib/)
-[![Code license](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/polaris-hub/polaris/blob/main/LICENSE)
-[![GitHub Repo stars](https://img.shields.io/github/stars/polaris-hub/polaris)](https://github.com/polaris-hub/polaris/stargazers)
-[![GitHub Repo stars](https://img.shields.io/github/forks/polaris-hub/polaris)](https://github.com/polaris-hub/polaris/network/members)
-
-[![test](https://github.com/polaris-hub/polaris/actions/workflows/test.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/test.yml)
-[![release](https://github.com/polaris-hub/polaris/actions/workflows/release.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/release.yml)
-[![code-check](https://github.com/polaris-hub/polaris/actions/workflows/code-check.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/code-check.yml)
-[![doc](https://github.com/polaris-hub/polaris/actions/workflows/doc.yml/badge.svg)](https://github.com/polaris-hub/polaris/actions/workflows/doc.yml)
+|  |  | 
+| --- | --- | 
+| Latest Release | [![PyPI](https://img.shields.io/pypi/v/polaris-lib)](https://pypi.org/project/polaris-lib/) | 
+|  | [![Conda](https://img.shields.io/conda/v/conda-forge/polaris?label=conda&color=success)](https://anaconda.org/conda-forge/polaris) |
+| Python Version | [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/polaris-lib)](https://pypi.org/project/polaris-lib/) |
+| License | [![Code license](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/polaris-hub/polaris/blob/main/LICENSE) |
+| Downloads | [![PyPI - Downloads](https://img.shields.io/pypi/dm/polaris-lib)](https://pypi.org/project/polaris-lib/) |
+| | [![Conda](https://img.shields.io/conda/dn/conda-forge/polaris)](https://anaconda.org/conda-forge/polaris) |
+| Citation | [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13652588.svg)](https://doi.org/10.5281/zenodo.13652588) |
 
 Polaris establishes a novel, industry‑certified standard to foster the development of impactful methods in AI-based drug discovery.
 
@@ -66,6 +62,10 @@ results.upload_to_hub(owner="dummy-user")
 ## Documentation
 
 Please refer to the [documentation](https://polaris-hub.github.io/polaris/), which contains tutorials for getting started with `polaris` and detailed descriptions of the functions provided.
+
+## How to cite
+
+Please cite Polaris if you use it in your research: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13652588.svg)](https://doi.org/10.5281/zenodo.13652588)
 
 ## Installation
 
