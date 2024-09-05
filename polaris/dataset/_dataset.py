@@ -1,7 +1,8 @@
 import json
+import uuid
 from hashlib import md5
 from pathlib import Path
-from typing import ClassVar, List, Literal, Optional, Tuple, Union
+from typing import ClassVar, List, Literal, Union
 
 import fsspec
 import numpy as np
@@ -12,8 +13,10 @@ from loguru import logger
 from pydantic import PrivateAttr, computed_field, field_validator, model_validator
 
 from polaris.dataset._adapters import Adapter
-from polaris.dataset._base import BaseDataset
+from polaris.dataset._base import _CACHE_SUBDIR, BaseDataset
 from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
+from polaris.mixins._checksum import ChecksumMixin
+from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
 
@@ -22,7 +25,7 @@ _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
 _INDEX_SEP = "#"
 
 
-class DatasetV1(BaseDataset):
+class DatasetV1(BaseDataset, ChecksumMixin):
     """First version of a Polaris Dataset.
 
     Stores datapoints in a Pandas DataFrame and implements _pointer columns_ to support the storage of XXL data
@@ -82,9 +85,15 @@ class DatasetV1(BaseDataset):
                 "The zarr_root_path should only be specified when there are pointer columns"
             )
 
+        # Set the default cache dir if none and make sure it exists
+        if m.cache_dir is None:
+            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
+            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
+        m.cache_dir.mkdir(parents=True, exist_ok=True)
+
         return m
 
-    def _compute_checksum(self):
+    def _compute_checksum(self) -> str:
         """Computes a hash of the dataset.
 
         This is meant to uniquely identify the dataset and can be used to verify the version.
@@ -125,12 +134,12 @@ class DatasetV1(BaseDataset):
         return self._zarr_md5sum_manifest
 
     @property
-    def rows(self) -> list:
+    def rows(self) -> list[str | int]:
         """Return all row indices for the dataset"""
         return self.table.index.tolist()
 
     @property
-    def columns(self) -> list:
+    def columns(self) -> list[str]:
         """Return all columns for the dataset"""
         return self.table.columns.tolist()
 
@@ -139,7 +148,7 @@ class DatasetV1(BaseDataset):
         """Return the dtype for each of the columns for the dataset"""
         return {col: self.table[col].dtype for col in self.columns}
 
-    def get_data(self, row: str | int, col: str, adapters: Optional[List[Adapter]] = None) -> np.ndarray:
+    def get_data(self, row: str | int, col: str, adapters: dict[str, Adapter] | None = None) -> np.ndarray:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
         than just indexing the `table` attribute. This method provides an end-point for seamlessly
         accessing the underlying data.
@@ -156,7 +165,8 @@ class DatasetV1(BaseDataset):
         """
 
         # Fetch adapters for dataset and a given column
-        adapters = adapters or self.default_adapters
+        # Partially override if the adapters parameter is specified.
+        adapters = {**self.default_adapters, **(adapters or {})}
         adapter = adapters.get(col)
 
         # If not a pointer, return it here. Apply adapter if specified.
@@ -180,9 +190,7 @@ class DatasetV1(BaseDataset):
 
         return arr
 
-    def upload_to_hub(
-        self, access: Optional[AccessType] = "private", owner: Union[HubOwner, str, None] = None
-    ):
+    def upload_to_hub(self, access: AccessType = "private", owner: Union[HubOwner, str, None] = None):
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
@@ -255,7 +263,7 @@ class DatasetV1(BaseDataset):
 
         return dataset_path
 
-    def _split_index_from_path(self, path: str) -> Tuple[str, Optional[int]]:
+    def _split_index_from_path(self, path: str) -> tuple[str, int | None]:
         """
         Paths can have an additional index appended to them.
         This extracts that index from the path.
@@ -272,6 +280,33 @@ class DatasetV1(BaseDataset):
             else:
                 raise ValueError(f"Invalid index format: {index}")
         return path, index
+
+    def __getitem__(self, item):
+        """Allows for indexing the dataset directly"""
+        ret = self.table.loc[item]
+        if isinstance(ret, pd.Series):
+            # Load the data from the pointer columns
+
+            if ret.name in self.table.columns:
+                # Returning a column, the indices are rows
+                if self.annotations[ret.name].is_pointer:
+                    ret = np.array([self.get_data(k, ret.name) for k in ret.index])
+
+            elif len(ret) == self.n_rows:
+                # Returning a row, the indices are columns
+                ret = {
+                    k: self.get_data(k, ret.name) if self.annotations[ret.name].is_pointer else ret[k]
+                    for k in ret.index
+                }
+
+        # Returning a dataframe
+        if isinstance(ret, pd.DataFrame):
+            for c in ret.columns:
+                if self.annotations[c].is_pointer:
+                    ret[c] = [self.get_data(item, c) for item in ret.index]
+            return ret
+
+        return ret
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""

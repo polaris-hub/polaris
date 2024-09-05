@@ -79,7 +79,11 @@ class Subset:
 
         # Storing all indices in memory can be memory consuming for XXL datasets.
         # This is why we constrain the iloc to loc mapping to be the identity function for Dataset V2.
-        self._iloc_to_loc = self.dataset.rows if isinstance(self.dataset, DatasetV1) else None
+        match self.dataset:
+            case DatasetV1():
+                self._iloc_to_loc = lambda idx: self.dataset.rows[idx]
+            case _:
+                self._iloc_to_loc = lambda idx: idx
 
         # For the iterator implementation
         self._pointer = 0
@@ -166,15 +170,9 @@ class Subset:
         # We reset the index of the Pandas Table during Dataset class validation.
         # We can thus always assume that .iloc[idx] is the same as .loc[idx].
         if data_type == "x":
-            ret = [
-                self._get_single_input(idx if self._iloc_to_loc is None else self._iloc_to_loc[idx])
-                for idx in self.indices
-            ]
+            ret = [self._get_single_input(self._iloc_to_loc(idx)) for idx in self.indices]
         else:
-            ret = [
-                self._get_single_output(idx if self._iloc_to_loc is None else self._iloc_to_loc[idx])
-                for idx in self.indices
-            ]
+            ret = [self._get_single_output(self._iloc_to_loc(idx)) for idx in self.indices]
 
         if not ((self.is_multi_input and data_type == "x") or (self.is_multi_task and data_type == "y")):
             # If the target format is not a dict, we can just create the array directly.
@@ -207,7 +205,7 @@ class Subset:
         """
 
         idx = self.indices[item]
-        idx = idx if self._iloc_to_loc is None else self._iloc_to_loc[idx]
+        idx = self._iloc_to_loc(idx)
 
         # Load the input modalities
         ins = self._get_single_input(idx)

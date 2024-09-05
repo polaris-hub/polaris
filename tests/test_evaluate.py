@@ -45,7 +45,7 @@ def test_result_to_json(tmpdir: str, test_user_owner: HubOwner):
     assert po.__version__ == result.polaris_version
 
 
-def test_metrics_singletask_reg(tmpdir: str, test_single_task_benchmark: SingleTaskBenchmarkSpecification):
+def test_metrics_singletask_reg(test_single_task_benchmark: SingleTaskBenchmarkSpecification):
     _, test = test_single_task_benchmark.get_train_test_split()
     predictions = np.random.random(size=test.inputs.shape[0])
     result = test_single_task_benchmark.evaluate(predictions)
@@ -60,7 +60,7 @@ def test_metrics_singletask_reg(tmpdir: str, test_single_task_benchmark: SingleT
         assert metric in result.results.Metric.tolist()
 
 
-def test_metrics_multitask_reg(tmpdir: str, test_multi_task_benchmark: MultiTaskBenchmarkSpecification):
+def test_metrics_multitask_reg(test_multi_task_benchmark: MultiTaskBenchmarkSpecification):
     train, test = test_multi_task_benchmark.get_train_test_split()
     predictions = {
         target_col: np.random.random(size=test.inputs.shape[0]) for target_col in train.target_cols
@@ -70,9 +70,7 @@ def test_metrics_multitask_reg(tmpdir: str, test_multi_task_benchmark: MultiTask
         assert metric in result.results.Metric.tolist()
 
 
-def test_metrics_singletask_clf(
-    tmpdir: str, test_single_task_benchmark_clf: SingleTaskBenchmarkSpecification
-):
+def test_metrics_singletask_clf(test_single_task_benchmark_clf: SingleTaskBenchmarkSpecification):
     _, test = test_single_task_benchmark_clf.get_train_test_split()
     predictions = np.random.randint(2, size=test.inputs.shape[0])
     probabilities = np.random.uniform(size=test.inputs.shape[0])
@@ -82,7 +80,7 @@ def test_metrics_singletask_clf(
 
 
 def test_metrics_singletask_multicls_clf(
-    tmpdir: str, test_single_task_benchmark_multi_clf: SingleTaskBenchmarkSpecification
+    test_single_task_benchmark_multi_clf: SingleTaskBenchmarkSpecification,
 ):
     _, test = test_single_task_benchmark_multi_clf.get_train_test_split()
     predictions = np.random.randint(3, size=test.inputs.shape[0])
@@ -93,7 +91,7 @@ def test_metrics_singletask_multicls_clf(
         assert metric in result.results.Metric.tolist()
 
 
-def test_metrics_multitask_clf(tmpdir: str, test_multi_task_benchmark_clf: MultiTaskBenchmarkSpecification):
+def test_metrics_multitask_clf(test_multi_task_benchmark_clf: MultiTaskBenchmarkSpecification):
     train, test = test_multi_task_benchmark_clf.get_train_test_split()
     predictions = {
         target_col: np.random.randint(2, size=test.inputs.shape[0]) for target_col in train.target_cols
@@ -151,7 +149,7 @@ def test_absolute_average_fold_error():
 
 
 def test_metric_y_types(
-    tmpdir: str, test_single_task_benchmark_clf: SingleTaskBenchmarkSpecification, test_data: DatasetV1
+    test_single_task_benchmark_clf: SingleTaskBenchmarkSpecification, test_data: DatasetV1
 ):
     # here we use train split for testing purpose.
     _, test = test_single_task_benchmark_clf.get_train_test_split()

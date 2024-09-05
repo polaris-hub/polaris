@@ -1,5 +1,6 @@
-from hashlib import md5
 import os
+from hashlib import md5
+
 import pyarrow as pa
 import pyarrow.parquet as pq
 

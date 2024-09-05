@@ -1,18 +1,21 @@
 import json
+import re
+import uuid
 from pathlib import Path
-from typing import ClassVar, List, Literal, Optional
+from typing import ClassVar, Literal
 
 import fsspec
 import numpy as np
 import zarr
 from loguru import logger
-from pydantic import PrivateAttr, model_validator
+from pydantic import PrivateAttr, computed_field, model_validator
 
 from polaris.dataset._adapters import Adapter
-from polaris.dataset._base import BaseDataset
+from polaris.dataset._base import _CACHE_SUBDIR, BaseDataset
+from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
+from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
-from polaris.utils.v2_manifest import calculate_file_md5, generate_zarr_manifest
 
 _INDEX_ARRAY_KEY = "__index__"
 
@@ -40,6 +43,7 @@ class DatasetV2(BaseDataset):
 
     version: ClassVar[Literal[2]] = 2
     _zarr_md5sum_manifest_path: str | None = PrivateAttr(None)
+    _md5sum: str | None = PrivateAttr(None)
 
     # Redefine this to make it a required field
     zarr_root_path: str
@@ -74,10 +78,16 @@ class DatasetV2(BaseDataset):
                 f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
             )
 
+        # Set the default cache dir if none and make sure it exists
+        if m.cache_dir is None:
+            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
+            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
+        m.cache_dir.mkdir(parents=True, exist_ok=True)
+
         return m
 
     @property
-    def n_rows(self) -> list:
+    def n_rows(self) -> int:
         """Return all row indices for the dataset"""
         example = self.zarr_root[self.columns[0]]
         if isinstance(example, zarr.Group):
@@ -85,17 +95,17 @@ class DatasetV2(BaseDataset):
         return len(example)
 
     @property
-    def rows(self) -> list:
+    def rows(self) -> np.ndarray[int]:
         """Return all row indices for the dataset
 
         Warning: Memory consumption
             This feature is added for completeness sake, but when datasets get large could consume a lot of memory.
             E.g. storing a billion indices with np.in64 would consume 8GB of memory. Use with caution.
         """
-        return np.arange(len(self))
+        return np.arange(len(self), dtype=int)
 
     @property
-    def columns(self) -> list:
+    def columns(self) -> list[str]:
         """Return all columns for the dataset"""
         return list(self.zarr_root.keys())
 
@@ -117,12 +127,32 @@ class DatasetV2(BaseDataset):
 
         return self._zarr_md5sum_manifest_path
 
-    def _compute_checksum(self) -> str:
-        """Compute the checksum of the Zarr manifest file."""
-        manifest_md5 = calculate_file_md5(self.zarr_manifest_path)
-        return manifest_md5
+    @computed_field
+    @property
+    def md5sum(self) -> str:
+        """
+        Lazily compute the checksum once needed.
 
-    def get_data(self, row: int, col: str, adapters: List[Adapter] | None = None) -> np.ndarray:
+        The checksum of the DatasetV2 is computed from the Zarr Manifest and is _not_ deterministic.
+        """
+        if not self.has_md5sum:
+            logger.info("Computing the checksum. This can be slow for large datasets.")
+            self.md5sum = calculate_file_md5(self.zarr_manifest_path)
+        return self._md5sum
+
+    @md5sum.setter
+    def md5sum(self, value: str):
+        """Set the checksum."""
+        if not re.fullmatch(r"^[a-f0-9]{32}$", value):
+            raise ValueError("The checksum should be the 32-character hexdigest of a 128 bit MD5 hash.")
+        self._md5sum = value
+
+    @property
+    def has_md5sum(self) -> bool:
+        """Whether the md5sum for this class has been computed and stored."""
+        return self._md5sum is not None
+
+    def get_data(self, row: int, col: str, adapters: dict[str, Adapter] | None = None) -> np.ndarray:
         """Indexes the Zarr archive.
 
         Args:
@@ -136,7 +166,8 @@ class DatasetV2(BaseDataset):
                 the content of the referenced file is loaded to memory.
         """
         # Fetch adapters for dataset and a given column
-        adapters = adapters or self.default_adapters
+        # Partially override if the adapters parameter is specified.
+        adapters = {**self.default_adapters, **(adapters or {})}
         adapter = adapters.get(col)
 
         # Get the data
@@ -154,7 +185,7 @@ class DatasetV2(BaseDataset):
 
         return arr
 
-    def upload_to_hub(self, access: Optional[AccessType] = "private", owner: HubOwner | str | None = None):
+    def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
         """Uploads the dataset to the Polaris Hub."""
 
         # NOTE (cwognum):  Leaving this for a later PR, because I want
@@ -211,6 +242,24 @@ class DatasetV2(BaseDataset):
         with fsspec.open(dataset_path, "w") as f:
             json.dump(serialized, f)
         return dataset_path
+
+    def cache(self) -> str:
+        """Caches the dataset by downloading all additional data for pointer columns to a local directory.
+
+        Args:
+            verify_checksum: Whether to verify the checksum of the dataset after caching.
+
+        Returns:
+            The path to the cache directory.
+        """
+        # NOTE (cwognum): We don't support a deterministic checksum for the Dataset V2 yet,
+        #  so verification doesn't make sense. See also:
+        #  https://github.com/polaris-hub/polaris/issues/188
+        super().cache(verify_checksum=False)
+
+    def __getitem__(self, item):
+        """Allows for indexing the dataset directly"""
+        raise NotImplementedError
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
