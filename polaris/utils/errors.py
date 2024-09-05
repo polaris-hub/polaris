@@ -1,7 +1,5 @@
 from httpx import Response
 
-from polaris.mixins._format_text import FormattingMixin  # Imported with full path to avoid circular import
-
 
 class InvalidDatasetError(ValueError):
     pass
@@ -34,7 +32,7 @@ class InvalidZarrChecksum(Exception):
     pass
 
 
-class PolarisHubError(Exception, FormattingMixin):
+class PolarisHubError(Exception):
     def __init__(self, message: str = "", response: Response | None = None):
         prefix = "The request to the Polaris Hub failed."
 
@@ -50,7 +48,6 @@ class PolarisUnauthorizedError(PolarisHubError):
             "You are not logged in to Polaris or your login has expired. "
             "You can use the Polaris CLI to easily authenticate yourself again with `polaris login --overwrite`."
         )
-        message = self.format(message, [self.BOLD, self.YELLOW])
         super().__init__(message, response)
 
 
@@ -60,7 +57,6 @@ class PolarisCreateArtifactError(PolarisHubError):
             "Note: If you can confirm that you are authorized to perform this action, "
             "please call 'polaris login --overwrite' and try again. If the issue persists, please reach out to the Polaris team for support."
         )
-        message = self.format(message, [self.BOLD, self.YELLOW])
         super().__init__(message, response)
 
 
@@ -70,5 +66,4 @@ class PolarisRetrieveArtifactError(PolarisHubError):
             "Note: If this artifact exists and you can confirm that you are authorized to retrieve it, "
             "please call 'polaris login --overwrite' and try again. If the issue persists, please reach out to the Polaris team for support."
         )
-        message = self.format(message, [self.BOLD, self.YELLOW])
         super().__init__(message, response)

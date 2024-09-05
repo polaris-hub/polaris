@@ -1,12 +1,10 @@
 import abc
 import json
-import uuid
 from pathlib import Path
 from typing import Dict, List, MutableMapping, Optional, Union
 
 import fsspec
 import numpy as np
-import pandas as pd
 import zarr
 from loguru import logger
 from pydantic import (
@@ -24,8 +22,6 @@ from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 from polaris.hub.polarisfs import PolarisFileSystem
-from polaris.mixins import ChecksumMixin
-from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
@@ -40,10 +36,12 @@ from polaris.utils.types import (
 _CACHE_SUBDIR = "datasets"
 
 
-class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
+class BaseDataset(BaseArtifactModel, abc.ABC):
     """Base data-model for a Polaris dataset, implemented as a [Pydantic](https://docs.pydantic.dev/latest/) model.
 
-    At its core, a dataset in Polaris is a tabular data structure that stores data-points in a row-wise manner.
+    At its core, a dataset in Polaris can _conceptually_ be thought of as tabular data structure that stores data-points
+    in a row-wise manner, where each column correspond to a variable associated with that datapoint.
+
     A Dataset can have multiple modalities or targets, can be sparse and can be part of one or multiple
      [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] objects.
 
@@ -59,6 +57,7 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         source: The data source, e.g. a DOI, Github repo or URI.
         license: The dataset license. Polaris only supports some Creative Commons licenses. See [`SupportedLicenseType`][polaris.utils.types.SupportedLicenseType] for accepted ID values.
         curation_reference: A reference to the curation process, e.g. a DOI, Github repo or URI.
+        cache_dir: Where the dataset would be cached if you call the `cache()` method.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
 
     Raises:
@@ -78,7 +77,7 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
     curation_reference: Optional[HttpUrlString] = None
 
     # Config
-    cache_dir: Optional[Path] = None  # Where to cache the data to if cache() is called.
+    cache_dir: Optional[Path] = None
 
     # Private attributes
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
@@ -123,14 +122,6 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
                 m.annotations[c] = ColumnAnnotation()
             m.annotations[c].dtype = m.dtypes[c]
 
-        #
-        # Set the default cache dir if none and make sure it exists
-        if m.cache_dir is None:
-            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
-            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
-
-        m.cache_dir.mkdir(parents=True, exist_ok=True)
-
         return m
 
     @property
@@ -166,7 +157,7 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         return self.zarr_root
 
     @property
-    def zarr_root(self):
+    def zarr_root(self) -> zarr.Group | None:
         """Get the zarr Group object corresponding to the root.
 
         Opens the zarr archive in read-write mode if it is not already open.
@@ -223,13 +214,13 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
 
     @property
     @abc.abstractmethod
-    def rows(self) -> list:
+    def rows(self) -> list[str | int]:
         """Return all row indices for the dataset"""
         raise NotImplementedError
 
     @property
     @abc.abstractmethod
-    def columns(self) -> list:
+    def columns(self) -> list[str]:
         """Return all columns for the dataset"""
         raise NotImplementedError
 
@@ -261,7 +252,7 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         self._zarr_data = load_zarr_group_to_memory(data)
 
     @abc.abstractmethod
-    def get_data(self, row: str | int, col: str, adapters: Optional[List[Adapter]] = None) -> np.ndarray:
+    def get_data(self, row: str | int, col: str, adapters: dict[str, Adapter] | None = None) -> np.ndarray:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
         than just indexing the `table` attribute. This method provides an end-point for seamlessly
         accessing the underlying data.
@@ -279,20 +270,18 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upload_to_hub(
-        self, access: Optional[AccessType] = "private", owner: Union[HubOwner, str, None] = None
-    ):
+    def upload_to_hub(self, access: AccessType = "private", owner: Union[HubOwner, str, None] = None):
         """Uploads the dataset to the Polaris Hub."""
         raise NotImplementedError
 
     @classmethod
     def from_json(cls, path: str):
-        """Loads a benchmark from a JSON file.
+        """Loads a dataset from a JSON file.
         Overrides the method from the base class to remove the caching dir from the file to load from,
         as that should be user dependent.
 
         Args:
-            path: Loads a benchmark specification from a JSON file.
+            path: Loads a dataset specification from a JSON file.
         """
         with fsspec.open(path, "r") as f:
             data = json.load(f)
@@ -321,21 +310,15 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
         """
         raise NotImplementedError
 
-    def cache(self, cache_dir: Optional[str] = None, verify_checksum: bool = True) -> str:
+    def cache(self, verify_checksum: bool = True) -> str:
         """Caches the dataset by downloading all additional data for pointer columns to a local directory.
 
         Args:
-            cache_dir: The directory to cache the data to. If not provided,
-                this will fall back to the `Dataset.cache_dir` attribute
             verify_checksum: Whether to verify the checksum of the dataset after caching.
 
         Returns:
             The path to the cache directory.
         """
-
-        if cache_dir is not None:
-            self.cache_dir = cache_dir
-
         self.to_json(self.cache_dir, load_zarr_from_new_location=True)
 
         if verify_checksum:
@@ -343,35 +326,13 @@ class BaseDataset(BaseArtifactModel, ChecksumMixin, abc.ABC):
 
         return self.cache_dir
 
-    def size(self):
-        return self.rows, self.n_columns
+    def size(self) -> tuple[int, int]:
+        return self.n_rows, self.n_columns
 
+    @abc.abstractmethod
     def __getitem__(self, item):
         """Allows for indexing the dataset directly"""
-        ret = self.table.loc[item]
-        if isinstance(ret, pd.Series):
-            # Load the data from the pointer columns
-
-            if ret.name in self.table.columns:
-                # Returning a column, the indices are rows
-                if self.annotations[ret.name].is_pointer:
-                    ret = np.array([self.get_data(k, ret.name) for k in ret.index])
-
-            elif len(ret) == self.n_rows:
-                # Returning a row, the indices are columns
-                ret = {
-                    k: self.get_data(k, ret.name) if self.annotations[ret.name].is_pointer else ret[k]
-                    for k in ret.index
-                }
-
-        # Returning a dataframe
-        if isinstance(ret, pd.DataFrame):
-            for c in ret.columns:
-                if self.annotations[c].is_pointer:
-                    ret[c] = [self.get_data(item, c) for item in ret.index]
-            return ret
-
-        return ret
+        raise NotImplementedError
 
     @abc.abstractmethod
     def _repr_dict_(self) -> dict:

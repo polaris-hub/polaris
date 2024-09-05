@@ -1,5 +1,5 @@
-from copy import deepcopy
 import os
+from copy import deepcopy
 from time import perf_counter
 
 import numcodecs
@@ -12,15 +12,15 @@ from pydantic import ValidationError
 from polaris.dataset import Subset
 from polaris.dataset._factory import DatasetFactory
 from polaris.dataset.converters._pdb import PDBConverter
+from polaris.dataset.zarr._manifest import generate_zarr_manifest
 from polaris.experimental._dataset_v2 import _INDEX_ARRAY_KEY, DatasetV2
-from polaris.utils.v2_manifest import generate_zarr_manifest
 
 
 def test_dataset_v2_get_columns(test_dataset_v2):
     assert set(test_dataset_v2.columns) == {"A", "B"}
 
 
-def test_dataset_v2_get_rows(test_dataset_v2, zarr_archive):
+def test_dataset_v2_get_rows(test_dataset_v2):
     assert set(test_dataset_v2.rows) == set(range(100))
 
 
@@ -65,7 +65,7 @@ def test_dataset_v2_load_to_memory(test_dataset_v2):
     assert d2 < d1
 
 
-def test_dataset_v2_checksum(test_dataset_v2, tmpdir):
+def test_dataset_v2_checksum(test_dataset_v2):
     # Make sure the `md5sum` is part of the model dump even if not initiated yet.
     # This is important for uploads to the Hub.
     assert test_dataset_v2._md5sum is None
@@ -96,7 +96,8 @@ def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
 
 def test_dataset_v2_caching(test_dataset_v2, tmpdir):
     cache_dir = tmpdir.join("cache").strpath
-    test_dataset_v2.cache(cache_dir, verify_checksum=True)
+    test_dataset_v2.cache_dir = cache_dir
+    test_dataset_v2.cache()
     assert str(test_dataset_v2.zarr_root_path).startswith(cache_dir)
 
 
