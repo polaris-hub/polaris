@@ -54,7 +54,8 @@ class PolarisFileSystem(fsspec.AbstractFileSystem):
 
         # Prefix to remove from ls entries
         self.prefix = f"dataset/{dataset_owner}/{sluggify(dataset_name)}/"
-        self.base_path = f"/storage/{self.prefix.rstrip('/')}"
+        # Base path for uploading. Please pay attention on path version update.
+        self.base_path = f"/v1/storage/{self.prefix.rstrip('/')}"
 
     @staticmethod
     def is_polarisfs_path(path: str) -> bool:

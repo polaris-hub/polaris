@@ -401,6 +401,7 @@ class PolarisHubClient(OAuth2Client):
         except HTTPStatusError as error:
             # In this case, we can pass the response to provide more information
             raise PolarisHubError(message="Error opening Zarr store", response=error.response) from error
+        # This catches all other types of exceptions
         except Exception as error:
             raise PolarisHubError(message="Error opening Zarr store") from error
 
