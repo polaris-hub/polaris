@@ -2,7 +2,7 @@ import json
 import re
 import uuid
 from pathlib import Path
-from typing import ClassVar, Literal
+from typing import Any, ClassVar, Literal
 
 import fsspec
 import numpy as np
@@ -152,7 +152,7 @@ class DatasetV2(BaseDataset):
         """Whether the md5sum for this class has been computed and stored."""
         return self._md5sum is not None
 
-    def get_data(self, row: int, col: str, adapters: dict[str, Adapter] | None = None) -> np.ndarray:
+    def get_data(self, row: int, col: str, adapters: dict[str, Adapter] | None = None) -> np.ndarray | Any:
         """Indexes the Zarr archive.
 
         Args:
@@ -256,10 +256,6 @@ class DatasetV2(BaseDataset):
         #  so verification doesn't make sense. See also:
         #  https://github.com/polaris-hub/polaris/issues/188
         super().cache(verify_checksum=False)
-
-    def __getitem__(self, item):
-        """Allows for indexing the dataset directly"""
-        raise NotImplementedError
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""

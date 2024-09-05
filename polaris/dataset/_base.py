@@ -1,7 +1,7 @@
 import abc
 import json
 from pathlib import Path
-from typing import Dict, List, MutableMapping, Optional, Union
+from typing import Any, Dict, List, MutableMapping, Optional, Union
 
 import fsspec
 import numpy as np
@@ -26,6 +26,7 @@ from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
+    DatasetIndex,
     HttpUrlString,
     HubOwner,
     SupportedLicenseType,
@@ -252,7 +253,9 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         self._zarr_data = load_zarr_group_to_memory(data)
 
     @abc.abstractmethod
-    def get_data(self, row: str | int, col: str, adapters: dict[str, Adapter] | None = None) -> np.ndarray:
+    def get_data(
+        self, row: str | int, col: str, adapters: dict[str, Adapter] | None = None
+    ) -> np.ndarray | Any:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
         than just indexing the `table` attribute. This method provides an end-point for seamlessly
         accessing the underlying data.
@@ -329,10 +332,16 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     def size(self) -> tuple[int, int]:
         return self.n_rows, self.n_columns
 
-    @abc.abstractmethod
-    def __getitem__(self, item):
+    def __getitem__(self, item: DatasetIndex) -> Any | np.ndarray | dict[str, np.ndarray]:
         """Allows for indexing the dataset directly"""
-        raise NotImplementedError
+
+        # If a tuple, we assume it's the row and column index pair
+        if isinstance(item, tuple):
+            row, col = item
+            return self.get_data(row, col)
+
+        # Otherwise, we assume you're indexing the row
+        return {col: self.get_data(item, col) for col in self.columns}
 
     @abc.abstractmethod
     def _repr_dict_(self) -> dict:

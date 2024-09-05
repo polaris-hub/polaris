@@ -270,3 +270,22 @@ def test_zarr_manifest(test_dataset_v2):
 
     # Ensure Zarr manifest has an additional 100 chunks + 1 array metadata file
     assert post_change_manifest_length == 305
+
+
+def test_dataset_v2__get_item__(test_dataset_v2, zarr_archive):
+    """Test the __getitem__() interface for the dataset V2."""
+
+    # Ground truth
+    root = zarr.open(zarr_archive)
+
+    # Get a specific cell
+    assert np.array_equal(test_dataset_v2[0, "A"], root["A"][0, :])
+
+    # Get a specific row
+    def _check_row_equality(d1, d2):
+        assert len(d1) == len(d2)
+        for k in d1:
+            assert np.array_equal(d1[k], d2[k])
+
+    _check_row_equality(test_dataset_v2[0], {"A": root["A"][0, :], "B": root["B"][0, :]})
+    _check_row_equality(test_dataset_v2[10], {"A": root["A"][10, :], "B": root["B"][10, :]})

@@ -179,3 +179,42 @@ def test_checksum_verification(test_dataset):
     test_dataset.md5sum = "0" * 32
     with pytest.raises(ValueError):
         test_dataset.verify_checksum()
+
+
+def test_dataset__get_item__():
+    """Test the __getitem__() interface for the dataset."""
+
+    table = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6], "C": [7, 8, 9]}, index=["X", "Y", "Z"])
+    dataset = DatasetV1(table=table)
+
+    # Get a specific cell
+    assert dataset["X", "A"] == 1
+    assert dataset["X", "B"] == 4
+    assert dataset["Y", "A"] == 2
+    assert dataset["Y", "B"] == 5
+    assert dataset["Z", "A"] == 3
+    assert dataset["Z", "B"] == 6
+
+    # Get a row
+    assert dataset["X"] == {"A": 1, "B": 4, "C": 7}
+    assert dataset["Y"] == {"A": 2, "B": 5, "C": 8}
+    assert dataset["Z"] == {"A": 3, "B": 6, "C": 9}
+
+
+def test_dataset__get_item__with_pointer_columns(zarr_archive, tmpdir):
+    """Test the __getitem__() interface for a dataset with pointer columns (i.e. part of the data stored in Zarr)."""
+
+    dataset = create_dataset_from_file(zarr_archive, tmpdir.join("data"))
+    root = zarr.open(zarr_archive)
+
+    # Get a specific cell
+    assert np.array_equal(dataset[0, "A"], root["A"][0, :])
+
+    # Get a specific row
+    def _check_row_equality(d1, d2):
+        assert len(d1) == len(d2)
+        for k in d1:
+            assert np.array_equal(d1[k], d2[k])
+
+    _check_row_equality(dataset[0], {"A": root["A"][0, :], "B": root["B"][0, :]})
+    _check_row_equality(dataset[10], {"A": root["A"][10, :], "B": root["B"][10, :]})

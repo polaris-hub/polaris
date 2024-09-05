@@ -233,11 +233,12 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         for target in target_cols:
             if target not in v:
-                val = dataset[:, target]
+                val = dataset.table.loc[:, target]
 
                 # Non numeric columns can be targets (e.g. prediction molecular reactions),
                 # but in that case we currently don't infer the target type.
                 if not np.issubdtype(val.dtype, np.number):
+                    v[target] = None
                     continue
 
                 # remove the nans for mutiple task dataset when the table is sparse
@@ -341,7 +342,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """The number of classes for each of the target columns."""
         n_classes = {}
         for target in self.target_cols:
-            target_type = self.target_types[target]
+            target_type = self.target_types.get(target)
             if target_type is None or target_type == TargetType.REGRESSION:
                 continue
             # TODO: Don't use table attribute
