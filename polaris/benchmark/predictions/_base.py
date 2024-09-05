@@ -41,6 +41,7 @@ class BenchmarkPredictions(BaseModel):
 
         predictions_in_correct_shape = cls._normalize_predictions(vals, target_cols)
         predictions_with_correct_types = cls._convert_lists_to_numpy_arrays(predictions_in_correct_shape)
+        cls._check_column_names(predictions_with_correct_types, target_cols)
         data["predictions"] = predictions_with_correct_types
 
         return data
@@ -126,4 +127,16 @@ class BenchmarkPredictions(BaseModel):
                     raise ValueError(
                         f"Invalid predictions for test set '{test_set}', target '{target}'. "
                         "Expected a numpy array or list of numbers."
+                    )
+
+    @classmethod
+    def _check_column_names(cls, predictions, target_cols):
+        """Checks that all target names in the predictions match the given target
+        column names."""
+        for test_set, targets in predictions.items():
+            for target, predictions in targets.items():
+                if target not in target_cols:
+                    raise ValueError(
+                        f"Invalid predictions for test set '{test_set}'. Target '{target}' "
+                        f"is not in target_cols: {target_cols}."
                     )

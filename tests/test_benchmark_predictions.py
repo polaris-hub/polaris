@@ -90,6 +90,13 @@ def test_benchmark_predictions_initialization():
     ):
         BenchmarkPredictions(predictions={"test": {"col1": "not an array"}}, target_cols=["col1"])
 
+    with pytest.raises(
+        ValueError,
+        match="Invalid predictions for test set 'test'. Target 'wrong column name' "
+        "is not in target_cols: ['col1'].",
+    ):
+        BenchmarkPredictions(predictions={"test": {"wrong column name": [1, 2, 3]}}, target_cols=["col1"])
+
 
 def test_benchmark_predictions_serialization():
     predictions = BenchmarkPredictions(predictions=[1, 2, 3], target_cols=["col1"])
