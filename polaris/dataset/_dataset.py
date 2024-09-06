@@ -35,6 +35,7 @@ from polaris.utils.types import (
     HubOwner,
     SupportedLicenseType,
     ZarrConflictResolution,
+    TimeoutTypes,
 )
 
 # Constants
@@ -370,13 +371,16 @@ class Dataset(BaseArtifactModel, ChecksumMixin):
         return arr
 
     def upload_to_hub(
-        self, access: Optional[AccessType] = "private", owner: Union[HubOwner, str, None] = None
+        self,
+        access: Optional[AccessType] = "private",
+        owner: Union[HubOwner, str, None] = None,
+        timeout: TimeoutTypes = (10, 200),
     ):
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
         """
-        self.client.upload_dataset(self, access=access, owner=owner)
+        self.client.upload_dataset(self, access=access, owner=owner, timeout=timeout)
 
     @classmethod
     def from_json(cls, path: str):
