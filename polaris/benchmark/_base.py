@@ -233,6 +233,14 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         for target in target_cols:
             if target not in v:
+                # Skip inferring the target type for pointer columns.
+                # This would be complex to implement properly.
+                # For these columns, dataset creators can still manually specify the target type.
+                anno = dataset.annotations.get(target)
+                if anno is not None and anno.is_pointer:
+                    v[target] = None
+                    continue
+
                 val = dataset.table.loc[:, target]
 
                 # Non numeric columns can be targets (e.g. prediction molecular reactions),
