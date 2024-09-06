@@ -265,6 +265,17 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         return dataset_path
 
+    def cache(self, verify_checksum: bool = False):
+        """Cache the dataset to the cache directory.
+
+        Args:
+            verify_checksum: Whether to verify the checksum of the dataset after caching.
+        """
+        dst = super().cache()
+        if verify_checksum:
+            self.verify_checksum()
+        return dst
+
     def _split_index_from_path(self, path: str) -> tuple[str, int | None]:
         """
         Paths can have an additional index appended to them.
@@ -287,3 +298,9 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
         repr_dict = self.model_dump(exclude={"table", "zarr_md5sum_manifest"})
         return repr_dict
+
+    def __eq__(self, other):
+        """Whether two datasets are equal is solely determined by the checksum"""
+        if not isinstance(other, DatasetV1):
+            return False
+        return self.md5sum == other.md5sum

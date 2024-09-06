@@ -65,33 +65,13 @@ def test_dataset_v2_load_to_memory(test_dataset_v2):
     assert d2 < d1
 
 
-def test_dataset_v2_checksum(test_dataset_v2):
-    # Make sure the `md5sum` is part of the model dump even if not initiated yet.
-    # This is important for uploads to the Hub.
-    assert test_dataset_v2._md5sum is None
-    assert "md5sum" in test_dataset_v2.model_dump()
-
-    # (1) Without any changes, same hash
-    kwargs = test_dataset_v2.model_dump()
-    assert DatasetV2(**kwargs) == test_dataset_v2
-
-    # (2) With unimportant changes, same hash
-    kwargs["name"] = "changed"
-    kwargs["description"] = "changed"
-    kwargs["source"] = "https://changed.com"
-    assert DatasetV2(**kwargs) == test_dataset_v2
-
-    # (3) Without any changes, but different hash
-    dataset = DatasetV2(**kwargs)
-    dataset._md5sum = "invalid"
-    assert dataset != test_dataset_v2
-
-
 def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
     save_dir = tmpdir.join("save_dir")
     path = test_dataset_v2.to_json(save_dir)
     new_dataset = DatasetV2.from_json(path)
-    assert test_dataset_v2 == new_dataset
+    for i in range(5):
+        assert np.array_equal(new_dataset.get_data(i, "A"), test_dataset_v2.get_data(i, "A"))
+        assert np.array_equal(new_dataset.get_data(i, "B"), test_dataset_v2.get_data(i, "B"))
 
 
 def test_dataset_v2_caching(test_dataset_v2, tmpdir):
@@ -257,7 +237,7 @@ def test_zarr_manifest(test_dataset_v2):
     assert len(df) == 204
 
     # Assert the manifest hash is calculated
-    assert test_dataset_v2.md5sum is not None
+    assert test_dataset_v2.zarr_manifest_md5sum is not None
 
     # Add array to Zarr archive to change the number of chunks in the dataset
     root = zarr.open(test_dataset_v2.zarr_root_path, "a")

@@ -313,20 +313,13 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         """
         raise NotImplementedError
 
-    def cache(self, verify_checksum: bool = True) -> str:
+    def cache(self) -> str:
         """Caches the dataset by downloading all additional data for pointer columns to a local directory.
-
-        Args:
-            verify_checksum: Whether to verify the checksum of the dataset after caching.
 
         Returns:
             The path to the cache directory.
         """
         self.to_json(self.cache_dir, load_zarr_from_new_location=True)
-
-        if verify_checksum:
-            self.verify_checksum()
-
         return self.cache_dir
 
     def size(self) -> tuple[int, int]:
@@ -360,12 +353,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
     def __str__(self):
         return self.__repr__()
-
-    def __eq__(self, other):
-        """Whether two datasets are equal is solely determined by the checksum"""
-        if not isinstance(other, BaseDataset):
-            return False
-        return self.md5sum == other.md5sum
 
     def __del__(self):
         """Close the connection of the client"""
