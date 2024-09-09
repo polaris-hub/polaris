@@ -24,7 +24,7 @@ A split is a pair of which the first item is always assumed to be the train set.
 The second item can either be a single test set or a dictionary with multiple, named test sets.
 """
 
-ListOrArrayType: TypeAlias = list[int | float] | np.ndarray
+ListOrArrayType: TypeAlias = list | np.ndarray
 """
 A list of numbers or a numpy array. Predictions can be provided as either a list or a numpy array.
 """
@@ -39,7 +39,7 @@ of the following:
 - A dictionary of dictionaries of arrays (multi-task, multiple test sets)
 """
 
-PredictionsType: TypeAlias = dict[str, dict[str, np.ndarray]]
+PredictionsType: TypeAlias = dict[str, dict[str, list[str] | np.ndarray]]
 """
 The normalized format for predictions for internal use. Predictions are accepted in a generous
 variety of representations and normalized into this standard format, a dictionary of dictionaries

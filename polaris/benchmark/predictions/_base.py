@@ -40,7 +40,9 @@ class BenchmarkPredictions(BaseModel):
             raise ValueError("target_cols must be provided")
 
         predictions_in_correct_shape = cls._normalize_predictions(vals, target_cols)
-        predictions_with_correct_types = cls._convert_lists_to_numpy_arrays(predictions_in_correct_shape)
+        predictions_with_correct_types = cls._convert_number_lists_to_numpy_arrays(
+            predictions_in_correct_shape
+        )
         cls._check_column_names(predictions_with_correct_types, target_cols)
         data["predictions"] = predictions_with_correct_types
 
@@ -64,18 +66,20 @@ class BenchmarkPredictions(BaseModel):
         return vals
 
     @classmethod
-    def _convert_lists_to_numpy_arrays(
+    def _convert_number_lists_to_numpy_arrays(
         cls, predictions: dict[str, dict[str, ListOrArrayType]]
     ) -> PredictionsType:
-        """Converts all values in the predictions dictionary to numpy arrays."""
+        """Converts all numeric values in the predictions to numpy arrays."""
 
-        def convert_to_numpy(v):
-            if isinstance(v, (list, np.ndarray)):
+        def convert_numbers_to_numpy(v):
+            if isinstance(v, list) and all(isinstance(item, (int, float)) for item in v):
                 return np.array(v)
+            elif isinstance(v, np.ndarray) or isinstance(v, list):
+                return v
             elif isinstance(v, dict):
-                return {k: convert_to_numpy(v) for k, v in v.items()}
+                return {k: convert_numbers_to_numpy(v) for k, v in v.items()}
 
-        return convert_to_numpy(predictions)
+        return convert_numbers_to_numpy(predictions)
 
     @classmethod
     def _is_multi_task_single_test_set(cls, vals, target_cols) -> bool:
@@ -117,16 +121,10 @@ class BenchmarkPredictions(BaseModel):
                     "Expected a dictionary of {col_name: predictions}"
                 )
             for target, predictions in targets.items():
-                if not (
-                    isinstance(predictions, np.ndarray)
-                    or (
-                        isinstance(predictions, list)
-                        and all(isinstance(x, (int, float)) for x in predictions)
-                    )
-                ):
+                if not (isinstance(predictions, np.ndarray) or isinstance(predictions, list)):
                     raise ValueError(
                         f"Invalid predictions for test set '{test_set}', target '{target}'. "
-                        "Expected a numpy array or list of numbers."
+                        "Expected a numpy array or list."
                     )
 
     @classmethod
@@ -134,7 +132,7 @@ class BenchmarkPredictions(BaseModel):
         """Checks that all target names in the predictions match the given target
         column names."""
         for test_set, targets in predictions.items():
-            for target, predictions in targets.items():
+            for target in targets.keys():
                 if target not in target_cols:
                     raise ValueError(
                         f"Invalid predictions for test set '{test_set}'. Target '{target}' "

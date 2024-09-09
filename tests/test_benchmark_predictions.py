@@ -16,7 +16,7 @@ def assert_deep_equal(result, expected):
         assert result == expected
 
 
-def test_benchmark_predictions_initialization():
+def test_benchmark_predictions_normalization():
     # Single task, single test set
     assert_deep_equal(
         {"test": {"col1": np.array([1, 2, 3])}},
@@ -74,7 +74,14 @@ def test_benchmark_predictions_initialization():
         ).predictions,
     )
 
-    "Invalid predictions"
+
+def test_benchmark_predictions_type_checking():
+    assert {"test": {"col1": ["strings", "also", "valid"]}} == BenchmarkPredictions(
+        predictions=["strings", "also", "valid"], target_cols=["col1"]
+    ).predictions
+
+
+def test_invalid_benchmark_predictions_errors():
     with pytest.raises(
         ValueError,
         match="Invalid structure for test set 'test2'. " "Expected a dictionary of {col_name: predictions}",
@@ -85,15 +92,13 @@ def test_benchmark_predictions_initialization():
 
     with pytest.raises(
         ValueError,
-        match="Invalid predictions for test set 'test', target 'col1'. "
-        "Expected a numpy array or list of numbers.",
+        match="Invalid predictions for test set 'test', target 'col1'. " "Expected a numpy array or list.",
     ):
-        BenchmarkPredictions(predictions={"test": {"col1": "not an array"}}, target_cols=["col1"])
+        BenchmarkPredictions(predictions={"test": {"col1": "not an array or list"}}, target_cols=["col1"])
 
     with pytest.raises(
         ValueError,
-        match="Invalid predictions for test set 'test'. Target 'wrong column name' "
-        "is not in target_cols: ['col1'].",
+        match="Invalid predictions for test set 'test'. Target 'wrong column name' is not in target_cols: \['col1'\].",
     ):
         BenchmarkPredictions(predictions={"test": {"wrong column name": [1, 2, 3]}}, target_cols=["col1"])
 
