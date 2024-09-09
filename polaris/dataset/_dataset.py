@@ -1,6 +1,7 @@
 import json
 import uuid
 from hashlib import md5
+from os import PathLike
 from pathlib import Path
 from typing import Any, ClassVar, Dict, List, Literal, MutableMapping
 
@@ -10,20 +11,31 @@ import pandas as pd
 import zarr
 from datamol.utils import fs as dmfs
 from loguru import logger
-from pydantic import Field, PrivateAttr, computed_field, field_serializer, field_validator, model_validator
+from pydantic import (
+    Field,
+    PrivateAttr,
+    computed_field,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 from typing_extensions import Self
 
 from polaris.dataset import ColumnAnnotation
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset, _CACHE_SUBDIR
 from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
+from polaris.hub.client import PolarisHubClient
 from polaris.mixins._checksum import ChecksumMixin
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
-    HttpUrlString, HubOwner,
-    SupportedLicenseType, ZarrConflictResolution,
+    ChecksumStrategy,
+    HttpUrlString,
+    HubOwner,
+    SupportedLicenseType,
+    ZarrConflictResolution,
 )
 
 # Constants
@@ -63,19 +75,20 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
     # Additional meta-data
     readme: str = ""
-    annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
+    annotations: dict[str, ColumnAnnotation] = Field(default_factory=dict)
     source: HttpUrlString | None = None
     license: SupportedLicenseType | None = None
     curation_reference: HttpUrlString | None = None
-
-    # Config
-    cache_dir: Path | None = None  # Where to cache the data to if cache() is called.
 
     # Private attributes
     _zarr_root: zarr.Group | None = PrivateAttr(None)
     _zarr_data: MutableMapping[str, np.ndarray] | None = PrivateAttr(None)
     _md5sum: str | None = PrivateAttr(None)
-    _zarr_md5sum_manifest: list[ZarrFileChecksum] = PrivateAttr(default_factory=list)
+    _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
+    _client = PrivateAttr(None)  # Optional[PolarisHubClient]
+    _warn_about_remote_zarr: bool = PrivateAttr(True)
+    cache_dir: Path | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.
+    verify_checksum_strategy: ChecksumStrategy = PrivateAttr("verify_unless_zarr")
 
     @field_validator("table", mode="before")
     def _validate_table(cls, v):
@@ -131,6 +144,31 @@ class DatasetV1(BaseDataset, ChecksumMixin):
     def _serialize_cache_dir(value):
         """Serialize the cache_dir"""
         return str(value)
+
+    @classmethod
+    def load_from_hub(
+        cls, owner: HubOwner, name: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr"
+    ) -> Self:
+        with PolarisHubClient() as client:
+            return client.get_dataset(owner, name, verify_checksum=verify_checksum)
+
+    @classmethod
+    def load_from_file(
+        cls, path: str | PathLike, verify_checksum: ChecksumStrategy = "verify_unless_zarr"
+    ) -> Self:
+        pass
+
+    def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
+        """
+        Determines whether to verify the checksum of the dataset based on the strategy.
+        """
+        match strategy:
+            case "ignore":
+                return False
+            case "verify":
+                return True
+            case "verify_unless_zarr":
+                return not self.uses_zarr
 
     def _compute_checksum(self):
         """Computes a hash of the dataset.
@@ -240,8 +278,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
     @classmethod
     def from_json(cls, path: str):
-        """
-        Loads a dataset from a JSON file.
+        """Loads a dataset from a JSON file.
 
         Args:
             path: The path to the JSON file to load the dataset from .ColumnAnnotation

@@ -99,20 +99,19 @@ class BaseArtifactModel(BaseModel):
 
     @classmethod
     def from_json(cls, path: str) -> Self:
-        """Loads a benchmark from a JSON file.
+        """Loads an artifact from a JSON file.
 
         Args:
             path: Loads a benchmark specification from a JSON file.
         """
         with fsspec.open(path, "r") as f:
-            data = json.load(f)
-        return cls.model_validate(data)
+            return cls.model_validate_json(f.read())
 
     def to_json(self, path: str) -> None:
-        """Saves the benchmark to a JSON file.
+        """Saves an artifact to a JSON file.
 
         Args:
             path: Saves the benchmark specification to a JSON file.
         """
         with fsspec.open(path, "w") as f:
-            json.dump(self.model_dump(), f)
+            f.write(self.model_dump_json())

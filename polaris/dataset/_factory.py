@@ -11,7 +11,7 @@ from polaris.dataset._adapters import Adapter
 from polaris.dataset.converters import Converter, PDBConverter, SDFConverter, ZarrConverter
 
 
-def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) -> DatasetV1:
+def create_dataset_from_file(path: str, zarr_root_path: str | None = None) -> DatasetV1:
     """
     This function is a convenience function to create a dataset from a file.
 
@@ -27,34 +27,11 @@ def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) ->
     return factory.build()
 
 
-def create_dataset_from_files(
-    paths: List[str], zarr_root_path: Optional[str] = None, axis: Literal[0, 1, "index", "columns"] = 0
-) -> DatasetV1:
-    """
-    This function is a convenience function to create a dataset from multiple files.
-
-    It sets up the dataset factory with sensible defaults for the converters.
-    For creating more complicated datasets, please use the `DatasetFactory` directly.
-
-    Args:
-        axis: Axis along which the files should be added.
-            - 0 or 'index': append the rows with files. Files must be of the same type.
-            - 1 or 'columns': append the columns with files. Files can be of the different types.
-    """
-    factory = DatasetFactory(zarr_root_path=zarr_root_path)
-    factory.register_converter("sdf", SDFConverter())
-    factory.register_converter("zarr", ZarrConverter())
-    factory.register_converter("pdb", PDBConverter())
-
-    factory.add_from_files(paths, axis)
-    return factory.build()
-
-
 class DatasetFactory:
     """
     The `DatasetFactory` makes it easier to create complex datasets.
 
-    It is based on the the factory design pattern and allows a user to specify specific handlers
+    It is based on the factory design pattern and allows a user to specify specific handlers
     (i.e. [`Converter`][polaris.dataset.converters._base.Converter] objects) for different file types.
     These converters are used to convert commonly used file types in drug discovery
     to something that can be used within Polaris while losing as little information as possible.
@@ -73,7 +50,7 @@ class DatasetFactory:
 
     Question: How to make adding meta-data easier?
         The `DatasetFactory` is designed to more easily pull together data from different sources.
-        However, adding meta-data remains a laborous process. How could we make this simpler through
+        However, adding meta-data remains a laborious process. How could we make this simpler through
         the Python API?
     """
 
@@ -150,7 +127,7 @@ class DatasetFactory:
         1. The name attribute of the column to be set.
         2. The name attribute of the column to be unique.
         3. If the column is a pointer column, the `zarr_root_path` needs to be set.
-        4. The length of the column to match the length of the alredy constructed table.
+        4. The length of the column to match the length of the already constructed table.
 
         Args:
             column: The column to add to the dataset.

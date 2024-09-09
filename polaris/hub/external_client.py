@@ -1,15 +1,19 @@
 import webbrowser
-from typing import Literal, Optional
+from contextlib import contextmanager
+from typing import Literal, Optional, TypeAlias
 
 from authlib.common.security import generate_token
 from authlib.integrations.base_client import OAuthError
 from authlib.integrations.httpx_client import OAuth2Client
 from authlib.oauth2 import OAuth2Error, TokenAuth
+from authlib.oauth2.rfc6749 import OAuth2Token
 from loguru import logger
 
 from polaris.hub.oauth import ExternalCachedTokenAuth, StorageCachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
+
+Scope: TypeAlias = Literal["read", "write"]
 
 
 class ExternalAuthClient(OAuth2Client):
@@ -65,11 +69,16 @@ class ExternalAuthClient(OAuth2Client):
 
     def fetch_token(self, **kwargs) -> dict:
         """Light wrapper to automatically pass in the right URL"""
-        return super().fetch_token(
-            url=self.settings.token_fetch_url, code_verifier=self.code_verifier, **kwargs
-        )
+        try:
+            return super().fetch_token(
+                url=self.settings.token_fetch_url, code_verifier=self.code_verifier, **kwargs
+            )
+        except OAuth2Error as error:
+            raise PolarisHubError(
+                message=f"Could not obtain a token from the external OAuth2 server. Error was: {error.error} - {error.description}"
+            ) from error
 
-    def ensure_active_token(self, token) -> bool:
+    def ensure_active_token(self, token: OAuth2Token | None = None) -> bool:
         try:
             return super().ensure_active_token(token) or False
         except OAuthError:
@@ -96,9 +105,7 @@ class ExternalAuthClient(OAuth2Client):
             user_info = self.get(
                 self.settings.user_info_url,
                 auth=None,  # type: ignore
-                headers={
-                    "authorization": f"Bearer {self.token['access_token']}"
-                },
+                headers={"authorization": f"Bearer {self.token['access_token']}"},
             )
             user_info.raise_for_status()
             self._user_info = user_info.json()
@@ -149,7 +156,6 @@ class ExternalAuthClient(OAuth2Client):
 
 
 class StorageAuthClient(OAuth2Client):
-
     def __init__(
         self,
         settings: PolarisHubSettings,
@@ -197,7 +203,7 @@ class StorageAuthClient(OAuth2Client):
     #
     #     return super()._prepare_token_endpoint_body(body, grant_type, **kwargs)
 
-    def fetch_token_for_resource(self, scope: Literal["read", "write"], resource: str):
+    def fetch_token_for_resource(self, scope: Scope, resource: str):
         try:
             return super().fetch_token(
                 subject_token=self.token,  # TODO: Use the hub token instead of the storage token
@@ -209,4 +215,9 @@ class StorageAuthClient(OAuth2Client):
         except OAuth2Error as error:
             raise PolarisHubError(
                 message=f"Could not obtain a token to access the storage backend. Error was: {error.error} - {error.description}"
-                ) from error
+            ) from error
+
+
+    @contextmanager
+    def storage_session(self, scope: Scope, resource: str):
+        pass

@@ -145,7 +145,7 @@ class PolarisHubClient(OAuth2Client):
             )
         return super()._prepare_token_endpoint_body(body, grant_type, **kwargs)
 
-    def ensure_active_token(self, token: OAuth2Token) -> bool:
+    def ensure_active_token(self, token: OAuth2Token | None = None) -> bool:
         """
         Override the active check to trigger a refetch of the token if it is not active.
         """
@@ -154,7 +154,7 @@ class PolarisHubClient(OAuth2Client):
             return True
 
         # Check if external token is still valid
-        if not self.external_client.ensure_active_token(self.external_client.token):
+        if not self.external_client.ensure_active_token():
             return False
 
         # If so, use it to get a new Hub token
@@ -261,7 +261,7 @@ class PolarisHubClient(OAuth2Client):
             overwrite: Whether to overwrite the current token if the user is already logged in.
             auto_open_browser: Whether to automatically open the browser to visit the authorization URL.
         """
-        if overwrite or self.token is None or not self.ensure_active_token(self.token):
+        if overwrite or self.token is None or not self.ensure_active_token():
             self.external_client.interactive_login(overwrite=overwrite, auto_open_browser=auto_open_browser)
             self.token = self.fetch_token()
 
@@ -287,10 +287,7 @@ class PolarisHubClient(OAuth2Client):
             error_msg="Failed to fetch datasets.",
         ):
             response = self._base_request_to_hub(
-                url="/v1/dataset", method="GET", params={
-                    "limit": limit,
-                    "offset": offset
-                }
+                url="/v1/dataset", method="GET", params={"limit": limit, "offset": offset}
             )
             dataset_list = [bm["artifactId"] for bm in response["data"]]
 
@@ -444,10 +441,7 @@ class PolarisHubClient(OAuth2Client):
         ):
             # TODO (cwognum): What to do with pagination, i.e. limit and offset?
             response = self._base_request_to_hub(
-                url="/v1/benchmark", method="GET", params={
-                    "limit": limit,
-                    "offset": offset
-                }
+                url="/v1/benchmark", method="GET", params={"limit": limit, "offset": offset}
             )
             benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
 
@@ -541,9 +535,7 @@ class PolarisHubClient(OAuth2Client):
 
             # Make a request to the hub
             response = self._base_request_to_hub(
-                url="/v1/result", method="POST", json={
-                    "access": access, **result_json
-                }
+                url="/v1/result", method="POST", json={"access": access, **result_json}
             )
 
             # Inform the user about where to find their newly created artifact.
@@ -675,9 +667,7 @@ class PolarisHubClient(OAuth2Client):
                     "Content-type": "application/vnd.apache.parquet",
                 },
                 timeout=timeout,
-                json={
-                    "artifactType": artifact_type
-                },
+                json={"artifactType": artifact_type},
             )
 
             if hub_response.status_code == 307:
@@ -865,10 +855,7 @@ class PolarisHubClient(OAuth2Client):
         ):
             # TODO (cwognum): What to do with pagination, i.e. limit and offset?
             response = self._base_request_to_hub(
-                url="/v2/competition", method="GET", params={
-                    "limit": limit,
-                    "offset": offset
-                }
+                url="/v2/competition", method="GET", params={"limit": limit, "offset": offset}
             )
             competitions_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
             return competitions_list

@@ -44,7 +44,8 @@ dependencies = [
     "httpx",
     "tenacity",
     "filelock",
-    "numpy < 2", # We need to pin numpy to avoid issues with fastpdb/biotite.
+    "numpy < 2",
+    # We need to pin numpy to avoid issues with fastpdb/biotite.
     "pandas",
     "scipy",
     "scikit-learn",
@@ -55,7 +56,8 @@ dependencies = [
     "pyarrow",
     "fsspec[http]",
     "yaspin",
-    "s3fs>=2024.6.1",
+    "boto3>=1.35.7",
+    "typing-extensions>=4.12.2",
 ]
 
 [project.optional-dependencies]
