@@ -355,6 +355,14 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
         return v.value
 
+    @computed_field
+    @property
+    def test_set_names(self) -> list[str]:
+        """The names of the test sets."""
+        if isinstance(self.split[1], dict):
+            return list(self.split[1].keys())
+        return ["test"]
+
     def _get_subset(self, indices, hide_targets=True, featurization_fn=None):
         """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
         internally to construct the train and test sets."""
@@ -461,7 +469,12 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             y_true_values = y_true_subset.targets
 
         scores = evaluate_benchmark(
-            self.target_cols, self.metrics, y_true_values, y_pred=y_pred, y_prob=y_prob
+            self.target_cols,
+            self.test_set_names,
+            self.metrics,
+            y_true_values,
+            y_pred=y_pred,
+            y_prob=y_prob,
         )
 
         return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)

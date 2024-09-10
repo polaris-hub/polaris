@@ -22,16 +22,21 @@ def safe_mask(input_values: PredictionsType, test_label: str, target_label: str,
 
 def evaluate_benchmark(
     target_cols: list[str],
+    test_set_names: list[str],
     metrics: list[Metric],
     y_true: IncomingPredictionsType,
     y_pred: Optional[IncomingPredictionsType] = None,
     y_prob: Optional[IncomingPredictionsType] = None,
 ):
-    y_true = BenchmarkPredictions(predictions=y_true, target_cols=target_cols)
+    y_true = BenchmarkPredictions(predictions=y_true, target_cols=target_cols, test_set_names=test_set_names)
     if y_pred is not None:
-        y_pred = BenchmarkPredictions(predictions=y_pred, target_cols=target_cols)
+        y_pred = BenchmarkPredictions(
+            predictions=y_pred, target_cols=target_cols, test_set_names=test_set_names
+        )
     if y_prob is not None:
-        y_prob = BenchmarkPredictions(predictions=y_prob, target_cols=target_cols)
+        y_prob = BenchmarkPredictions(
+            predictions=y_prob, target_cols=target_cols, test_set_names=test_set_names
+        )
 
     if y_pred and set(y_true.predictions.keys()) != set(y_pred.predictions.keys()):
         raise KeyError(

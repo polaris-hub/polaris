@@ -21,7 +21,11 @@ def test_multi_col_competition_evaluation(test_competition):
     predictions = {target_col: np.random.randint(2, size=labels.shape[0]) for target_col in labels.columns}
 
     result = evaluate_benchmark(
-        ["Column1", "Column2", "Column3"], test_competition.metrics, labels_as_from_hub, y_pred=predictions
+        ["Column1", "Column2", "Column3"],
+        ["test"],
+        test_competition.metrics,
+        labels_as_from_hub,
+        y_pred=predictions,
     )
 
     assert isinstance(result, pd.DataFrame)
@@ -59,7 +63,11 @@ def test_single_col_competition_evaluation(test_competition):
     predictions = data + np.random.uniform(0, 3, size=len(data))
 
     result = evaluate_benchmark(
-        ["LOG HLM_CLint (mL/min/kg)"], test_competition.metrics, labels, y_pred=predictions
+        ["LOG HLM_CLint (mL/min/kg)"],
+        ["test"],
+        test_competition.metrics,
+        labels,
+        y_pred=predictions,
     )
 
     assert isinstance(result, pd.DataFrame)

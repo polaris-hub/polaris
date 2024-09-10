@@ -11,6 +11,7 @@ from pydantic import (
 class BenchmarkPredictions(BaseModel):
     predictions: PredictionsType
     target_cols: list[str]
+    test_set_names: list[str]
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -32,6 +33,7 @@ class BenchmarkPredictions(BaseModel):
     def validate_predictions(cls, data):
         vals = data.get("predictions")
         target_cols = data.get("target_cols")
+        test_set_names = data.get("test_set_names")
 
         if vals is None:
             raise ValueError("predictions must be provided")
@@ -39,7 +41,7 @@ class BenchmarkPredictions(BaseModel):
         if target_cols is None:
             raise ValueError("target_cols must be provided")
 
-        predictions_in_correct_shape = cls._normalize_predictions(vals, target_cols)
+        predictions_in_correct_shape = cls._normalize_predictions(vals, target_cols, test_set_names)
         predictions_with_correct_types = cls._convert_number_lists_to_numpy_arrays(
             predictions_in_correct_shape
         )
@@ -50,20 +52,44 @@ class BenchmarkPredictions(BaseModel):
 
     @classmethod
     def _normalize_predictions(
-        cls, vals: IncomingPredictionsType, target_cols: list[str]
+        cls, vals: IncomingPredictionsType, target_cols: list[str], test_set_names: list[str]
     ) -> dict[str, dict[str, ListOrArrayType]]:
         """Normalizes the predictions so they are always in the standard format,
         {"test-set-name": {"target-name": np.ndarray}} regardless of how they are provided."""
 
         if isinstance(vals, (list, np.ndarray)):
+            if len(test_set_names) != 1:
+                raise ValueError(
+                    f"Missing predictions. Single array/list of predictions provided "
+                    f"but multiple test sets expected with names {test_set_names}."
+                )
+            if len(target_cols) != 1:
+                raise ValueError(
+                    f"Missing targets. Single array/list of predictions provided "
+                    f"but multiple targets expected with names {target_cols}."
+                )
             return {"test": cls._set_col_name(vals, target_cols)}
+
         elif cls._is_multi_task_single_test_set(vals, target_cols):
+            if len(test_set_names) != 1:
+                raise ValueError(
+                    f"Missing test sets. Single dictionary of predictions provided "
+                    f"but multiple test sets expected with names {test_set_names}."
+                )
             return {"test": vals}
+
         elif cls._is_single_task_multi_test_set(vals, target_cols):
-            return {test_set_name: cls._set_col_name(v, target_cols) for test_set_name, v in vals.items()}
+            return cls._validate_all_test_sets(vals, target_cols, test_set_names)
+
         else:
             cls._give_feedback(vals)
         return vals
+
+    @classmethod
+    def _validate_all_test_sets(cls, vals: dict, target_cols: list[str], test_set_labels: list[str]):
+        if set(vals.keys()) != set(test_set_labels):
+            raise ValueError(f"Predictions must be provided for all test sets: {test_set_labels}")
+        return {test_set: cls._set_col_name(v, target_cols) for test_set, v in vals.items()}
 
     @classmethod
     def _convert_number_lists_to_numpy_arrays(
