@@ -49,8 +49,8 @@ def evaluate_benchmark(
                 # Multi-task but with a metric across targets
                 score = metric(
                     y_true=y_true_test,
-                    y_pred=y_pred.predictions.get(test_label),
-                    y_prob=y_prob.predictions.get(test_label),
+                    y_pred=y_pred.predictions.get(test_label) if y_pred is not None else None,
+                    y_prob=y_prob.predictions.get(test_label) if y_prob is not None else None,
                 )
 
                 scores.loc[len(scores)] = (test_label, "aggregated", metric, score)
@@ -60,8 +60,8 @@ def evaluate_benchmark(
                 # Single task
                 score = metric(
                     y_true=y_true_test,
-                    y_pred=y_pred.predictions.get(test_label),
-                    y_prob=y_prob.predictions.get(test_label),
+                    y_pred=y_pred.predictions.get(test_label) if y_pred is not None else None,
+                    y_prob=y_prob.predictions.get(test_label) if y_prob is not None else None,
                 )
                 scores.loc[len(scores)] = (test_label, target_cols[0], metric, score)
                 continue

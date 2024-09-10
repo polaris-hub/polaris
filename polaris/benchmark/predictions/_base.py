@@ -121,11 +121,15 @@ class BenchmarkPredictions(BaseModel):
                     "Expected a dictionary of {col_name: predictions}"
                 )
             for target, predictions in targets.items():
-                if not (isinstance(predictions, np.ndarray) or isinstance(predictions, list)):
+                if not cls._valid_incoming_predictions(predictions):
                     raise ValueError(
                         f"Invalid predictions for test set '{test_set}', target '{target}'. "
                         "Expected a numpy array or list."
                     )
+
+    @classmethod
+    def _valid_incoming_predictions(cls, predictions: IncomingPredictionsType) -> bool:
+        return isinstance(predictions, np.ndarray) or isinstance(predictions, list)
 
     @classmethod
     def _check_column_names(cls, predictions, target_cols):
