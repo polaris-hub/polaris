@@ -78,25 +78,24 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         return v
 
     @model_validator(mode="after")
-    @classmethod
-    def _validate_v1_dataset_model(cls, m: "DatasetV1"):
+    def _validate_v1_dataset_model(self):
         """Verifies some dependencies between properties"""
 
-        has_pointers = any(anno.is_pointer for anno in m.annotations.values())
-        if has_pointers and m.zarr_root_path is None:
+        has_pointers = any(anno.is_pointer for anno in self.annotations.values())
+        if has_pointers and self.zarr_root_path is None:
             raise InvalidDatasetError("A zarr_root_path needs to be specified when there are pointer columns")
-        if not has_pointers and m.zarr_root_path is not None:
+        if not has_pointers and self.zarr_root_path is not None:
             raise InvalidDatasetError(
                 "The zarr_root_path should only be specified when there are pointer columns"
             )
 
         # Set the default cache dir if none and make sure it exists
-        if m.cache_dir is None:
-            dataset_id = m._md5sum if m.has_md5sum else str(uuid.uuid4())
-            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
-        m.cache_dir.mkdir(parents=True, exist_ok=True)
+        if self.cache_dir is None:
+            dataset_id = self._md5sum if self.has_md5sum else str(uuid.uuid4())
+            self.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
 
-        return m
+        return self
 
     def _compute_checksum(self) -> str:
         """Computes a hash of the dataset.
@@ -208,6 +207,19 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
         """
         self.client.upload_dataset(self, access=access, owner=owner, timeout=timeout)
+
+    @classmethod
+    def from_json(cls, path: str):
+        """
+        Loads a dataset from a JSON file.
+
+        Args:
+            path: The path to the JSON file to load the dataset from.
+        """
+        with fsspec.open(path, "r") as f:
+            data = json.load(f)
+        data.pop("cache_dir", None)
+        return cls.model_validate(data)
 
     def to_json(
         self,

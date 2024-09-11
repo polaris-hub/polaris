@@ -13,8 +13,8 @@ class CompetitionDataset(DatasetV1):
     """
 
     @model_validator(mode="after")
-    def _validate_model(cls, m: "CompetitionDataset"):
+    def _validate_model(self):
         """We reject the instantiation of competition datasets which leverage Zarr for the time being"""
 
-        if m.uses_zarr:
+        if self.uses_zarr:
             raise InvalidCompetitionError("Pointer columns are not currently supported in competitions.")

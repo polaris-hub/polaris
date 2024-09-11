@@ -161,7 +161,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return v
 
     @model_validator(mode="after")
-    def _validate_split(cls, m: "BenchmarkSpecification"):
+    def _validate_split(self):
         """
         Verifies that:
           1) There are no empty test partitions
@@ -170,7 +170,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
           4) There is no overlap between the train and test set
           5) No row exists in the test set where all labels are missing/empty
         """
-        split = m.split
+        split = self.split
 
         # Train partition can be empty (zero-shot)
         # Test partitions cannot be empty
@@ -213,13 +213,13 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             raise InvalidBenchmarkError("The test set contains duplicate indices")
 
         # All indices are valid given the dataset
-        dataset = m.dataset
+        dataset = self.dataset
         if dataset is not None:
             max_i = len(dataset)
             if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
                 raise InvalidBenchmarkError("The predefined split contains invalid indices")
 
-        return m
+        return self
 
     @field_validator("target_types")
     def _validate_target_types(cls, v, info: ValidationInfo):
@@ -262,15 +262,14 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return v
 
     @model_validator(mode="after")
-    @classmethod
-    def _validate_model(cls, m: "BenchmarkSpecification"):
+    def _validate_model(self):
         """
         Sets a default metric if missing.
         """
         # Set a default main metric if not set yet
-        if m.main_metric is None:
-            m.main_metric = m.metrics[0]
-        return m
+        if self.main_metric is None:
+            self.main_metric = self.metrics[0]
+        return self
 
     @field_serializer("metrics", "main_metric")
     def _serialize_metrics(self, v):

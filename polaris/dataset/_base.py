@@ -1,9 +1,8 @@
 import abc
 import json
 from pathlib import Path
-from typing import Any, Dict, List, MutableMapping, Optional, Union
+from typing import Any, Dict, MutableMapping, Optional, Union
 
-import fsspec
 import numpy as np
 import zarr
 from loguru import logger
@@ -92,7 +91,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
 
     @field_serializer("default_adapters")
-    def _serialize_adapters(self, value: List[Adapter]):
+    def _serialize_adapters(self, value: dict[str, Adapter]):
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
 
@@ -104,26 +103,26 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         return value
 
     @model_validator(mode="after")
-    def _validate_base_dataset_model(cls, m: "BaseDataset"):
+    def _validate_base_dataset_model(self):
         # Verify that all annotations are for columns that exist
-        if any(k not in m.columns for k in m.annotations):
+        if any(k not in self.columns for k in self.annotations):
             raise InvalidDatasetError(
-                f"There are annotations for columns that do not exist. Columns: {m.columns}. Annotations: {list(m.annotations.keys())}"
+                f"There are annotations for columns that do not exist. Columns: {self.columns}. Annotations: {list(self.annotations.keys())}"
             )
 
         # Verify that all adapters are for columns that exist
-        if any(k not in m.columns for k in m.default_adapters.keys()):
+        if any(k not in self.columns for k in self.default_adapters.keys()):
             raise InvalidDatasetError(
-                f"There are default adapters for columns that do not exist. Columns: {m.columns}. Adapters: {list(m.annotations.keys())}"
+                f"There are default adapters for columns that do not exist. Columns: {self.columns}. Adapters: {list(self.annotations.keys())}"
             )
 
         # Set a default for missing annotations and convert strings to Modality
-        for c in m.columns:
-            if c not in m.annotations:
-                m.annotations[c] = ColumnAnnotation()
-            m.annotations[c].dtype = m.dtypes[c]
+        for c in self.columns:
+            if c not in self.annotations:
+                self.annotations[c] = ColumnAnnotation()
+            self.annotations[c].dtype = self.dtypes[c]
 
-        return m
+        return self
 
     @property
     def client(self):
@@ -277,19 +276,15 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         """Uploads the dataset to the Polaris Hub."""
         raise NotImplementedError
 
-    @classmethod
+    @abc.abstractclassmethod
     def from_json(cls, path: str):
-        """Loads a dataset from a JSON file.
-        Overrides the method from the base class to remove the caching dir from the file to load from,
-        as that should be user dependent.
+        """
+        Loads a dataset from a JSON file.
 
         Args:
-            path: Loads a dataset specification from a JSON file.
+            path: The path to the JSON file to load the dataset from.
         """
-        with fsspec.open(path, "r") as f:
-            data = json.load(f)
-        data.pop("cache_dir", None)
-        return cls.model_validate(data)
+        raise NotImplementedError
 
     @abc.abstractmethod
     def to_json(

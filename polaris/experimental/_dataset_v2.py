@@ -49,42 +49,41 @@ class DatasetV2(BaseDataset):
     zarr_root_path: str
 
     @model_validator(mode="after")
-    @classmethod
-    def _validate_v2_dataset_model(cls, m: "DatasetV2"):
+    def _validate_v2_dataset_model(self):
         """Verifies some dependencies between properties"""
 
         # Since the keys for subgroups are not ordered, we have no easy way to index these groups.
         # Any subgroup should therefore have a special array that defines the index for that group.
-        for group in m.zarr_root.group_keys():
-            if _INDEX_ARRAY_KEY not in m.zarr_root[group].array_keys():
+        for group in self.zarr_root.group_keys():
+            if _INDEX_ARRAY_KEY not in self.zarr_root[group].array_keys():
                 raise InvalidDatasetError(f"Group {group} does not have an index array.")
 
-            index_arr = m.zarr_root[group][_INDEX_ARRAY_KEY]
-            if len(index_arr) != len(m.zarr_root[group]) - 1:
+            index_arr = self.zarr_root[group][_INDEX_ARRAY_KEY]
+            if len(index_arr) != len(self.zarr_root[group]) - 1:
                 raise InvalidDatasetError(
                     f"Length of index array for group {group} does not match the size of the group."
                 )
-            if any(x not in m.zarr_root[group] for x in index_arr):
+            if any(x not in self.zarr_root[group] for x in index_arr):
                 raise InvalidDatasetError(
                     f"Keys of index array for group {group} does not match the group members."
                 )
 
         # Check the structure of the Zarr archive
         # All arrays or groups in the root should have the same length.
-        lengths = {len(m.zarr_root[k]) for k in m.zarr_root.array_keys()}
-        lengths.update({len(m.zarr_root[k][_INDEX_ARRAY_KEY]) for k in m.zarr_root.group_keys()})
+        lengths = {len(self.zarr_root[k]) for k in self.zarr_root.array_keys()}
+        lengths.update({len(self.zarr_root[k][_INDEX_ARRAY_KEY]) for k in self.zarr_root.group_keys()})
         if len(lengths) > 1:
             raise InvalidDatasetError(
                 f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
             )
 
         # Set the default cache dir if none and make sure it exists
-        if m.cache_dir is None:
-            dataset_id = m._zarr_manifest_md5sum if m.has_zarr_manifest_md5sum else str(uuid.uuid4())
-            m.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
-        m.cache_dir.mkdir(parents=True, exist_ok=True)
+        if self.cache_dir is None:
+            dataset_id = self._zarr_manifest_md5sum if self.has_zarr_manifest_md5sum else str(uuid.uuid4())
+            self.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
 
-        return m
+        return self
 
     @property
     def n_rows(self) -> int:
@@ -191,6 +190,19 @@ class DatasetV2(BaseDataset):
         # NOTE (cwognum):  Leaving this for a later PR, because I want
         #  to do it simultaneously with a PR on the Hub side.
         raise NotImplementedError
+
+    @classmethod
+    def from_json(cls, path: str):
+        """
+        Loads a dataset from a JSON file.
+
+        Args:
+            path: The path to the JSON file to load the dataset from.
+        """
+        with fsspec.open(path, "r") as f:
+            data = json.load(f)
+        data.pop("cache_dir", None)
+        return cls.model_validate(data)
 
     def to_json(
         self,

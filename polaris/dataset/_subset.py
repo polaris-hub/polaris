@@ -65,7 +65,7 @@ class Subset:
         indices: List[int | Sequence[int]],
         input_cols: List[str] | str,
         target_cols: List[str] | str,
-        adapters: List[Adapter] | None = None,
+        adapters: dict[str, Adapter] | None = None,
         featurization_fn: Callable | None = None,
         hide_targets: bool = False,
     ):
