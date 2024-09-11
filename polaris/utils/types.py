@@ -39,7 +39,7 @@ of the following:
 - A dictionary of dictionaries of arrays (multi-task, multiple test sets)
 """
 
-PredictionsType: TypeAlias = dict[str, dict[str, list[str] | np.ndarray]]
+PredictionsType: TypeAlias = dict[str, dict[str, np.ndarray]]
 """
 The normalized format for predictions for internal use. Predictions are accepted in a generous
 variety of representations and normalized into this standard format, a dictionary of dictionaries

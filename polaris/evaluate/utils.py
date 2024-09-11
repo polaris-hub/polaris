@@ -1,12 +1,12 @@
-import numpy as np
-import pandas as pd
 from typing import Optional
 
-from polaris.evaluate import BenchmarkResults, ResultsType
-from polaris.benchmark.predictions import BenchmarkPredictions
-from polaris.utils.types import IncomingPredictionsType, PredictionsType
-from polaris.evaluate import Metric
+import numpy as np
+import pandas as pd
 from numpy.typing import NDArray
+
+from polaris.benchmark.predictions import BenchmarkPredictions
+from polaris.evaluate import BenchmarkResults, Metric, ResultsType
+from polaris.utils.types import IncomingPredictionsType, PredictionsType
 
 
 def safe_mask(input_values: PredictionsType, test_label: str, target_label: str, mask: NDArray[np.bool_]):

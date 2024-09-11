@@ -22,11 +22,9 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-
-from polaris.benchmark.predictions import BenchmarkPredictions
 from polaris.competition import CompetitionSpecification
 from polaris.dataset import CompetitionDataset, DatasetV1
-from polaris.evaluate import BenchmarkResults, CompetitionResults
+from polaris.evaluate import BenchmarkResults, CompetitionPredictions, CompetitionResults
 from polaris.hub.external_auth_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.polarisfs import PolarisFileSystem
@@ -845,7 +843,7 @@ class PolarisHubClient(OAuth2Client):
     def evaluate_competition(
         self,
         competition: CompetitionSpecification,
-        competition_predictions: BenchmarkPredictions,
+        competition_predictions: CompetitionPredictions,
     ) -> CompetitionResults:
         """Evaluate the predictions for a competition on the Polaris Hub. Target labels are fetched
         by Polaris Hub and used only internally.

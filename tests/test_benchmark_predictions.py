@@ -1,6 +1,7 @@
-from polaris.benchmark.predictions import BenchmarkPredictions
 import numpy as np
 import pytest
+
+from polaris.benchmark.predictions import BenchmarkPredictions
 
 
 def assert_deep_equal(result, expected):
@@ -136,9 +137,17 @@ def test_benchmark_predictions_correct_keys():
 
 
 def test_benchmark_predictions_type_checking():
-    assert {"test": {"col1": ["strings", "also", "valid"]}} == BenchmarkPredictions(
+    v1 = {"test": {"col1": ["strings", "also", "valid"]}}
+    v2 = BenchmarkPredictions(
         predictions=["strings", "also", "valid"], target_cols=["col1"], test_set_names=["test"]
     ).predictions
+
+    assert list(v1.keys()) == ["test"]
+    assert list(v2.keys()) == ["test"]
+    assert list(v1["test"].keys()) == ["col1"]
+    assert list(v2["test"].keys()) == ["col1"]
+    assert isinstance(v2["test"]["col1"], np.ndarray)
+    assert np.array_equal(v2["test"]["col1"], np.array(["strings", "also", "valid"]))
 
 
 def test_invalid_benchmark_predictions_errors():

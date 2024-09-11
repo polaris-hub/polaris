@@ -23,3 +23,7 @@
         filters: ["!^_", "!fn", "!is_multitask", "!y_type"]
 
 ---
+
+::: polaris.benchmark.predictions.BenchmarkPredictions
+
+---

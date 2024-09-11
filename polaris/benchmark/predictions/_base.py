@@ -1,14 +1,28 @@
 import numpy as np
-from polaris.utils.types import IncomingPredictionsType, ListOrArrayType, PredictionsType
 from pydantic import (
     BaseModel,
     ConfigDict,
-    model_validator,
     field_serializer,
+    model_validator,
 )
+
+from polaris.utils.types import IncomingPredictionsType, ListOrArrayType, PredictionsType
 
 
 class BenchmarkPredictions(BaseModel):
+    """
+    Base model to represent predictions in the Polaris code base.
+
+    Guided by [Postel's Law](https://en.wikipedia.org/wiki/Robustness_principle),
+    this class normalized different formats to a single, internal representation.
+
+    Attributes:
+        predictions: The predictions for the benchmark.
+        target_cols: The target columns for the associated benchmark.
+        test_set_names: The names of the test sets for the associated benchmark.
+
+    """
+
     predictions: PredictionsType
     target_cols: list[str]
     test_set_names: list[str]
@@ -54,8 +68,10 @@ class BenchmarkPredictions(BaseModel):
     def _normalize_predictions(
         cls, vals: IncomingPredictionsType, target_cols: list[str], test_set_names: list[str]
     ) -> dict[str, dict[str, ListOrArrayType]]:
-        """Normalizes the predictions so they are always in the standard format,
-        {"test-set-name": {"target-name": np.ndarray}} regardless of how they are provided."""
+        """
+        Normalizes the predictions so they are always in the standard format,
+        {"test-set-name": {"target-name": np.ndarray}} regardless of how they are provided.
+        """
 
         if isinstance(vals, (list, np.ndarray)):
             if len(test_set_names) != 1:
@@ -109,16 +125,19 @@ class BenchmarkPredictions(BaseModel):
 
     @classmethod
     def _is_multi_task_single_test_set(cls, vals, target_cols) -> bool:
-        """Check if the given values are for a multiple-task benchmark with a single
+        """
+        Check if the given values are for a multiple-task benchmark with a single
         test set. This is inferred by comparing the target names with the keys of the
         given data. If all keys in the given data match the target column names, we
         assume they are target names (as opposed to test set names for a single-task,
-        multiple test set benchmark)."""
+        multiple test set benchmark).
+        """
         return isinstance(vals, dict) and all(k in target_cols for k in vals.keys())
 
     @classmethod
     def _is_single_task_multi_test_set(cls, vals, target_cols) -> bool:
-        """Check if the given values are for a single-task benchmark with multiple
+        """
+        Check if the given values are for a single-task benchmark with multiple
         test sets. This is inferred by comparing the target names with the keys of the
         given data. If there is a single target column but more than one dictionary entry,
         and none of the dictionary keys match the target column name, we assume the
@@ -133,6 +152,8 @@ class BenchmarkPredictions(BaseModel):
 
     @classmethod
     def _set_col_name(cls, vals, target_cols: list[str]):
+        if isinstance(vals, list):
+            vals = np.array(vals)
         if isinstance(vals, dict):
             return vals
         else:

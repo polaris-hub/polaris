@@ -15,6 +15,7 @@ from pydantic import (
 from pydantic.alias_generators import to_camel
 
 from polaris._artifact import BaseArtifactModel
+from polaris.benchmark.predictions import BenchmarkPredictions
 from polaris.evaluate import Metric
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
@@ -252,3 +253,18 @@ class CompetitionResults(EvaluationResult):
     @property
     def competition_artifact_id(self) -> str:
         return f"{self.competition_owner}/{sluggify(self.competition_name)}"
+
+
+class CompetitionPredictions(ResultsMetadata, BenchmarkPredictions):
+    """
+    Predictions for competition benchmarks.
+
+    This object is to be used as input to [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
+    It is used to ensure that the structure of the predictions are compatible with evaluation methods on the Polaris Hub.
+    In addition to the predictions, it contains additional meta-data to create a results object.
+
+    Attributes:
+        predictions: The predictions created for a given competition's test set(s).
+    """
+
+    access: Optional[AccessType] = "private"

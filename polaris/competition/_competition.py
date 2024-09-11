@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from polaris.benchmark import BenchmarkSpecification
-from polaris.benchmark.predictions import BenchmarkPredictions
+from polaris.evaluate._results import CompetitionPredictions
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.types import HubOwner
 
@@ -25,7 +25,7 @@ class CompetitionSpecification(BenchmarkSpecification):
 
     def evaluate(
         self,
-        predictions: BenchmarkPredictions,
+        predictions: CompetitionPredictions,
         settings: Optional[PolarisHubSettings] = None,
         cache_auth_token: bool = True,
         **kwargs: dict,
