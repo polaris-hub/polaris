@@ -18,7 +18,12 @@ from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
 from polaris.mixins._checksum import ChecksumMixin
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
-from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
+from polaris.utils.types import (
+    AccessType,
+    HubOwner,
+    ZarrConflictResolution,
+    TimeoutTypes,
+)
 
 # Constants
 _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
@@ -192,12 +197,17 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         return arr
 
-    def upload_to_hub(self, access: AccessType = "private", owner: Union[HubOwner, str, None] = None):
+    def upload_to_hub(
+        self,
+        access: Optional[AccessType] = "private",
+        owner: Union[HubOwner, str, None] = None,
+        timeout: TimeoutTypes = (10, 200),
+    ):
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
         """
-        self.client.upload_dataset(self, access=access, owner=owner)
+        self.client.upload_dataset(self, access=access, owner=owner, timeout=timeout)
 
     def to_json(
         self,

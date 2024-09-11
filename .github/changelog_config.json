@@ -22,6 +22,10 @@
             "key": "chore",
             "title": "## 🧹 Chores",
             "labels": ["chore"]
+        },
+        {
+            "title": "## 📦 Other",
+            "labels": []
         }
     ]
 }
