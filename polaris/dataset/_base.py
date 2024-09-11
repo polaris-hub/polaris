@@ -276,7 +276,8 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         """Uploads the dataset to the Polaris Hub."""
         raise NotImplementedError
 
-    @abc.abstractclassmethod
+    @classmethod
+    @abc.abstractmethod
     def from_json(cls, path: str):
         """
         Loads a dataset from a JSON file.
