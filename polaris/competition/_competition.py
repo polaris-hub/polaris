@@ -18,7 +18,7 @@ class CompetitionSpecification(BenchmarkSpecification):
         end_time: The time at which the competition ends and is no longer interactable.
     """
 
-    artifact_type = "competition"
+    _artifact_type = "competition"
 
     # Additional properties specific to Competitions
     owner: HubOwner

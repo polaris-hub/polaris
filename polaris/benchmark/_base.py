@@ -1,7 +1,7 @@
 import json
 from hashlib import md5
 from itertools import chain
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional, TypeAlias, Union
 
 import fsspec
 import numpy as np
@@ -36,7 +36,7 @@ from polaris.utils.types import (
     TaskType,
 )
 
-ColumnsType = Union[str, list[str]]
+ColumnsType: TypeAlias = str | list[str]
 
 
 class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
@@ -95,7 +95,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
     """
 
-    artifact_type = "benchmark"
+    _artifact_type = "benchmark"
 
     # Public attributes
     # Data
@@ -308,7 +308,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             hash_fn.update(m.name.encode("utf-8"))
 
         if not isinstance(self.split[1], dict):
-            split = self.split[0], {"test": self.split[1]}
+            split = self.split[0], {
+                "test": self.split[1]
+            }
         else:
             split = self.split
 
@@ -342,7 +344,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     def n_test_datapoints(self) -> dict[str, int]:
         """The size of (each of) the test set(s)."""
         if self.n_test_sets == 1:
-            return {"test": len(self.split[1])}
+            return {
+                "test": len(self.split[1])
+            }
         else:
             return {k: len(v) for k, v in self.split[1].items()}
 

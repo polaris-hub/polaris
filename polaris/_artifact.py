@@ -1,4 +1,3 @@
-import json
 from typing import ClassVar, Dict, Self
 
 import fsspec
@@ -40,7 +39,7 @@ class BaseArtifactModel(BaseModel):
         polaris_version: The version of the Polaris library that was used to create the artifact.
     """
 
-    artifact_type: ClassVar[str] = "baseArtifact"
+    _artifact_type: ClassVar[str]
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, arbitrary_types_allowed=True)
 
@@ -68,7 +67,7 @@ class BaseArtifactModel(BaseModel):
     @property
     def urn(self) -> str | None:
         if self.owner and self.slug:
-            return f"urn:polaris:{self.artifact_type}:{self.owner}:{self.slug}"
+            return self.urn_for(self.owner, self.slug)
         return None
 
     @field_validator("polaris_version")
@@ -115,3 +114,7 @@ class BaseArtifactModel(BaseModel):
         """
         with fsspec.open(path, "w") as f:
             f.write(self.model_dump_json())
+
+    @classmethod
+    def urn_for(cls, owner: str | HubOwner, name: str) -> str:
+        return f"urn:polaris:{cls._artifact_type}:{owner}:{slugify(name)}"

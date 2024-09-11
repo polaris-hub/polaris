@@ -208,7 +208,7 @@ class BenchmarkResults(EvaluationResult):
         Together with the benchmark name, this uniquely identifies the benchmark on the Hub.
     """
 
-    artifact_type = "result"
+    _artifact_type = "result"
 
     benchmark_name: SlugCompatibleStringType = Field(..., frozen=True)
     benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
@@ -250,7 +250,7 @@ class CompetitionResults(EvaluationResult):
             Together with the competition name, this uniquely identifies the competition on the Hub.
     """
 
-    artifact_type = "competitionResult"
+    _artifact_type = "competitionResult"
 
     competition_name: SlugCompatibleStringType = Field(..., frozen=True)
     competition_owner: Optional[HubOwner] = Field(None, frozen=True)

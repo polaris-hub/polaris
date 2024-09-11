@@ -1,7 +1,7 @@
 import abc
 import json
 from pathlib import Path
-from typing import Any, Dict, MutableMapping, Optional, Union
+from typing import Any, MutableMapping, Optional
 
 import numpy as np
 import zarr
@@ -67,18 +67,18 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
     # Public attributes
     # Data
-    default_adapters: Dict[str, Adapter] = Field(default_factory=dict)
-    zarr_root_path: Optional[str] = None
+    default_adapters: dict[str, Adapter] = Field(default_factory=dict)
+    zarr_root_path: str | None = None
 
     # Additional meta-data
     readme: str = ""
-    annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
-    source: Optional[HttpUrlString] = None
-    license: Optional[SupportedLicenseType] = None
-    curation_reference: Optional[HttpUrlString] = None
+    annotations: dict[str, ColumnAnnotation] = Field(default_factory=dict)
+    source: HttpUrlString | None = None
+    license: SupportedLicenseType | None = None
+    curation_reference: HttpUrlString | None = None
 
     # Config
-    cache_dir: Optional[Path] = None
+    cache_dir: str | None = None
 
     # Private attributes
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
@@ -273,7 +273,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upload_to_hub(self, access: AccessType = "private", owner: Union[HubOwner, str, None] = None):
+    def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
         """Uploads the dataset to the Polaris Hub."""
         raise NotImplementedError
 

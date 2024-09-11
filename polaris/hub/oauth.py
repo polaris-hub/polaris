@@ -2,13 +2,14 @@ import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from time import time
-from typing import Literal
+from typing import Any, Literal
 
 from authlib.integrations.httpx_client import OAuth2Auth
-from pydantic import BaseModel, HttpUrl, PositiveInt, model_validator
+from pydantic import BaseModel, PositiveInt, model_validator
 from typing_extensions import Self
 
 from polaris.utils.constants import DEFAULT_CACHE_DIR
+from polaris.utils.types import HttpUrlString
 
 
 class CachedTokenAuth(OAuth2Auth):
@@ -58,15 +59,14 @@ class ExternalCachedTokenAuth(CachedTokenAuth):
 
 
 class StoragePaths(BaseModel):
-    root: str
-    extension: Path | None
+    root: Path
+    extension: Path | None = None
 
 
 class StorageTokenData(BaseModel):
     key: str
     secret: str
-    endpoint: HttpUrl
-    bucket: str
+    endpoint: HttpUrlString
     paths: StoragePaths
 
 
@@ -75,14 +75,16 @@ class HubOAuth2Token(BaseModel):
     Model to parse and validate tokens obtained from the Polaris Hub.
     """
 
-    issued_token_type: Literal['urn:ietf:params:oauth:token-type:jwt']
-    token_type: Literal['Bearer']
-    expires_in: PositiveInt | None
-    expires_at: datetime | None
+    issued_token_type: Literal["urn:ietf:params:oauth:token-type:jwt"] = (
+        "urn:ietf:params:oauth:token-type:jwt"
+    )
+    token_type: Literal["Bearer"] = "Bearer"
+    expires_in: PositiveInt | None = None
+    expires_at: datetime | None = None
     access_token: str
     extra_data: None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def set_expires_at(self) -> Self:
         if self.expires_at is None and self.expires_in is not None:
             self.expires_at = datetime.fromtimestamp(time() + self.expires_in, UTC)
@@ -93,11 +95,11 @@ class HubOAuth2Token(BaseModel):
             return None
         # Small timedelta to consider token as expired before it actually expires
         expiration_threshold = self.expires_at - timedelta(seconds=leeway)
-        return datetime.now(UTC) > expiration_threshold
+        return datetime.now(UTC) >= expiration_threshold
 
-    def __getitem__(self, item):
+    def __getitem__(self, item) -> Any | None:
         """
-        Compatibility with authlib's expectations that this is a dict
+        Compatibility with authlib's expectation that this is a dict
         """
         return getattr(self, item)
 
@@ -106,5 +108,6 @@ class HubStorageOAuth2Token(HubOAuth2Token):
     """
     Specialized model for storage tokens.
     """
-    token_type: Literal['Storage']
+
+    token_type: Literal["Storage"] = "Storage"
     extra_data: StorageTokenData

@@ -33,6 +33,10 @@ class InvalidZarrChecksum(Exception):
 
 
 class PolarisHubError(Exception):
+    BOLD = "\033[1m"
+    YELLOW = "\033[93m"
+    _END_CODE = "\033[0m"
+
     def __init__(self, message: str = "", response: Response | None = None):
         prefix = "The request to the Polaris Hub failed."
 
@@ -41,8 +45,15 @@ class PolarisHubError(Exception):
 
         super().__init__("\n".join([prefix, message]))
 
+    def format(self, text: str, codes: str | list[str]):
+        if not isinstance(codes, list):
+            codes = [codes]
+
+        return "".join(codes) + text + self._END_CODE
+
 
 class PolarisUnauthorizedError(PolarisHubError):
+
     def __init__(self, response: Response | None = None):
         message = (
             "You are not logged in to Polaris or your login has expired. "
@@ -52,6 +63,7 @@ class PolarisUnauthorizedError(PolarisHubError):
 
 
 class PolarisCreateArtifactError(PolarisHubError):
+
     def __init__(self, response: Response | None = None):
         message = (
             "Note: If you can confirm that you are authorized to perform this action, "
@@ -61,6 +73,7 @@ class PolarisCreateArtifactError(PolarisHubError):
 
 
 class PolarisRetrieveArtifactError(PolarisHubError):
+
     def __init__(self, response: Response | None = None):
         message = (
             "Note: If this artifact exists and you can confirm that you are authorized to retrieve it, "

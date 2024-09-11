@@ -1,9 +1,8 @@
 import json
 import uuid
 from hashlib import md5
-from os import PathLike
 from pathlib import Path
-from typing import Any, ClassVar, Dict, List, Literal, MutableMapping
+from typing import Any, ClassVar, List, Literal, MutableMapping
 
 import fsspec
 import numpy as np
@@ -25,7 +24,6 @@ from polaris.dataset import ColumnAnnotation
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset, _CACHE_SUBDIR
 from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
-from polaris.hub.client import PolarisHubClient
 from polaris.mixins._checksum import ChecksumMixin
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
@@ -47,7 +45,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
     """First version of a Polaris Dataset.
 
     Stores datapoints in a Pandas DataFrame and implements _pointer columns_ to support the storage of XXL data
-    outside of the DataFrame in a Zarr archive.
+    outside the DataFrame in a Zarr archive.
 
     Info: Pointer columns
         For complex data, such as images, we support storing the content in external blobs of data.
@@ -65,12 +63,11 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
     artifact_type = "dataset"
     version: ClassVar[Literal[1]] = 1
+    _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
 
     # Public attributes
     # Data
     table: pd.DataFrame
-
-    default_adapters: Dict[str, Adapter] = Field(default_factory=dict)
     zarr_root_path: str | None = None
 
     # Additional meta-data
@@ -87,21 +84,29 @@ class DatasetV1(BaseDataset, ChecksumMixin):
     _zarr_md5sum_manifest: List[ZarrFileChecksum] = PrivateAttr(default_factory=list)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
     _warn_about_remote_zarr: bool = PrivateAttr(True)
-    cache_dir: Path | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.
-    verify_checksum_strategy: ChecksumStrategy = PrivateAttr("verify_unless_zarr")
+    # TODO: Decide if we want to use Path or a generic str that could be a fsspec path
+    _cache_dir: Path | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.
+    _verify_checksum_strategy: ChecksumStrategy = PrivateAttr("verify_unless_zarr")
 
     @field_validator("table", mode="before")
-    def _validate_table(cls, v):
+    @classmethod
+    def _load_table(cls, v):
         """
-        If the table is not a dataframe yet, assume it's a path and try load it.
-        We also make sure that the pandas index is contiguous and starts at 0, and
-        that all columns are named and unique.
+        Load from path if not a dataframe
         """
-        # Load from path if not a dataframe
-        if not isinstance(v, pd.DataFrame):
+        if isinstance(v, str):
             if not dmfs.is_file(v) or dmfs.get_extension(v) not in _SUPPORTED_TABLE_EXTENSIONS:
                 raise InvalidDatasetError(f"{v} is not a valid DataFrame or .parquet path.")
             v = pd.read_parquet(v)
+        return v
+
+    @field_validator("table")
+    @classmethod
+    def _validate_table(cls, v):
+        """
+        Make sure that the pandas index is contiguous and starts at 0, and
+        that all columns are named and unique.
+        """
         # Check if there are any duplicate columns
         if any(v.columns.duplicated()):
             raise InvalidDatasetError("The table contains duplicate columns")
@@ -126,6 +131,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         if self.cache_dir is None:
             dataset_id = self._md5sum if self.has_md5sum else str(uuid.uuid4())
             self.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
+        # TODO: Use fsspec here
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         return self
@@ -136,27 +142,9 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
 
     @field_serializer("default_adapters")
-    def _serialize_adapters(self, value: List[Adapter]):
+    def _serialize_adapters(self, value: dict[str, Adapter]) -> dict[str, str]:
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
-
-    @field_serializer("cache_dir")
-    def _serialize_cache_dir(value):
-        """Serialize the cache_dir"""
-        return str(value)
-
-    @classmethod
-    def load_from_hub(
-        cls, owner: HubOwner, name: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr"
-    ) -> Self:
-        with PolarisHubClient() as client:
-            return client.get_dataset(owner, name, verify_checksum=verify_checksum)
-
-    @classmethod
-    def load_from_file(
-        cls, path: str | PathLike, verify_checksum: ChecksumStrategy = "verify_unless_zarr"
-    ) -> Self:
-        pass
 
     def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
         """
@@ -225,9 +213,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         """Return the dtype for each of the columns for the dataset"""
         return {col: self.table[col].dtype for col in self.columns}
 
-    def get_data(
-        self, row: str | int, col: str, adapters: dict[str, Adapter] | None = None
-    ) -> np.ndarray | Any:
+    def get_data(self, row: str | int, col: str, adapters: dict[str, Adapter] | None = None) -> np.ndarray | Any:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
         than just indexing the `table` attribute. This method provides an end-point for seamlessly
         accessing the underlying data.
@@ -269,7 +255,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         return arr
 
-    def upload_to_hub(self, owner: HubOwner | str, access: AccessType = "private"):
+    def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
@@ -290,7 +276,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
     def to_json(
         self,
-        destination: str,
+        destination: str | Path,
         if_exists: ZarrConflictResolution = "replace",
         load_zarr_from_new_location: bool = False,
     ) -> str:

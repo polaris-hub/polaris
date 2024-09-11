@@ -1,5 +1,4 @@
 import webbrowser
-from contextlib import contextmanager
 from typing import Literal, Optional, TypeAlias
 
 from authlib.common.security import generate_token
@@ -9,7 +8,7 @@ from authlib.oauth2 import OAuth2Error, TokenAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
 from loguru import logger
 
-from polaris.hub.oauth import ExternalCachedTokenAuth, StorageCachedTokenAuth
+from polaris.hub.oauth import ExternalCachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
 
@@ -153,71 +152,3 @@ class ExternalAuthClient(OAuth2Client):
         self.fetch_token(code=authorization_code, grant_type="authorization_code")
 
         logger.success(f"Successfully authenticated to the Polaris Hub as `{self.user_info['email']}`! 🎉")
-
-
-class StorageAuthClient(OAuth2Client):
-    def __init__(
-        self,
-        settings: PolarisHubSettings,
-        cache_auth_token: bool = True,
-        **kwargs: dict,
-    ):
-        """
-        Args:
-            settings: A `PolarisHubSettings` instance.
-            cache_auth_token: Whether to cache the auth token to a file.
-            **kwargs: Additional keyword arguments passed to the authlib `OAuth2Client` constructor.
-        """
-
-        # We cache the auth token by default, but allow the user to disable this.
-        self.token_auth_class = StorageCachedTokenAuth if cache_auth_token else TokenAuth
-
-        self.settings = settings
-
-        super().__init__(
-            # OAuth2Client
-            token_endpoint=self.settings.hub_token_url,
-            token_endpoint_auth_method="none",
-            grant_type="urn:ietf:params:oauth:grant-type:token-exchange",
-            # httpx.Client
-            timeout=self.settings.default_timeout,
-            cert=self.settings.ca_bundle,
-            # Extra
-            **kwargs,
-        )
-
-    # def _prepare_token_endpoint_body(self, body, grant_type, **kwargs):
-    #     """
-    #     Override to support required fields for the token exchange grant type.
-    #     See https://datatracker.ietf.org/doc/html/rfc8693#name-request
-    #     """
-    #
-    #     if grant_type == "urn:ietf:params:oauth:grant-type:token-exchange":
-    #         kwargs.update(
-    #             {
-    #                 "subject_token": self.token,
-    #                 "subject_token_type": "urn:ietf:params:oauth:token-type:jwt",
-    #                 "requested_token_type": "urn:ietf:params:oauth:token-type:jwt",
-    #             }
-    #         )
-    #
-    #     return super()._prepare_token_endpoint_body(body, grant_type, **kwargs)
-
-    def fetch_token_for_resource(self, scope: Scope, resource: str):
-        try:
-            return super().fetch_token(
-                subject_token=self.token,  # TODO: Use the hub token instead of the storage token
-                subject_token_type="urn:ietf:params:oauth:token-type:jwt",
-                requested_token_type="urn:ietf:params:oauth:token-type:jwt",
-                scope=scope,
-                resource=resource,
-            )
-        except OAuth2Error as error:
-            raise PolarisHubError(
-                message=f"Could not obtain a token to access the storage backend. Error was: {error.error} - {error.description}"
-            ) from error
-
-
-    @contextmanager
-    def storage_session(self, scope: Scope, resource: str):
-        pass

@@ -23,13 +23,13 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.competition import CompetitionSpecification
-from polaris.dataset import CompetitionDataset, DatasetV1
-from polaris.evaluate import BenchmarkResults, CompetitionResults
-from polaris.evaluate._results import CompetitionPredictions
-from polaris.hub.external_client import ExternalAuthClient, StorageAuthClient
+from polaris.dataset import CompetitionDataset, Dataset, DatasetV1
+from polaris.evaluate import BenchmarkResults, CompetitionPredictions, CompetitionResults
+from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
+from polaris.hub.storage import StorageSession
 from polaris.utils.context import ProgressIndicator, tmp_attribute_change
 from polaris.utils.errors import (
     InvalidDatasetError,
@@ -38,7 +38,7 @@ from polaris.utils.errors import (
     PolarisRetrieveArtifactError,
     PolarisUnauthorizedError,
 )
-from polaris.utils.misc import should_verify_checksum, slugify
+from polaris.utils.misc import should_verify_checksum
 from polaris.utils.types import (
     AccessType,
     ArtifactSubtype,
@@ -123,11 +123,6 @@ class PolarisHubClient(OAuth2Client):
         # We use an external client to get an auth token that can be exchanged for a Polaris Hub token
         self.external_client = ExternalAuthClient(
             settings=self.settings, cache_auth_token=cache_auth_token, **kwargs
-        )
-
-        # We use another client to manage tokens for the storage backend
-        self.storage_auth_client = StorageAuthClient(
-            self.settings, cache_auth_token=cache_auth_token, **kwargs
         )
 
     def _prepare_token_endpoint_body(self, body, grant_type, **kwargs):
@@ -287,7 +282,10 @@ class PolarisHubClient(OAuth2Client):
             error_msg="Failed to fetch datasets.",
         ):
             response = self._base_request_to_hub(
-                url="/v1/dataset", method="GET", params={"limit": limit, "offset": offset}
+                url="/v1/dataset", method="GET", params={
+                    "limit": limit,
+                    "offset": offset
+                }
             )
             dataset_list = [bm["artifactId"] for bm in response["data"]]
 
@@ -314,7 +312,7 @@ class PolarisHubClient(OAuth2Client):
 
     def _get_dataset(
         self,
-        owner: Union[str, HubOwner],
+        owner: str | HubOwner,
         name: str,
         artifact_type: ArtifactSubtype,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
@@ -342,47 +340,23 @@ class PolarisHubClient(OAuth2Client):
             )
             response = self._base_request_to_hub(url=url, method="GET")
 
-            ######
-            # Start: Get table content
-            #####
-            storage_response = self.get(response["tableContent"]["url"])
-
-            # This should be a 307 redirect with the signed URL
-            if storage_response.status_code != 307:
-                try:
-                    storage_response.raise_for_status()
-                except HTTPStatusError as error:
-                    raise PolarisHubError(
-                        message="Could not get signed URL from Polaris Hub.", response=storage_response
-                    ) from error
-
-            storage_response = storage_response.json()
-            url = storage_response["url"]
-            headers = storage_response["headers"]
-
-            response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
-
-            # TODO: New implementation
-
-            storage_token = self.storage_auth_client.fetch_token_for_resource(
-                "read", f"urn:polaris:dataset:{owner}:{slugify(name)}"
-            )
-
-            ######
-            # End: Get table content
-            #####
+            # Load the dataset table and optional Zarr archive
+            with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
+                # TODO: Move this into a repository class, to better encapsulate the storage logic
+                table = pd.read_parquet(storage.paths.root, filesystem=storage.fs)
+                zarr_root_path = storage.paths.extension
 
             if artifact_type == ArtifactSubtype.COMPETITION:
-                dataset = CompetitionDataset(**response)
-                md5Sum = response["maskedMd5Sum"]
+                dataset = CompetitionDataset(table=table, zarr_root_path=zarr_root_path, **response)
+                md5sum = response["maskedMd5Sum"]
             else:
-                dataset = DatasetV1(**response)
-                md5Sum = response["md5Sum"]
+                dataset = DatasetV1(table=table, zarr_root_path=zarr_root_path, **response)
+                md5sum = response["md5Sum"]
 
             if should_verify_checksum(verify_checksum, dataset):
-                dataset.verify_checksum(md5Sum)
+                dataset.verify_checksum(md5sum)
             else:
-                dataset.md5sum = md5Sum
+                dataset.md5sum = md5sum
 
             return dataset
 
@@ -441,7 +415,10 @@ class PolarisHubClient(OAuth2Client):
         ):
             # TODO (cwognum): What to do with pagination, i.e. limit and offset?
             response = self._base_request_to_hub(
-                url="/v1/benchmark", method="GET", params={"limit": limit, "offset": offset}
+                url="/v1/benchmark", method="GET", params={
+                    "limit": limit,
+                    "offset": offset
+                }
             )
             benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
 
@@ -535,7 +512,9 @@ class PolarisHubClient(OAuth2Client):
 
             # Make a request to the hub
             response = self._base_request_to_hub(
-                url="/v1/result", method="POST", json={"access": access, **result_json}
+                url="/v1/result", method="POST", json={
+                    "access": access, **result_json
+                }
             )
 
             # Inform the user about where to find their newly created artifact.
@@ -667,7 +646,9 @@ class PolarisHubClient(OAuth2Client):
                     "Content-type": "application/vnd.apache.parquet",
                 },
                 timeout=timeout,
-                json={"artifactType": artifact_type},
+                json={
+                    "artifactType": artifact_type
+                },
             )
 
             if hub_response.status_code == 307:
@@ -810,7 +791,7 @@ class PolarisHubClient(OAuth2Client):
             return response
 
     def get_competition(
-        self, owner: Union[str, HubOwner], name: str, verify_checksum: bool = True
+        self, owner: Union[str, HubOwner], name: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> CompetitionSpecification:
         """Load a competition from the Polaris Hub.
 
@@ -855,7 +836,10 @@ class PolarisHubClient(OAuth2Client):
         ):
             # TODO (cwognum): What to do with pagination, i.e. limit and offset?
             response = self._base_request_to_hub(
-                url="/v2/competition", method="GET", params={"limit": limit, "offset": offset}
+                url="/v2/competition", method="GET", params={
+                    "limit": limit,
+                    "offset": offset
+                }
             )
             competitions_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
             return competitions_list
@@ -880,7 +864,7 @@ class PolarisHubClient(OAuth2Client):
             success_msg="Evaluated competition predictions.",
             error_msg="Failed to evaluate competition predictions.",
         ) as progress_indicator:
-            competition.owner = HubOwner(**competition.owner)
+            competition.owner = HubOwner.normalize(competition.owner)
 
             response = self._base_request_to_hub(
                 url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",
