@@ -2,7 +2,7 @@ from typing import Callable, List, Literal, Optional, Sequence, Union
 
 import numpy as np
 
-from polaris.dataset import Dataset
+from polaris.dataset import DatasetV1
 from polaris.dataset._adapters import Adapter
 from polaris.utils.errors import TestAccessError
 from polaris.utils.types import DatapointType
@@ -61,12 +61,12 @@ class Subset:
 
     def __init__(
         self,
-        dataset: Dataset,
-        indices: List[Union[int, Sequence[int]]],
-        input_cols: Union[List[str], str],
-        target_cols: Union[List[str], str],
-        adapters: Optional[List[Adapter]] = None,
-        featurization_fn: Optional[Callable] = None,
+        dataset: DatasetV1,
+        indices: List[int | Sequence[int]],
+        input_cols: List[str] | str,
+        target_cols: List[str] | str,
+        adapters: dict[str, Adapter] | None = None,
+        featurization_fn: Callable | None = None,
         hide_targets: bool = False,
     ):
         self.dataset = dataset
@@ -77,10 +77,13 @@ class Subset:
         self._adapters = adapters
         self._featurization_fn = featurization_fn
 
-        # NOTE (cwognum): Note to future self. As we're starting to think about competition-style benchmarks,
-        #  we will likely split up datasets. In that case, this default iloc_to_loc mapping won't work.
-        #  By that time, we should probably be able to overwrite this mapping.
-        self._iloc_to_loc = self.dataset.table.index
+        # Storing all indices in memory can be memory consuming for XXL datasets.
+        # This is why we constrain the iloc to loc mapping to be the identity function for Dataset V2.
+        match self.dataset:
+            case DatasetV1():
+                self._iloc_to_loc = lambda idx: self.dataset.rows[idx]
+            case _:
+                self._iloc_to_loc = lambda idx: idx
 
         # For the iterator implementation
         self._pointer = 0
@@ -167,9 +170,9 @@ class Subset:
         # We reset the index of the Pandas Table during Dataset class validation.
         # We can thus always assume that .iloc[idx] is the same as .loc[idx].
         if data_type == "x":
-            ret = [self._get_single_input(self._iloc_to_loc[idx]) for idx in self.indices]
+            ret = [self._get_single_input(self._iloc_to_loc(idx)) for idx in self.indices]
         else:
-            ret = [self._get_single_output(self._iloc_to_loc[idx]) for idx in self.indices]
+            ret = [self._get_single_output(self._iloc_to_loc(idx)) for idx in self.indices]
 
         if not ((self.is_multi_input and data_type == "x") or (self.is_multi_task and data_type == "y")):
             # If the target format is not a dict, we can just create the array directly.
@@ -202,9 +205,10 @@ class Subset:
         """
 
         idx = self.indices[item]
+        idx = self._iloc_to_loc(idx)
 
         # Load the input modalities
-        ins = self._get_single_input(self._iloc_to_loc[idx])
+        ins = self._get_single_input(idx)
 
         if self._hide_targets:
             # If we are not allowed to access the targets, we return the inputs only.
@@ -212,7 +216,7 @@ class Subset:
             return ins
 
         # Retrieve the targets
-        outs = self._get_single_output(self._iloc_to_loc[idx])
+        outs = self._get_single_output(idx)
         return ins, outs
 
     def __iter__(self):

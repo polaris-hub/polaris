@@ -1,6 +1,6 @@
-from itertools import chain
 import json
 from hashlib import md5
+from itertools import chain
 from typing import Any, Callable, Optional, Union
 
 import fsspec
@@ -18,11 +18,11 @@ from pydantic import (
 from sklearn.utils.multiclass import type_of_target
 
 from polaris._artifact import BaseArtifactModel
-from polaris.mixins import ChecksumMixin
-from polaris.dataset import Dataset, Subset, CompetitionDataset
+from polaris.dataset import CompetitionDataset, DatasetV1, Subset
 from polaris.evaluate import BenchmarkResults, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
+from polaris.mixins import ChecksumMixin
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.misc import listit
@@ -96,7 +96,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     # Public attributes
     # Data
-    dataset: Union[Dataset, CompetitionDataset, str, dict[str, Any]]
+    dataset: Union[DatasetV1, CompetitionDataset, str, dict[str, Any]]
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
@@ -111,12 +111,11 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     def _validate_dataset(cls, v):
         """
         Allows either passing a Dataset object or the kwargs to create one
-        TODO (cwognum): Allow multiple datasets to be used as part of a benchmark
         """
         if isinstance(v, dict):
-            v = Dataset(**v)
+            v = DatasetV1(**v)
         elif isinstance(v, str):
-            v = Dataset.from_json(v)
+            v = DatasetV1.from_json(v)
         return v
 
     @field_validator("target_cols", "input_cols")
@@ -162,7 +161,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return v
 
     @model_validator(mode="after")
-    def _validate_split(cls, m: "BenchmarkSpecification"):
+    def _validate_split(self):
         """
         Verifies that:
           1) There are no empty test partitions
@@ -171,7 +170,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
           4) There is no overlap between the train and test set
           5) No row exists in the test set where all labels are missing/empty
         """
-        split = m.split
+        split = self.split
 
         # Train partition can be empty (zero-shot)
         # Test partitions cannot be empty
@@ -214,13 +213,13 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             raise InvalidBenchmarkError("The test set contains duplicate indices")
 
         # All indices are valid given the dataset
-        dataset = m.dataset
+        dataset = self.dataset
         if dataset is not None:
             max_i = len(dataset)
             if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
                 raise InvalidBenchmarkError("The predefined split contains invalid indices")
 
-        return m
+        return self
 
     @field_validator("target_types")
     def _validate_target_types(cls, v, info: ValidationInfo):
@@ -234,11 +233,20 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         for target in target_cols:
             if target not in v:
-                val = dataset[:, target]
+                # Skip inferring the target type for pointer columns.
+                # This would be complex to implement properly.
+                # For these columns, dataset creators can still manually specify the target type.
+                anno = dataset.annotations.get(target)
+                if anno is not None and anno.is_pointer:
+                    v[target] = None
+                    continue
+
+                val = dataset.table.loc[:, target]
 
                 # Non numeric columns can be targets (e.g. prediction molecular reactions),
                 # but in that case we currently don't infer the target type.
                 if not np.issubdtype(val.dtype, np.number):
+                    v[target] = None
                     continue
 
                 # remove the nans for mutiple task dataset when the table is sparse
@@ -254,15 +262,14 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return v
 
     @model_validator(mode="after")
-    @classmethod
-    def _validate_model(cls, m: "BenchmarkSpecification"):
+    def _validate_model(self):
         """
         Sets a default metric if missing.
         """
         # Set a default main metric if not set yet
-        if m.main_metric is None:
-            m.main_metric = m.metrics[0]
-        return m
+        if self.main_metric is None:
+            self.main_metric = self.metrics[0]
+        return self
 
     @field_serializer("metrics", "main_metric")
     def _serialize_metrics(self, v):
@@ -342,9 +349,10 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """The number of classes for each of the target columns."""
         n_classes = {}
         for target in self.target_cols:
-            target_type = self.target_types[target]
+            target_type = self.target_types.get(target)
             if target_type is None or target_type == TargetType.REGRESSION:
                 continue
+            # TODO: Don't use table attribute
             n_classes[target] = self.dataset.table.loc[:, target].nunique()
         return n_classes
 

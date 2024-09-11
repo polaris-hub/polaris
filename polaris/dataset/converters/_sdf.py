@@ -5,7 +5,7 @@ import datamol as dm
 import pandas as pd
 from rdkit import Chem
 
-from polaris.dataset import ColumnAnnotation, Modality, KnownContentType
+from polaris.dataset import ColumnAnnotation, Modality
 from polaris.dataset._adapters import Adapter
 from polaris.dataset.converters._base import Converter, FactoryProduct
 
@@ -149,7 +149,7 @@ class SDFConverter(Converter):
         annotations = {self.mol_column: ColumnAnnotation(is_pointer=True, modality=Modality.MOLECULE_3D)}
         if self.smiles_column is not None:
             annotations[self.smiles_column] = ColumnAnnotation(
-                modality=Modality.MOLECULE, content_type=KnownContentType.SMILES
+                modality=Modality.MOLECULE, content_type="chemical/x-smiles"
             )
 
         # Return the dataframe and the annotations

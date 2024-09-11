@@ -125,6 +125,19 @@ ChecksumStrategy: TypeAlias = Literal["verify", "verify_unless_zarr", "ignore"]
 Type to specify which action to take to verify the data integrity of an artifact through a checksum.
 """
 
+RowIndex: TypeAlias = int | str
+ColumnIndex: TypeAlias = str
+DatasetIndex: TypeAlias = RowIndex | tuple[RowIndex, ColumnIndex]
+"""
+To index a dataset using square brackets, we have a few options:
+
+- A single row, e.g. dataset[0]
+- Specify a specific value, e.g. dataset[0, "col1"]
+
+There are more exciting options we could implement, such as slicing, 
+but this gets complex.
+"""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub

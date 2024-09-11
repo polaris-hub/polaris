@@ -7,7 +7,7 @@ import pandas as pd
 import zarr
 from fastpdb import struc
 
-from polaris.dataset import ColumnAnnotation, Modality, KnownContentType
+from polaris.dataset import ColumnAnnotation, Modality
 from polaris.dataset._adapters import Adapter
 from polaris.dataset.converters._base import Converter, FactoryProduct
 
@@ -190,7 +190,7 @@ class PDBConverter(Converter):
         # Set the annotations
         annotations = {
             self.pdb_column: ColumnAnnotation(
-                is_pointer=True, modality=Modality.PROTEIN_3D, content_type=KnownContentType.PDB
+                is_pointer=True, modality=Modality.PROTEIN_3D, content_type="chemical/x-pdb"
             )
         }
 
