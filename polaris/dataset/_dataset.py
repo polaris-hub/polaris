@@ -2,7 +2,7 @@ import json
 import uuid
 from hashlib import md5
 from pathlib import Path
-from typing import Any, ClassVar, List, Literal, Union
+from typing import Any, ClassVar, List, Literal, Optional, Union
 
 import fsspec
 import numpy as np
@@ -21,8 +21,8 @@ from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
     HubOwner,
-    ZarrConflictResolution,
     TimeoutTypes,
+    ZarrConflictResolution,
 )
 
 # Constants
