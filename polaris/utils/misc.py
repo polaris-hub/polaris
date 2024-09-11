@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 from polaris.utils.types import ChecksumStrategy, SlugCompatibleStringType
 
 if TYPE_CHECKING:
-    from polaris.dataset import Dataset
+    from polaris.dataset import DatasetV1
 
 
 def listit(t: Any):
@@ -21,7 +21,7 @@ def sluggify(sluggable: SlugCompatibleStringType):
     return sluggable.lower().replace("_", "-")
 
 
-def should_verify_checksum(strategy: ChecksumStrategy, dataset: "Dataset") -> bool:
+def should_verify_checksum(strategy: ChecksumStrategy, dataset: "DatasetV1") -> bool:
     """
     Determines whether a checksum should be verified.
     """

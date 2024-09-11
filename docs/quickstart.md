@@ -82,8 +82,8 @@ dataset.get_data(
 # Or, similarly:
 dataset[dataset.rows[0], dataset.columns[0]]
 
-# Get the first 10 rows in memory
-dataset[:10]
+# Get an entire row
+dataset[0]
 ```
 
 ## Core concepts

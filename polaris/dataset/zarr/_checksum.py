@@ -52,7 +52,7 @@ from polaris.utils.errors import InvalidZarrChecksum
 ZARR_DIGEST_PATTERN = "([0-9a-f]{32})-([0-9]+)-([0-9]+)"
 
 
-def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, List["ZarrFileChecksum"]]:
+def compute_zarr_checksum(zarr_root_path: str) -> Tuple["_ZarrDirectoryDigest", List["ZarrFileChecksum"]]:
     r"""
     Implements an algorithm to compute the Zarr checksum.
 
@@ -145,7 +145,7 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple[str, List["ZarrFileCheck
         zarr_md5sum_manifest.append(ZarrFileChecksum(path=str(relpath), md5sum=digest, size=size))
 
     # Compute digest
-    return tree.process().digest, zarr_md5sum_manifest
+    return tree.process(), zarr_md5sum_manifest
 
 
 class ZarrFileChecksum(BaseModel):

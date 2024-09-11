@@ -1,8 +1,9 @@
-from polaris.dataset._column import ColumnAnnotation, Modality, KnownContentType
-from polaris.dataset._dataset import Dataset
+from polaris.dataset._column import ColumnAnnotation, KnownContentType, Modality
+from polaris.dataset._competition_dataset import CompetitionDataset
+from polaris.dataset._dataset import DatasetV1
+from polaris.dataset._dataset import DatasetV1 as Dataset
 from polaris.dataset._factory import DatasetFactory, create_dataset_from_file, create_dataset_from_files
 from polaris.dataset._subset import Subset
-from polaris.dataset._competition_dataset import CompetitionDataset
 
 __all__ = [
     "ColumnAnnotation",
@@ -14,4 +15,5 @@ __all__ = [
     "DatasetFactory",
     "create_dataset_from_file",
     "create_dataset_from_files",
+    "DatasetV1",
 ]

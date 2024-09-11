@@ -2,6 +2,12 @@
     options:
         filters: ["!^_"]
 
+--- 
+
+::: polaris.dataset._base.BaseDataset
+    options:
+        filters: ["!^_"]
+
 ---
 
 ::: polaris.dataset.ColumnAnnotation

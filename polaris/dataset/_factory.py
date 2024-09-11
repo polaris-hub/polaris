@@ -6,12 +6,12 @@ import pandas as pd
 import zarr
 from loguru import logger
 
-from polaris.dataset import ColumnAnnotation, Dataset
+from polaris.dataset import ColumnAnnotation, DatasetV1
 from polaris.dataset._adapters import Adapter
 from polaris.dataset.converters import Converter, PDBConverter, SDFConverter, ZarrConverter
 
 
-def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) -> Dataset:
+def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) -> DatasetV1:
     """
     This function is a convenience function to create a dataset from a file.
 
@@ -29,7 +29,7 @@ def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) ->
 
 def create_dataset_from_files(
     paths: List[str], zarr_root_path: Optional[str] = None, axis: Literal[0, 1, "index", "columns"] = 0
-) -> Dataset:
+) -> DatasetV1:
     """
     This function is a convenience function to create a dataset from multiple files.
 
@@ -265,10 +265,10 @@ class DatasetFactory:
             for path in paths:
                 self.add_from_file(path)
 
-    def build(self) -> Dataset:
+    def build(self) -> DatasetV1:
         """Returns a Dataset based on the current state of the factory."""
         zarr.consolidate_metadata(self.zarr_root.store)
-        return Dataset(
+        return DatasetV1(
             table=self._table,
             annotations=self._annotations,
             default_adapters=self._adapters,
