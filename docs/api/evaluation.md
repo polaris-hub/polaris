@@ -1,3 +1,7 @@
+::: polaris.benchmark.predictions.BenchmarkPredictions
+
+---
+
 ::: polaris.evaluate.ResultsMetadata
     options:
         filters: ["!^_"]
@@ -21,13 +25,5 @@
 ::: polaris.evaluate.Metric
     options: 
         filters: ["!^_", "!fn", "!is_multitask", "!y_type"]
-
----
-
-::: polaris.benchmark.predictions.BenchmarkPredictions
-
----
-
-::: polaris.evaluate.CompetitionPredictions
 
 ---
