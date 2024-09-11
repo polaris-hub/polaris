@@ -27,3 +27,7 @@
 ::: polaris.benchmark.predictions.BenchmarkPredictions
 
 ---
+
+::: polaris.evaluate.CompetitionPredictions
+
+---

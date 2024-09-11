@@ -264,7 +264,7 @@ class CompetitionPredictions(ResultsMetadata, BenchmarkPredictions):
     In addition to the predictions, it contains additional meta-data to create a results object.
 
     Attributes:
-        predictions: The predictions created for a given competition's test set(s).
+        access: The access the returned results should have
     """
 
     access: Optional[AccessType] = "private"
