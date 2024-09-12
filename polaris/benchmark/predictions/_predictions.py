@@ -16,7 +16,7 @@ class BenchmarkPredictions(BaseModel):
     Base model to represent predictions in the Polaris code base.
 
     Guided by [Postel's Law](https://en.wikipedia.org/wiki/Robustness_principle),
-    this class normalized different formats to a single, internal representation.
+    this class normalizes different formats to a single, internal representation.
 
     Attributes:
         predictions: The predictions for the benchmark.
