@@ -5,14 +5,40 @@ import pandas as pd
 from numpy.typing import NDArray
 
 from polaris.evaluate import BenchmarkPredictions, BenchmarkResults, Metric, ResultsType
-from polaris.utils.types import IncomingPredictionsType, PredictionsType
+from polaris.utils.types import IncomingPredictionsType
 
 
-def safe_mask(input_values: PredictionsType, test_label: str, target_label: str, mask: NDArray[np.bool_]):
-    if input_values is None or input_values.predictions is None:
+def _optionally_get(preds: BenchmarkPredictions | None, keys: list[str] | str) -> dict | None:
+    """
+    Returns the value in a nested dictionary associated with a sequence of keys
+    if it exists, otherwise return None
+    """
+    if preds is None:
         return None
-    else:
-        return input_values.predictions[test_label][target_label][mask]
+
+    if not isinstance(keys, list):
+        keys = [keys]
+
+    d = preds.predictions
+    for k in keys:
+        d = d.get(k)
+        if d is None:
+            return None
+    return d
+
+
+def _safe_mask(
+    preds: BenchmarkPredictions | None,
+    mask: NDArray[np.bool_],
+    keys: list[str],
+) -> NDArray[np.float64] | None:
+    """
+    Mask a prediction array if it exists in a nested array. Otherwise return None
+    """
+    v = _optionally_get(preds, keys)
+    if v is None:
+        return None
+    return v[mask]
 
 
 def evaluate_benchmark(
@@ -23,6 +49,12 @@ def evaluate_benchmark(
     y_pred: Optional[IncomingPredictionsType] = None,
     y_prob: Optional[IncomingPredictionsType] = None,
 ):
+    """
+    Utility function that contains the evaluation logic for a benchmark
+    """
+
+    # Normalize the ground truth and predictions to a consistent, internal representation.
+    # Format is a two-level dictionary: {test_set_label: {target_label: np.ndarray}}
     y_true = BenchmarkPredictions(
         predictions=y_true, target_labels=target_cols, test_set_labels=test_set_labels
     )
@@ -35,11 +67,7 @@ def evaluate_benchmark(
             predictions=y_prob, target_labels=target_cols, test_set_labels=test_set_labels
         )
 
-    if y_pred and set(y_true.predictions.keys()) != set(y_pred.predictions.keys()):
-        raise KeyError(
-            f"Missing keys for at least one of the test sets. Expecting: {sorted(y_true.predictions.keys())}"
-        )
-
+    # Compute the results
     # Results are saved in a tabular format. For more info, see the BenchmarkResults docs.
     scores: ResultsType = pd.DataFrame(columns=BenchmarkResults.RESULTS_COLUMNS)
 
@@ -51,21 +79,11 @@ def evaluate_benchmark(
                 # Multi-task but with a metric across targets
                 score = metric(
                     y_true=y_true_test,
-                    y_pred=y_pred.predictions.get(test_label) if y_pred is not None else None,
-                    y_prob=y_prob.predictions.get(test_label) if y_prob is not None else None,
+                    y_pred=_optionally_get(y_pred, test_label),
+                    y_prob=_optionally_get(y_prob, test_label),
                 )
 
                 scores.loc[len(scores)] = (test_label, "aggregated", metric, score)
-                continue
-
-            if not isinstance(y_true_test, dict):
-                # Single task
-                score = metric(
-                    y_true=y_true_test,
-                    y_pred=y_pred.predictions.get(test_label) if y_pred is not None else None,
-                    y_prob=y_prob.predictions.get(test_label) if y_prob is not None else None,
-                )
-                scores.loc[len(scores)] = (test_label, target_cols[0], metric, score)
                 continue
 
             # Otherwise, for every target...
@@ -75,8 +93,8 @@ def evaluate_benchmark(
                 mask = ~np.isnan(y_true_target)
                 score = metric(
                     y_true=y_true_target[mask],
-                    y_pred=safe_mask(y_pred, test_label, target_label, mask),
-                    y_prob=safe_mask(y_prob, test_label, target_label, mask),
+                    y_pred=_safe_mask(y_pred, mask, [test_label, target_label]),
+                    y_prob=_safe_mask(y_prob, mask, [test_label, target_label]),
                 )
 
                 scores.loc[len(scores)] = (test_label, target_label, metric, score)
