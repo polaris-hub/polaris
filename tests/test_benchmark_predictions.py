@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from polaris.benchmark.predictions import BenchmarkPredictions
+from polaris.evaluate import BenchmarkPredictions
 
 
 def assert_deep_equal(result, expected):

@@ -15,8 +15,7 @@ from pydantic import (
 from pydantic.alias_generators import to_camel
 
 from polaris._artifact import BaseArtifactModel
-from polaris.benchmark.predictions import BenchmarkPredictions
-from polaris.evaluate import Metric
+from polaris.evaluate import BenchmarkPredictions, Metric
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
