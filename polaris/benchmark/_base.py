@@ -478,7 +478,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         else:
             y_true_values = y_true_subset.targets
 
-        print(y_true_values, self.target_cols, self.test_set_labels)
         scores = evaluate_benchmark(
             target_cols=self.target_cols,
             test_set_labels=self.test_set_labels,
