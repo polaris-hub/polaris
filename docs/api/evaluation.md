@@ -1,4 +1,4 @@
-::: polaris.benchmark.predictions.BenchmarkPredictions
+::: polaris.benchmark.BenchmarkPredictions
 
 ---
 

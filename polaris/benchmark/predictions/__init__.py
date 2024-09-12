@@ -1,3 +1,3 @@
-from ._base import BenchmarkPredictions
+from ._predictions import BenchmarkPredictions
 
 __all__ = ["BenchmarkPredictions"]

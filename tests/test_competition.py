@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from polaris.evaluate.utils import evaluate_benchmark
 from polaris.competition import CompetitionSpecification
+from polaris.evaluate.utils import evaluate_benchmark
 
 
 def test_competition_from_json(test_competition, tmpdir):
@@ -40,7 +40,7 @@ def test_multi_col_competition_evaluation(test_competition):
 def test_single_col_competition_evaluation(test_competition):
     """Test that multi-column competitions will be evaluated properly when when
     target labels are read as a pandas dataframe from a file."""
-    data = np.array(
+    y_true = np.array(
         [
             1.15588236,
             1.56414507,
@@ -59,15 +59,15 @@ def test_single_col_competition_evaluation(test_competition):
             0.67568671,
         ]
     )
-    labels = {"LOG HLM_CLint (mL/min/kg)": data}
-    predictions = data + np.random.uniform(0, 3, size=len(data))
+
+    y_pred = y_true + np.random.uniform(0, 3, size=len(y_true))
 
     result = evaluate_benchmark(
-        ["LOG HLM_CLint (mL/min/kg)"],
-        ["test"],
-        test_competition.metrics,
-        labels,
-        y_pred=predictions,
+        target_cols=["LOG HLM_CLint (mL/min/kg)"],
+        test_set_labels=["test"],
+        metrics=test_competition.metrics,
+        y_true=y_true,
+        y_pred=y_pred,
     )
 
     assert isinstance(result, pd.DataFrame)

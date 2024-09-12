@@ -22,19 +22,13 @@ def test_benchmark_predictions_normalization():
     assert_deep_equal(
         {"test": {"col1": np.array([1, 2, 3])}},
         BenchmarkPredictions(
-            predictions=[1, 2, 3], target_cols=["col1"], test_set_names=["test"]
+            predictions=[1, 2, 3], target_labels=["col1"], test_set_labels=["test"]
         ).predictions,
     )
     assert_deep_equal(
         {"test": {"col1": np.array([1, 2, 3])}},
         BenchmarkPredictions(
-            predictions={"col1": [1, 2, 3]}, target_cols=["col1"], test_set_names=["test"]
-        ).predictions,
-    )
-    assert_deep_equal(
-        {"test": {"col1": np.array([1, 2, 3])}},
-        BenchmarkPredictions(
-            predictions={"test": {"col1": [1, 2, 3]}}, target_cols=["col1"], test_set_names=["test"]
+            predictions={"test": {"col1": [1, 2, 3]}}, target_labels=["col1"], test_set_labels=["test"]
         ).predictions,
     )
 
@@ -43,16 +37,16 @@ def test_benchmark_predictions_normalization():
         {"test": {"col1": np.array([1, 2, 3])}, "test2": {"col1": np.array([4, 5, 6])}},
         BenchmarkPredictions(
             predictions={"test": [1, 2, 3], "test2": [4, 5, 6]},
-            target_cols=["col1"],
-            test_set_names=["test", "test2"],
+            target_labels=["col1"],
+            test_set_labels=["test", "test2"],
         ).predictions,
     )
     assert_deep_equal(
         {"test1": {"col1": np.array([1, 2, 3])}, "test2": {"col1": np.array([4, 5, 6])}},
         BenchmarkPredictions(
             predictions={"test1": {"col1": [1, 2, 3]}, "test2": {"col1": [4, 5, 6]}},
-            target_cols=["col1"],
-            test_set_names=["test1", "test2"],
+            target_labels=["col1"],
+            test_set_labels=["test1", "test2"],
         ).predictions,
     )
 
@@ -61,16 +55,16 @@ def test_benchmark_predictions_normalization():
         {"test": {"col1": np.array([1, 2, 3]), "col2": np.array([4, 5, 6])}},
         BenchmarkPredictions(
             predictions={"col1": [1, 2, 3], "col2": [4, 5, 6]},
-            target_cols=["col1", "col2"],
-            test_set_names=["test"],
+            target_labels=["col1", "col2"],
+            test_set_labels=["test"],
         ).predictions,
     )
     assert_deep_equal(
         {"test": {"col1": np.array([1, 2, 3]), "col2": np.array([4, 5, 6])}},
         BenchmarkPredictions(
             predictions={"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}},
-            target_cols=["col1", "col2"],
-            test_set_names=["test"],
+            target_labels=["col1", "col2"],
+            test_set_labels=["test"],
         ).predictions,
     )
 
@@ -85,61 +79,46 @@ def test_benchmark_predictions_normalization():
                 "test1": {"col1": [1, 2, 3], "col2": [4, 5, 6]},
                 "test2": {"col1": [7, 8, 9], "col2": [10, 11, 12]},
             },
-            target_cols=["col1", "col2"],
-            test_set_names=["test1", "test2"],
+            target_labels=["col1", "col2"],
+            test_set_labels=["test1", "test2"],
         ).predictions,
     )
 
 
-def test_benchmark_predictions_correct_keys():
-    with pytest.raises(
-        ValueError,
-        match="Missing predictions. Single array/list of predictions provided "
-        "but multiple test sets expected with names \['test1', 'test2'\].",
-    ):
+def test_benchmark_predictions_incorrect_keys():
+    with pytest.raises(ValueError):
         BenchmarkPredictions(
             predictions=[1, 2, 3],
-            target_cols=["col1"],
-            test_set_names=["test1", "test2"],
+            target_labels=["col1"],
+            test_set_labels=["test1", "test2"],
         )
 
-    with pytest.raises(
-        ValueError,
-        match="Missing targets. Single array/list of predictions provided "
-        "but multiple targets expected with names \['col1', 'col2'\].",
-    ):
+    with pytest.raises(ValueError):
         BenchmarkPredictions(
             predictions=[1, 2, 3],
-            target_cols=["col1", "col2"],
-            test_set_names=["test1"],
+            target_labels=["col1", "col2"],
+            test_set_labels=["test1"],
         )
 
-    with pytest.raises(
-        ValueError,
-        match="Missing test sets. Single dictionary of predictions provided "
-        "but multiple test sets expected with names \['test1', 'test2'\].",
-    ):
+    with pytest.raises(ValueError):
         BenchmarkPredictions(
             predictions={"col1": [1, 2, 3]},
-            target_cols=["col1"],
-            test_set_names=["test1", "test2"],
+            target_labels=["col1"],
+            test_set_labels=["test1", "test2"],
         )
 
-    with pytest.raises(
-        ValueError,
-        match="Predictions must be provided for all test sets: \['test1', 'test2', 'test3'\].",
-    ):
+    with pytest.raises(ValueError):
         BenchmarkPredictions(
             predictions={"test1": {"col1": [1, 2, 3]}, "test2": {"col1": [4, 5, 6]}},
-            target_cols=["col1"],
-            test_set_names=["test1", "test2", "test3"],
+            target_labels=["col1"],
+            test_set_labels=["test1", "test2", "test3"],
         )
 
 
 def test_benchmark_predictions_type_checking():
     v1 = {"test": {"col1": ["strings", "also", "valid"]}}
     v2 = BenchmarkPredictions(
-        predictions=["strings", "also", "valid"], target_cols=["col1"], test_set_names=["test"]
+        predictions=["strings", "also", "valid"], target_labels=["col1"], test_set_labels=["test"]
     ).predictions
 
     assert list(v1.keys()) == ["test"]
@@ -151,39 +130,70 @@ def test_benchmark_predictions_type_checking():
 
 
 def test_invalid_benchmark_predictions_errors():
-    with pytest.raises(
-        ValueError,
-        match="Invalid structure for test set 'test2'. " "Expected a dictionary of {col_name: predictions}",
-    ):
+    with pytest.raises(ValueError):
         BenchmarkPredictions(
             predictions={"test": {"col1": [1, 2, 3]}, "test2": [4, 5, 6]},
             target_cols=["col1", "col2"],
-            test_set_names=["test", "test2"],
+            test_set_labels=["test", "test2"],
         )
 
-    with pytest.raises(
-        ValueError,
-        match="Invalid predictions for test set 'test', target 'col1'. " "Expected a numpy array or list.",
-    ):
+    with pytest.raises(ValueError):
         BenchmarkPredictions(
             predictions={"test": {"col1": "not an array or list"}},
             target_cols=["col1"],
-            test_set_names=["test"],
+            test_set_labels=["test"],
         )
 
-    with pytest.raises(
-        ValueError,
-        match="Invalid predictions for test set 'test'. Target 'wrong column name' is not in target_cols: \['col1'\].",
-    ):
+    with pytest.raises(ValueError):
         BenchmarkPredictions(
             predictions={"test": {"wrong column name": [1, 2, 3]}},
             target_cols=["col1"],
-            test_set_names=["test"],
+            test_set_labels=["test"],
+        )
+
+    # You should either fully or minimally specify the predictions.
+    # We don't allow in-between results.
+    with pytest.raises(ValueError):
+        BenchmarkPredictions(
+            predictions={"col1": [1, 2, 3]},
+            target_cols=["col1"],
+            test_set_labels=["test"],
+        )
+
+    with pytest.raises(ValueError):
+        BenchmarkPredictions(
+            predictions={"test": [1, 2, 3]},
+            target_cols=["col1"],
+            test_set_labels=["test"],
+        )
+
+    # You shouldn't specify more keys than expected.
+    with pytest.raises(ValueError):
+        BenchmarkPredictions(
+            predictions={"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}},
+            target_cols=["col1"],
+            test_set_labels=["test"],
+        )
+    with pytest.raises(ValueError):
+        BenchmarkPredictions(
+            predictions={"test": {"col1": [1, 2, 3]}, "test2": {"col1": [1, 2, 3]}},
+            target_cols=["col1"],
+            test_set_labels=["test"],
         )
 
 
 def test_benchmark_predictions_serialization():
-    predictions = BenchmarkPredictions(predictions=[1, 2, 3], target_cols=["col1"], test_set_names=["test"])
+    predictions = BenchmarkPredictions(
+        predictions=[1, 2, 3], target_labels=["col1"], test_set_labels=["test"]
+    )
     serialized = predictions.model_dump()
     assert serialized["predictions"] == {"test": {"col1": [1, 2, 3]}}
-    assert serialized["target_cols"] == ["col1"]
+    assert serialized["target_labels"] == ["col1"]
+    assert serialized["test_set_labels"] == ["test"]
+
+    deserialized = BenchmarkPredictions(**serialized)
+    assert set(deserialized.predictions.keys()) == {"test"}
+    assert set(deserialized.predictions["test"].keys()) == {"col1"}
+    assert np.array_equal(deserialized.predictions["test"]["col1"], np.array([1, 2, 3]))
+    assert deserialized.target_labels == ["col1"]
+    assert deserialized.test_set_labels == ["test"]

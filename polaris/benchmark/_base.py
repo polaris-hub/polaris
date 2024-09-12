@@ -128,7 +128,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         if info.data.get("dataset") is not None and not all(
             c in info.data["dataset"].table.columns for c in v
         ):
-            raise InvalidBenchmarkError("Not all specified target columns were found in the dataset.")
+            raise InvalidBenchmarkError("Not all specified columns were found in the dataset.")
+        if len(set(v)) != len(v):
+            raise InvalidBenchmarkError("The task specifies duplicate columns")
         return v
 
     @field_validator("metrics")
@@ -365,8 +367,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     @computed_field
     @property
-    def test_set_names(self) -> list[str]:
-        """The names of the test sets."""
+    def test_set_labels(self) -> list[str]:
+        """The labels of the test sets."""
         if isinstance(self.split[1], dict):
             return list(self.split[1].keys())
         return ["test"]
@@ -476,11 +478,12 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         else:
             y_true_values = y_true_subset.targets
 
+        print(y_true_values, self.target_cols, self.test_set_labels)
         scores = evaluate_benchmark(
-            self.target_cols,
-            self.test_set_names,
-            self.metrics,
-            y_true_values,
+            target_cols=self.target_cols,
+            test_set_labels=self.test_set_labels,
+            metrics=self.metrics,
+            y_true=y_true_values,
             y_pred=y_pred,
             y_prob=y_prob,
         )
