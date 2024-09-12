@@ -54,7 +54,7 @@ dependencies = [
     "fastpdb",
     "zarr",
     "pyarrow < 18",
-    "fsspec[http]",
+    "fsspec[http,s3]",
     "yaspin",
     "typing-extensions>=4.12.0",
 ]

@@ -26,7 +26,7 @@ from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
-    DatasetIndex,
+    ChecksumStrategy, DatasetIndex,
     HttpUrlString,
     HubOwner,
     SupportedLicenseType,
@@ -77,14 +77,13 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     license: SupportedLicenseType | None = None
     curation_reference: HttpUrlString | None = None
 
-    # Config
-    cache_dir: str | None = None
-
     # Private attributes
     _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
     _zarr_data: Optional[MutableMapping[str, np.ndarray]] = PrivateAttr(None)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
     _warn_about_remote_zarr: bool = PrivateAttr(True)
+    _cache_dir: str | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.
+    _verify_checksum_strategy: ChecksumStrategy = PrivateAttr("verify_unless_zarr")
 
     @field_validator("default_adapters", mode="before")
     def _validate_adapters(cls, value):

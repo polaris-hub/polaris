@@ -1,15 +1,16 @@
 import json
+import re
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from time import time
 from typing import Any, Literal
 
 from authlib.integrations.httpx_client import OAuth2Auth
-from pydantic import BaseModel, PositiveInt, model_validator
+from pydantic import BaseModel, PositiveInt, computed_field, model_validator
 from typing_extensions import Self
 
 from polaris.utils.constants import DEFAULT_CACHE_DIR
-from polaris.utils.types import HttpUrlString
+from polaris.utils.types import AnyUrlString, HttpUrlString
 
 
 class CachedTokenAuth(OAuth2Auth):
@@ -59,8 +60,20 @@ class ExternalCachedTokenAuth(CachedTokenAuth):
 
 
 class StoragePaths(BaseModel):
-    root: Path
-    extension: Path | None = None
+    root: AnyUrlString
+    extension: AnyUrlString | None = None
+
+    @computed_field
+    @property
+    def relative_root(self) -> str:
+        return re.sub(r"^\w+://", "", self.root)
+
+    @computed_field
+    @property
+    def relative_extension(self) -> str | None:
+        if self.extension:
+            return re.sub(r"^\w+://", "", self.extension)
+        return None
 
 
 class StorageTokenData(BaseModel):

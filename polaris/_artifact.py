@@ -1,4 +1,4 @@
-from typing import ClassVar, Dict, Self
+from typing import ClassVar, Self
 
 import fsspec
 from loguru import logger
@@ -47,7 +47,7 @@ class BaseArtifactModel(BaseModel):
     name: SlugCompatibleStringType | None = None
     description: str = ""
     tags: list[str] = Field(default_factory=list)
-    user_attributes: Dict[str, str] = Field(default_factory=dict)
+    user_attributes: dict[str, str] = Field(default_factory=dict)
     owner: HubOwner | None = None
     polaris_version: str = po.__version__
 

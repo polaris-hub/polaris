@@ -38,7 +38,6 @@ from polaris.utils.errors import (
     PolarisRetrieveArtifactError,
     PolarisUnauthorizedError,
 )
-from polaris.utils.misc import should_verify_checksum
 from polaris.utils.types import (
     AccessType,
     ArtifactSubtype,
@@ -340,11 +339,14 @@ class PolarisHubClient(OAuth2Client):
             )
             response = self._base_request_to_hub(url=url, method="GET")
 
+            # Disregard the Zarr root in the response. We'll get it from the storage token instead.
+            response.pop("zarrRootPath", None)
+
             # Load the dataset table and optional Zarr archive
             with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
-                # TODO: Move this into a repository class, to better encapsulate the storage logic
-                table = pd.read_parquet(storage.paths.root, filesystem=storage.fs)
-                zarr_root_path = storage.paths.extension
+                # Move this into a repository class, to better encapsulate the storage logic
+                table = pd.read_parquet(storage.paths.relative_root, filesystem=storage.fs)
+                zarr_root_path = str(storage.paths.extension)
 
             if artifact_type == ArtifactSubtype.COMPETITION:
                 dataset = CompetitionDataset(table=table, zarr_root_path=zarr_root_path, **response)
@@ -353,7 +355,7 @@ class PolarisHubClient(OAuth2Client):
                 dataset = DatasetV1(table=table, zarr_root_path=zarr_root_path, **response)
                 md5sum = response["md5Sum"]
 
-            if should_verify_checksum(verify_checksum, dataset):
+            if dataset.should_verify_checksum(verify_checksum):
                 dataset.verify_checksum(md5sum)
             else:
                 dataset.md5sum = md5sum
@@ -465,7 +467,7 @@ class PolarisHubClient(OAuth2Client):
 
             benchmark = benchmark_cls(**response)
 
-            if should_verify_checksum(verify_checksum, benchmark.dataset):
+            if benchmark.dataset.should_verify_checksum(verify_checksum):
                 benchmark.verify_checksum()
             else:
                 benchmark.md5sum = response["md5Sum"]

@@ -3,10 +3,10 @@ from typing import Any, Literal, TypeAlias
 from authlib.integrations.httpx_client import OAuth2Client
 from authlib.oauth2 import OAuth2Error
 from authlib.oauth2.rfc6749 import OAuth2Token
-from pyarrow.fs import S3FileSystem
+from s3fs import S3FileSystem
 from typing_extensions import Self
 
-from polaris.hub.oauth import HubStorageOAuth2Token, StoragePaths, StorageTokenData
+from polaris.hub.oauth import HubStorageOAuth2Token, StoragePaths
 from polaris.utils.errors import PolarisHubError
 
 Scope: TypeAlias = Literal["read", "write"]
@@ -29,6 +29,7 @@ class StorageSession(OAuth2Client):
     A context manager for managing a storage session, with token exchange and token refresh capabilities.
     Each session is associated with a specific scope and resource.
     """
+    polaris_protocol = "polarisfs"
 
     token_auth_class = StorageTokenAuth
 
@@ -102,16 +103,15 @@ class StorageSession(OAuth2Client):
     @property
     def fs(self) -> S3FileSystem:
         """
-        Exposes a PyArrow S3-backed file system, using the token credentials.
+        Exposes a fsspec S3-backed file system, using the token credentials.
         Offers a higher flexibility and compatibility with other libraries expecting a file system, like Pandas.
         This might be misleading, however, as the allowed operations are limited by the token's scope.
         """
         self.ensure_active_token()
-        storage_data: StorageTokenData = self.token.extra_data
+        storage_data = self.token.extra_data
         return S3FileSystem(
-            access_key=storage_data.key,
-            secret_key=storage_data.secret,
-            session_token=f"jwt/{self.token.access_token}",
-            endpoint_override=storage_data.endpoint,
-            region="auto",
+            key=storage_data.key,
+            secret=storage_data.secret,
+            endpoint_url=storage_data.endpoint,
+            token=f"jwt/{self.token.access_token}",
         )

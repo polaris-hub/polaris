@@ -9,7 +9,6 @@ from polaris.benchmark._definitions import (
 )
 from polaris.dataset import DatasetV1, create_dataset_from_file
 from polaris.hub.client import PolarisHubClient
-from polaris.utils.misc import should_verify_checksum
 from polaris.utils.types import ChecksumStrategy
 
 
@@ -46,7 +45,7 @@ def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_z
         dataset = create_dataset_from_file(path)
 
     # Verify checksum if requested
-    if should_verify_checksum(verify_checksum, dataset):
+    if dataset.should_verify_checksum(verify_checksum):
         dataset.verify_checksum()
 
     return dataset
@@ -89,7 +88,7 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
     benchmark = cls.from_json(path)
 
     # Verify checksum if requested
-    if should_verify_checksum(verify_checksum, benchmark.dataset):
+    if benchmark.dataset.should_verify_checksum(verify_checksum):
         benchmark.verify_checksum()
 
     return benchmark

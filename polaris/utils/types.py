@@ -3,8 +3,7 @@ from typing import Annotated, Any, Literal, Optional, Tuple, Union
 
 import numpy as np
 from pydantic import (
-    AnyUrl,
-    BaseModel,
+    AnyUrl, BaseModel,
     BeforeValidator,
     ConfigDict,
     HttpUrl,
