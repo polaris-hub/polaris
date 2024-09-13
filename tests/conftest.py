@@ -30,11 +30,6 @@ def test_data():
     data["CLASS_calc"] = data["calc"].gt(0).astype(int).values
     data["MULTICLASS_expt"] = np.random.randint(low=0, high=3, size=data.shape[0])
     data["MULTICLASS_calc"] = np.random.randint(low=0, high=3, size=data.shape[0])
-    # docking related
-    mols = data["smiles"].apply(dm.to_mol)
-    data["conformer_ref"] = np.array(
-        [conformer_to_mol(mol, dm.conformers.generate(mol).GetConformer(0)) for mol in mols]
-    )
     return data
 
 
@@ -116,6 +111,28 @@ def test_user_owner():
 
 @pytest.fixture(scope="function")
 def test_dataset(test_data, test_org_owner) -> DatasetV1:
+    dataset = DatasetV1(
+        table=test_data,
+        name="test-dataset",
+        source="https://www.example.com",
+        annotations={"expt": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
+        tags=["tagA", "tagB"],
+        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        owner=test_org_owner,
+        license="CC-BY-4.0",
+        curation_reference="https://www.example.com",
+    )
+    check_version(dataset)
+    return dataset
+
+
+@pytest.fixture(scope="function")
+def test_docking_dataset(test_data, test_org_owner) -> DatasetV1:
+    # docking related
+    mols = test_data["smiles"].apply(dm.to_mol)
+    test_data["conformer_ref"] = np.array(
+        [conformer_to_mol(mol, dm.conformers.generate(mol).GetConformer(0)) for mol in mols]
+    )
     dataset = DatasetV1(
         table=test_data,
         name="test-dataset",
@@ -390,10 +407,10 @@ def test_multi_task_benchmark_multiple_test_sets(test_dataset):
 
 
 @pytest.fixture(scope="function")
-def test_docking_benchmark(test_dataset):
+def test_docking_benchmark(test_docking_dataset):
     benchmark = SingleTaskBenchmarkSpecification(
         name="single-task-single-set-benchmark",
-        dataset=test_dataset,
+        dataset=test_docking_dataset,
         metrics=["rmsd_coverage"],
         split=([], list(range(100))),
         target_cols=["conformer_ref"],
