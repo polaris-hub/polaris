@@ -15,6 +15,7 @@ from polaris.competition import CompetitionSpecification
 from polaris.dataset import ColumnAnnotation, CompetitionDataset, DatasetV1
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.utils.types import HubOwner
+from polaris.evaluate.metrics.docking_metrics import conformer_to_mol
 
 
 def check_version(artifact):
@@ -29,6 +30,11 @@ def test_data():
     data["CLASS_calc"] = data["calc"].gt(0).astype(int).values
     data["MULTICLASS_expt"] = np.random.randint(low=0, high=3, size=data.shape[0])
     data["MULTICLASS_calc"] = np.random.randint(low=0, high=3, size=data.shape[0])
+    # docking related
+    mols = data["smiles"].apply(dm.to_mol)
+    data["conformer_ref"] = np.array(
+        [conformer_to_mol(mol, dm.conformers.generate(mol).GetConformer(0)) for mol in mols]
+    )
     return data
 
 
@@ -378,6 +384,20 @@ def test_multi_task_benchmark_multiple_test_sets(test_dataset):
         split=(train_indices, test_indices),
         target_cols=["expt", "calc"],
         input_cols="smiles",
+    )
+    check_version(benchmark)
+    return benchmark
+
+
+@pytest.fixture(scope="function")
+def test_docking_benchmark(test_dataset):
+    benchmark = SingleTaskBenchmarkSpecification(
+        name="single-task-single-set-benchmark",
+        dataset=test_dataset,
+        metrics=["rmsd_coverage"],
+        split=([], list(range(100))),
+        target_cols=["conformer_ref"],
+        input_cols=["smiles"],
     )
     check_version(benchmark)
     return benchmark

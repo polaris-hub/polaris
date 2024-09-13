@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import datamol as dm
 import polaris as po
 from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
@@ -13,6 +14,7 @@ from polaris.dataset import DatasetV1
 from polaris.evaluate._metric import Metric
 from polaris.evaluate._results import BenchmarkResults
 from polaris.utils.types import HubOwner
+from polaris.evaluate.metrics.docking_metrics import conformer_to_mol
 
 
 def test_result_to_json(tmpdir: str, test_user_owner: HubOwner):
@@ -185,3 +187,18 @@ def test_metric_y_types(
     test_single_task_benchmark_clf.metrics = [Metric.f1]
     result = test_single_task_benchmark_clf.evaluate(y_pred=predictions, y_prob=probabilities)
     assert result.results.Score.values[0] == Metric.f1.fn(y_true=test_y, y_pred=predictions)
+
+
+def test_metrics_docking(
+    test_docking_benchmark: SingleTaskBenchmarkSpecification,
+):
+    _, test = test_docking_benchmark.get_train_test_split()
+
+    mols = [dm.to_mol(mol) for mol in test.inputs]
+    predictions = np.array(
+        [conformer_to_mol(mol, dm.conformers.generate(mol).GetConformer(1)) for mol in mols]
+    )
+
+    result = test_docking_benchmark.evaluate(y_pred=predictions)
+    for metric in test_docking_benchmark.metrics:
+        assert metric in result.results.Metric.tolist()

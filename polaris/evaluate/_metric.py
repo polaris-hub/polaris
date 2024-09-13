@@ -17,6 +17,7 @@ from sklearn.metrics import (
     roc_auc_score,
     balanced_accuracy_score,
 )
+from polaris.evaluate.metrics.docking_metrics import rmsd_coverage
 
 from polaris.utils.types import DirectionType
 
@@ -75,7 +76,7 @@ class MetricInfo(BaseModel):
     is_multitask: bool = False
     kwargs: dict = Field(default_factory=dict)
     direction: DirectionType
-    y_type: Literal["y_pred", "y_prob", "y_score"] = "y_pred"
+    y_type: Literal["y_pred", "y_prob", "y_score", "structure"] = "y_pred"
 
 
 class Metric(Enum):
@@ -119,6 +120,9 @@ class Metric(Enum):
         fn=roc_auc_score, kwargs={"multi_class": "ovo"}, direction="max", y_type="y_score"
     )
     # TODO: add metrics to handle multitask multiclass predictions.
+
+    # docking related metrics
+    rmsd_coverage = MetricInfo(fn=rmsd_coverage, direction="max", y_type="y_pred")
 
     @property
     def fn(self) -> Callable:
