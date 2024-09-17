@@ -1,7 +1,7 @@
 import abc
 import json
 from pathlib import Path
-from typing import Any, MutableMapping, Optional
+from typing import Any, MutableMapping
 
 import numpy as np
 import zarr
@@ -78,8 +78,8 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     curation_reference: HttpUrlString | None = None
 
     # Private attributes
-    _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
-    _zarr_data: Optional[MutableMapping[str, np.ndarray]] = PrivateAttr(None)
+    _zarr_root: zarr.Group | None = PrivateAttr(None)
+    _zarr_data: MutableMapping[str, np.ndarray] | None = PrivateAttr(None)
     _client = PrivateAttr(None)  # Optional[PolarisHubClient]
     _warn_about_remote_zarr: bool = PrivateAttr(True)
     _cache_dir: str | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.

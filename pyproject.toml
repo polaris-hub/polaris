@@ -57,6 +57,7 @@ dependencies = [
     "fsspec[http,s3]",
     "yaspin",
     "typing-extensions>=4.12.0",
+    "boto3>=1.35.19",
 ]
 
 [project.optional-dependencies]
@@ -66,7 +67,8 @@ dev = [
     "pytest-cov",
     "ruff",
     "jupyterlab",
-    "ipywidgets"
+    "ipywidgets",
+    "moto[s3]>=5.0.14",
 ]
 doc = [
     "mkdocs",

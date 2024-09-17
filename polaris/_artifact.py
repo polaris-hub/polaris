@@ -1,3 +1,4 @@
+import json
 from typing import ClassVar, Self
 
 import fsspec
@@ -54,7 +55,7 @@ class BaseArtifactModel(BaseModel):
     @computed_field
     @property
     def slug(self) -> SlugStringType | None:
-        return slugify(self.name)
+        return slugify(self.name) if self.name else None
 
     @computed_field
     @property
@@ -104,7 +105,8 @@ class BaseArtifactModel(BaseModel):
             path: Loads a benchmark specification from a JSON file.
         """
         with fsspec.open(path, "r") as f:
-            return cls.model_validate_json(f.read())
+            data = json.load(f)
+            return cls.model_validate(data)
 
     def to_json(self, path: str) -> None:
         """Saves an artifact to a JSON file.

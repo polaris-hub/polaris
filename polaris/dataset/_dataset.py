@@ -239,7 +239,10 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
         """
-        self.client.upload_dataset(self, owner=owner, access=access)
+        from polaris.hub.client import PolarisHubClient
+
+        with PolarisHubClient() as client:
+            client.upload_dataset(self, owner=owner, access=access)
 
     @classmethod
     def from_json(cls, path: str):
