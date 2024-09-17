@@ -342,7 +342,7 @@ class PolarisHubClient(OAuth2Client):
             # Load the dataset table and optional Zarr archive
             with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
                 # Move this into a repository class, to better encapsulate the storage logic
-                table = pd.read_parquet(storage.paths.relative_root, filesystem=storage.fs)
+                table = pd.read_parquet(storage.get_root())
                 zarr_root_path = str(storage.paths.extension)
 
             if artifact_type == ArtifactSubtype.COMPETITION:

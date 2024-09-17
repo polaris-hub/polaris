@@ -2,6 +2,7 @@ from base64 import b64encode
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from hashlib import md5
+from io import BytesIO
 from pathlib import Path
 from typing import Any, Literal, Mapping, Sequence, TypeAlias
 
@@ -108,7 +109,7 @@ class S3Store(Store):
             parts = []
             for i in range(0, len(value), self.part_size):
                 part_number = i // self.part_size + 1
-                part = value[i: i + self.part_size]
+                part = value[i : i + self.part_size]
                 response = self.s3_client.upload_part(
                     Bucket=self.bucket_name,
                     Key=full_key,
@@ -117,17 +118,10 @@ class S3Store(Store):
                     Body=part,
                     ContentMD5=b64encode(md5(part).digest()).decode(),
                 )
-                parts.append(
-                    {
-                        "ETag": response["ETag"],
-                        "PartNumber": part_number
-                    }
-                    )
+                parts.append({"ETag": response["ETag"], "PartNumber": part_number})
 
             self.s3_client.complete_multipart_upload(
-                Bucket=self.bucket_name, Key=full_key, UploadId=upload_id, MultipartUpload={
-                    "Parts": parts
-                }
+                Bucket=self.bucket_name, Key=full_key, UploadId=upload_id, MultipartUpload={"Parts": parts}
             )
 
     def listdir(self, path: str = "") -> Sequence[str]:
@@ -152,13 +146,13 @@ class S3Store(Store):
             for page in page_iterator:
                 # Contents are "files"
                 for obj in page.get("Contents", []):
-                    key = obj["Key"][len(prefix):]
+                    key = obj["Key"][len(prefix) :]
                     if key:
                         yield key.split("/")[0]
 
                 # CommonPrefixes are "subdirectories"
                 for common_prefix in page.get("CommonPrefixes", []):
-                    yield common_prefix["Prefix"][len(prefix):].strip("/")
+                    yield common_prefix["Prefix"][len(prefix) :].strip("/")
 
     def getitems(self, keys: Sequence[str], *, contexts: Mapping[str, Context]) -> dict[str, Any]:
         """
@@ -275,7 +269,7 @@ class S3Store(Store):
 
             for page in page_iterator:
                 for obj in page.get("Contents", []):
-                    yield obj["Key"][len(self.prefix) + 1:]
+                    yield obj["Key"][len(self.prefix) + 1 :]
 
     def __len__(self) -> int:
         """
@@ -402,7 +396,7 @@ class StorageSession(OAuth2Client):
         )
         store[path.name] = value
 
-    def get_root(self) -> bytes:
+    def get_root(self) -> BytesIO:
         """
         Get the value at the root path.
         """
@@ -416,7 +410,7 @@ class StorageSession(OAuth2Client):
             token=f"jwt/{self.token.access_token}",
             endpoint_url=storage_data.endpoint,
         )
-        return store[path.name]
+        return BytesIO(store[path.name])
 
     @property
     def extension_store(self) -> S3Store | None:

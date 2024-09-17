@@ -21,7 +21,6 @@ from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
-from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
@@ -167,14 +166,16 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             See also [`Dataset.load_to_memory`][polaris.dataset.Dataset.load_to_memory].
         """
 
+        from polaris.hub.client import PolarisHubClient
+        from polaris.hub.storage import StorageSession
+
         if self._zarr_root is not None:
             return self._zarr_root
 
         if self.zarr_root_path is None:
             return None
 
-        # We open the archive in read-only mode if it is saved on the Hub
-        saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_root_path)
+        saved_on_hub = self.zarr_root_path.startswith(StorageSession.polaris_protocol)
 
         if self._warn_about_remote_zarr:
             saved_remote = saved_on_hub or not Path(self.zarr_root_path).exists()
@@ -189,7 +190,9 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
         try:
             if saved_on_hub:
-                self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_root_path, "r+")
+                with PolarisHubClient() as client:
+                    with StorageSession(client, "read", self.urn) as storage:
+                        self._zarr_root = zarr.open_consolidated(storage.extension_store)
             else:
                 # We use memory mapping by default because our experiments show that it's consistently faster
                 store = MemoryMappedDirectoryStore(self.zarr_root_path)
