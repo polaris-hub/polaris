@@ -22,13 +22,19 @@ def test_benchmark_predictions_normalization():
     assert_deep_equal(
         {"test": {"col1": np.array([1, 2, 3])}},
         BenchmarkPredictions(
-            predictions=[1, 2, 3], target_labels=["col1"], test_set_labels=["test"]
+            predictions=[1, 2, 3],
+            target_labels=["col1"],
+            test_set_labels=["test"],
+            test_set_sizes={"test": 3},
         ).predictions,
     )
     assert_deep_equal(
         {"test": {"col1": np.array([1, 2, 3])}},
         BenchmarkPredictions(
-            predictions={"test": {"col1": [1, 2, 3]}}, target_labels=["col1"], test_set_labels=["test"]
+            predictions={"test": {"col1": [1, 2, 3]}},
+            target_labels=["col1"],
+            test_set_labels=["test"],
+            test_set_sizes={"test": 3},
         ).predictions,
     )
 
@@ -39,6 +45,7 @@ def test_benchmark_predictions_normalization():
             predictions={"test": [1, 2, 3], "test2": [4, 5, 6]},
             target_labels=["col1"],
             test_set_labels=["test", "test2"],
+            test_set_sizes={"test": 3, "test2": 3},
         ).predictions,
     )
     assert_deep_equal(
@@ -47,6 +54,7 @@ def test_benchmark_predictions_normalization():
             predictions={"test1": {"col1": [1, 2, 3]}, "test2": {"col1": [4, 5, 6]}},
             target_labels=["col1"],
             test_set_labels=["test1", "test2"],
+            test_set_sizes={"test1": 3, "test2": 3},
         ).predictions,
     )
 
@@ -57,6 +65,7 @@ def test_benchmark_predictions_normalization():
             predictions={"col1": [1, 2, 3], "col2": [4, 5, 6]},
             target_labels=["col1", "col2"],
             test_set_labels=["test"],
+            test_set_sizes={"test": 3},
         ).predictions,
     )
     assert_deep_equal(
@@ -65,6 +74,7 @@ def test_benchmark_predictions_normalization():
             predictions={"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}},
             target_labels=["col1", "col2"],
             test_set_labels=["test"],
+            test_set_sizes={"test": 3},
         ).predictions,
     )
 
@@ -81,6 +91,7 @@ def test_benchmark_predictions_normalization():
             },
             target_labels=["col1", "col2"],
             test_set_labels=["test1", "test2"],
+            test_set_sizes={"test1": 3, "test2": 3},
         ).predictions,
     )
 
@@ -91,6 +102,7 @@ def test_benchmark_predictions_incorrect_keys():
             predictions=[1, 2, 3],
             target_labels=["col1"],
             test_set_labels=["test1", "test2"],
+            test_set_sizes={"test1": 3},
         )
 
     with pytest.raises(ValueError):
@@ -98,6 +110,7 @@ def test_benchmark_predictions_incorrect_keys():
             predictions=[1, 2, 3],
             target_labels=["col1", "col2"],
             test_set_labels=["test1"],
+            test_set_sizes={"test1": 3},
         )
 
     with pytest.raises(ValueError):
@@ -105,6 +118,7 @@ def test_benchmark_predictions_incorrect_keys():
             predictions={"col1": [1, 2, 3]},
             target_labels=["col1"],
             test_set_labels=["test1", "test2"],
+            test_set_sizes={"test1": 3, "test2": 3},
         )
 
     with pytest.raises(ValueError):
@@ -112,13 +126,17 @@ def test_benchmark_predictions_incorrect_keys():
             predictions={"test1": {"col1": [1, 2, 3]}, "test2": {"col1": [4, 5, 6]}},
             target_labels=["col1"],
             test_set_labels=["test1", "test2", "test3"],
+            test_set_sizes={"test1": 3, "test2": 3, "test3": 3},
         )
 
 
 def test_benchmark_predictions_type_checking():
     v1 = {"test": {"col1": ["strings", "also", "valid"]}}
     v2 = BenchmarkPredictions(
-        predictions=["strings", "also", "valid"], target_labels=["col1"], test_set_labels=["test"]
+        predictions=["strings", "also", "valid"],
+        target_labels=["col1"],
+        test_set_labels=["test"],
+        test_set_sizes={"test": 3},
     ).predictions
 
     assert list(v1.keys()) == ["test"]
@@ -135,6 +153,7 @@ def test_invalid_benchmark_predictions_errors():
             predictions={"test": {"col1": [1, 2, 3]}, "test2": [4, 5, 6]},
             target_cols=["col1", "col2"],
             test_set_labels=["test", "test2"],
+            test_set_sizes={"test": 3, "test2": 3},
         )
 
     with pytest.raises(ValueError):
@@ -142,6 +161,7 @@ def test_invalid_benchmark_predictions_errors():
             predictions={"test": {"col1": "not an array or list"}},
             target_cols=["col1"],
             test_set_labels=["test"],
+            test_set_sizes={"test": 1},
         )
 
     with pytest.raises(ValueError):
@@ -149,6 +169,7 @@ def test_invalid_benchmark_predictions_errors():
             predictions={"test": {"wrong column name": [1, 2, 3]}},
             target_cols=["col1"],
             test_set_labels=["test"],
+            test_set_sizes={"test": 3},
         )
 
     # You should either fully or minimally specify the predictions.
@@ -158,6 +179,7 @@ def test_invalid_benchmark_predictions_errors():
             predictions={"col1": [1, 2, 3]},
             target_cols=["col1"],
             test_set_labels=["test"],
+            test_set_sizes={"test": 3},
         )
 
     with pytest.raises(ValueError):
@@ -165,6 +187,7 @@ def test_invalid_benchmark_predictions_errors():
             predictions={"test": [1, 2, 3]},
             target_cols=["col1"],
             test_set_labels=["test"],
+            test_set_sizes={"test": 3},
         )
 
     # You shouldn't specify more keys than expected.
@@ -173,18 +196,23 @@ def test_invalid_benchmark_predictions_errors():
             predictions={"test": {"col1": [1, 2, 3], "col2": [4, 5, 6]}},
             target_cols=["col1"],
             test_set_labels=["test"],
+            test_set_sizes={"test": 3},
         )
     with pytest.raises(ValueError):
         BenchmarkPredictions(
             predictions={"test": {"col1": [1, 2, 3]}, "test2": {"col1": [1, 2, 3]}},
             target_cols=["col1"],
             test_set_labels=["test"],
+            test_set_sizes={"test": 3, "test2": 3},
         )
 
 
 def test_benchmark_predictions_serialization():
     predictions = BenchmarkPredictions(
-        predictions=[1, 2, 3], target_labels=["col1"], test_set_labels=["test"]
+        predictions=[1, 2, 3],
+        target_labels=["col1"],
+        test_set_labels=["test"],
+        test_set_sizes={"test": 3},
     )
     serialized = predictions.model_dump()
     assert serialized["predictions"] == {"test": {"col1": [1, 2, 3]}}
@@ -197,3 +225,5 @@ def test_benchmark_predictions_serialization():
     assert np.array_equal(deserialized.predictions["test"]["col1"], np.array([1, 2, 3]))
     assert deserialized.target_labels == ["col1"]
     assert deserialized.test_set_labels == ["test"]
+    assert set(deserialized.test_set_sizes.keys()) == {"test"}
+    assert deserialized.test_set_sizes["test"] == 3

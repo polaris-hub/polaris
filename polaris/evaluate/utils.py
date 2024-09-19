@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
@@ -44,10 +42,11 @@ def _safe_mask(
 def evaluate_benchmark(
     target_cols: list[str],
     test_set_labels: list[str],
+    test_set_sizes: dict[str, int],
     metrics: list[Metric],
     y_true: IncomingPredictionsType,
-    y_pred: Optional[IncomingPredictionsType] = None,
-    y_prob: Optional[IncomingPredictionsType] = None,
+    y_pred: IncomingPredictionsType | None = None,
+    y_prob: IncomingPredictionsType | None = None,
 ):
     """
     Utility function that contains the evaluation logic for a benchmark
@@ -56,15 +55,24 @@ def evaluate_benchmark(
     # Normalize the ground truth and predictions to a consistent, internal representation.
     # Format is a two-level dictionary: {test_set_label: {target_label: np.ndarray}}
     y_true = BenchmarkPredictions(
-        predictions=y_true, target_labels=target_cols, test_set_labels=test_set_labels
+        predictions=y_true,
+        target_labels=target_cols,
+        test_set_labels=test_set_labels,
+        test_set_sizes=test_set_sizes,
     )
     if y_pred is not None:
         y_pred = BenchmarkPredictions(
-            predictions=y_pred, target_labels=target_cols, test_set_labels=test_set_labels
+            predictions=y_pred,
+            target_labels=target_cols,
+            test_set_labels=test_set_labels,
+            test_set_sizes=test_set_sizes,
         )
     if y_prob is not None:
         y_prob = BenchmarkPredictions(
-            predictions=y_prob, target_labels=target_cols, test_set_labels=test_set_labels
+            predictions=y_prob,
+            target_labels=target_cols,
+            test_set_labels=test_set_labels,
+            test_set_sizes=test_set_sizes,
         )
 
     # Compute the results

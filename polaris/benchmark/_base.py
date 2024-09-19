@@ -172,19 +172,18 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
           4) There is no overlap between the train and test set
           5) No row exists in the test set where all labels are missing/empty
         """
+
+        if not isinstance(self.split[1], dict):
+            self.split = self.split[0], {"test": self.split[1]}
         split = self.split
 
         # Train partition can be empty (zero-shot)
         # Test partitions cannot be empty
-        if (isinstance(split[1], dict) and any(len(v) == 0 for v in split[1].values())) or (
-            not isinstance(split[1], dict) and len(split[1]) == 0
-        ):
+        if any(len(v) == 0 for v in split[1].values()):
             raise InvalidBenchmarkError("The predefined split contains empty test partitions")
 
         train_idx_list = split[0]
-        full_test_idx_list = (
-            list(chain.from_iterable(split[1].values())) if isinstance(split[1], dict) else split[1]
-        )
+        full_test_idx_list = list(chain.from_iterable(split[1].values()))
 
         if len(train_idx_list) == 0:
             logger.info(
@@ -205,14 +204,11 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         # Check for duplicate indices within a given test set. Because a user can specify
         # multiple test sets for a given benchmark and it is acceptable for indices to be shared
         # across test sets, we check for duplicates in each test set independently.
-        if isinstance(split[1], dict):
-            for test_set_name, test_set_idx_list in split[1].items():
-                if len(test_set_idx_list) != len(set(test_set_idx_list)):
-                    raise InvalidBenchmarkError(
-                        f'Test set with name "{test_set_name}" contains duplicate indices'
-                    )
-        elif len(full_test_idx_set) != len(full_test_idx_list):
-            raise InvalidBenchmarkError("The test set contains duplicate indices")
+        for test_set_name, test_set_idx_list in split[1].items():
+            if len(test_set_idx_list) != len(set(test_set_idx_list)):
+                raise InvalidBenchmarkError(
+                    f'Test set with name "{test_set_name}" contains duplicate indices'
+                )
 
         # All indices are valid given the dataset
         dataset = self.dataset
@@ -306,18 +302,13 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         for m in sorted(self.metrics, key=lambda k: k.name):
             hash_fn.update(m.name.encode("utf-8"))
 
-        if not isinstance(self.split[1], dict):
-            split = self.split[0], {"test": self.split[1]}
-        else:
-            split = self.split
-
         # Train set
-        s = json.dumps(sorted(split[0]))
+        s = json.dumps(sorted(self.split[0]))
         hash_fn.update(s.encode("utf-8"))
 
         # Test sets
-        for k in sorted(split[1].keys()):
-            s = json.dumps(sorted(split[1][k]))
+        for k in sorted(self.split[1].keys()):
+            s = json.dumps(sorted(self.split[1][k]))
             hash_fn.update(k.encode("utf-8"))
             hash_fn.update(s.encode("utf-8"))
 
@@ -334,7 +325,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     @property
     def n_test_sets(self) -> int:
         """The number of test sets"""
-        return len(self.split[1]) if isinstance(self.split[1], dict) else 1
+        return len(self.split[1])
 
     @computed_field
     @property
@@ -369,9 +360,13 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     @property
     def test_set_labels(self) -> list[str]:
         """The labels of the test sets."""
-        if isinstance(self.split[1], dict):
-            return list(self.split[1].keys())
-        return ["test"]
+        return sorted(list(self.split[1].keys()))
+
+    @computed_field
+    @property
+    def test_set_sizes(self) -> list[str]:
+        """The sizes of the test sets."""
+        return {k: len(v) for k, v in self.split[1].items()}
 
     def _get_subset(self, indices, hide_targets=True, featurization_fn=None):
         """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
@@ -396,10 +391,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             return self._get_subset(vals, hide_targets=hide_targets, featurization_fn=featurization_fn)
 
         test_split = self.split[1]
-        if isinstance(test_split, dict):
-            test = {k: make_test_subset(v) for k, v in test_split.items()}
-        else:
-            test = make_test_subset(test_split)
+        test = {k: make_test_subset(v) for k, v in test_split.items()}
 
         return test
 
@@ -425,12 +417,16 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         train = self._get_subset(self.split[0], hide_targets=False, featurization_fn=featurization_fn)
         test = self._get_test_set(hide_targets=True, featurization_fn=featurization_fn)
 
+        # For improved UX, we return the object instead of the dictionary if there is only one test set.
+        # Internally, however, assume that the test set is always a dictionary simplifies the code.
+        if len(test) == 1:
+            test = test["test"]
         return train, test
 
     def evaluate(
         self,
-        y_pred: Optional[IncomingPredictionsType] = None,
-        y_prob: Optional[IncomingPredictionsType] = None,
+        y_pred: IncomingPredictionsType | None = None,
+        y_prob: IncomingPredictionsType | None = None,
     ) -> BenchmarkResults:
         """Execute the evaluation protocol for the benchmark, given a set of predictions.
 
@@ -472,15 +468,16 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
         y_true_subset = self._get_test_set(hide_targets=False)
+        y_true_values = {k: v.targets for k, v in y_true_subset.items()}
 
-        if isinstance(y_true_subset, dict):
-            y_true_values = {k: v.targets for k, v in y_true_subset.items()}
-        else:
-            y_true_values = y_true_subset.targets
+        # Simplify the case where there is only one test set
+        if len(y_true_values) == 1:
+            y_true_values = y_true_values["test"]
 
         scores = evaluate_benchmark(
             target_cols=self.target_cols,
             test_set_labels=self.test_set_labels,
+            test_set_sizes=self.test_set_sizes,
             metrics=self.metrics,
             y_true=y_true_values,
             y_pred=y_pred,

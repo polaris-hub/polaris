@@ -22,12 +22,12 @@ class BenchmarkPredictions(BaseModel):
         predictions: The predictions for the benchmark.
         target_labels: The target columns for the associated benchmark.
         test_set_labels: The names of the test sets for the associated benchmark.
-
     """
 
     predictions: PredictionsType
     target_labels: list[str]
     test_set_labels: list[str]
+    test_set_sizes: dict[str, int]
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -71,14 +71,21 @@ class BenchmarkPredictions(BaseModel):
         target_labels = validator.validate_python(data.get("target_labels"))
         test_set_labels = validator.validate_python(data.get("test_set_labels"))
 
+        validator = TypeAdapter(dict[str, int])
+        test_set_sizes = validator.validate_python(data.get("test_set_sizes"))
+
         # Normalize the predictions to a standard representation
         predictions = cls._convert_lists_to_arrays(predictions)
         predictions = cls._normalize_predictions(predictions, target_labels, test_set_labels)
+
+        # Normalize the predictions to a standard representation
+        cls._check_test_set_size(predictions, test_set_sizes)
 
         return {
             "predictions": predictions,
             "target_labels": target_labels,
             "test_set_labels": test_set_labels,
+            "test_set_sizes": test_set_sizes,
         }
 
     @classmethod
@@ -94,7 +101,7 @@ class BenchmarkPredictions(BaseModel):
         if cls._is_fully_specified(predictions, target_labels, test_set_labels):
             return predictions
 
-        # If not fully specified, we distinguish 3 cases based on the type of benchmark.
+        # If not fully specified, we distinguish 4 cases based on the type of benchmark.
         is_single_task = len(target_labels) == 1
         is_single_test = len(test_set_labels) == 1
 
@@ -104,7 +111,7 @@ class BenchmarkPredictions(BaseModel):
                 raise ValueError(
                     "The predictions for single-task, single test set benchmarks should be a numpy array."
                 )
-            predictions = {test_set_labels[0]: {target_labels[0]: np.array(predictions)}}
+            predictions = {test_set_labels[0]: {target_labels[0]: predictions}}
 
         # (3) Single-task, multiple test sets: We expect a dictionary with the test set labels as keys.
         elif is_single_task and not is_single_test:
@@ -113,7 +120,7 @@ class BenchmarkPredictions(BaseModel):
                     "The predictions for single-task, multiple test sets benchmarks "
                     "should be a dictionary with the test set labels as keys."
                 )
-            predictions = {k: {target_labels[0]: np.array(v)} for k, v in predictions.items()}
+            predictions = {k: {target_labels[0]: v} for k, v in predictions.items()}
 
         # (4) Multi-task, single test set: We expect a dictionary with the target labels as keys.
         elif not is_single_task and is_single_test:
@@ -158,9 +165,25 @@ class BenchmarkPredictions(BaseModel):
         return True
 
     @classmethod
+    def _check_test_set_size(
+        cls, predictions: PredictionsType, test_set_sizes: dict[str, int]
+    ) -> PredictionsType:
+        for test_set_label, test_set in predictions.items():
+            for target in test_set.values():
+                if test_set_label not in test_set_sizes:
+                    raise ValueError(f"Expected size for test set '{test_set_label}' is not defined")
+
+                if len(target) != test_set_sizes[test_set_label]:
+                    raise ValueError(
+                        f"Predictions size mismatch: The predictions for test set '{test_set_label}' "
+                        f"should have a size of {test_set_sizes[test_set_label]}, but have a size of {len(target)}."
+                    )
+        return predictions
+
+    @classmethod
     def _convert_lists_to_arrays(cls, predictions: IncomingPredictionsType) -> IncomingPredictionsType:
         """
-        Recursively converts all plain Python lists in the predictions dictionary to numpy arrays
+        Recursively converts all plain Python lists in the predictions object to numpy arrays
         """
 
         def convert_to_array(v):
