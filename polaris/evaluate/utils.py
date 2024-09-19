@@ -48,7 +48,6 @@ def mask_index(input_values):
     else:
         # Create a mask to identify NaNs
         mask = np.full(input_values.shape, True, dtype=bool)
-        print(mask.shape)
         # Iterate over the array to identify NaNs
         for index, value in np.ndenumerate(input_values):
             # Convert to float and check if it's NaN

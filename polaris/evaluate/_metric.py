@@ -76,7 +76,7 @@ class MetricInfo(BaseModel):
     is_multitask: bool = False
     kwargs: dict = Field(default_factory=dict)
     direction: DirectionType
-    y_type: Literal["y_pred", "y_prob", "y_score", "structure"] = "y_pred"
+    y_type: Literal["y_pred", "y_prob", "y_score"] = "y_pred"
 
 
 class Metric(Enum):
