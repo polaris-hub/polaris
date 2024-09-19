@@ -36,7 +36,7 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
         cls(split=(train_split, {"test": []}), **default_kwargs)
     # Non-exclusive partitions
     with pytest.raises(ValidationError):
-        cls(split=(train_split, test_split + train_split[:1]), **default_kwargs)
+        cls(split=(train_split, test_split["test"] + train_split[:1]), **default_kwargs)
     with pytest.raises(ValidationError):
         cls(split=(train_split, {"test1": test_split, "test2": train_split[:1]}), **default_kwargs)
     # Invalid indices
@@ -45,21 +45,22 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
     with pytest.raises(ValidationError):
         cls(split=(train_split + [-1], test_split), **default_kwargs)
     with pytest.raises(ValidationError):
-        cls(split=(train_split, test_split + [len(obj.dataset)]), **default_kwargs)
+        cls(split=(train_split, test_split["test"] + [len(obj.dataset)]), **default_kwargs)
     with pytest.raises(ValidationError):
-        cls(split=(train_split, test_split + [-1]), **default_kwargs)
+        cls(split=(train_split, test_split["test"] + [-1]), **default_kwargs)
     # Duplicate indices
     with pytest.raises(ValidationError):
         cls(split=(train_split + train_split[:1], test_split), **default_kwargs)
     with pytest.raises(ValidationError):
-        cls(split=(train_split, test_split + test_split[:1]), **default_kwargs)
+        cls(split=(train_split, test_split["test"] + test_split["test"][:1]), **default_kwargs)
     with pytest.raises(ValidationError):
         cls(
-            split=(train_split, {"test1": test_split, "test2": test_split + test_split[:1]}), **default_kwargs
+            split=(train_split, {"test1": test_split, "test2": test_split["test"] + test_split["test"][:1]}),
+            **default_kwargs,
         )
 
     # It should _not_ fail with duplicate indices across test partitions
-    cls(split=(train_split, {"test1": test_split, "test2": test_split}), **default_kwargs)
+    cls(split=(train_split, {"test1": test_split["test"], "test2": test_split["test"]}), **default_kwargs)
     # It should _not_ fail with missing indices
     cls(split=(train_split[:-1], test_split), **default_kwargs)
     # It should _not_ fail with an empty train set
@@ -178,7 +179,7 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     _check_for_failure(kwargs)
 
     kwargs = obj.model_dump()
-    kwargs["split"] = kwargs["split"][0], kwargs["split"][1][1:]
+    kwargs["split"] = kwargs["split"][0], kwargs["split"][1]["test"][1:]
     _check_for_failure(kwargs)
 
     # Metrics
