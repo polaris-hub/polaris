@@ -9,6 +9,7 @@ import numpy as np
 import zarr
 from loguru import logger
 from pydantic import PrivateAttr, computed_field, model_validator
+from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import _CACHE_SUBDIR, BaseDataset
@@ -49,7 +50,7 @@ class DatasetV2(BaseDataset):
     zarr_root_path: str
 
     @model_validator(mode="after")
-    def _validate_v2_dataset_model(self):
+    def _validate_v2_dataset_model(self) -> Self:
         """Verifies some dependencies between properties"""
 
         # Since the keys for subgroups are not ordered, we have no easy way to index these groups.

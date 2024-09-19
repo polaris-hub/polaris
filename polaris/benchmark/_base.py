@@ -16,6 +16,7 @@ from pydantic import (
     model_validator,
 )
 from sklearn.utils.multiclass import type_of_target
+from typing_extensions import Self
 
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset import CompetitionDataset, DatasetV1, Subset
@@ -163,7 +164,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return v
 
     @model_validator(mode="after")
-    def _validate_split(self):
+    def _validate_split(self) -> Self:
         """
         Verifies that:
           1) There are no empty test partitions
@@ -260,7 +261,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return v
 
     @model_validator(mode="after")
-    def _validate_model(self):
+    def _validate_model(self) -> Self:
         """
         Sets a default metric if missing.
         """
