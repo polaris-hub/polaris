@@ -11,6 +11,7 @@ import zarr
 from datamol.utils import fs as dmfs
 from loguru import logger
 from pydantic import PrivateAttr, computed_field, field_validator, model_validator
+from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import _CACHE_SUBDIR, BaseDataset
@@ -78,7 +79,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         return v
 
     @model_validator(mode="after")
-    def _validate_v1_dataset_model(self):
+    def _validate_v1_dataset_model(self) -> Self:
         """Verifies some dependencies between properties"""
 
         has_pointers = any(anno.is_pointer for anno in self.annotations.values())

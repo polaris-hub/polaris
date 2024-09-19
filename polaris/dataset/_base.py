@@ -14,6 +14,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from typing_extensions import Self
 
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
@@ -103,7 +104,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         return value
 
     @model_validator(mode="after")
-    def _validate_base_dataset_model(self):
+    def _validate_base_dataset_model(self) -> Self:
         # Verify that all annotations are for columns that exist
         if any(k not in self.columns for k in self.annotations):
             raise InvalidDatasetError(

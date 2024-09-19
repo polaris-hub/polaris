@@ -1,4 +1,5 @@
 from pydantic import model_validator
+from typing_extensions import Self
 
 from polaris.dataset._dataset import DatasetV1
 from polaris.utils.errors import InvalidCompetitionError
@@ -13,8 +14,10 @@ class CompetitionDataset(DatasetV1):
     """
 
     @model_validator(mode="after")
-    def _validate_model(self):
+    def _validate_model(self) -> Self:
         """We reject the instantiation of competition datasets which leverage Zarr for the time being"""
 
         if self.uses_zarr:
             raise InvalidCompetitionError("Pointer columns are not currently supported in competitions.")
+
+        return self
