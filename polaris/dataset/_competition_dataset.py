@@ -19,3 +19,5 @@ class CompetitionDataset(DatasetV1):
 
         if self.uses_zarr:
             raise InvalidCompetitionError("Pointer columns are not currently supported in competitions.")
+
+        return self
