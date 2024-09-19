@@ -206,6 +206,24 @@ def test_invalid_benchmark_predictions_errors():
             test_set_sizes={"test": 3, "test2": 3},
         )
 
+    # Incorrect size
+    with pytest.raises(ValueError):
+        BenchmarkPredictions(
+            predictions={"test": {"col": [1, 2, 3, 4]}},
+            target_cols=["col1"],
+            test_set_labels=["test"],
+            test_set_sizes={"test": 3},
+        )
+
+    # Invalid test_set_sizes
+    with pytest.raises(ValueError):
+        BenchmarkPredictions(
+            predictions={"test": {"col": [1, 2, 3]}},
+            target_cols=["col1"],
+            test_set_labels=["test"],
+            test_set_sizes={"test1": 3},
+        )
+
 
 def test_benchmark_predictions_serialization():
     predictions = BenchmarkPredictions(
