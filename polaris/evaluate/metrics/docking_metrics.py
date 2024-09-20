@@ -37,8 +37,10 @@ def _rmsd(mol_probe: dm.Mol, mol_ref: dm.Mol) -> float:
             prbMol=mol_probe, refMol=mol_ref, symmetrizeConjugatedTerminalGroups=True, prbId=-1, refId=-1
         )
 
+    # This can happen if ...
     except RuntimeError:
         pass
+    # This can happen if ...
     except ValueError:
         pass
 
