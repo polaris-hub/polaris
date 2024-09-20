@@ -1,18 +1,18 @@
 # This script includes docking related evaluation metrics.
 
 from typing import Union, List
+from loguru import logger
 
 import numpy as np
 from rdkit.Chem.rdMolAlign import CalcRMS
+
 import datamol as dm
-
-
-## The following rmsd implementation are modified based on ppsebusters https://github.com/maabuu/posebusters/blob/main/posebusters/modules/rmsd.py
 
 
 def _rmsd(mol_probe: dm.Mol, mol_ref: dm.Mol) -> float:
     """Calculate RMSD between predicted molecule and closest ground truth molecule.
-       The RMSD is calculated with first conformer of predicted molecule and only consider heavy atoms for RMSD calculation
+       The RMSD is calculated with first conformer of predicted molecule and only consider heavy atoms for RMSD calculation.
+       It is assumed that the predicted binding conformers are extracted from the docking output, where the receptor (protein) coordinates have been aligned with the original crystal structure.
 
     Args:
         mol_probe: Predicted molecule (docked ligand) with exactly one conformer.
@@ -37,10 +37,10 @@ def _rmsd(mol_probe: dm.Mol, mol_ref: dm.Mol) -> float:
             prbMol=mol_probe, refMol=mol_ref, symmetrizeConjugatedTerminalGroups=True, prbId=-1, refId=-1
         )
 
-    # This can happen if ...
+    # Error when computing with CalcRMS
     except RuntimeError:
         pass
-    # This can happen if ...
+    # Error when there are issue with probe molecule or reference molecule
     except ValueError:
         pass
 
@@ -49,11 +49,13 @@ def _rmsd(mol_probe: dm.Mol, mol_ref: dm.Mol) -> float:
 
 def rmsd_coverage(y_pred: Union[str, List[dm.Mol]], y_true: Union[str, list[dm.Mol]], max_rsmd: float = 2):
     """
-    Calculate the coverage of molecules with an RMSD less than 2 Å compared to the reference molecule conformer.
+    Calculate the coverage of molecules with an RMSD less than a threshold (2 Å by default) compared to the reference molecule conformer.
+
+    It is assumed that the predicted binding conformers are extracted from the docking output, where the receptor (protein) coordinates have been aligned with the original crystal structure.
 
     Attributes:
-        mols_probe: List of predicted binding conformers.
-        mols_ref: List of ground truth binding confoermers.
+        y_pred: List of predicted binding conformers.
+        y_true: List of ground truth binding confoermers.
         max_rsmd: The threshold for determining acceptable rsmd.
     """
 
@@ -65,5 +67,13 @@ def rmsd_coverage(y_pred: Union[str, List[dm.Mol]], y_true: Union[str, list[dm.M
     rmsds = np.array(
         [_rmsd(mol_probe=mol_probe, mol_ref=mol_ref) for mol_probe, mol_ref in zip(y_pred, y_true)]
     )
+
+    nan_count = np.sum(np.isnan(rmsds))
+    if nan_count > 0:
+        logger.warning(
+            f"The rmsd results include {nan_count} nan values from the provided dataset. \
+        The converage value is calculated with these nan values, which may affect the accuracy of the results. ",
+            UserWarning,
+        )
 
     return np.nansum(rmsds <= max_rsmd) / len(rmsds)
