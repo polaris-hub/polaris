@@ -191,7 +191,15 @@ def test_metrics_docking(test_docking_benchmark: SingleTaskBenchmarkSpecificatio
     _, test = test_docking_benchmark.get_train_test_split()
 
     predictions = np.array([caffeine, ibuprofen])
-
     result = test_docking_benchmark.evaluate(y_pred=predictions)
+
     for metric in test_docking_benchmark.metrics:
         assert metric in result.results.Metric.tolist()
+
+    # sanity check
+    assert result.results.Score.values[0] == 1
+
+    predictions = np.array([ibuprofen, caffeine])
+    result = test_docking_benchmark.evaluate(y_pred=predictions)
+    # sanity check
+    assert result.results.Score.values[0] == 0
