@@ -1,7 +1,6 @@
 # This script includes docking related evaluation metrics.
 
 from typing import Union, List
-from loguru import logger
 
 import numpy as np
 from rdkit.Chem.rdMolAlign import CalcRMS
@@ -32,19 +31,9 @@ def _rmsd(mol_probe: dm.Mol, mol_ref: dm.Mol) -> float:
     mol_ref = dm.remove_hs(mol_ref)
 
     # calculate RMSD
-    try:
-        return CalcRMS(
-            prbMol=mol_probe, refMol=mol_ref, symmetrizeConjugatedTerminalGroups=True, prbId=-1, refId=-1
-        )
-
-    # Error when computing with CalcRMS
-    except RuntimeError:
-        pass
-    # Error when there are issue with probe molecule or reference molecule
-    except ValueError:
-        pass
-
-    return np.nan
+    return CalcRMS(
+        prbMol=mol_probe, refMol=mol_ref, symmetrizeConjugatedTerminalGroups=True, prbId=-1, refId=-1
+    )
 
 
 def rmsd_coverage(y_pred: Union[str, List[dm.Mol]], y_true: Union[str, list[dm.Mol]], max_rsmd: float = 2):
@@ -67,13 +56,5 @@ def rmsd_coverage(y_pred: Union[str, List[dm.Mol]], y_true: Union[str, list[dm.M
     rmsds = np.array(
         [_rmsd(mol_probe=mol_probe, mol_ref=mol_ref) for mol_probe, mol_ref in zip(y_pred, y_true)]
     )
-
-    nan_count = np.sum(np.isnan(rmsds))
-    if nan_count > 0:
-        logger.warning(
-            f"The rmsd results include {nan_count} nan values from the provided dataset. \
-        The converage value is calculated with these nan values, which may affect the accuracy of the results. ",
-            UserWarning,
-        )
-
-    return np.nansum(rmsds <= max_rsmd) / len(rmsds)
+    print(rmsds)
+    return np.sum(rmsds <= max_rsmd) / len(rmsds)
