@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import datamol as dm
+
 import polaris as po
 from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
@@ -199,7 +201,8 @@ def test_metrics_docking(test_docking_benchmark: SingleTaskBenchmarkSpecificatio
     # sanity check
     assert result.results.Score.values[0] == 1
 
-    predictions = np.array([ibuprofen, caffeine])
+    conf_caffeine = dm.conformers.generate(mol=caffeine, n_confs=1, random_seed=333)
+    conf_ibuprofen = dm.conformers.generate(mol=ibuprofen, n_confs=1, random_seed=333)
+    predictions = np.array([conf_caffeine, conf_ibuprofen])
     result = test_docking_benchmark.evaluate(y_pred=predictions)
-    # sanity check
     assert result.results.Score.values[0] == 0
