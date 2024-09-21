@@ -42,6 +42,20 @@ def safe_mask(
         return input_values[test_label][target_label][mask]
 
 
+def mask_index(input_values):
+    if np.issubdtype(input_values.dtype, np.number):
+        mask = ~np.isnan(input_values)
+    else:
+        # Create a mask to identify NaNs
+        mask = np.full(input_values.shape, True, dtype=bool)
+        # Iterate over the array to identify NaNs
+        for index, value in np.ndenumerate(input_values):
+            # Convert to float and check if it's NaN
+            if value is None:
+                mask[index] = False
+    return mask
+
+
 def evaluate_benchmark(
     target_cols: list[str],
     metrics: list[Metric],
@@ -84,7 +98,9 @@ def evaluate_benchmark(
             for target_label, y_true_target in y_true_subset.items():
                 # Single-task metrics for a multi-task benchmark
                 # In such a setting, there can be NaN values, which we thus have to filter out.
-                mask = ~np.isnan(y_true_target)
+
+                mask = mask_index(y_true_target)
+
                 score = metric(
                     y_true=y_true_target[mask],
                     y_pred=safe_mask(y_pred, test_label, target_label, mask),

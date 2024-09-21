@@ -162,6 +162,7 @@ class TargetType(Enum):
 
     REGRESSION = "regression"
     CLASSIFICATION = "classification"
+    DOCKING = "docking"
 
 
 class TaskType(Enum):

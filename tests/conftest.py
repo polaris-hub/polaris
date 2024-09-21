@@ -15,6 +15,8 @@ from polaris.competition import CompetitionSpecification
 from polaris.dataset import ColumnAnnotation, CompetitionDataset, DatasetV1
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.utils.types import HubOwner
+from polaris.dataset.converters import SDFConverter
+from polaris.dataset import DatasetFactory
 
 
 def check_version(artifact):
@@ -378,6 +380,33 @@ def test_multi_task_benchmark_multiple_test_sets(test_dataset):
         split=(train_indices, test_indices),
         target_cols=["expt", "calc"],
         input_cols="smiles",
+    )
+    check_version(benchmark)
+    return benchmark
+
+
+@pytest.fixture(scope="function")
+def test_docking_dataset(tmpdir, sdf_files, test_org_owner):
+    # toy docking dataset
+    factory = DatasetFactory(tmpdir.join("ligands.zarr"))
+
+    converter = SDFConverter(mol_prop_as_cols=True)
+    factory.register_converter("sdf", converter)
+    factory.add_from_files(sdf_files, axis=0)
+    dataset = factory.build()
+    check_version(dataset)
+    return dataset
+
+
+@pytest.fixture(scope="function")
+def test_docking_benchmark(test_docking_dataset):
+    benchmark = SingleTaskBenchmarkSpecification(
+        name="single-task-single-set-benchmark",
+        dataset=test_docking_dataset,
+        metrics=["rmsd_coverage"],
+        split=([], [0, 1]),
+        target_cols=["molecule"],
+        input_cols=["smiles"],
     )
     check_version(benchmark)
     return benchmark
