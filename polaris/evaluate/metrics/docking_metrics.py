@@ -19,7 +19,7 @@ def _rmsd(mol_probe: dm.Mol, mol_ref: dm.Mol) -> float:
             present, the lowest RMSD will be reported.
 
     Returns:
-        PoseBusters results dictionary.
+        Returns the RMS between two molecules, taking symmetry into account.
     """
 
     # copy the molecule for modification.
