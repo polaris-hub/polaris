@@ -69,7 +69,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
     @field_validator("table", mode="before")
     @classmethod
-    def _load_table(cls, v):
+    def _load_table(cls, v) -> pd.DataFrame:
         """
         Load from path if not a dataframe
         """
@@ -81,7 +81,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
     @field_validator("table")
     @classmethod
-    def _validate_table(cls, v):
+    def _validate_table(cls, v: pd.DataFrame) -> pd.DataFrame:
         """
         Make sure that the pandas index is contiguous and starts at 0, and
         that all columns are named and unique.
@@ -234,7 +234,11 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         return arr
 
+<<<<<<< HEAD
     def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
+=======
+    def upload_to_hub(self, owner: HubOwner | str, access: AccessType = "private") -> None:
+>>>>>>> 6bbc284 (Review feedback)
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.

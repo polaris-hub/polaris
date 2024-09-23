@@ -14,9 +14,9 @@ from pydantic import (
 )
 from pydantic.alias_generators import to_camel
 
-import polaris as po
+import polaris
 from polaris.utils.misc import slugify
-from polaris.utils.types import HubOwner, SlugCompatibleStringType, SlugStringType
+from polaris.utils.types import ArtifactUrn, HubOwner, SlugCompatibleStringType, SlugStringType
 
 
 class BaseArtifactModel(BaseModel):
@@ -50,7 +50,7 @@ class BaseArtifactModel(BaseModel):
     tags: list[str] = Field(default_factory=list)
     user_attributes: dict[str, str] = Field(default_factory=dict)
     owner: HubOwner | None = None
-    polaris_version: str = po.__version__
+    polaris_version: str = polaris.__version__
 
     @computed_field
     @property
@@ -66,7 +66,7 @@ class BaseArtifactModel(BaseModel):
 
     @computed_field
     @property
-    def urn(self) -> str | None:
+    def urn(self) -> ArtifactUrn | None:
         if self.owner and self.slug:
             return self.urn_for(self.owner, self.slug)
         return None
@@ -78,7 +78,7 @@ class BaseArtifactModel(BaseModel):
             # Make sure it is a valid semantic version
             Version(value)
 
-        current_version = po.__version__
+        current_version = polaris.__version__
         if value != current_version:
             logger.info(
                 f"The version of Polaris that was used to create the artifact ({value}) is different "
@@ -118,5 +118,5 @@ class BaseArtifactModel(BaseModel):
             f.write(self.model_dump_json())
 
     @classmethod
-    def urn_for(cls, owner: str | HubOwner, name: str) -> str:
+    def urn_for(cls, owner: str | HubOwner, name: str) -> ArtifactUrn:
         return f"urn:polaris:{cls._artifact_type}:{owner}:{slugify(name)}"

@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from hashlib import md5
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Literal, Mapping, Sequence, TypeAlias
+from typing import Any, Generator, Literal, Mapping, Sequence, TypeAlias
 
 import boto3
 from authlib.integrations.httpx_client import OAuth2Client
@@ -17,6 +17,7 @@ from zarr.storage import Store
 
 from polaris.hub.oauth import HubStorageOAuth2Token, StoragePaths
 from polaris.utils.errors import PolarisHubError
+from polaris.utils.types import ArtifactUrn
 
 Scope: TypeAlias = Literal["read", "write"]
 
@@ -68,7 +69,7 @@ class S3Store(Store):
         endpoint_url: str,
         part_size: int = 10 * 1024 * 1024,  # 10MB
         content_type: str = "application/octet-stream",
-    ):
+    ) -> None:
         bucket_name, prefix = path.split("/", 1)
 
         self.s3_client = boto3.client(
@@ -109,7 +110,7 @@ class S3Store(Store):
             parts = []
             for i in range(0, len(value), self.part_size):
                 part_number = i // self.part_size + 1
-                part = value[i : i + self.part_size]
+                part = value[i: i + self.part_size]
                 response = self.s3_client.upload_part(
                     Bucket=self.bucket_name,
                     Key=full_key,
@@ -118,13 +119,20 @@ class S3Store(Store):
                     Body=part,
                     ContentMD5=b64encode(md5(part).digest()).decode(),
                 )
-                parts.append({"ETag": response["ETag"], "PartNumber": part_number})
+                parts.append(
+                    {
+                        "ETag": response["ETag"],
+                        "PartNumber": part_number
+                    }
+                    )
 
             self.s3_client.complete_multipart_upload(
-                Bucket=self.bucket_name, Key=full_key, UploadId=upload_id, MultipartUpload={"Parts": parts}
+                Bucket=self.bucket_name, Key=full_key, UploadId=upload_id, MultipartUpload={
+                    "Parts": parts
+                }
             )
 
-    def listdir(self, path: str = "") -> Sequence[str]:
+    def listdir(self, path: str = "") -> Generator[str, None, None]:
         """
         For a given path, list all the "subdirectories" and "files" for that path.
         The returned paths are relative to the input path.
@@ -146,13 +154,13 @@ class S3Store(Store):
             for page in page_iterator:
                 # Contents are "files"
                 for obj in page.get("Contents", []):
-                    key = obj["Key"][len(prefix) :]
+                    key = obj["Key"][len(prefix):]
                     if key:
                         yield key.split("/")[0]
 
                 # CommonPrefixes are "subdirectories"
                 for common_prefix in page.get("CommonPrefixes", []):
-                    yield common_prefix["Prefix"][len(prefix) :].strip("/")
+                    yield common_prefix["Prefix"][len(prefix):].strip("/")
 
     def getitems(self, keys: Sequence[str], *, contexts: Mapping[str, Context]) -> dict[str, Any]:
         """
@@ -258,7 +266,7 @@ class S3Store(Store):
                     return False
                 raise e
 
-    def __iter__(self) -> Sequence[str]:
+    def __iter__(self) -> Generator[str, None, None]:
         """
         Iterate through all the keys in the store.
         """
@@ -269,7 +277,7 @@ class S3Store(Store):
 
             for page in page_iterator:
                 for obj in page.get("Contents", []):
-                    yield obj["Key"][len(self.prefix) + 1 :]
+                    yield obj["Key"][len(self.prefix) + 1:]
 
     def __len__(self) -> int:
         """
@@ -286,12 +294,12 @@ class S3Store(Store):
 class StorageTokenAuth:
     token: HubStorageOAuth2Token | None
 
-    def __init__(self, token: dict[str, Any] | None, *args):
+    def __init__(self, token: dict[str, Any] | None, *args) -> None:
         self.token = None
         if token:
             self.set_token(token)
 
-    def set_token(self, token: dict[str, Any] | HubStorageOAuth2Token):
+    def set_token(self, token: dict[str, Any] | HubStorageOAuth2Token) -> None:
         self.token = HubStorageOAuth2Token(**token) if isinstance(token, dict) else token
 
 
@@ -305,7 +313,7 @@ class StorageSession(OAuth2Client):
 
     token_auth_class = StorageTokenAuth
 
-    def __init__(self, hub_client, scope: Scope, resource: str):
+    def __init__(self, hub_client, scope: Scope, resource: ArtifactUrn):
         self.hub_client = hub_client
         self.resource = resource
 
@@ -323,7 +331,7 @@ class StorageSession(OAuth2Client):
         self.ensure_active_token()
         return self
 
-    def _prepare_token_endpoint_body(self, body, grant_type, **kwargs):
+    def _prepare_token_endpoint_body(self, body, grant_type, **kwargs) -> str:
         """
         Override to support required fields for the token exchange grant type.
         See https://datatracker.ietf.org/doc/html/rfc8693#name-request

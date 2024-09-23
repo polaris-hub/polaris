@@ -124,6 +124,11 @@ ChecksumStrategy: TypeAlias = Literal["verify", "verify_unless_zarr", "ignore"]
 Type to specify which action to take to verify the data integrity of an artifact through a checksum.
 """
 
+ArtifactUrn: TypeAlias = Annotated[str, StringConstraints(pattern=r"^urn:polaris:\w+:\w+:\w+$")]
+"""
+A Uniform Resource Name (URN) for an artifact on the Polaris Hub.
+"""
+
 RowIndex: TypeAlias = int | str
 ColumnIndex: TypeAlias = str
 DatasetIndex: TypeAlias = RowIndex | tuple[RowIndex, ColumnIndex]
