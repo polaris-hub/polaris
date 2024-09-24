@@ -27,7 +27,6 @@ from polaris.dataset import CompetitionDataset, Dataset, DatasetV1
 from polaris.evaluate import BenchmarkResults, CompetitionPredictions, CompetitionResults
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
-from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
 from polaris.hub.storage import StorageSession
 from polaris.utils.context import ProgressIndicator
@@ -43,7 +42,6 @@ from polaris.utils.types import (
     ArtifactSubtype,
     ChecksumStrategy,
     HubOwner,
-    IOMode,
     SupportedLicenseType,
     TimeoutTypes,
     ZarrConflictResolution,
@@ -359,44 +357,6 @@ class PolarisHubClient(OAuth2Client):
 
             return dataset
 
-    def open_zarr_file(
-        self, owner: str | HubOwner, name: str, path: str, mode: IOMode, as_consolidated: bool = True
-    ) -> zarr.hierarchy.Group:
-        """Open a Zarr file from a Polaris dataset
-
-        Args:
-            owner: Which Hub user or organization owns the artifact.
-            name: Name of the dataset.
-            path: Path to the Zarr file within the dataset.
-            mode: The mode in which the file is opened.
-            as_consolidated: Whether to open the store with consolidated metadata for optimized reading.
-                This is only applicable in 'r' and 'r+' modes.
-
-        Returns:
-            The Zarr object representing the dataset.
-        """
-        if as_consolidated and mode not in ["r", "r+"]:
-            raise ValueError("Consolidated archives can only be used with 'r' or 'r+' mode.")
-
-        polaris_fs = PolarisFileSystem(
-            polaris_client=self,
-            dataset_owner=owner,
-            dataset_name=name,
-        )
-
-        try:
-            store = zarr.storage.FSStore(path, fs=polaris_fs)
-            if mode in ["r", "r+"] and as_consolidated:
-                return zarr.open_consolidated(store, mode=mode)
-            return zarr.open(store, mode=mode)
-
-        except HTTPStatusError as error:
-            # In this case, we can pass the response to provide more information
-            raise PolarisHubError(message="Error opening Zarr store", response=error.response) from error
-        # This catches all other types of exceptions
-        except Exception as error:
-            raise PolarisHubError(message="Error opening Zarr store") from error
-
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.
 
@@ -587,9 +547,7 @@ class PolarisHubClient(OAuth2Client):
             # Get the serialized data-model
             # We exclude the table as it handled separately and we exclude the cache_dir as it is user-specific
             dataset.owner = HubOwner.normalize(owner or dataset.owner)
-            dataset_json = dataset.model_dump(
-                exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True
-            )
+            dataset_json = dataset.model_dump(exclude={"table"}, exclude_none=True, by_alias=True)
 
             # If the dataset uses Zarr, we will save the Zarr archive to the Hub as well
             if dataset.uses_zarr:
@@ -749,7 +707,10 @@ class PolarisHubClient(OAuth2Client):
             return response
 
     def get_competition(
-        self, owner: Union[str, HubOwner], name: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr",
+        self,
+        owner: str | HubOwner,
+        name: str,
+        verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> CompetitionSpecification:
         """Load a competition from the Polaris Hub.
 

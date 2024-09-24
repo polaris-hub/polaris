@@ -25,7 +25,8 @@ from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
-    ChecksumStrategy, DatasetIndex,
+    ChecksumStrategy,
+    DatasetIndex,
     HttpUrlString,
     HubOwner,
     SupportedLicenseType,
@@ -57,7 +58,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         source: The data source, e.g. a DOI, Github repo or URI.
         license: The dataset license. Polaris only supports some Creative Commons licenses. See [`SupportedLicenseType`][polaris.utils.types.SupportedLicenseType] for accepted ID values.
         curation_reference: A reference to the curation process, e.g. a DOI, Github repo or URI.
-        cache_dir: Where the dataset would be cached if you call the `cache()` method.
+        _cache_dir: Where the dataset would be cached if you call the `cache()` method.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
 
     Raises:
@@ -79,7 +80,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     # Private attributes
     _zarr_root: zarr.Group | None = PrivateAttr(None)
     _zarr_data: MutableMapping[str, np.ndarray] | None = PrivateAttr(None)
-    _client = PrivateAttr(None)  # Optional[PolarisHubClient]
     _warn_about_remote_zarr: bool = PrivateAttr(True)
     _cache_dir: str | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.
     _verify_checksum_strategy: ChecksumStrategy = PrivateAttr("verify_unless_zarr")
@@ -93,13 +93,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     def _serialize_adapters(self, value: dict[str, Adapter]):
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
-
-    @field_serializer("cache_dir", "zarr_root_path")
-    def _serialize_paths(value):
-        """Serialize the paths"""
-        if value is not None:
-            value = str(value)
-        return value
 
     @model_validator(mode="after")
     def _validate_base_dataset_model(self) -> Self:
@@ -122,17 +115,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             self.annotations[c].dtype = self.dtypes[c]
 
         return self
-
-    @property
-    def client(self):
-        """The Polaris Hub client used to interact with the Polaris Hub."""
-
-        # Import it here to prevent circular imports
-        from polaris.hub.client import PolarisHubClient
-
-        if self._client is None:
-            self._client = PolarisHubClient()
-        return self._client
 
     @property
     def uses_zarr(self) -> bool:
@@ -318,8 +300,8 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         Returns:
             The path to the cache directory.
         """
-        self.to_json(self.cache_dir, load_zarr_from_new_location=True)
-        return self.cache_dir
+        self.to_json(self._cache_dir, load_zarr_from_new_location=True)
+        return self._cache_dir
 
     def size(self) -> tuple[int, int]:
         return self.n_rows, self.n_columns
@@ -352,8 +334,3 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
     def __str__(self):
         return self.__repr__()
-
-    def __del__(self):
-        """Close the connection of the client"""
-        if self._client is not None:
-            self._client.close()

@@ -30,7 +30,7 @@ def test_load_data(tmp_path, with_slice, with_caching):
     dataset = DatasetV1(table=table, annotations={"A": {"is_pointer": True}}, zarr_root_path=zarr_path)
 
     if with_caching:
-        dataset.cache_dir = fs.join(tmpdir, "cache")
+        dataset._cache_dir = fs.join(tmpdir, "cache")
         dataset.cache()
 
     data = dataset.get_data(row=0, col="A")
@@ -132,7 +132,7 @@ def test_dataset_caching(zarr_archive, tmpdir):
     cached_dataset = create_dataset_from_file(zarr_archive, tmpdir.join("original2"))
     assert original_dataset == cached_dataset
 
-    cached_dataset.cache_dir = tmpdir.join("cached").strpath
+    cached_dataset._cache_dir = tmpdir.join("cached").strpath
     cache_dir = cached_dataset.cache(verify_checksum=True)
     assert cached_dataset.zarr_root_path.startswith(cache_dir)
 

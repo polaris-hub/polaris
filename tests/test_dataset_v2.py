@@ -13,7 +13,7 @@ from polaris.dataset import Subset
 from polaris.dataset._factory import DatasetFactory
 from polaris.dataset.converters._pdb import PDBConverter
 from polaris.dataset.zarr._manifest import generate_zarr_manifest
-from polaris.experimental._dataset_v2 import _INDEX_ARRAY_KEY, DatasetV2
+from polaris.experimental._dataset_v2 import DatasetV2, _INDEX_ARRAY_KEY
 
 
 def test_dataset_v2_get_columns(test_dataset_v2):
@@ -76,7 +76,7 @@ def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
 
 def test_dataset_v2_caching(test_dataset_v2, tmpdir):
     cache_dir = tmpdir.join("cache").strpath
-    test_dataset_v2.cache_dir = cache_dir
+    test_dataset_v2._cache_dir = cache_dir
     test_dataset_v2.cache()
     assert str(test_dataset_v2.zarr_root_path).startswith(cache_dir)
 
@@ -243,7 +243,7 @@ def test_zarr_manifest(test_dataset_v2):
     root = zarr.open(test_dataset_v2.zarr_root_path, "a")
     root.array("C", data=np.random.random((100, 2048)), chunks=(1, None))
 
-    generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2.cache_dir)
+    generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2._cache_dir)
 
     # Get the length of the updated manifest file
     post_change_manifest_length = len(pd.read_parquet(test_dataset_v2.zarr_manifest_path))
@@ -267,5 +267,15 @@ def test_dataset_v2__get_item__(test_dataset_v2, zarr_archive):
         for k in d1:
             assert np.array_equal(d1[k], d2[k])
 
-    _check_row_equality(test_dataset_v2[0], {"A": root["A"][0, :], "B": root["B"][0, :]})
-    _check_row_equality(test_dataset_v2[10], {"A": root["A"][10, :], "B": root["B"][10, :]})
+    _check_row_equality(
+        test_dataset_v2[0], {
+            "A": root["A"][0, :],
+            "B": root["B"][0, :]
+        }
+        )
+    _check_row_equality(
+        test_dataset_v2[10], {
+            "A": root["A"][10, :],
+            "B": root["B"][10, :]
+        }
+        )

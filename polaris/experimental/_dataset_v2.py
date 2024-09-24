@@ -1,8 +1,8 @@
 import json
 import re
-import uuid
 from pathlib import Path
 from typing import Any, ClassVar, Literal
+from uuid import uuid4
 
 import fsspec
 import numpy as np
@@ -12,7 +12,7 @@ from pydantic import PrivateAttr, computed_field, model_validator
 from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
-from polaris.dataset._base import _CACHE_SUBDIR, BaseDataset
+from polaris.dataset._base import BaseDataset, _CACHE_SUBDIR
 from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
@@ -41,6 +41,7 @@ class DatasetV2(BaseDataset):
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
     """
+    _artifact_type = "dataset"
 
     version: ClassVar[Literal[2]] = 2
     _zarr_manifest_path: str | None = PrivateAttr(None)
@@ -78,11 +79,18 @@ class DatasetV2(BaseDataset):
                 f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
             )
 
-        # Set the default cache dir if none and make sure it exists
-        if self.cache_dir is None:
-            dataset_id = self._zarr_manifest_md5sum if self.has_zarr_manifest_md5sum else str(uuid.uuid4())
-            self.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        return self
+
+    @model_validator(mode="after")
+    def _ensure_cache_dir_exists(self) -> Self:
+        """
+        Set the default cache dir if none and make sure it exists
+        """
+        if self._cache_dir is None:
+            dataset_id = self._zarr_manifest_md5sum if self.has_zarr_manifest_md5sum else str(uuid4())
+            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id)
+        fs, path = fsspec.url_to_fs(self._cache_dir)
+        fs.mkdirs(path, exist_ok=True)
 
         return self
 
@@ -122,7 +130,7 @@ class DatasetV2(BaseDataset):
     @property
     def zarr_manifest_path(self) -> str:
         if self._zarr_manifest_path is None:
-            zarr_manifest_path = generate_zarr_manifest(self.zarr_root_path, self.cache_dir)
+            zarr_manifest_path = generate_zarr_manifest(self.zarr_root_path, self._cache_dir)
             self._zarr_manifest_path = zarr_manifest_path
 
         return self._zarr_manifest_path
@@ -202,7 +210,6 @@ class DatasetV2(BaseDataset):
         """
         with fsspec.open(path, "r") as f:
             data = json.load(f)
-        data.pop("cache_dir", None)
         return cls.model_validate(data)
 
     def to_json(
@@ -231,7 +238,7 @@ class DatasetV2(BaseDataset):
         new_zarr_root_path = str(destination / "data.zarr")
 
         # Lu: Avoid serilizing and sending None to hub app.
-        serialized = self.model_dump(exclude={"cache_dir"}, exclude_none=True)
+        serialized = self.model_dump(exclude_none=True)
         serialized["zarrRootPath"] = new_zarr_root_path
 
         # Copy over Zarr data to the destination

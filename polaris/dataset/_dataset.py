@@ -1,8 +1,8 @@
 import json
-import uuid
 from hashlib import md5
 from pathlib import Path
 from typing import Any, ClassVar, List, Literal
+from uuid import uuid4
 
 import fsspec
 import numpy as np
@@ -57,7 +57,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
     """
 
-    artifact_type = "dataset"
+    _artifact_type = "dataset"
     version: ClassVar[Literal[1]] = 1
 
     # Public attributes
@@ -106,12 +106,18 @@ class DatasetV1(BaseDataset, ChecksumMixin):
                 "The zarr_root_path should only be specified when there are pointer columns"
             )
 
-        # Set the default cache dir if none and make sure it exists
-        if self.cache_dir is None:
-            dataset_id = self._md5sum if self.has_md5sum else str(uuid.uuid4())
-            self.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
-        # TODO: Use fsspec here
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        return self
+
+    @model_validator(mode="after")
+    def _ensure_cache_dir_exists(self) -> Self:
+        """
+        Set the default cache dir if none and make sure it exists
+        """
+        if self._cache_dir is None:
+            dataset_id = self._md5sum if self.has_md5sum else str(uuid4())
+            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id)
+        fs, path = fsspec.url_to_fs(self._cache_dir)
+        fs.mkdirs(path, exist_ok=True)
 
         return self
 
@@ -192,7 +198,9 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         """Return the dtype for each of the columns for the dataset"""
         return {col: self.table[col].dtype for col in self.columns}
 
-    def get_data(self, row: str | int, col: str, adapters: dict[str, Adapter] | None = None) -> np.ndarray | Any:
+    def get_data(
+        self, row: str | int, col: str, adapters: dict[str, Adapter] | None = None
+    ) -> np.ndarray | Any:
         """Since the dataset might contain pointers to external files, data retrieval is more complicated
         than just indexing the `table` attribute. This method provides an end-point for seamlessly
         accessing the underlying data.
@@ -234,11 +242,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         return arr
 
-<<<<<<< HEAD
     def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
-=======
-    def upload_to_hub(self, owner: HubOwner | str, access: AccessType = "private") -> None:
->>>>>>> 6bbc284 (Review feedback)
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
@@ -257,7 +261,6 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         """
         with fsspec.open(path, "r") as f:
             data = json.load(f)
-        data.pop("cache_dir", None)
         return cls.model_validate(data)
 
     def to_json(
@@ -295,7 +298,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         new_zarr_root_path = str(destination / "data.zarr")
 
         # Lu: Avoid serializing and sending None to hub app.
-        serialized = self.model_dump(exclude={"cache_dir"}, exclude_none=True)
+        serialized = self.model_dump(exclude_none=True)
         serialized["table"] = table_path
 
         # Copy over Zarr data to the destination
