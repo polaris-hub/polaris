@@ -29,14 +29,14 @@ class BaseArtifactModel(BaseModel):
         Only when uploading to the Hub, some of the attributes are required.
 
     Attributes:
-        name: A slug-compatible name for the dataset.
-            Together with the owner, this is used by the Hub to uniquely identify the benchmark.
-        description: A beginner-friendly, short description of the dataset.
-        tags: A list of tags to categorize the benchmark by. This is used by the hub to search over benchmarks.
+        name: A slug-compatible name for the artifact.
+            Together with the owner, this is used by the Hub to uniquely identify the artifact.
+        description: A beginner-friendly, short description of the artifact.
+        tags: A list of tags to categorize the artifact by. This is used by the hub to search over artifacts.
         user_attributes: A dict with additional, textual user attributes.
-        owner: A slug-compatible name for the owner of the dataset.
-            If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
-            Together with the name, this is used by the Hub to uniquely identify the benchmark.
+        owner: A slug-compatible name for the owner of the artifact.
+            If the artifact comes from the Polaris Hub, this is the associated owner (organization or user).
+            Together with the name, this is used by the Hub to uniquely identify the artifact.
         polaris_version: The version of the Polaris library that was used to create the artifact.
     """
 
@@ -102,7 +102,7 @@ class BaseArtifactModel(BaseModel):
         """Loads an artifact from a JSON file.
 
         Args:
-            path: Loads a benchmark specification from a JSON file.
+            path: Path to a JSON file containing the artifact definition.
         """
         with fsspec.open(path, "r") as f:
             data = json.load(f)
@@ -112,7 +112,7 @@ class BaseArtifactModel(BaseModel):
         """Saves an artifact to a JSON file.
 
         Args:
-            path: Saves the benchmark specification to a JSON file.
+            path: Path to save the artifact definition as JSON.
         """
         with fsspec.open(path, "w") as f:
             f.write(self.model_dump_json())

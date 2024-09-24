@@ -279,7 +279,10 @@ class PolarisHubClient(OAuth2Client):
             error_msg="Failed to fetch datasets.",
         ):
             response = self._base_request_to_hub(
-                url="/v1/dataset", method="GET", params={"limit": limit, "offset": offset}
+                url="/v1/dataset", method="GET", params={
+                    "limit": limit,
+                    "offset": offset
+                }
             )
             dataset_list = [bm["artifactId"] for bm in response["data"]]
 
@@ -339,7 +342,6 @@ class PolarisHubClient(OAuth2Client):
 
             # Load the dataset table and optional Zarr archive
             with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
-                # Move this into a repository class, to better encapsulate the storage logic
                 table = pd.read_parquet(storage.get_root())
                 zarr_root_path = str(storage.paths.extension)
 
@@ -374,7 +376,10 @@ class PolarisHubClient(OAuth2Client):
         ):
             # TODO (cwognum): What to do with pagination, i.e. limit and offset?
             response = self._base_request_to_hub(
-                url="/v1/benchmark", method="GET", params={"limit": limit, "offset": offset}
+                url="/v1/benchmark", method="GET", params={
+                    "limit": limit,
+                    "offset": offset
+                }
             )
             benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
 
@@ -468,7 +473,9 @@ class PolarisHubClient(OAuth2Client):
 
             # Make a request to the hub
             response = self._base_request_to_hub(
-                url="/v1/result", method="POST", json={"access": access, **result_json}
+                url="/v1/result", method="POST", json={
+                    "access": access, **result_json
+                }
             )
 
             # Inform the user about where to find their newly created artifact.
@@ -755,7 +762,10 @@ class PolarisHubClient(OAuth2Client):
         ):
             # TODO (cwognum): What to do with pagination, i.e. limit and offset?
             response = self._base_request_to_hub(
-                url="/v2/competition", method="GET", params={"limit": limit, "offset": offset}
+                url="/v2/competition", method="GET", params={
+                    "limit": limit,
+                    "offset": offset
+                }
             )
             competitions_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
             return competitions_list

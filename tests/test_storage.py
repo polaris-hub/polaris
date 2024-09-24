@@ -76,7 +76,7 @@ def test_store_iterator_empty(s3_store):
 
 
 def test_store_iterator(s3_store):
-    keys = ["dir1/file1", "dir1/file2", "dir1/test.txt", "dir2/file1"]
+    keys = ["dir1/subdir1", "dir1/subdir2", "dir1/file1.ext", "dir2/file2.ext"]
     for key in keys:
         s3_store[key] = b"test"
 
@@ -85,7 +85,7 @@ def test_store_iterator(s3_store):
 
 
 def test_store_length(s3_store):
-    keys = ["dir1/file1", "dir1/file2", "dir1/test.txt", "dir2/file1"]
+    keys = ["dir1/subdir1", "dir1/subdir2", "dir1/file1.ext", "dir2/file2.ext"]
     for key in keys:
         s3_store[key] = b"test"
 
@@ -93,12 +93,12 @@ def test_store_length(s3_store):
 
 
 def test_listdir(s3_store):
-    keys = ["dir1/file1", "dir1/file2", "dir1/test.txt", "dir2/file1"]
+    keys = ["dir1/subdir1", "dir1/subdir2", "dir1/file1.ext", "dir2/file2.ext"]
     for key in keys:
         s3_store[key] = b"test"
 
     dir1_contents = list(s3_store.listdir("dir1"))
-    assert set(dir1_contents) == {"test.txt", "file1", "file2"}
+    assert set(dir1_contents) == {"file1.ext", "subdir1", "subdir2"}
 
     dir1_contents = list(s3_store.listdir())
     assert set(dir1_contents) == {"dir1", "dir2"}
@@ -114,7 +114,7 @@ def test_getsize(s3_store):
 
 
 def test_getitems(s3_store):
-    keys = ["dir1/file1", "dir1/file2", "dir1/test.txt", "dir2/file1"]
+    keys = ["dir1/subdir1", "dir1/subdir2", "dir1/file1.ext", "dir2/file2.ext"]
     for key in keys:
         s3_store[key] = b"test"
 
