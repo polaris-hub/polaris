@@ -78,26 +78,14 @@ def test_zarr_with_factory_pattern(zarr_archive, tmpdir):
 
     factory.add_column(pd.Series([1, 2, 3, 4] * 25, name="C"))
 
-    df = pd.DataFrame(
-        {
-            "C": [1, 2, 3, 4],
-            "D": ["W", "X", "Y", "Z"]
-        }
-    )
+    df = pd.DataFrame({"C": [1, 2, 3, 4], "D": ["W", "X", "Y", "Z"]})
     factory.add_columns(df, merge_on="C")
 
     dataset = factory.build()
     assert len(dataset) == 100
     assert len(dataset.columns) == 4
     assert all(c in dataset.columns for c in ["A", "B", "C", "D"])
-    assert dataset.table["C"].apply(
-        {
-            1: "W",
-            2: "X",
-            3: "Y",
-            4: "Z"
-        }.get
-    ).equals(dataset.table["D"])
+    assert dataset.table["C"].apply({1: "W", 2: "X", 3: "Y", 4: "Z"}.get).equals(dataset.table["D"])
 
 
 def test_factory_pdb(pdbs_structs, pdb_paths, tmpdir):

@@ -41,6 +41,7 @@ class DatasetV2(BaseDataset):
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
     """
+
     _artifact_type = "dataset"
 
     version: ClassVar[Literal[2]] = 2
