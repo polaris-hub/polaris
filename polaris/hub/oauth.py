@@ -1,6 +1,6 @@
 import json
 import re
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from time import time
 from typing import Any, Literal
@@ -100,7 +100,7 @@ class HubOAuth2Token(BaseModel):
     @model_validator(mode="after")
     def set_expires_at(self) -> Self:
         if self.expires_at is None and self.expires_in is not None:
-            self.expires_at = datetime.fromtimestamp(time() + self.expires_in, UTC)
+            self.expires_at = datetime.fromtimestamp(time() + self.expires_in, timezone.utc)
         return self
 
     def is_expired(self, leeway=60) -> bool | None:
@@ -108,7 +108,7 @@ class HubOAuth2Token(BaseModel):
             return None
         # Small timedelta to consider token as expired before it actually expires
         expiration_threshold = self.expires_at - timedelta(seconds=leeway)
-        return datetime.now(UTC) >= expiration_threshold
+        return datetime.now(timezone.utc) >= expiration_threshold
 
     def __getitem__(self, item) -> Any | None:
         """

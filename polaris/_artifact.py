@@ -1,5 +1,5 @@
 import json
-from typing import ClassVar, Self
+from typing import ClassVar
 
 import fsspec
 from loguru import logger
@@ -13,6 +13,7 @@ from pydantic import (
     field_validator,
 )
 from pydantic.alias_generators import to_camel
+from typing_extensions import Self
 
 import polaris
 from polaris.utils.misc import slugify
