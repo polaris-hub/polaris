@@ -39,7 +39,7 @@ def safe_mask(
     ):
         return None
     else:
-        return input_values[test_label][target_label][mask]
+        return np.array(input_values[test_label][target_label])[mask]
 
 
 def mask_index(input_values):

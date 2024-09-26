@@ -56,5 +56,5 @@ def rmsd_coverage(y_pred: Union[str, List[dm.Mol]], y_true: Union[str, list[dm.M
     rmsds = np.array(
         [_rmsd(mol_probe=mol_probe, mol_ref=mol_ref) for mol_probe, mol_ref in zip(y_pred, y_true)]
     )
-    print(rmsds)
+
     return np.sum(rmsds <= max_rsmd) / len(rmsds)
