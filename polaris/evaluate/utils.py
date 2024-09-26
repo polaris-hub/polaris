@@ -18,7 +18,9 @@ def is_multi_task_single_test_set(vals: PredictionsType, target_cols: list[str])
 
 
 def normalize_predictions_type(vals: PredictionsType, target_cols: list[str]):
-    if isinstance(vals, dict):
+    if isinstance(vals, list):
+        vals = np.array(vals)
+    elif isinstance(vals, dict):
         if is_multi_task_single_test_set(vals, target_cols):
             return {"test": vals}
         else:
