@@ -18,9 +18,7 @@ def is_multi_task_single_test_set(vals: PredictionsType, target_cols: list[str])
 
 
 def normalize_predictions_type(vals: PredictionsType, target_cols: list[str]):
-    if isinstance(vals, list):
-        vals = np.array(vals)
-    elif isinstance(vals, dict):
+    if isinstance(vals, dict):
         if is_multi_task_single_test_set(vals, target_cols):
             return {"test": vals}
         else:
@@ -41,7 +39,7 @@ def safe_mask(
     ):
         return None
     else:
-        return input_values[test_label][target_label][mask]
+        return np.array(input_values[test_label][target_label])[mask]
 
 
 def mask_index(input_values):
