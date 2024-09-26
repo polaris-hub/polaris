@@ -353,7 +353,11 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         n_classes = {}
         for target in self.target_cols:
             target_type = self.target_types.get(target)
-            if target_type is None or target_type == TargetType.REGRESSION:
+            if (
+                target_type is None
+                or target_type == TargetType.REGRESSION
+                or target_type == TargetType.DOCKING
+            ):
                 continue
             # TODO: Don't use table attribute
             n_classes[target] = self.dataset.table.loc[:, target].nunique()
