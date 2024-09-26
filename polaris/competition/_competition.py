@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from polaris.benchmark import BenchmarkSpecification
-from polaris.evaluate._results import CompetitionPredictions
+from polaris.evaluate import CompetitionPredictions
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.types import HubOwner
 
@@ -17,6 +17,8 @@ class CompetitionSpecification(BenchmarkSpecification):
         start_time: The time at which the competition becomes active and interactable.
         end_time: The time at which the competition ends and is no longer interactable.
     """
+
+    _artifact_type = "competition"
 
     # Additional properties specific to Competitions
     owner: HubOwner

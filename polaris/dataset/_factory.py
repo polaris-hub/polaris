@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Literal, Optional
+from typing import Literal
 
 import datamol as dm
 import pandas as pd
@@ -11,7 +11,7 @@ from polaris.dataset._adapters import Adapter
 from polaris.dataset.converters import Converter, PDBConverter, SDFConverter, ZarrConverter
 
 
-def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) -> DatasetV1:
+def create_dataset_from_file(path: str, zarr_root_path: str | None = None) -> DatasetV1:
     """
     This function is a convenience function to create a dataset from a file.
 
@@ -28,7 +28,7 @@ def create_dataset_from_file(path: str, zarr_root_path: Optional[str] = None) ->
 
 
 def create_dataset_from_files(
-    paths: List[str], zarr_root_path: Optional[str] = None, axis: Literal[0, 1, "index", "columns"] = 0
+    paths: list[str], zarr_root_path: str | None = None, axis: Literal[0, 1, "index", "columns"] = 0
 ) -> DatasetV1:
     """
     This function is a convenience function to create a dataset from multiple files.
@@ -54,7 +54,7 @@ class DatasetFactory:
     """
     The `DatasetFactory` makes it easier to create complex datasets.
 
-    It is based on the the factory design pattern and allows a user to specify specific handlers
+    It is based on the factory design pattern and allows a user to specify specific handlers
     (i.e. [`Converter`][polaris.dataset.converters._base.Converter] objects) for different file types.
     These converters are used to convert commonly used file types in drug discovery
     to something that can be used within Polaris while losing as little information as possible.
@@ -73,12 +73,12 @@ class DatasetFactory:
 
     Question: How to make adding meta-data easier?
         The `DatasetFactory` is designed to more easily pull together data from different sources.
-        However, adding meta-data remains a laborous process. How could we make this simpler through
+        However, adding meta-data remains a laborious process. How could we make this simpler through
         the Python API?
     """
 
     def __init__(
-        self, zarr_root_path: Optional[str] = None, converters: Optional[Dict[str, Converter]] = None
+        self, zarr_root_path: str | None = None, converters: dict[str, Converter] | None = None
     ) -> None:
         """
         Create a new factory object.
@@ -93,7 +93,7 @@ class DatasetFactory:
         if converters is None:
             converters = {}
 
-        self._converters: Dict[str, Converter] = converters
+        self._converters: dict[str, Converter] = converters
         self.reset(zarr_root_path=zarr_root_path)
 
     @property
@@ -139,8 +139,8 @@ class DatasetFactory:
     def add_column(
         self,
         column: pd.Series,
-        annotation: Optional[ColumnAnnotation] = None,
-        adapters: Optional[Adapter] = None,
+        annotation: ColumnAnnotation | None = None,
+        adapters: Adapter | None = None,
     ):
         """
         Add a single column to the DataFrame
@@ -150,7 +150,7 @@ class DatasetFactory:
         1. The name attribute of the column to be set.
         2. The name attribute of the column to be unique.
         3. If the column is a pointer column, the `zarr_root_path` needs to be set.
-        4. The length of the column to match the length of the alredy constructed table.
+        4. The length of the column to match the length of the already constructed table.
 
         Args:
             column: The column to add to the dataset.
@@ -182,9 +182,9 @@ class DatasetFactory:
     def add_columns(
         self,
         df: pd.DataFrame,
-        annotations: Optional[Dict[str, ColumnAnnotation]] = None,
-        adapters: Optional[Dict[str, Adapter]] = None,
-        merge_on: Optional[str] = None,
+        annotations: dict[str, ColumnAnnotation] | None = None,
+        adapters: dict[str, Adapter] | None = None,
+        merge_on: str | None = None,
     ):
         """
         Add multiple columns to the dataset based on another dataframe.
@@ -237,7 +237,7 @@ class DatasetFactory:
         table, annotations, adapters = converter.convert(path, self)
         self.add_columns(table, annotations, adapters)
 
-    def add_from_files(self, paths: List[str], axis: Literal[0, 1, "index", "columns"]):
+    def add_from_files(self, paths: list[str], axis: Literal[0, 1, "index", "columns"]):
         """
         Uses the registered converters to parse the data from a specific files and add them to the dataset.
         If no converter is found for the file extension, it raises an error.
@@ -275,7 +275,7 @@ class DatasetFactory:
             zarr_root_path=self.zarr_root_path,
         )
 
-    def reset(self, zarr_root_path: Optional[str] = None):
+    def reset(self, zarr_root_path: str | None = None):
         """
         Resets the factory to its initial state to start building the next dataset from scratch.
         Note that this will not reset the registered converters.

@@ -1,9 +1,6 @@
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-from polaris.utils.types import ChecksumStrategy, SlugCompatibleStringType
-
-if TYPE_CHECKING:
-    from polaris.dataset import DatasetV1
+from polaris.utils.types import SlugCompatibleStringType, SlugStringType
 
 
 def listit(t: Any):
@@ -14,20 +11,8 @@ def listit(t: Any):
     return list(map(listit, t)) if isinstance(t, (list, tuple)) else t
 
 
-def sluggify(sluggable: SlugCompatibleStringType):
+def slugify(sluggable: SlugCompatibleStringType) -> SlugStringType:
     """
-    Converts a string to a slug-compatible string.
+    Converts a slug-compatible string to a slug.
     """
-    return sluggable.lower().replace("_", "-")
-
-
-def should_verify_checksum(strategy: ChecksumStrategy, dataset: "DatasetV1") -> bool:
-    """
-    Determines whether a checksum should be verified.
-    """
-    if strategy == "ignore":
-        return False
-    elif strategy == "verify":
-        return True
-    else:
-        return not dataset.uses_zarr
+    return sluggable.lower().replace("_", "-").strip("-")

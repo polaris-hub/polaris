@@ -1,15 +1,18 @@
 import webbrowser
-from typing import Optional
+from typing import Literal, Optional, TypeAlias
 
 from authlib.common.security import generate_token
 from authlib.integrations.base_client import OAuthError
 from authlib.integrations.httpx_client import OAuth2Client
-from authlib.oauth2 import TokenAuth
+from authlib.oauth2 import OAuth2Error, TokenAuth
+from authlib.oauth2.rfc6749 import OAuth2Token
 from loguru import logger
 
 from polaris.hub.oauth import ExternalCachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.errors import PolarisUnauthorizedError
+from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
+
+Scope: TypeAlias = Literal["read", "write"]
 
 
 class ExternalAuthClient(OAuth2Client):
@@ -65,11 +68,16 @@ class ExternalAuthClient(OAuth2Client):
 
     def fetch_token(self, **kwargs) -> dict:
         """Light wrapper to automatically pass in the right URL"""
-        return super().fetch_token(
-            url=self.settings.token_fetch_url, code_verifier=self.code_verifier, **kwargs
-        )
+        try:
+            return super().fetch_token(
+                url=self.settings.token_fetch_url, code_verifier=self.code_verifier, **kwargs
+            )
+        except OAuth2Error as error:
+            raise PolarisHubError(
+                message=f"Could not obtain a token from the external OAuth2 server. Error was: {error.error} - {error.description}"
+            ) from error
 
-    def ensure_active_token(self, token) -> bool:
+    def ensure_active_token(self, token: OAuth2Token | None = None) -> bool:
         try:
             return super().ensure_active_token(token) or False
         except OAuthError:

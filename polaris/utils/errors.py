@@ -33,6 +33,10 @@ class InvalidZarrChecksum(Exception):
 
 
 class PolarisHubError(Exception):
+    BOLD = "\033[1m"
+    YELLOW = "\033[93m"
+    _END_CODE = "\033[0m"
+
     def __init__(self, message: str = "", response: Response | None = None):
         prefix = "The request to the Polaris Hub failed."
 
@@ -40,6 +44,12 @@ class PolarisHubError(Exception):
             prefix += f" The Hub responded with:\n{response}"
 
         super().__init__("\n".join([prefix, message]))
+
+    def format(self, text: str, codes: str | list[str]):
+        if not isinstance(codes, list):
+            codes = [codes]
+
+        return "".join(codes) + text + self._END_CODE
 
 
 class PolarisUnauthorizedError(PolarisHubError):

@@ -1,10 +1,11 @@
 import datamol as dm
 import pandas as pd
-from zarr.errors import ContainsArrayError
 import pytest
 from fastpdb import struc
+from zarr.errors import ContainsArrayError
 
-from polaris.dataset import DatasetFactory, create_dataset_from_file, create_dataset_from_files
+from polaris.dataset import DatasetFactory, create_dataset_from_file
+from polaris.dataset._factory import create_dataset_from_files
 from polaris.dataset.converters import PDBConverter, SDFConverter, ZarrConverter
 
 

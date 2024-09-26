@@ -20,7 +20,7 @@ from polaris.evaluate import Metric
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
-from polaris.utils.misc import sluggify
+from polaris.utils.misc import slugify
 from polaris.utils.types import (
     AccessType,
     CompetitionPredictionsType,
@@ -208,13 +208,15 @@ class BenchmarkResults(EvaluationResult):
         Together with the benchmark name, this uniquely identifies the benchmark on the Hub.
     """
 
+    _artifact_type = "result"
+
     benchmark_name: SlugCompatibleStringType = Field(..., frozen=True)
     benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
 
     @computed_field
     @property
     def benchmark_artifact_id(self) -> str:
-        return f"{self.benchmark_owner}/{sluggify(self.benchmark_name)}"
+        return f"{self.benchmark_owner}/{slugify(self.benchmark_name)}"
 
     def upload_to_hub(
         self,
@@ -248,13 +250,15 @@ class CompetitionResults(EvaluationResult):
             Together with the competition name, this uniquely identifies the competition on the Hub.
     """
 
+    _artifact_type = "competitionResult"
+
     competition_name: SlugCompatibleStringType = Field(..., frozen=True)
     competition_owner: Optional[HubOwner] = Field(None, frozen=True)
 
     @computed_field
     @property
     def competition_artifact_id(self) -> str:
-        return f"{self.competition_owner}/{sluggify(self.competition_name)}"
+        return f"{self.competition_owner}/{slugify(self.competition_name)}"
 
 
 class CompetitionPredictions(ResultsMetadata):

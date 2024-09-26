@@ -1,7 +1,7 @@
 import json
 from hashlib import md5
 from itertools import chain
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional, TypeAlias, Union
 
 import fsspec
 import numpy as np
@@ -36,7 +36,7 @@ from polaris.utils.types import (
     TaskType,
 )
 
-ColumnsType = Union[str, list[str]]
+ColumnsType: TypeAlias = str | list[str]
 
 
 class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
@@ -94,6 +94,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         target_types: A dictionary that maps target columns to their type. If not specified, this is automatically inferred.
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
     """
+
+    _artifact_type = "benchmark"
 
     # Public attributes
     # Data

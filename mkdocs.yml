@@ -39,7 +39,7 @@ nav:
           - Competiton Evaluation: api/competition.evaluation.md
       - Hub:
           - Client: api/hub.client.md
-          - External Auth Client: api/hub.external_auth_client.md
+          - External Auth Client: api/hub.external_client.md
           - PolarisFileSystem: api/hub.polarisfs.md
       - Additional:
           - Dataset Factory: api/factory.md
@@ -122,9 +122,9 @@ plugins:
   - mkdocs-jupyter:
       execute: False
       remove_tag_config:
-        remove_cell_tags: [remove_cell]
-        remove_all_outputs_tags: [remove_output]
-        remove_input_tags: [remove_input]
+        remove_cell_tags: [ remove_cell ]
+        remove_all_outputs_tags: [ remove_output ]
+        remove_input_tags: [ remove_input ]
 
   - mike:
       version_selector: true
