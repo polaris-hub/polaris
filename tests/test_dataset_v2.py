@@ -272,6 +272,10 @@ def test_zarr_manifest_deterministic(test_dataset_v2, test_org_owner, zarr_archi
     )
     assert new_md5sum == dataset.zarr_manifest_md5sum
 
+    # check all the files are in there
+    df = pd.read_parquet(dataset.zarr_manifest_path)
+    assert len(df) == 204
+
 
 
 
