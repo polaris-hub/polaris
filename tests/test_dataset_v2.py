@@ -256,10 +256,20 @@ def test_zarr_manifest(test_dataset_v2):
 def test_zarr_manifest_deterministic(test_dataset_v2):
     # try creating and comparing two manifest files
     # created from the same Zarr archive
+    initial_md5sum = test_dataset_v2.zarr_manifest_md5sum
     generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2._cache_dir)
-    md5sum = test_dataset_v2.zarr_manifest_md5sum
+    df = pd.read_parquet(test_dataset_v2.zarr_manifest_path)
+
+    print(df)
+    new_md5sum = test_dataset_v2.zarr_manifest_md5sum
+    assert initial_md5sum == new_md5sum
+    df = pd.read_parquet(test_dataset_v2.zarr_manifest_path)
+    print(df)
     generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2._cache_dir)
-    assert md5sum == test_dataset_v2.zarr_manifest_md5sum
+    assert new_md5sum == test_dataset_v2.zarr_manifest_md5sum
+    df = pd.read_parquet(test_dataset_v2.zarr_manifest_path)
+    print(df)
+    raise Exception("stop here")
 
 
 
