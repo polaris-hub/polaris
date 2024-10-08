@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 from time import perf_counter
-
+from shutil import copytree
 import numcodecs
 import numpy as np
 import pandas as pd
@@ -250,6 +250,30 @@ def test_zarr_manifest(test_dataset_v2):
 
     # Ensure Zarr manifest has an additional 100 chunks + 1 array metadata file
     assert post_change_manifest_length == 305
+
+
+def test_zarr_manifest_deterministic(test_dataset_v2, test_org_owner, zarr_archive):
+    # try creating and comparing two manifest files
+    initial_md5sum = test_dataset_v2.zarr_manifest_md5sum
+    generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2._cache_dir)
+    new_md5sum = test_dataset_v2.zarr_manifest_md5sum
+    assert initial_md5sum == new_md5sum
+    generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2._cache_dir)
+    assert new_md5sum == test_dataset_v2.zarr_manifest_md5sum
+
+    # to be very sure, copy the Zarr archive and create a new dataset
+    copytree(zarr_archive, zarr_archive + "_copy")
+    # make new ds
+    dataset = DatasetV2(
+        name="test-dataset-v2",
+        owner=test_org_owner,
+        zarr_root_path=zarr_archive + "_copy",
+    )
+    assert new_md5sum == dataset.zarr_manifest_md5sum
+
+    # check all the files are in there
+    df = pd.read_parquet(dataset.zarr_manifest_path)
+    assert len(df) == 204
 
 
 def test_dataset_v2__get_item__(test_dataset_v2, zarr_archive):
