@@ -293,5 +293,3 @@ def test_dataset_v2__get_item__(test_dataset_v2, zarr_archive):
 
     _check_row_equality(test_dataset_v2[0], {"A": root["A"][0, :], "B": root["B"][0, :]})
     _check_row_equality(test_dataset_v2[10], {"A": root["A"][10, :], "B": root["B"][10, :]})
-
-

@@ -38,6 +38,7 @@ def deterministic_walk(root_path: str):
         for file_name in sorted(file_names):
             yield os.path.join(dir_path, file_name)
 
+
 def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_root_path: str) -> str:
     """
     Recursive function that traverses a Zarr archive to build a V2 manifest file.
@@ -52,7 +53,6 @@ def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_roo
     #
     # Loop through directory items in iterator
     for entry in deterministic_walk(dir_path):
-        
         if os.path.isdir(entry):
             # If item is a directory, recurse into that directory
             recursively_build_manifest(entry, writer, zarr_root_path)
