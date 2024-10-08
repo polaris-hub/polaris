@@ -33,7 +33,8 @@ def deterministic_walk(root_path: str):
         root_path: The path to the root of the directory to walk
     """
 
-    for dir_path, _, file_names in os.walk(root_path):
+    for dir_path, dirs, file_names in os.walk(root_path):
+        dirs.sort()
         for file_name in sorted(file_names):
             yield os.path.join(dir_path, file_name)
 
