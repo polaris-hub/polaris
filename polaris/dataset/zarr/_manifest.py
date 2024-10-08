@@ -25,6 +25,18 @@ def generate_zarr_manifest(zarr_root_path: str, output_dir: str):
     return zarr_manifest_path
 
 
+def deterministic_walk(root_path: str):
+    """
+    Recursively walk a directory and yield all files in a deterministic order.
+
+    Parameters:
+        root_path: The path to the root of the directory to walk
+    """
+
+    for dir_path, _, file_names in os.walk(root_path):
+        for file_name in sorted(file_names):
+            yield os.path.join(dir_path, file_name)
+
 def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_root_path: str) -> str:
     """
     Recursive function that traverses a Zarr archive to build a V2 manifest file.
@@ -36,26 +48,25 @@ def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_roo
     """
 
     # Get iterator of items located in the directory at `dir_path`
-    with os.scandir(dir_path) as it:
-        #
-        # Loop through directory items in iterator
-        for entry in it:
-            if entry.is_dir():
-                #
-                # If item is a directory, recurse into that directory
-                recursively_build_manifest(entry.path, writer, zarr_root_path)
-            elif entry.is_file():
-                #
-                # If item is a file, calculate its relative path and chunk checksum. Then, append that
-                # to the Zarr manifest parquet.
-                table = pa.Table.from_pydict(
-                    {
-                        "path": [os.path.relpath(entry.path, zarr_root_path)],
-                        "checksum": [calculate_file_md5(entry.path)],
-                    },
-                    schema=ZARR_MANIFEST_SCHEMA,
-                )
-                writer.write_table(table)
+    #
+    # Loop through directory items in iterator
+    for entry in deterministic_walk(dir_path):
+        
+        if os.path.isdir(entry):
+            # If item is a directory, recurse into that directory
+            recursively_build_manifest(entry, writer, zarr_root_path)
+        elif os.path.isfile(entry):
+            #
+            # If item is a file, calculate its relative path and chunk checksum. Then, append that
+            # to the Zarr manifest parquet.
+            table = pa.Table.from_pydict(
+                {
+                    "path": [os.path.relpath(entry, zarr_root_path)],
+                    "checksum": [calculate_file_md5(entry)],
+                },
+                schema=ZARR_MANIFEST_SCHEMA,
+            )
+            writer.write_table(table)
 
 
 def calculate_file_md5(file_path: str):

@@ -252,6 +252,18 @@ def test_zarr_manifest(test_dataset_v2):
     assert post_change_manifest_length == 305
 
 
+
+def test_zarr_manifest_deterministic(test_dataset_v2):
+    # try creating and comparing two manifest files
+    # created from the same Zarr archive
+    generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2._cache_dir)
+    md5sum = test_dataset_v2.zarr_manifest_md5sum
+    generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2._cache_dir)
+    assert md5sum == test_dataset_v2.zarr_manifest_md5sum
+
+
+
+
 def test_dataset_v2__get_item__(test_dataset_v2, zarr_archive):
     """Test the __getitem__() interface for the dataset V2."""
 
@@ -269,3 +281,5 @@ def test_dataset_v2__get_item__(test_dataset_v2, zarr_archive):
 
     _check_row_equality(test_dataset_v2[0], {"A": root["A"][0, :], "B": root["B"][0, :]})
     _check_row_equality(test_dataset_v2[10], {"A": root["A"][10, :], "B": root["B"][10, :]})
+
+
