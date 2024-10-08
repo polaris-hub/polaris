@@ -252,7 +252,6 @@ def test_zarr_manifest(test_dataset_v2):
     assert post_change_manifest_length == 305
 
 
-
 def test_zarr_manifest_deterministic(test_dataset_v2, test_org_owner, zarr_archive):
     # try creating and comparing two manifest files
     initial_md5sum = test_dataset_v2.zarr_manifest_md5sum
@@ -275,8 +274,6 @@ def test_zarr_manifest_deterministic(test_dataset_v2, test_org_owner, zarr_archi
     # check all the files are in there
     df = pd.read_parquet(dataset.zarr_manifest_path)
     assert len(df) == 204
-
-
 
 
 def test_dataset_v2__get_item__(test_dataset_v2, zarr_archive):

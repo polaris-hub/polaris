@@ -127,7 +127,6 @@ def test_dataset(test_data, test_org_owner) -> DatasetV1:
     return dataset
 
 
-
 @pytest.fixture(scope="function")
 def test_dataset_v2(zarr_archive, test_org_owner) -> DatasetV2:
     dataset = DatasetV2(
@@ -143,7 +142,6 @@ def test_dataset_v2(zarr_archive, test_org_owner) -> DatasetV2:
     )
     check_version(dataset)
     return dataset
-
 
 
 @pytest.fixture(scope="function")
