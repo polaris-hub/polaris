@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 from time import perf_counter
-
+from shutil import copytree
 import numcodecs
 import numpy as np
 import pandas as pd
@@ -253,23 +253,24 @@ def test_zarr_manifest(test_dataset_v2):
 
 
 
-def test_zarr_manifest_deterministic(test_dataset_v2):
+def test_zarr_manifest_deterministic(test_dataset_v2, test_org_owner, zarr_archive):
     # try creating and comparing two manifest files
-    # created from the same Zarr archive
     initial_md5sum = test_dataset_v2.zarr_manifest_md5sum
     generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2._cache_dir)
-    df = pd.read_parquet(test_dataset_v2.zarr_manifest_path)
-
-    print(df)
     new_md5sum = test_dataset_v2.zarr_manifest_md5sum
     assert initial_md5sum == new_md5sum
-    df = pd.read_parquet(test_dataset_v2.zarr_manifest_path)
-    print(df)
     generate_zarr_manifest(test_dataset_v2.zarr_root_path, test_dataset_v2._cache_dir)
     assert new_md5sum == test_dataset_v2.zarr_manifest_md5sum
-    df = pd.read_parquet(test_dataset_v2.zarr_manifest_path)
-    print(df)
-    raise Exception("stop here")
+
+    # to be very sure, copy the Zarr archive and create a new dataset
+    copytree(zarr_archive, zarr_archive + "_copy")
+    # make new ds
+    dataset = DatasetV2(
+        name="test-dataset-v2",
+        owner=test_org_owner,
+        zarr_root_path=zarr_archive + "_copy",
+    )
+    assert new_md5sum == dataset.zarr_manifest_md5sum
 
 
 
