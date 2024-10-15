@@ -29,10 +29,9 @@ from polaris.evaluate._results import CompetitionPredictions
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
-from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
 from polaris.hub.storage import StorageSession
-from polaris.utils.context import ProgressIndicator, tmp_attribute_change
+from polaris.utils.context import ProgressIndicator
 from polaris.utils.errors import (
     InvalidDatasetError,
     PolarisCreateArtifactError,
@@ -282,10 +281,7 @@ class PolarisHubClient(OAuth2Client):
             error_msg="Failed to fetch datasets.",
         ):
             response = self._base_request_to_hub(
-                url="/v1/dataset", method="GET", params={
-                    "limit": limit,
-                    "offset": offset
-                }
+                url="/v1/dataset", method="GET", params={"limit": limit, "offset": offset}
             )
             dataset_list = [bm["artifactId"] for bm in response["data"]]
 
@@ -379,10 +375,7 @@ class PolarisHubClient(OAuth2Client):
         ):
             # TODO (cwognum): What to do with pagination, i.e. limit and offset?
             response = self._base_request_to_hub(
-                url="/v1/benchmark", method="GET", params={
-                    "limit": limit,
-                    "offset": offset
-                }
+                url="/v1/benchmark", method="GET", params={"limit": limit, "offset": offset}
             )
             benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
 
@@ -476,9 +469,7 @@ class PolarisHubClient(OAuth2Client):
 
             # Make a request to the hub
             response = self._base_request_to_hub(
-                url="/v1/result", method="POST", json={
-                    "access": access, **result_json
-                }
+                url="/v1/result", method="POST", json={"access": access, **result_json}
             )
 
             # Inform the user about where to find their newly created artifact.
@@ -670,10 +661,7 @@ class PolarisHubClient(OAuth2Client):
 
             # Get the serialized data-modelx (excluding the user-specific cache-dir)
             dataset.owner = HubOwner.normalize(owner or dataset.owner)
-            dataset_json = dataset.model_dump(exclude={"cache_dir"}, exclude_none=True, by_alias=True)
-
-            # Set Zarr path for the dataset
-            dataset_json["zarrRootPath"] = f"{PolarisFileSystem.protocol}://data.zarr"
+            dataset_json = dataset.model_dump(exclude_none=True, by_alias=True)
 
             # Upload dataset meta-data
             url = f"/v2/dataset/{dataset.owner}/{dataset.name}"
@@ -682,7 +670,6 @@ class PolarisHubClient(OAuth2Client):
                 method="PUT",
                 json={
                     "zarrManifestFileContent": {
-                        "fileType": "parquet",
                         "md5Sum": dataset.md5sum,
                     },
                     "access": access,
@@ -691,71 +678,38 @@ class PolarisHubClient(OAuth2Client):
                 timeout=timeout,
             )
 
-            # NOTE: REPLACE THE FOLLOWING WITH USAGE OF BUCKET JWT
-            # Upload the Zarr manifest for the dataset
-            hub_response = self.request(
-                url=response["zarrManifestFileContent"]["url"],
-                method="PUT",
-                headers={
-                    "Content-type": "application/vnd.apache.parquet",
-                },
-                timeout=timeout,
-            )
+            with StorageSession(self, "write", dataset.urn) as storage:
+                # Step 2: Upload the manifest file
+                logger.info("Copying the dataset manifest file to the Hub.")
+                with open(dataset.zarr_manifest_path, "rb") as manifest_file:
+                    storage.set_manifest(manifest_file.read())
 
-            if hub_response.status_code == 307:
-                # If the hub returns a 307 redirect, we need to follow it to get the signed URL
-                hub_response_body = hub_response.json()
+                # Step 3: Upload any associated Zarr archive
+                logger.info("Copying Zarr archive to the Hub. This may take a while.")
 
-                with open(dataset.zarr_manifest_path, "rb") as file:
-                    # Upload the data to the cloudflare url
-                    bucket_response = self.request(
-                        url=hub_response_body["url"],
-                        method=hub_response_body["method"],
-                        headers={
-                            "Content-type": "application/vnd.apache.parquet",
-                            **hub_response_body["headers"],
-                        },
-                        content=file,
-                        auth=None,
-                        timeout=timeout,  # required for large size dataset
-                    )
-                    bucket_response.raise_for_status()
-
-            else:
-                hub_response.raise_for_status()
-
-            # NOTE: REPLACE THE FOLLOWING WITH USAGE OF BUCKET JWT
-            # Upload Zarr-based dataset
-            with tmp_attribute_change(self.settings, "default_timeout", timeout):
-                # Copy the Zarr archive to the hub
-                dest = self.open_zarr_file(
-                    owner=dataset.owner,
-                    name=dataset.name,
-                    path=dataset_json["zarrRootPath"],
-                    mode="w",
-                    as_consolidated=False,
-                )
+                destination = storage.root_store
 
                 # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
                 # metadata based on Zarr developers' recommendations can be tracked at:
                 # https://github.com/zarr-developers/zarr-python/issues/1731
                 zarr.consolidate_metadata(dataset.zarr_root.store.store)
                 zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
-                dest.store[".zmetadata"] = zmetadata_content
+                destination[".zmetadata"] = zmetadata_content
 
-                logger.info("Copying Zarr archive to the Hub. This may take a while.")
+                # Copy the Zarr archive to the hub
                 zarr.copy_store(
                     source=dataset.zarr_root.store.store,
-                    dest=dest.store,
+                    dest=destination,
                     log=logger.debug,
                     if_exists=if_exists,
                 )
-            progress_indicator.update_success_msg(
-                f"Your V2 dataset has been successfully uploaded to the Hub. "
-                f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
-            )
 
-            return response
+        progress_indicator.update_success_msg(
+            f"Your V2 dataset has been successfully uploaded to the Hub. "
+            f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
+        )
+
+        return response
 
     def upload_benchmark(
         self,
@@ -888,10 +842,7 @@ class PolarisHubClient(OAuth2Client):
         ):
             # TODO (cwognum): What to do with pagination, i.e. limit and offset?
             response = self._base_request_to_hub(
-                url="/v2/competition", method="GET", params={
-                    "limit": limit,
-                    "offset": offset
-                }
+                url="/v2/competition", method="GET", params={"limit": limit, "offset": offset}
             )
             competitions_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
             return competitions_list

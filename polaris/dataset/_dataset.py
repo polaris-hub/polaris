@@ -9,7 +9,7 @@ import pandas as pd
 import zarr
 from datamol.utils import fs as dmfs
 from loguru import logger
-from pydantic import PrivateAttr, computed_field, field_serializer, field_validator, model_validator
+from pydantic import PrivateAttr, computed_field, field_validator, model_validator
 from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
@@ -103,11 +103,6 @@ class DatasetV1(BaseDataset, ChecksumMixin):
     def _validate_adapters(cls, value):
         """Validate the adapters"""
         return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
-
-    @field_serializer("default_adapters")
-    def _serialize_adapters(self, value: dict[str, Adapter]) -> dict[str, str]:
-        """Serializes the adapters"""
-        return {k: v.name for k, v in value.items()}
 
     def _compute_checksum(self) -> str:
         """Computes a hash of the dataset.

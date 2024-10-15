@@ -29,6 +29,7 @@ from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
     ChecksumStrategy,
+    DatasetIndex,
     HttpUrlString,
     HubOwner,
     SupportedLicenseType,
@@ -60,7 +61,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         source: The data source, e.g. a DOI, Github repo or URI.
         license: The dataset license. Polaris only supports some Creative Commons licenses. See [`SupportedLicenseType`][polaris.utils.types.SupportedLicenseType] for accepted ID values.
         curation_reference: A reference to the curation process, e.g. a DOI, Github repo or URI.
-        cache_dir: Where the dataset would be cached if you call the `cache()` method.
+
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
 
     Raises:
@@ -93,7 +94,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
 
     @field_serializer("default_adapters")
-    def _serialize_adapters(self, value: dict[str, Adapter]):
+    def _serialize_adapters(self, value: dict[str, Adapter]) -> dict[str, str]:
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
 
@@ -131,18 +132,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         fs.mkdirs(path, exist_ok=True)
 
         return self
-
-    @field_serializer("default_adapters")
-    def _serialize_adapters(self, value: dict[str, Adapter]):
-        """Serializes the adapters"""
-        return {k: v.name for k, v in value.items()}
-
-    @field_serializer("cache_dir", "zarr_root_path")
-    def _serialize_paths(value):
-        """Serialize the paths"""
-        if value is not None:
-            value = str(value)
-        return value
 
     @property
     def uses_zarr(self) -> bool:
@@ -352,6 +341,17 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
     def size(self) -> tuple[int, int]:
         return self.n_rows, self.n_columns
+
+    def __getitem__(self, item: DatasetIndex) -> Any | np.ndarray | dict[str, np.ndarray]:
+        """Allows for indexing the dataset directly"""
+
+        # If a tuple, we assume it's the row and column index pair
+        if isinstance(item, tuple):
+            row, col = item
+            return self.get_data(row, col)
+
+        # Otherwise, we assume you're indexing the row
+        return {col: self.get_data(item, col) for col in self.columns}
 
     @abc.abstractmethod
     def _repr_dict_(self) -> dict:

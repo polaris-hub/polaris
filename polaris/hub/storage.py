@@ -15,7 +15,7 @@ from typing_extensions import Self
 from zarr.context import Context
 from zarr.storage import Store
 
-from polaris.hub.oauth import HubStorageOAuth2Token, StoragePaths
+from polaris.hub.oauth import DatasetV1Paths, DatasetV2Paths, HubStorageOAuth2Token
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import ArtifactUrn
 
@@ -370,17 +370,15 @@ class StorageSession(OAuth2Client):
         return True
 
     @property
-    def paths(self) -> StoragePaths:
+    def paths(self) -> DatasetV1Paths | DatasetV2Paths:
         return self.token.extra_data.paths
 
-    def set_root(self, value: bytes | bytearray) -> None:
+    def _set_file(self, path: Path, value: bytes | bytearray) -> None:
         """
-        Set a value at the root path.
+        Internal method to upload non-zarr file to the storage backend.
         """
         storage_data = self.token.extra_data
-        path = Path(self.paths.relative_root)
 
-        # Try to be smart about the content type
         match path.suffix:
             case ".parquet":
                 content_type = "application/vnd.apache.parquet"
@@ -397,12 +395,11 @@ class StorageSession(OAuth2Client):
         )
         store[path.name] = value
 
-    def get_root(self) -> BytesIO:
+    def _get_file(self, path: Path) -> BytesIO:
         """
-        Get the value at the root path.
+        Internal method to download non-zarr file from the storage backend.
         """
         storage_data = self.token.extra_data
-        path = Path(self.paths.relative_root)
 
         store = S3Store(
             path=str(path.parent),
@@ -411,7 +408,48 @@ class StorageSession(OAuth2Client):
             token=f"jwt/{self.token.access_token}",
             endpoint_url=storage_data.endpoint,
         )
+
         return BytesIO(store[path.name])
+
+    def set_root(self, value: bytes | bytearray) -> None:
+        """
+        Set a value at the root path.
+        """
+        if not isinstance(self.paths, DatasetV1Paths):
+            raise NotImplementedError("Only DatasetV1Paths are supported for setting the root path")
+
+        path = Path(self.paths.relative_root)
+        self._set_file(path, value)
+
+    def get_root(self) -> BytesIO:
+        """
+        Get the value at the root path.
+        """
+        if not isinstance(self.paths, DatasetV1Paths):
+            raise NotImplementedError("Only DatasetV1Paths are supported for getting the root path")
+
+        path = Path(self.paths.relative_root)
+        return self._get_file(path)
+
+    def set_manifest(self, value: bytes | bytearray) -> None:
+        """
+        Set a value at the manifest path.
+        """
+        if not isinstance(self.paths, DatasetV2Paths):
+            raise NotImplementedError("Only DatasetV2Paths are supported for setting the manifest path")
+
+        path = Path(self.paths.relative_manifest)
+        self._set_file(path, value)
+
+    def get_manifest(self) -> BytesIO:
+        """
+        Get the value at the manifest path.
+        """
+        if not isinstance(self.paths, DatasetV2Paths):
+            raise NotImplementedError("Only DatasetV2Paths are supported for getting the manifest path")
+
+        path = Path(self.paths.relative_manifest)
+        return self._get_file(path)
 
     @property
     def extension_store(self) -> S3Store | None:
@@ -419,14 +457,33 @@ class StorageSession(OAuth2Client):
         Returns a Zarr store for the extension path, if available, backed by a S3 compatible bucket.
         """
         storage_data = self.token.extra_data
-        return (
-            S3Store(
-                path=self.paths.relative_extension,
-                access_key=storage_data.key,
-                secret_key=storage_data.secret,
-                token=f"jwt/{self.token.access_token}",
-                endpoint_url=storage_data.endpoint,
-            )
-            if self.paths.relative_extension
-            else None
-        )
+        match storage_data.paths:
+            case DatasetV1Paths() if storage_data.paths.relative_extension:
+                return S3Store(
+                    path=storage_data.paths.relative_extension,
+                    access_key=storage_data.key,
+                    secret_key=storage_data.secret,
+                    token=f"jwt/{self.token.access_token}",
+                    endpoint_url=storage_data.endpoint,
+                )
+            case _:
+                return None
+
+    @property
+    def root_store(self) -> S3Store | None:
+        """
+        Returns a Zarr store for the root path, backed by a S3 compatible bucket.
+        """
+        storage_data = self.token.extra_data
+
+        match storage_data.paths:
+            case DatasetV2Paths():
+                return S3Store(
+                    path=storage_data.paths.relative_root,
+                    access_key=storage_data.key,
+                    secret_key=storage_data.secret,
+                    token=f"jwt/{self.token.access_token}",
+                    endpoint_url=storage_data.endpoint,
+                )
+            case _:
+                return None

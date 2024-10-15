@@ -6,7 +6,7 @@ from time import time
 from typing import Any, Literal
 
 from authlib.integrations.httpx_client import OAuth2Auth
-from pydantic import BaseModel, PositiveInt, computed_field, model_validator
+from pydantic import BaseModel, Field, PositiveInt, computed_field, model_validator
 from typing_extensions import Self
 
 from polaris.utils.constants import DEFAULT_CACHE_DIR
@@ -59,7 +59,7 @@ class ExternalCachedTokenAuth(CachedTokenAuth):
         super().__init__(token, token_placement, client, cache_dir, filename)
 
 
-class StoragePaths(BaseModel):
+class DatasetV1Paths(BaseModel):
     root: AnyUrlString
     extension: AnyUrlString | None = None
 
@@ -76,11 +76,26 @@ class StoragePaths(BaseModel):
         return None
 
 
+class DatasetV2Paths(BaseModel):
+    root: AnyUrlString
+    manifest: AnyUrlString
+
+    @computed_field
+    @property
+    def relative_root(self) -> str:
+        return re.sub(r"^\w+://", "", self.root)
+
+    @computed_field
+    @property
+    def relative_manifest(self) -> str:
+        return re.sub(r"^\w+://", "", self.manifest)
+
+
 class StorageTokenData(BaseModel):
     key: str
     secret: str
     endpoint: HttpUrlString
-    paths: StoragePaths
+    paths: DatasetV1Paths | DatasetV2Paths = Field(union_mode="smart")
 
 
 class HubOAuth2Token(BaseModel):

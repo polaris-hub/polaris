@@ -9,7 +9,7 @@ import pytest
 import zarr
 from pydantic import ValidationError
 
-from polaris.dataset import Subset, zarr
+from polaris.dataset import Subset
 from polaris.dataset._factory import DatasetFactory
 from polaris.dataset.converters._pdb import PDBConverter
 from polaris.dataset.zarr._manifest import generate_zarr_manifest
@@ -289,15 +289,5 @@ def test_dataset_v2__get_item__(test_dataset_v2, zarr_archive):
         for k in d1:
             assert np.array_equal(d1[k], d2[k])
 
-    _check_row_equality(
-        test_dataset_v2[0], {
-            "A": root["A"][0, :],
-            "B": root["B"][0, :]
-        }
-    )
-    _check_row_equality(
-        test_dataset_v2[10], {
-            "A": root["A"][10, :],
-            "B": root["B"][10, :]
-        }
-    )
+    _check_row_equality(test_dataset_v2[0], {"A": root["A"][0, :], "B": root["B"][0, :]})
+    _check_row_equality(test_dataset_v2[10], {"A": root["A"][10, :], "B": root["B"][10, :]})

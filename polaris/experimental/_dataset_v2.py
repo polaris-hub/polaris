@@ -207,11 +207,14 @@ class DatasetV2(BaseDataset):
         return arr
 
     def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
-        """Uploads the dataset to the Polaris Hub."""
+        """
+        Uploads the dataset to the Polaris Hub.
+        """
 
-        # NOTE (cwognum):  Leaving this for a later PR, because I want
-        #  to do it simultaneously with a PR on the Hub side.
-        raise NotImplementedError
+        from polaris.hub.client import PolarisHubClient
+
+        with PolarisHubClient() as client:
+            client.upload_dataset(self, owner=owner, access=access)
 
     @classmethod
     def from_json(cls, path: str):
