@@ -308,33 +308,6 @@ class DatasetV1(BaseDataset, ChecksumMixin):
                 raise ValueError(f"Invalid index format: {index}")
         return path, index
 
-    def __getitem__(self, item):
-        """Allows for indexing the dataset directly"""
-        ret = self.table.loc[item]
-        if isinstance(ret, pd.Series):
-            # Load the data from the pointer columns
-
-            if ret.name in self.table.columns:
-                # Returning a column, the indices are rows
-                if self.annotations[ret.name].is_pointer:
-                    ret = np.array([self.get_data(k, ret.name) for k in ret.index])
-
-            elif len(ret) == self.n_rows:
-                # Returning a row, the indices are columns
-                ret = {
-                    k: self.get_data(k, ret.name) if self.annotations[ret.name].is_pointer else ret[k]
-                    for k in ret.index
-                }
-
-        # Returning a dataframe
-        if isinstance(ret, pd.DataFrame):
-            for c in ret.columns:
-                if self.annotations[c].is_pointer:
-                    ret[c] = [self.get_data(item, c) for item in ret.index]
-            return ret
-
-        return ret
-
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
         repr_dict = self.model_dump(exclude={"table", "zarr_md5sum_manifest"})

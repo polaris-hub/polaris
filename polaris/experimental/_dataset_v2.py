@@ -45,7 +45,6 @@ class DatasetV2(BaseDataset):
     version: ClassVar[Literal[2]] = 2
     _zarr_manifest_path: str | None = PrivateAttr(None)
     _zarr_manifest_md5sum: str | None = PrivateAttr(None)
-    _zarr_md5sum_manifest_path: str | None = PrivateAttr(None)
     _md5sum: str | None = PrivateAttr(None)
 
     # Redefine this to make it a required field

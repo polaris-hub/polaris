@@ -530,7 +530,7 @@ class PolarisHubClient(OAuth2Client):
         artifact_type: ArtifactSubtype,
         access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
-        owner: Union[HubOwner, str, None] = None,
+        owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
     ):
         """
@@ -637,7 +637,7 @@ class PolarisHubClient(OAuth2Client):
         dataset: DatasetV2,
         access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
-        owner: Union[HubOwner, str, None] = None,
+        owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
     ):
         """
@@ -684,7 +684,7 @@ class PolarisHubClient(OAuth2Client):
                 with open(dataset.zarr_manifest_path, "rb") as manifest_file:
                     storage.set_manifest(manifest_file.read())
 
-                # Step 3: Upload any associated Zarr archive
+                # Step 3: Upload the Zarr archive
                 logger.info("Copying Zarr archive to the Hub. This may take a while.")
 
                 destination = storage.root_store

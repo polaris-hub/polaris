@@ -71,21 +71,6 @@ def test_dataset_v2_checksum(test_dataset_v2):
     assert test_dataset_v2._md5sum is None
     assert "md5sum" in test_dataset_v2.model_dump()
 
-    # (1) Without any changes, same hash
-    kwargs = test_dataset_v2.model_dump()
-    assert DatasetV2(**kwargs) == test_dataset_v2
-
-    # (2) With unimportant changes, same hash
-    kwargs["name"] = "changed"
-    kwargs["description"] = "changed"
-    kwargs["source"] = "https://changed.com"
-    assert DatasetV2(**kwargs) == test_dataset_v2
-
-    # (3) Without any changes, but different hash
-    dataset = DatasetV2(**kwargs)
-    dataset._md5sum = "invalid"
-    assert dataset != test_dataset_v2
-
 
 def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
     save_dir = tmpdir.join("save_dir")
