@@ -5,10 +5,10 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 # PyArrow table schema for the V2 Zarr manifest file
-ZARR_MANIFEST_SCHEMA = pa.schema([("path", pa.string()), ("checksum", pa.string())])
+ZARR_MANIFEST_SCHEMA = pa.schema([("path", pa.string()), ("md5_checksum", pa.string())])
 
 
-def generate_zarr_manifest(zarr_root_path: str, output_dir: str):
+def generate_zarr_manifest(zarr_root_path: str, output_dir: str) -> str:
     """
     Entry point function which triggers the creation of a Zarr manifest for a V2 dataset.
 
@@ -51,7 +51,7 @@ def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_roo
                 table = pa.Table.from_pydict(
                     {
                         "path": [os.path.relpath(entry.path, zarr_root_path)],
-                        "checksum": [calculate_file_md5(entry.path)],
+                        "md5_checksum": [calculate_file_md5(entry.path)],
                     },
                     schema=ZARR_MANIFEST_SCHEMA,
                 )
