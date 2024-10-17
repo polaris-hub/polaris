@@ -25,7 +25,7 @@ def generate_zarr_manifest(zarr_root_path: str, output_dir: str) -> str:
     return zarr_manifest_path
 
 
-def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_root_path: str) -> str:
+def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_root_path: str) -> None:
     """
     Recursive function that traverses a Zarr archive to build a V2 manifest file.
 
@@ -58,7 +58,7 @@ def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_roo
                 writer.write_table(table)
 
 
-def calculate_file_md5(file_path: str):
+def calculate_file_md5(file_path: str) -> str:
     """Calculates the md5 hash for a file at a given path"""
 
     md5_hash = md5()
