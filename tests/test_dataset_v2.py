@@ -65,13 +65,6 @@ def test_dataset_v2_load_to_memory(test_dataset_v2):
     assert d2 < d1
 
 
-def test_dataset_v2_checksum(test_dataset_v2):
-    # Make sure the `md5sum` is part of the model dump even if not initiated yet.
-    # This is important for uploads to the Hub.
-    assert test_dataset_v2._md5sum is None
-    assert "md5sum" in test_dataset_v2.model_dump()
-
-
 def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
     save_dir = tmpdir.join("save_dir")
     path = test_dataset_v2.to_json(save_dir)

@@ -19,6 +19,7 @@ from polaris.mixins._checksum import ChecksumMixin
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
+    ChecksumStrategy,
     HubOwner,
     ZarrConflictResolution,
 )
@@ -318,3 +319,31 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         if not isinstance(other, DatasetV1):
             return False
         return self.md5sum == other.md5sum
+
+    def cache(self, verify_checksum: bool = True) -> str:
+        """Caches the dataset by downloading all additional data for pointer columns to a local directory.
+
+        Args:
+            verify_checksum: Whether to verify the checksum of the dataset after caching.
+
+        Returns:
+            The path to the cache directory.
+        """
+        self.to_json(self._cache_dir, load_zarr_from_new_location=True)
+
+        if verify_checksum:
+            self.verify_checksum()
+
+        return self._cache_dir
+
+    def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
+        """
+        Determines whether to verify the checksum of the dataset based on the strategy.
+        """
+        match strategy:
+            case "ignore":
+                return False
+            case "verify":
+                return True
+            case "verify_unless_zarr":
+                return not self.uses_zarr

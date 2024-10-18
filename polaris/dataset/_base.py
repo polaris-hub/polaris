@@ -21,7 +21,7 @@ from typing_extensions import Self
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
-from polaris.dataset.zarr import MemoryMappedDirectoryStore, ZarrFileChecksum
+from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
@@ -83,7 +83,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     # Private attributes
     _zarr_root: zarr.Group | None = PrivateAttr(None)
     _zarr_data: MutableMapping[str, np.ndarray] | None = PrivateAttr(None)
-    _zarr_md5sum_manifest: list[ZarrFileChecksum] = PrivateAttr(default_factory=list)
     _warn_about_remote_zarr: bool = PrivateAttr(True)
     _cache_dir: str | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.
     _verify_checksum_strategy: ChecksumStrategy = PrivateAttr("verify_unless_zarr")
@@ -126,8 +125,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         Set the default cache dir if none and make sure it exists
         """
         if self._cache_dir is None:
-            dataset_id = self._md5sum if self.has_md5sum else str(uuid4())
-            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id)
+            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / str(uuid4()))
         fs, path = fsspec.url_to_fs(self._cache_dir)
         fs.mkdirs(path, exist_ok=True)
 
@@ -232,17 +230,9 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         """Return the dtype for each of the columns for the dataset"""
         raise NotImplementedError
 
+    @abc.abstractmethod
     def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
-        """
-        Determines whether to verify the checksum of the dataset based on the strategy.
-        """
-        match strategy:
-            case "ignore":
-                return False
-            case "verify":
-                return True
-            case "verify_unless_zarr":
-                return not self.uses_zarr
+        raise NotImplementedError
 
     def load_to_memory(self):
         """
@@ -322,22 +312,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             The path to the JSON file.
         """
         raise NotImplementedError
-
-    def cache(self, verify_checksum: bool = True) -> str:
-        """Caches the dataset by downloading all additional data for pointer columns to a local directory.
-
-        Args:
-            verify_checksum: Whether to verify the checksum of the dataset after caching.
-
-        Returns:
-            The path to the cache directory.
-        """
-        self.to_json(self._cache_dir, load_zarr_from_new_location=True)
-
-        if verify_checksum:
-            self.verify_checksum()
-
-        return self._cache_dir
 
     def size(self) -> tuple[int, int]:
         return self.n_rows, self.n_columns

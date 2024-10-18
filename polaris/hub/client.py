@@ -516,22 +516,31 @@ class PolarisHubClient(OAuth2Client):
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
         """
+        # Normalize timeout
+        if timeout is None:
+            timeout = self.settings.default_timeout
+
+        # Check if a dataset license was specified prior to upload
+        if not dataset.license:
+            raise InvalidDatasetError(
+                f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some licenses are supported - {get_args(SupportedLicenseType)}."
+            )
 
         if isinstance(dataset, DatasetV1):
             return self._upload_v1_dataset(
-                dataset, ArtifactSubtype.STANDARD.value, access, timeout, owner, if_exists
+                dataset, ArtifactSubtype.STANDARD.value, timeout, access, owner, if_exists
             )
         elif isinstance(dataset, DatasetV2):
-            return self._upload_v2_dataset(dataset, access, timeout, owner, if_exists)
+            return self._upload_v2_dataset(dataset, timeout, access, owner, if_exists)
 
     def _upload_v1_dataset(
         self,
         dataset: DatasetV1,
         artifact_type: ArtifactSubtype,
-        access: AccessType = "private",
-        timeout: TimeoutTypes = (10, 200),
-        owner: HubOwner | str | None = None,
-        if_exists: ZarrConflictResolution = "replace",
+        timeout: TimeoutTypes,
+        access: AccessType,
+        owner: HubOwner | str | None,
+        if_exists: ZarrConflictResolution,
     ):
         """
         Upload a V1 dataset to the Polaris Hub.
@@ -542,18 +551,8 @@ class PolarisHubClient(OAuth2Client):
             success_msg="Uploaded artifact.",
             error_msg="Failed to upload dataset.",
         ) as progress_indicator:
-            # Check if a dataset license was specified prior to upload
-            if not dataset.license:
-                raise InvalidDatasetError(
-                    f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some licenses are supported - {get_args(SupportedLicenseType)}."
-                )
-
-            # Normalize timeout
-            if timeout is None:
-                timeout = self.settings.default_timeout
-
             # Get the serialized data-model
-            # We exclude the table as it handled separately and we exclude the cache_dir as it is user-specific
+            # We exclude the table as it handled separately
             dataset.owner = HubOwner.normalize(owner or dataset.owner)
             dataset_json = dataset.model_dump(exclude={"table"}, exclude_none=True, by_alias=True)
 
@@ -635,10 +634,10 @@ class PolarisHubClient(OAuth2Client):
     def _upload_v2_dataset(
         self,
         dataset: DatasetV2,
-        access: AccessType = "private",
-        timeout: TimeoutTypes = (10, 200),
-        owner: HubOwner | str | None = None,
-        if_exists: ZarrConflictResolution = "replace",
+        timeout: TimeoutTypes,
+        access: AccessType,
+        owner: HubOwner | str | None,
+        if_exists: ZarrConflictResolution,
     ):
         """
         Upload a V2 dataset to the Polaris Hub.
@@ -649,28 +648,18 @@ class PolarisHubClient(OAuth2Client):
             success_msg="Uploaded artifact.",
             error_msg="Failed to upload dataset.",
         ) as progress_indicator:
-            # Check if a dataset license was specified prior to upload
-            if not dataset.license:
-                raise InvalidDatasetError(
-                    f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some licenses are supported - {get_args(SupportedLicenseType)}."
-                )
-
-            # Normalize timeout
-            if timeout is None:
-                timeout = self.settings.default_timeout
-
-            # Get the serialized data-modelx (excluding the user-specific cache-dir)
+            # Get the serialized data-model
             dataset.owner = HubOwner.normalize(owner or dataset.owner)
             dataset_json = dataset.model_dump(exclude_none=True, by_alias=True)
 
-            # Upload dataset meta-data
+            # Step 1: Upload dataset meta-data
             url = f"/v2/dataset/{dataset.owner}/{dataset.name}"
             response = self._base_request_to_hub(
                 url=url,
                 method="PUT",
                 json={
                     "zarrManifestFileContent": {
-                        "md5Sum": dataset.md5sum,
+                        "md5Sum": dataset.zarr_manifest_md5sum,
                     },
                     "access": access,
                     **dataset_json,
