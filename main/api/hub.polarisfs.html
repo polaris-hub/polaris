@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.37">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.41">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8c3ca2c6.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1562,7 +1562,7 @@
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="fsspec.AbstractFileSystem">AbstractFileSystem</span></code></p>
+              Bases: <code>AbstractFileSystem</code></p>
 
 
         <p>A file system interface for accessing datasets on the Polaris platform.</p>
@@ -1593,9 +1593,11 @@ folders and Zarr is a folder based data-format.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>polaris_client</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.hub.client.PolarisHubClient" href="hub.client.html#polaris.hub.client.PolarisHubClient">PolarisHubClient</a></code>
+                <code>polaris_client</code>
+            </td>
+            <td>
+                  <code>PolarisHubClient</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1607,7 +1609,9 @@ folders and Zarr is a folder based data-format.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>dataset_owner</code></td>
+            <td>
+                <code>dataset_owner</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1621,7 +1625,9 @@ folders and Zarr is a folder based data-format.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>dataset_name</code></td>
+            <td>
+                <code>dataset_name</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1636,6 +1642,11 @@ folders and Zarr is a folder based data-format.</p>
           </tr>
       </tbody>
     </table>
+
+
+
+
+
 
 
 
@@ -1682,7 +1693,9 @@ folders and Zarr is a folder based data-format.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>path</code></td>
+            <td>
+                <code>path</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1753,7 +1766,9 @@ folders and Zarr is a folder based data-format.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>path</code></td>
+            <td>
+                <code>path</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1767,7 +1782,9 @@ folders and Zarr is a folder based data-format.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>detail</code></td>
+            <td>
+                <code>detail</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -1781,9 +1798,11 @@ folders and Zarr is a folder based data-format.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>timeout</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.TimeoutTypes" href="utils.types.html#polaris.utils.types.TimeoutTypes">TimeoutTypes</a>]</code>
+                <code>timeout</code>
+            </td>
+            <td>
+                  <code>Optional[TimeoutTypes]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1809,7 +1828,7 @@ folders and Zarr is a folder based data-format.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="typing.Union">Union</span>[<span title="typing.List">List</span>[str], <span title="typing.List">List</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]]</code>
+                  <code>Union[List[str], List[Dict[str, Any]]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1852,7 +1871,9 @@ folders and Zarr is a folder based data-format.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>path</code></td>
+            <td>
+                <code>path</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1866,9 +1887,11 @@ folders and Zarr is a folder based data-format.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>start</code></td>
             <td>
-                  <code><span title="typing.Union">Union</span>[int, None]</code>
+                <code>start</code>
+            </td>
+            <td>
+                  <code>Union[int, None]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1880,9 +1903,11 @@ folders and Zarr is a folder based data-format.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>end</code></td>
             <td>
-                  <code><span title="typing.Union">Union</span>[int, None]</code>
+                <code>end</code>
+            </td>
+            <td>
+                  <code>Union[int, None]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1894,9 +1919,11 @@ folders and Zarr is a folder based data-format.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>timeout</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.TimeoutTypes" href="utils.types.html#polaris.utils.types.TimeoutTypes">TimeoutTypes</a>]</code>
+                <code>timeout</code>
+            </td>
+            <td>
+                  <code>Optional[TimeoutTypes]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1908,7 +1935,9 @@ folders and Zarr is a folder based data-format.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>kwargs</code></td>
+            <td>
+                <code>kwargs</code>
+            </td>
             <td>
                   <code>dict</code>
             </td>
@@ -1981,7 +2010,9 @@ It may be called by the Zarr store when removing a file or directory.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>path</code></td>
+            <td>
+                <code>path</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1995,7 +2026,9 @@ It may be called by the Zarr store when removing a file or directory.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>recursive</code></td>
+            <td>
+                <code>recursive</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2009,9 +2042,11 @@ It may be called by the Zarr store when removing a file or directory.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>maxdepth</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[int]</code>
+                <code>maxdepth</code>
+            </td>
+            <td>
+                  <code>Optional[int]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2086,7 +2121,9 @@ as a placeholder that aligns with the Zarr interface's expectations.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>path</code></td>
+            <td>
+                <code>path</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2100,9 +2137,11 @@ as a placeholder that aligns with the Zarr interface's expectations.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>content</code></td>
             <td>
-                  <code><span title="typing.Union">Union</span>[bytes, str]</code>
+                <code>content</code>
+            </td>
+            <td>
+                  <code>Union[bytes, str]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2114,9 +2153,11 @@ as a placeholder that aligns with the Zarr interface's expectations.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>timeout</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.TimeoutTypes" href="utils.types.html#polaris.utils.types.TimeoutTypes">TimeoutTypes</a>]</code>
+                <code>timeout</code>
+            </td>
+            <td>
+                  <code>Optional[TimeoutTypes]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2379,7 +2420,7 @@ as a placeholder that aligns with the Zarr interface's expectations.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d6f25eb3.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

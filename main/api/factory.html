@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.37">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.41">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8c3ca2c6.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1697,6 +1697,11 @@ the Python API?</p>
 
 
 
+
+
+
+
+
   <div class="doc doc-children">
 
 
@@ -1783,7 +1788,9 @@ All data for a single dataset is expected to be stored in the same Zarr archive.
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>ext</code></td>
+            <td>
+                <code>ext</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1798,9 +1805,11 @@ There can only be a single converter per file extension.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>converter</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.dataset.converters.Converter" href="converters.html#polaris.dataset.converters.Converter">Converter</a></code>
+                <code>converter</code>
+            </td>
+            <td>
+                  <code>Converter</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1854,9 +1863,11 @@ the file to a Polaris-compatible format.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column</code></td>
             <td>
-                  <code><span title="pandas.Series">Series</span></code>
+                <code>column</code>
+            </td>
+            <td>
+                  <code>Series</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1868,9 +1879,11 @@ the file to a Polaris-compatible format.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>annotation</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.dataset.ColumnAnnotation" href="dataset.html#polaris.dataset.ColumnAnnotation">ColumnAnnotation</a> | None</code>
+                <code>annotation</code>
+            </td>
+            <td>
+                  <code>ColumnAnnotation | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1921,9 +1934,11 @@ the same expectations as for <a class="autorefs autorefs-internal" href="#polari
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
             <td>
-                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+                <code>df</code>
+            </td>
+            <td>
+                  <code>DataFrame</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1935,9 +1950,11 @@ the same expectations as for <a class="autorefs autorefs-internal" href="#polari
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>annotations</code></td>
             <td>
-                  <code>dict[str, <a class="autorefs autorefs-internal" title="polaris.dataset.ColumnAnnotation" href="dataset.html#polaris.dataset.ColumnAnnotation">ColumnAnnotation</a>] | None</code>
+                <code>annotations</code>
+            </td>
+            <td>
+                  <code>dict[str, ColumnAnnotation] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1949,7 +1966,9 @@ the same expectations as for <a class="autorefs autorefs-internal" href="#polari
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>merge_on</code></td>
+            <td>
+                <code>merge_on</code>
+            </td>
             <td>
                   <code>str | None</code>
             </td>
@@ -1998,7 +2017,9 @@ If no converter is found for the file extension, it raises an error.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>path</code></td>
+            <td>
+                <code>path</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2047,7 +2068,9 @@ If no converter is found for the file extension, it raises an error.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>paths</code></td>
+            <td>
+                <code>paths</code>
+            </td>
             <td>
                   <code>list[str]</code>
             </td>
@@ -2061,9 +2084,11 @@ If no converter is found for the file extension, it raises an error.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>axis</code></td>
             <td>
-                  <code><span title="typing.Literal">Literal</span>[0, 1, &#39;index&#39;, &#39;columns&#39;]</code>
+                <code>axis</code>
+            </td>
+            <td>
+                  <code>Literal[0, 1, &#39;index&#39;, &#39;columns&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2131,7 +2156,9 @@ Note that this will not reset the registered converters.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>zarr_root_path</code></td>
+            <td>
+                <code>zarr_root_path</code>
+            </td>
             <td>
                   <code>str | None</code>
             </td>
@@ -2213,9 +2240,11 @@ For creating more complicated datasets, please use the <code>DatasetFactory</cod
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>axis</code></td>
             <td>
-                  <code><span title="typing.Literal">Literal</span>[0, 1, &#39;index&#39;, &#39;columns&#39;]</code>
+                <code>axis</code>
+            </td>
+            <td>
+                  <code>Literal[0, 1, &#39;index&#39;, &#39;columns&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2449,7 +2478,7 @@ For creating more complicated datasets, please use the <code>DatasetFactory</cod
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d6f25eb3.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

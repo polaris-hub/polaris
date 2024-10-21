@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.37">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.41">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8c3ca2c6.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1741,7 +1741,7 @@
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="polaris._artifact.BaseArtifactModel" href="base.html#polaris._artifact.BaseArtifactModel">BaseArtifactModel</a></code></p>
+              Bases: <code>BaseArtifactModel</code></p>
 
 
         <p>Base class for evaluation results</p>
@@ -1760,7 +1760,7 @@
           <tr class="doc-section-item">
             <td><code><span title="polaris.evaluate.ResultsMetadata.github_url">github_url</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
+                  <code>Optional[HttpUrlString]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1771,7 +1771,7 @@
           <tr class="doc-section-item">
             <td><code><span title="polaris.evaluate.ResultsMetadata.paper_url">paper_url</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
+                  <code>Optional[HttpUrlString]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1782,7 +1782,7 @@
           <tr class="doc-section-item">
             <td><code><span title="polaris.evaluate.ResultsMetadata.contributors">contributors</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[list[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubUser" href="utils.types.html#polaris.utils.types.HubUser">HubUser</a>]]</code>
+                  <code>Optional[list[HubUser]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1793,7 +1793,7 @@
           <tr class="doc-section-item">
             <td><code><span title="polaris.evaluate.ResultsMetadata._created_at">_created_at</span></code></td>
             <td>
-                  <code><span title="datetime.datetime">datetime</span></code>
+                  <code>datetime</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1804,6 +1804,11 @@
       </tbody>
     </table>
         <p>For additional meta-data attributes, see the <a class="autorefs autorefs-internal" href="base.html#polaris._artifact.BaseArtifactModel"><code>BaseArtifactModel</code></a> class.</p>
+
+
+
+
+
 
 
 
@@ -1840,7 +1845,7 @@
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="polaris.evaluate._results.ResultsMetadata" href="#polaris.evaluate.ResultsMetadata">ResultsMetadata</a></code></p>
+              Bases: <code>ResultsMetadata</code></p>
 
 
         <p>Class for saving evaluation results</p>
@@ -1903,7 +1908,7 @@ to say something about which (type of) methods performs best <em>in general</em>
           <tr class="doc-section-item">
             <td><code><span title="polaris.evaluate.EvaluationResult.results">results</span></code></td>
             <td>
-                  <code><span title="polaris.evaluate._results.ResultsType">ResultsType</span></code>
+                  <code>ResultsType</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1915,6 +1920,11 @@ that can be decoded into the associated tabular format.</p>
       </tbody>
     </table>
         <p>For additional meta-data attributes, see the <a class="autorefs autorefs-internal" href="#polaris.evaluate.ResultsMetadata"><code>ResultsMetadata</code></a> class.</p>
+
+
+
+
+
 
 
 
@@ -1951,7 +1961,7 @@ that can be decoded into the associated tabular format.</p>
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="polaris.evaluate._results.EvaluationResult" href="#polaris.evaluate.EvaluationResult">EvaluationResult</a></code></p>
+              Bases: <code>EvaluationResult</code></p>
 
 
         <p>Class specific to results for standard benchmarks.</p>
@@ -1965,6 +1975,11 @@ the results with the Polaris Hub.</p>
   <p>Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.</p>
 </details>        <p>benchmark_owner: The owner of the benchmark for which these results were generated.
     Together with the benchmark name, this uniquely identifies the benchmark on the Hub.</p>
+
+
+
+
+
 
 
 
@@ -2021,7 +2036,7 @@ the results with the Polaris Hub.</p>
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+              Bases: <code>BaseModel</code></p>
 
 
         <p>Metric metadata</p>
@@ -2040,7 +2055,7 @@ the results with the Polaris Hub.</p>
           <tr class="doc-section-item">
             <td><code><span title="polaris.evaluate.MetricInfo.fn">fn</span></code></td>
             <td>
-                  <code><span title="typing.Callable">Callable</span></code>
+                  <code>Callable</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2073,7 +2088,7 @@ the results with the Polaris Hub.</p>
           <tr class="doc-section-item">
             <td><code><span title="polaris.evaluate.MetricInfo.direction">direction</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.DirectionType" href="utils.types.html#polaris.utils.types.DirectionType">DirectionType</a></code>
+                  <code>DirectionType</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2083,6 +2098,11 @@ the results with the Polaris Hub.</p>
           </tr>
       </tbody>
     </table>
+
+
+
+
+
 
 
 
@@ -2119,12 +2139,17 @@ the results with the Polaris Hub.</p>
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="enum.Enum">Enum</span></code></p>
+              Bases: <code>Enum</code></p>
 
 
         <p>A metric within the Polaris ecosystem is uniquely identified by its name
 and is associated with additional metadata in a <code>MetricInfo</code> instance.</p>
 <p>Implemented as an enum.</p>
+
+
+
+
+
 
 
 
@@ -2182,6 +2207,11 @@ and is associated with additional metadata in a <code>MetricInfo</code> instance
 </h3>
 
     <div class="doc doc-contents first">
+
+
+
+
+
 
 
 
@@ -2263,9 +2293,11 @@ The implementation is based on <a href="https://pubs.acs.org/doi/10.1021/acs.che
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>y_true</code></td>
             <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
+                <code>y_true</code>
+            </td>
+            <td>
+                  <code>ndarray</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2277,9 +2309,11 @@ The implementation is based on <a href="https://pubs.acs.org/doi/10.1021/acs.che
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>y_pred</code></td>
             <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
+                <code>y_pred</code>
+            </td>
+            <td>
+                  <code>ndarray</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2358,6 +2392,11 @@ The implementation is based on <a href="https://pubs.acs.org/doi/10.1021/acs.che
 </h3>
 
     <div class="doc doc-contents first">
+
+
+
+
+
 
 
 
@@ -2657,7 +2696,7 @@ The implementation is based on <a href="https://pubs.acs.org/doi/10.1021/acs.che
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d6f25eb3.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.37">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.41">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8c3ca2c6.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1367,6 +1367,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#polaris.hub.storage.StorageSession.root_store" class="md-nav__link">
+    <span class="md-ellipsis">
+      root_store
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.hub.storage.StorageSession.fetch_token" class="md-nav__link">
     <span class="md-ellipsis">
       fetch_token
@@ -1397,6 +1406,24 @@
   <a href="#polaris.hub.storage.StorageSession.get_root" class="md-nav__link">
     <span class="md-ellipsis">
       get_root
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.hub.storage.StorageSession.set_manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      set_manifest
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.hub.storage.StorageSession.get_manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_manifest
     </span>
   </a>
   
@@ -1537,11 +1564,16 @@
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="authlib.integrations.httpx_client.OAuth2Client">OAuth2Client</span></code></p>
+              Bases: <code>OAuth2Client</code></p>
 
 
         <p>A context manager for managing a storage session, with token exchange and token refresh capabilities.
 Each session is associated with a specific scope and resource.</p>
+
+
+
+
+
 
 
 
@@ -1573,6 +1605,29 @@ Each session is associated with a specific scope and resource.</p>
     <div class="doc doc-contents ">
 
         <p>Returns a Zarr store for the extension path, if available, backed by a S3 compatible bucket.</p>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="polaris.hub.storage.StorageSession.root_store" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">root_store</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">root_store</span><span class="p">:</span> <span class="n">S3Store</span> <span class="o">|</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Returns a Zarr store for the root path, backed by a S3 compatible bucket.</p>
     </div>
 
 </div>
@@ -1655,6 +1710,44 @@ Each session is associated with a specific scope and resource.</p>
 
 </div>
 
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.hub.storage.StorageSession.set_manifest" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">set_manifest</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">set_manifest</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Set a value at the manifest path.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.hub.storage.StorageSession.get_manifest" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_manifest</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_manifest</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">BytesIO</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Get the value at the manifest path.</p>
+
+    </div>
+
+</div>
+
 
 
   </div>
@@ -1678,11 +1771,16 @@ Each session is associated with a specific scope and resource.</p>
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="zarr.storage.Store">Store</span></code></p>
+              Bases: <code>Store</code></p>
 
 
         <p>A Zarr store implementation using a S3 bucket as the backend storage.</p>
 <p>It supports multipart uploads for large objects and handles S3-specific exceptions.</p>
+
+
+
+
+
 
 
 
@@ -2062,7 +2160,7 @@ attempt tp retrieve it and handle the KeyError from a non-existent key.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d6f25eb3.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

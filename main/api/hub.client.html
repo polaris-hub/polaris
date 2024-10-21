@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.37">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.41">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.8c3ca2c6.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1705,7 +1705,7 @@
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="pydantic_settings.BaseSettings">BaseSettings</span></code></p>
+              Bases: <code>BaseSettings</code></p>
 
 
         <p>Settings for the OAuth2 Polaris Hub API Client.</p>
@@ -1731,7 +1731,7 @@ See <a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a> for mor
           <tr class="doc-section-item">
             <td><code><span title="polaris.hub.settings.PolarisHubSettings.hub_url">hub_url</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
+                  <code>HttpUrlString</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1742,7 +1742,7 @@ See <a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a> for mor
           <tr class="doc-section-item">
             <td><code><span title="polaris.hub.settings.PolarisHubSettings.api_url">api_url</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a> | None</code>
+                  <code>HttpUrlString | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1753,7 +1753,7 @@ See <a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a> for mor
           <tr class="doc-section-item">
             <td><code><span title="polaris.hub.settings.PolarisHubSettings.authorize_url">authorize_url</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
+                  <code>HttpUrlString</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1764,7 +1764,7 @@ See <a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a> for mor
           <tr class="doc-section-item">
             <td><code><span title="polaris.hub.settings.PolarisHubSettings.callback_url">callback_url</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
+                  <code>HttpUrlString</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1775,7 +1775,7 @@ See <a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a> for mor
           <tr class="doc-section-item">
             <td><code><span title="polaris.hub.settings.PolarisHubSettings.token_fetch_url">token_fetch_url</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
+                  <code>HttpUrlString</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1786,7 +1786,7 @@ See <a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a> for mor
           <tr class="doc-section-item">
             <td><code><span title="polaris.hub.settings.PolarisHubSettings.user_info_url">user_info_url</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a></code>
+                  <code>HttpUrlString</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1819,7 +1819,7 @@ See <a href="https://datatracker.ietf.org/doc/html/rfc7636">RFC 7636</a> for mor
           <tr class="doc-section-item">
             <td><code><span title="polaris.hub.settings.PolarisHubSettings.ca_bundle">ca_bundle</span></code></td>
             <td>
-                  <code><span title="typing.Union">Union</span>[str, bool, None]</code>
+                  <code>Union[str, bool, None]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1830,6 +1830,11 @@ Allows for custom SSL certificates to be used.</p>
           </tr>
       </tbody>
     </table>
+
+
+
+
+
 
 
 
@@ -1867,7 +1872,7 @@ Allows for custom SSL certificates to be used.</p>
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="authlib.integrations.httpx_client.OAuth2Client">OAuth2Client</span></code></p>
+              Bases: <code>OAuth2Client</code></p>
 
 
         <p>A client for the Polaris Hub API. The Polaris Hub is a central repository of datasets, benchmarks and results.
@@ -1921,9 +1926,11 @@ we are sticking to the sync client - at least for now.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>settings</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.hub.settings.PolarisHubSettings" href="#polaris.hub.settings.PolarisHubSettings">PolarisHubSettings</a> | None</code>
+                <code>settings</code>
+            </td>
+            <td>
+                  <code>PolarisHubSettings | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1935,7 +1942,9 @@ we are sticking to the sync client - at least for now.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cache_auth_token</code></td>
+            <td>
+                <code>cache_auth_token</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -1949,7 +1958,9 @@ we are sticking to the sync client - at least for now.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>**kwargs</code></td>
+            <td>
+                <code>**kwargs</code>
+            </td>
             <td>
                   <code>dict</code>
             </td>
@@ -1964,6 +1975,11 @@ we are sticking to the sync client - at least for now.</p>
           </tr>
       </tbody>
     </table>
+
+
+
+
+
 
 
 
@@ -2031,7 +2047,9 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>overwrite</code></td>
+            <td>
+                <code>overwrite</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2045,7 +2063,9 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>auto_open_browser</code></td>
+            <td>
+                <code>auto_open_browser</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2093,7 +2113,9 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>limit</code></td>
+            <td>
+                <code>limit</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2107,7 +2129,9 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>offset</code></td>
+            <td>
+                <code>offset</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2178,9 +2202,11 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>owner</code></td>
             <td>
-                  <code>str | <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a></code>
+                <code>owner</code>
+            </td>
+            <td>
+                  <code>str | HubOwner</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2192,7 +2218,9 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>name</code></td>
+            <td>
+                <code>name</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2206,9 +2234,11 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verify_checksum</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.ChecksumStrategy" href="utils.types.html#polaris.utils.types.ChecksumStrategy">ChecksumStrategy</a></code>
+                <code>verify_checksum</code>
+            </td>
+            <td>
+                  <code>ChecksumStrategy</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2235,7 +2265,7 @@ will infer a practical default based on the dataset's storage location.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.dataset.DatasetV1" href="dataset.html#polaris.dataset.Dataset">DatasetV1</a></code>
+                  <code>DatasetV1</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2278,7 +2308,9 @@ will infer a practical default based on the dataset's storage location.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>limit</code></td>
+            <td>
+                <code>limit</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2292,7 +2324,9 @@ will infer a practical default based on the dataset's storage location.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>offset</code></td>
+            <td>
+                <code>offset</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2363,9 +2397,11 @@ will infer a practical default based on the dataset's storage location.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>owner</code></td>
             <td>
-                  <code>str | <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a></code>
+                <code>owner</code>
+            </td>
+            <td>
+                  <code>str | HubOwner</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2377,7 +2413,9 @@ will infer a practical default based on the dataset's storage location.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>name</code></td>
+            <td>
+                <code>name</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2391,9 +2429,11 @@ will infer a practical default based on the dataset's storage location.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verify_checksum</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.ChecksumStrategy" href="utils.types.html#polaris.utils.types.ChecksumStrategy">ChecksumStrategy</a></code>
+                <code>verify_checksum</code>
+            </td>
+            <td>
+                  <code>ChecksumStrategy</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2419,7 +2459,7 @@ will infer a practical default based on the dataset's storage location.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.benchmark.BenchmarkSpecification" href="benchmark.html#polaris.benchmark.BenchmarkSpecification">BenchmarkSpecification</a></code>
+                  <code>BenchmarkSpecification</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2484,9 +2524,11 @@ and match an existing benchmark on the Polaris Hub. If these results were genera
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>results</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.evaluate.BenchmarkResults" href="evaluation.html#polaris.evaluate.BenchmarkResults">BenchmarkResults</a></code>
+                <code>results</code>
+            </td>
+            <td>
+                  <code>BenchmarkResults</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2498,9 +2540,11 @@ and match an existing benchmark on the Polaris Hub. If these results were genera
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>access</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
+                <code>access</code>
+            </td>
+            <td>
+                  <code>AccessType</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2512,9 +2556,11 @@ and match an existing benchmark on the Polaris Hub. If these results were genera
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>owner</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a> | str | None</code>
+                <code>owner</code>
+            </td>
+            <td>
+                  <code>HubOwner | str | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2540,12 +2586,126 @@ and match an existing benchmark on the Polaris Hub. If these results were genera
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetV1</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeoutTypes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="n">owner</span><span class="p">:</span> <span class="n">HubOwner</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetV1</span> <span class="o">|</span> <span class="n">DatasetV2</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeoutTypes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="n">owner</span><span class="p">:</span> <span class="n">HubOwner</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Wrapper method for uploading standard datasets to Polaris Hub</p>
+        <p>Upload a dataset to the Polaris Hub.</p>
+
+
+<details class="info" open>
+  <summary>Owner</summary>
+  <p>You have to manually specify the owner in the dataset data model. Because the owner could
+be a user or an organization, we cannot automatically infer this from just the logged-in user.</p>
+</details>
+
+<details class="note" open>
+  <summary>Required meta-data</summary>
+  <p>The Polaris client and hub maintain different requirements as to which meta-data is required.
+The requirements by the hub are stricter, so when uploading to the hub you might
+get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
+before uploading.</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>dataset</code>
+            </td>
+            <td>
+                  <code>DatasetV1 | DatasetV2</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The dataset to upload.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>access</code>
+            </td>
+            <td>
+                  <code>AccessType</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Grant public or private access to result</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;private&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>timeout</code>
+            </td>
+            <td>
+                  <code>TimeoutTypes</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Request timeout values. User can modify the value when uploading large dataset as needed.
+This can be a single value with the timeout in seconds for all IO operations, or a more granular
+tuple with (connect_timeout, write_timeout). The type of the the timout parameter comes from <code>httpx</code>.
+Since datasets can get large, it might be needed to increase the write timeout for larger datasets.
+See also: https://www.python-httpx.org/advanced/#timeout-configuration</p>
+              </div>
+            </td>
+            <td>
+                  <code>(10, 200)</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>owner</code>
+            </td>
+            <td>
+                  <code>HubOwner | str | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Which Hub user or organization owns the artifact. Takes precedence over <code>dataset.owner</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>if_exists</code>
+            </td>
+            <td>
+                  <code>ZarrConflictResolution</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Action for handling existing files in the Zarr archive. Options are 'raise' to throw
+an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;replace&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
     </div>
 
@@ -2599,9 +2759,11 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>benchmark</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.benchmark.BenchmarkSpecification" href="benchmark.html#polaris.benchmark.BenchmarkSpecification">BenchmarkSpecification</a></code>
+                <code>benchmark</code>
+            </td>
+            <td>
+                  <code>BenchmarkSpecification</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2613,9 +2775,11 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>access</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
+                <code>access</code>
+            </td>
+            <td>
+                  <code>AccessType</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2627,9 +2791,11 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>owner</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a> | str | None</code>
+                <code>owner</code>
+            </td>
+            <td>
+                  <code>HubOwner | str | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2675,9 +2841,11 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>owner</code></td>
             <td>
-                  <code>str | <a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a></code>
+                <code>owner</code>
+            </td>
+            <td>
+                  <code>str | HubOwner</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2689,7 +2857,9 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>name</code></td>
+            <td>
+                <code>name</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2703,9 +2873,11 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verify_checksum</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.ChecksumStrategy" href="utils.types.html#polaris.utils.types.ChecksumStrategy">ChecksumStrategy</a></code>
+                <code>verify_checksum</code>
+            </td>
+            <td>
+                  <code>ChecksumStrategy</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2731,7 +2903,7 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.competition.CompetitionSpecification" href="competition.html#polaris.competition.CompetitionSpecification">CompetitionSpecification</a></code>
+                  <code>CompetitionSpecification</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2774,7 +2946,9 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>limit</code></td>
+            <td>
+                <code>limit</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2788,7 +2962,9 @@ Make sure to specify an existing dataset or upload the dataset first.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>offset</code></td>
+            <td>
+                <code>offset</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2860,9 +3036,11 @@ by Polaris Hub and used only internally.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>competition</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.competition.CompetitionSpecification" href="competition.html#polaris.competition.CompetitionSpecification">CompetitionSpecification</a></code>
+                <code>competition</code>
+            </td>
+            <td>
+                  <code>CompetitionSpecification</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2874,9 +3052,11 @@ by Polaris Hub and used only internally.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>competition_predictions</code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.evaluate.CompetitionPredictions" href="competition.evaluation.html#polaris.evaluate.CompetitionPredictions">CompetitionPredictions</a></code>
+                <code>competition_predictions</code>
+            </td>
+            <td>
+                  <code>CompetitionPredictions</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2902,7 +3082,7 @@ by Polaris Hub and used only internally.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.evaluate.CompetitionResults" href="competition.evaluation.html#polaris.evaluate.CompetitionResults">CompetitionResults</a></code>
+                  <code>CompetitionResults</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3139,7 +3319,7 @@ by Polaris Hub and used only internally.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d6f25eb3.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
