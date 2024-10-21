@@ -5,10 +5,10 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 # PyArrow table schema for the V2 Zarr manifest file
-ZARR_MANIFEST_SCHEMA = pa.schema([("path", pa.string()), ("checksum", pa.string())])
+ZARR_MANIFEST_SCHEMA = pa.schema([("path", pa.string()), ("md5_checksum", pa.string())])
 
 
-def generate_zarr_manifest(zarr_root_path: str, output_dir: str):
+def generate_zarr_manifest(zarr_root_path: str, output_dir: str) -> str:
     """
     Entry point function which triggers the creation of a Zarr manifest for a V2 dataset.
 
@@ -25,7 +25,7 @@ def generate_zarr_manifest(zarr_root_path: str, output_dir: str):
     return zarr_manifest_path
 
 
-def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_root_path: str) -> str:
+def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_root_path: str) -> None:
     """
     Recursive function that traverses a Zarr archive to build a V2 manifest file.
 
@@ -51,14 +51,14 @@ def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_roo
                 table = pa.Table.from_pydict(
                     {
                         "path": [os.path.relpath(entry.path, zarr_root_path)],
-                        "checksum": [calculate_file_md5(entry.path)],
+                        "md5_checksum": [calculate_file_md5(entry.path)],
                     },
                     schema=ZARR_MANIFEST_SCHEMA,
                 )
                 writer.write_table(table)
 
 
-def calculate_file_md5(file_path: str):
+def calculate_file_md5(file_path: str) -> str:
     """Calculates the md5 hash for a file at a given path"""
 
     md5_hash = md5()

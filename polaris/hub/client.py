@@ -24,7 +24,9 @@ from polaris.benchmark import (
 )
 from polaris.competition import CompetitionSpecification
 from polaris.dataset import CompetitionDataset, Dataset, DatasetV1
-from polaris.evaluate import BenchmarkResults, CompetitionPredictions, CompetitionResults
+from polaris.evaluate import BenchmarkResults, CompetitionResults
+from polaris.evaluate._results import CompetitionPredictions
+from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
@@ -484,27 +486,13 @@ class PolarisHubClient(OAuth2Client):
 
     def upload_dataset(
         self,
-        dataset: DatasetV1,
+        dataset: DatasetV1 | DatasetV2,
         access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
         owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
     ):
-        """Wrapper method for uploading standard datasets to Polaris Hub"""
-        return self._upload_dataset(
-            dataset, ArtifactSubtype.STANDARD.value, owner, access, timeout, if_exists
-        )
-
-    def _upload_dataset(
-        self,
-        dataset: DatasetV1,
-        artifact_type: ArtifactSubtype,
-        owner: HubOwner | str,
-        access: AccessType = "private",
-        timeout: TimeoutTypes = (10, 200),
-        if_exists: ZarrConflictResolution = "replace",
-    ):
-        """Upload the dataset to the Polaris Hub.
+        """Upload a dataset to the Polaris Hub.
 
         Info: Owner
             You have to manually specify the owner in the dataset data model. Because the owner could
@@ -528,23 +516,43 @@ class PolarisHubClient(OAuth2Client):
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
         """
+        # Normalize timeout
+        if timeout is None:
+            timeout = self.settings.default_timeout
+
+        # Check if a dataset license was specified prior to upload
+        if not dataset.license:
+            raise InvalidDatasetError(
+                f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some licenses are supported - {get_args(SupportedLicenseType)}."
+            )
+
+        if isinstance(dataset, DatasetV1):
+            return self._upload_v1_dataset(
+                dataset, ArtifactSubtype.STANDARD.value, timeout, access, owner, if_exists
+            )
+        elif isinstance(dataset, DatasetV2):
+            return self._upload_v2_dataset(dataset, timeout, access, owner, if_exists)
+
+    def _upload_v1_dataset(
+        self,
+        dataset: DatasetV1,
+        artifact_type: ArtifactSubtype,
+        timeout: TimeoutTypes,
+        access: AccessType,
+        owner: HubOwner | str | None,
+        if_exists: ZarrConflictResolution,
+    ):
+        """
+        Upload a V1 dataset to the Polaris Hub.
+        """
+
         with ProgressIndicator(
             start_msg="Uploading artifact...",
             success_msg="Uploaded artifact.",
             error_msg="Failed to upload dataset.",
         ) as progress_indicator:
-            # Check if a dataset license was specified prior to upload
-            if not dataset.license:
-                raise InvalidDatasetError(
-                    f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some licenses are supported - {get_args(SupportedLicenseType)}."
-                )
-
-            # Normalize timeout
-            if timeout is None:
-                timeout = self.settings.default_timeout
-
             # Get the serialized data-model
-            # We exclude the table as it handled separately and we exclude the cache_dir as it is user-specific
+            # We exclude the table as it handled separately
             dataset.owner = HubOwner.normalize(owner or dataset.owner)
             dataset_json = dataset.model_dump(exclude={"table"}, exclude_none=True, by_alias=True)
 
@@ -622,6 +630,75 @@ class PolarisHubClient(OAuth2Client):
             )
 
             return response
+
+    def _upload_v2_dataset(
+        self,
+        dataset: DatasetV2,
+        timeout: TimeoutTypes,
+        access: AccessType,
+        owner: HubOwner | str | None,
+        if_exists: ZarrConflictResolution,
+    ):
+        """
+        Upload a V2 dataset to the Polaris Hub.
+        """
+
+        with ProgressIndicator(
+            start_msg="Uploading artifact...",
+            success_msg="Uploaded artifact.",
+            error_msg="Failed to upload dataset.",
+        ) as progress_indicator:
+            # Get the serialized data-model
+            dataset.owner = HubOwner.normalize(owner or dataset.owner)
+            dataset_json = dataset.model_dump(exclude_none=True, by_alias=True)
+
+            # Step 1: Upload dataset meta-data
+            url = f"/v2/dataset/{dataset.owner}/{dataset.name}"
+            response = self._base_request_to_hub(
+                url=url,
+                method="PUT",
+                json={
+                    "zarrManifestFileContent": {
+                        "md5Sum": dataset.zarr_manifest_md5sum,
+                    },
+                    "access": access,
+                    **dataset_json,
+                },
+                timeout=timeout,
+            )
+
+            with StorageSession(self, "write", dataset.urn) as storage:
+                # Step 2: Upload the manifest file
+                logger.info("Copying the dataset manifest file to the Hub.")
+                with open(dataset.zarr_manifest_path, "rb") as manifest_file:
+                    storage.set_manifest(manifest_file.read())
+
+                # Step 3: Upload the Zarr archive
+                logger.info("Copying Zarr archive to the Hub. This may take a while.")
+
+                destination = storage.root_store
+
+                # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
+                # metadata based on Zarr developers' recommendations can be tracked at:
+                # https://github.com/zarr-developers/zarr-python/issues/1731
+                zarr.consolidate_metadata(dataset.zarr_root.store.store)
+                zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
+                destination[".zmetadata"] = zmetadata_content
+
+                # Copy the Zarr archive to the hub
+                zarr.copy_store(
+                    source=dataset.zarr_root.store.store,
+                    dest=destination,
+                    log=logger.debug,
+                    if_exists=if_exists,
+                )
+
+        progress_indicator.update_success_msg(
+            f"Your V2 dataset has been successfully uploaded to the Hub. "
+            f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
+        )
+
+        return response
 
     def upload_benchmark(
         self,

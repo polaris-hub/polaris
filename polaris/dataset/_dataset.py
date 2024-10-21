@@ -2,7 +2,6 @@ import json
 from hashlib import md5
 from pathlib import Path
 from typing import Any, ClassVar, List, Literal
-from uuid import uuid4
 
 import fsspec
 import numpy as np
@@ -10,20 +9,13 @@ import pandas as pd
 import zarr
 from datamol.utils import fs as dmfs
 from loguru import logger
-from pydantic import (
-    PrivateAttr,
-    computed_field,
-    field_serializer,
-    field_validator,
-    model_validator,
-)
+from pydantic import PrivateAttr, computed_field, field_validator, model_validator
 from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
-from polaris.dataset._base import BaseDataset, _CACHE_SUBDIR
+from polaris.dataset._base import BaseDataset
 from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
-from polaris.mixins import ChecksumMixin
-from polaris.utils.constants import DEFAULT_CACHE_DIR
+from polaris.mixins._checksum import ChecksumMixin
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
@@ -40,7 +32,7 @@ _INDEX_SEP = "#"
 class DatasetV1(BaseDataset, ChecksumMixin):
     """First version of a Polaris Dataset.
 
-    Stores datapoints in a Pandas DataFrame and implements _pointer columns_ to support the storage of XXL data
+    Stores datapoints in a Pandas DataFrame and implements _pointer columns_ to support the storage of XL data
     outside the DataFrame in a Zarr archive.
 
     Info: Pointer columns
@@ -108,42 +100,12 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         return self
 
-    @model_validator(mode="after")
-    def _ensure_cache_dir_exists(self) -> Self:
-        """
-        Set the default cache dir if none and make sure it exists
-        """
-        if self._cache_dir is None:
-            dataset_id = self._md5sum if self.has_md5sum else str(uuid4())
-            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id)
-        fs, path = fsspec.url_to_fs(self._cache_dir)
-        fs.mkdirs(path, exist_ok=True)
-
-        return self
-
     @field_validator("default_adapters", mode="before")
     def _validate_adapters(cls, value):
         """Validate the adapters"""
         return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
 
-    @field_serializer("default_adapters")
-    def _serialize_adapters(self, value: dict[str, Adapter]) -> dict[str, str]:
-        """Serializes the adapters"""
-        return {k: v.name for k, v in value.items()}
-
-    def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
-        """
-        Determines whether to verify the checksum of the dataset based on the strategy.
-        """
-        match strategy:
-            case "ignore":
-                return False
-            case "verify":
-                return True
-            case "verify_unless_zarr":
-                return not self.uses_zarr
-
-    def _compute_checksum(self):
+    def _compute_checksum(self) -> str:
         """Computes a hash of the dataset.
 
         This is meant to uniquely identify the dataset and can be used to verify the version.
@@ -329,17 +291,6 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         return dataset_path
 
-    def cache(self, verify_checksum: bool = False) -> str:
-        """Cache the dataset to the cache directory.
-
-        Args:
-            verify_checksum: Whether to verify the checksum of the dataset after caching.
-        """
-        dst = super().cache()
-        if verify_checksum:
-            self.verify_checksum()
-        return dst
-
     def _split_index_from_path(self, path: str) -> tuple[str, int | None]:
         """
         Paths can have an additional index appended to them.
@@ -368,3 +319,31 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         if not isinstance(other, DatasetV1):
             return False
         return self.md5sum == other.md5sum
+
+    def cache(self, verify_checksum: bool = True) -> str:
+        """Caches the dataset by downloading all additional data for pointer columns to a local directory.
+
+        Args:
+            verify_checksum: Whether to verify the checksum of the dataset after caching.
+
+        Returns:
+            The path to the cache directory.
+        """
+        self.to_json(self._cache_dir, load_zarr_from_new_location=True)
+
+        if verify_checksum:
+            self.verify_checksum()
+
+        return self._cache_dir
+
+    def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
+        """
+        Determines whether to verify the checksum of the dataset based on the strategy.
+        """
+        match strategy:
+            case "ignore":
+                return False
+            case "verify":
+                return True
+            case "verify_unless_zarr":
+                return not self.uses_zarr

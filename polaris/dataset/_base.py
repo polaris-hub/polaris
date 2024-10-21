@@ -2,7 +2,9 @@ import abc
 import json
 from pathlib import Path
 from typing import Any, MutableMapping
+from uuid import uuid4
 
+import fsspec
 import numpy as np
 import zarr
 from loguru import logger
@@ -21,6 +23,7 @@ from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
+from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
@@ -58,7 +61,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         source: The data source, e.g. a DOI, Github repo or URI.
         license: The dataset license. Polaris only supports some Creative Commons licenses. See [`SupportedLicenseType`][polaris.utils.types.SupportedLicenseType] for accepted ID values.
         curation_reference: A reference to the curation process, e.g. a DOI, Github repo or URI.
-        _cache_dir: Where the dataset would be cached if you call the `cache()` method.
+
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
 
     Raises:
@@ -90,7 +93,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
 
     @field_serializer("default_adapters")
-    def _serialize_adapters(self, value: dict[str, Adapter]):
+    def _serialize_adapters(self, value: dict[str, Adapter]) -> dict[str, str]:
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
 
@@ -113,6 +116,18 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             if c not in self.annotations:
                 self.annotations[c] = ColumnAnnotation()
             self.annotations[c].dtype = self.dtypes[c]
+
+        return self
+
+    @model_validator(mode="after")
+    def _ensure_cache_dir_exists(self) -> Self:
+        """
+        Set the default cache dir if none and make sure it exists
+        """
+        if self._cache_dir is None:
+            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / str(uuid4()))
+        fs, path = fsspec.url_to_fs(self._cache_dir)
+        fs.mkdirs(path, exist_ok=True)
 
         return self
 
@@ -215,6 +230,10 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         """Return the dtype for each of the columns for the dataset"""
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
+        raise NotImplementedError
+
     def load_to_memory(self):
         """
         Load data from zarr files to memeory
@@ -293,15 +312,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             The path to the JSON file.
         """
         raise NotImplementedError
-
-    def cache(self) -> str:
-        """Caches the dataset by downloading all additional data for pointer columns to a local directory.
-
-        Returns:
-            The path to the cache directory.
-        """
-        self.to_json(self._cache_dir, load_zarr_from_new_location=True)
-        return self._cache_dir
 
     def size(self) -> tuple[int, int]:
         return self.n_rows, self.n_columns

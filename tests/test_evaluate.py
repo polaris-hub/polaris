@@ -1,10 +1,9 @@
 import os
 
+import datamol as dm
 import numpy as np
 import pandas as pd
 import pytest
-
-import datamol as dm
 
 import polaris as po
 from polaris.benchmark import (

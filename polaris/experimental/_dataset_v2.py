@@ -2,7 +2,6 @@ import json
 import re
 from pathlib import Path
 from typing import Any, ClassVar, Literal
-from uuid import uuid4
 
 import fsspec
 import numpy as np
@@ -12,11 +11,10 @@ from pydantic import PrivateAttr, computed_field, model_validator
 from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
-from polaris.dataset._base import BaseDataset, _CACHE_SUBDIR
+from polaris.dataset._base import BaseDataset
 from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
-from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
-from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
+from polaris.utils.types import AccessType, ChecksumStrategy, HubOwner, ZarrConflictResolution
 
 _INDEX_ARRAY_KEY = "__index__"
 
@@ -82,19 +80,6 @@ class DatasetV2(BaseDataset):
 
         return self
 
-    @model_validator(mode="after")
-    def _ensure_cache_dir_exists(self) -> Self:
-        """
-        Set the default cache dir if none and make sure it exists
-        """
-        if self._cache_dir is None:
-            dataset_id = self._zarr_manifest_md5sum if self.has_zarr_manifest_md5sum else str(uuid4())
-            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id)
-        fs, path = fsspec.url_to_fs(self._cache_dir)
-        fs.mkdirs(path, exist_ok=True)
-
-        return self
-
     @property
     def n_rows(self) -> int:
         """Return all row indices for the dataset"""
@@ -108,7 +93,7 @@ class DatasetV2(BaseDataset):
         """Return all row indices for the dataset
 
         Warning: Memory consumption
-            This feature is added for completeness sake, but when datasets get large could consume a lot of memory.
+            This feature is added for completeness' sake, but it should be noted that large datasets could consume a lot of memory.
             E.g. storing a billion indices with np.in64 would consume 8GB of memory. Use with caution.
         """
         return np.arange(len(self), dtype=int)
@@ -195,11 +180,14 @@ class DatasetV2(BaseDataset):
         return arr
 
     def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
-        """Uploads the dataset to the Polaris Hub."""
+        """
+        Uploads the dataset to the Polaris Hub.
+        """
 
-        # NOTE (cwognum):  Leaving this for a later PR, because I want
-        #  to do it simultaneously with a PR on the Hub side.
-        raise NotImplementedError
+        from polaris.hub.client import PolarisHubClient
+
+        with PolarisHubClient() as client:
+            client.upload_dataset(self, owner=owner, access=access)
 
     @classmethod
     def from_json(cls, path: str):
@@ -238,7 +226,7 @@ class DatasetV2(BaseDataset):
         dataset_path = str(destination / "dataset.json")
         new_zarr_root_path = str(destination / "data.zarr")
 
-        # Lu: Avoid serilizing and sending None to hub app.
+        # Lu: Avoid serializing and sending None to hub app.
         serialized = self.model_dump(exclude_none=True)
         serialized["zarrRootPath"] = new_zarr_root_path
 
@@ -264,7 +252,22 @@ class DatasetV2(BaseDataset):
             json.dump(serialized, f)
         return dataset_path
 
+    def cache(self) -> str:
+        """Caches the dataset by downloading all additional data for pointer columns to a local directory.
+
+        Returns:
+            The path to the cache directory.
+        """
+        self.to_json(self._cache_dir, load_zarr_from_new_location=True)
+        return self._cache_dir
+
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude={"zarr_md5sum_manifest"})
+        repr_dict = self.model_dump()
         return repr_dict
+
+    def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
+        """
+        Determines whether to verify the checksum of the dataset based on the strategy.
+        """
+        return False
