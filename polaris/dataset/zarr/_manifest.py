@@ -8,6 +8,7 @@ from pyarrow.parquet import write_table
 # PyArrow table schema for the V2 Zarr manifest file
 ZARR_MANIFEST_SCHEMA = schema([("path", string()), ("md5_checksum", string())])
 
+ROW_GROUP_SIZE = 128 * 1024 * 1024 # 128 MB
 
 def generate_zarr_manifest(zarr_root_path: str, output_dir: str) -> str:
     """
@@ -21,7 +22,7 @@ def generate_zarr_manifest(zarr_root_path: str, output_dir: str) -> str:
 
     entries = manifest_entries(zarr_root_path, zarr_root_path)
     manifest = Table.from_pylist(mapping=entries, schema=ZARR_MANIFEST_SCHEMA)
-    write_table(manifest, zarr_manifest_path)
+    write_table(manifest, zarr_manifest_path, row_group_size=ROW_GROUP_SIZE)
 
     return zarr_manifest_path
 
