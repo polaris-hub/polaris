@@ -163,7 +163,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             See also [`Dataset.load_to_memory`][polaris.dataset.Dataset.load_to_memory].
         """
 
-        from polaris.hub.client import PolarisHubClient
         from polaris.hub.storage import StorageSession
 
         if self._zarr_root is not None:
@@ -175,30 +174,47 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         saved_on_hub = self.zarr_root_path.startswith(StorageSession.polaris_protocol)
 
         if self._warn_about_remote_zarr:
-            saved_remote = saved_on_hub or not Path(self.zarr_root_path).exists()
-
-            if saved_remote:
+            if saved_on_hub:
+                # TODO (cwognum): The user now has no easy way of knowing whether the dataset is "small enough".
                 logger.warning(
                     f"You're loading data from a remote location. "
-                    f"To speed up this process, consider caching the dataset first "
-                    f"using {self.__class__.__name__}.cache()"
+                    f"If the dataset is small enough, consider caching the dataset first "
+                    f"using {self.__class__.__name__}.cache() for more performant data access."
                 )
                 self._warn_about_remote_zarr = False
 
         try:
             if saved_on_hub:
-                with PolarisHubClient() as client:
-                    with StorageSession(client, "read", self.urn) as storage:
-                        self._zarr_root = zarr.open_consolidated(storage.extension_store)
+                self._zarr_root = self.load_zarr_root_from_hub()
             else:
-                # We use memory mapping by default because our experiments show that it's consistently faster
-                store = MemoryMappedDirectoryStore(self.zarr_root_path)
-                self._zarr_root = zarr.open_consolidated(store, mode="r+")
+                self._zarr_root = self.load_zarr_root_from_local()
+
         except KeyError as error:
             raise InvalidDatasetError(
                 "A Zarr archive associated with a Polaris dataset has to be consolidated."
             ) from error
         return self._zarr_root
+
+    @abc.abstractmethod
+    def load_zarr_root_from_hub(self):
+        """
+        Loads a Zarr archive from the Polaris Hub.
+        """
+        raise NotImplementedError
+
+    def load_zarr_root_from_local(self):
+        """
+        Loads a locally stored Zarr archive.
+
+        We use memory mapping by default because our experiments show that it's consistently faster
+        """
+        if not Path(self.zarr_root_path).exists():
+            raise FileNotFoundError(
+                f"The Zarr archive at {self.zarr_root_path} does not exist. "
+                "If the data is not stored on the Polaris Hub, it needs to be stored locally."
+            )
+        store = MemoryMappedDirectoryStore(self.zarr_root_path)
+        return zarr.open_consolidated(store, mode="r+")
 
     @computed_field
     @property

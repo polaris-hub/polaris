@@ -132,6 +132,17 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         checksum = hash_fn.hexdigest()
         return checksum
 
+    def load_zarr_root_from_hub(self):
+        """
+        Loads a Zarr archive from the Hub.
+        """
+        from polaris.hub.client import PolarisHubClient
+        from polaris.hub.storage import StorageSession
+
+        with PolarisHubClient() as client:
+            with StorageSession(client, "read", self.urn) as storage:
+                return zarr.open_consolidated(store=storage.extension_store)
+
     @computed_field
     @property
     def zarr_md5sum_manifest(self) -> List[ZarrFileChecksum]:
@@ -311,7 +322,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude={"table", "zarr_md5sum_manifest"})
+        repr_dict = self.model_dump(exclude={"table", "zarr_md5sum_manifest", "md5sum"})
         return repr_dict
 
     def __eq__(self, other):
