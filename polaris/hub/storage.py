@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Generator, Literal, Mapping, Sequence, TypeAlias
 
 import boto3
-from authlib.integrations.httpx_client import OAuth2Client
+from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2 import OAuth2Error
 from authlib.oauth2.rfc6749 import OAuth2Token
 from botocore.exceptions import BotoCoreError, ClientError
@@ -346,7 +346,7 @@ class StorageSession(OAuth2Client):
         """
         try:
             return super().fetch_token()
-        except OAuth2Error as error:
+        except (OAuthError, OAuth2Error) as error:
             raise PolarisHubError(
                 message=f"Could not obtain a token to access the storage backend. Error was: {error.error} - {error.description}"
             ) from error
@@ -356,6 +356,9 @@ class StorageSession(OAuth2Client):
         Override the active check to trigger a re-fetch of the token if it is not active.
         """
         if token is None:
+            # This won't be needed with if we set a lower bound for authlib: >=1.3.2
+            # See https://github.com/lepture/authlib/pull/625
+            # As of now, this latest version is not available on Conda though.
             token = self.token
 
         if token and super().ensure_active_token(token):

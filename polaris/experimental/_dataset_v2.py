@@ -113,6 +113,17 @@ class DatasetV2(BaseDataset):
             dtypes[group] = np.dtype(object)
         return dtypes
 
+    def load_zarr_root_from_hub(self):
+        """
+        Loads a Zarr archive from the Hub.
+        """
+        from polaris.hub.client import PolarisHubClient
+        from polaris.hub.storage import StorageSession
+
+        with PolarisHubClient() as client:
+            with StorageSession(client, "read", self.urn) as storage:
+                return zarr.open_consolidated(store=storage.root_store)
+
     @property
     def zarr_manifest_path(self) -> str:
         if self._zarr_manifest_path is None:
@@ -263,7 +274,7 @@ class DatasetV2(BaseDataset):
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump()
+        repr_dict = self.model_dump(exclude={"zarr_manifest_path", "zarr_manifest_md5sum"})
         return repr_dict
 
     def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:

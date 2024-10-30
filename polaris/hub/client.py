@@ -143,6 +143,12 @@ class PolarisHubClient(OAuth2Client):
         """
         Override the active check to trigger a refetch of the token if it is not active.
         """
+        if token is None:
+            # This won't be needed with if we set a lower bound for authlib: >=1.3.2
+            # See https://github.com/lepture/authlib/pull/625
+            # As of now, this latest version is not available on Conda though.
+            token = self.token
+
         is_active = super().ensure_active_token(token)
         if is_active:
             return True
@@ -292,7 +298,7 @@ class PolarisHubClient(OAuth2Client):
         owner: str | HubOwner,
         name: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
-    ) -> DatasetV1:
+    ) -> DatasetV1 | DatasetV2:
         """Load a standard dataset from the Polaris Hub.
 
         Args:
@@ -304,9 +310,18 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `Dataset` instance, if it exists.
         """
-        return self._get_dataset(owner, name, ArtifactSubtype.STANDARD.value, verify_checksum)
+        with ProgressIndicator(
+            start_msg="Fetching dataset...",
+            success_msg="Fetched dataset.",
+            error_msg="Failed to fetch dataset.",
+        ):
+            try:
+                return self._get_v1_dataset(owner, name, ArtifactSubtype.STANDARD.value, verify_checksum)
+            except PolarisRetrieveArtifactError:
+                # If the v1 dataset is not found, try to load a v2 dataset
+                return self._get_v2_dataset(owner, name)
 
-    def _get_dataset(
+    def _get_v1_dataset(
         self,
         owner: str | HubOwner,
         name: str,
@@ -324,39 +339,54 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `Dataset` instance, if it exists.
         """
-        with ProgressIndicator(
-            start_msg="Fetching artifact...",
-            success_msg="Fetched artifact.",
-            error_msg="Failed to fetch dataset.",
-        ):
-            url = (
-                f"/v1/dataset/{owner}/{name}"
-                if artifact_type == ArtifactSubtype.STANDARD.value
-                else f"/v2/competition/dataset/{owner}/{name}"
-            )
-            response = self._base_request_to_hub(url=url, method="GET")
+        url = (
+            f"/v1/dataset/{owner}/{name}"
+            if artifact_type == ArtifactSubtype.STANDARD.value
+            else f"/v2/competition/dataset/{owner}/{name}"
+        )
+        response = self._base_request_to_hub(url=url, method="GET")
 
-            # Disregard the Zarr root in the response. We'll get it from the storage token instead.
-            response.pop("zarrRootPath", None)
+        # Disregard the Zarr root in the response. We'll get it from the storage token instead.
+        response.pop("zarrRootPath", None)
 
-            # Load the dataset table and optional Zarr archive
-            with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
-                table = pd.read_parquet(storage.get_root())
-                zarr_root_path = str(storage.paths.extension)
+        # Load the dataset table and optional Zarr archive
+        with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
+            table = pd.read_parquet(storage.get_root())
+            zarr_root_path = storage.paths.extension
 
-            if artifact_type == ArtifactSubtype.COMPETITION:
-                dataset = CompetitionDataset(table=table, zarr_root_path=zarr_root_path, **response)
-                md5sum = response["maskedMd5Sum"]
-            else:
-                dataset = DatasetV1(table=table, zarr_root_path=zarr_root_path, **response)
-                md5sum = response["md5Sum"]
+            if zarr_root_path is not None:
+                # For V1 datasets, the Zarr Root is optional.
+                # It should be None if the dataset does not use pointer columns
+                zarr_root_path = str(zarr_root_path)
 
-            if dataset.should_verify_checksum(verify_checksum):
-                dataset.verify_checksum(md5sum)
-            else:
-                dataset.md5sum = md5sum
+        if artifact_type == ArtifactSubtype.COMPETITION:
+            dataset = CompetitionDataset(table=table, zarr_root_path=zarr_root_path, **response)
+            md5sum = response["maskedMd5Sum"]
+        else:
+            dataset = DatasetV1(table=table, zarr_root_path=zarr_root_path, **response)
+            md5sum = response["md5Sum"]
 
-            return dataset
+        if dataset.should_verify_checksum(verify_checksum):
+            dataset.verify_checksum(md5sum)
+        else:
+            dataset.md5sum = md5sum
+
+        return dataset
+
+    def _get_v2_dataset(self, owner: str | HubOwner, name: str) -> DatasetV2:
+        """"""
+        url = f"/v2/dataset/{owner}/{name}"
+        response = self._base_request_to_hub(url=url, method="GET")
+
+        # Disregard the Zarr root in the response. We'll get it from the storage token instead.
+        response.pop("zarrRootPath", None)
+
+        # Load the Zarr archive
+        with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
+            zarr_root_path = str(storage.paths.root)
+
+        dataset = DatasetV2(zarr_root_path=zarr_root_path, **response)
+        return dataset
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.
@@ -802,7 +832,7 @@ class PolarisHubClient(OAuth2Client):
 
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
         #  but we'd need to change the signature of get_dataset to use it
-        response["dataset"] = self._get_dataset(
+        response["dataset"] = self._get_v1_dataset(
             response["dataset"]["owner"]["slug"],
             response["dataset"]["name"],
             ArtifactSubtype.COMPETITION,
