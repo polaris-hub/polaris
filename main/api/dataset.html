@@ -920,6 +920,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.load_zarr_root_from_hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_zarr_root_from_hub
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.get_data" class="md-nav__link">
     <span class="md-ellipsis">
       get_data
@@ -1055,6 +1064,24 @@
   <a href="#polaris.dataset._base.BaseDataset.dtypes" class="md-nav__link">
     <span class="md-ellipsis">
       dtypes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset._base.BaseDataset.load_zarr_root_from_hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_zarr_root_from_hub
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset._base.BaseDataset.load_zarr_root_from_local" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_zarr_root_from_local
     </span>
   </a>
   
@@ -1752,6 +1779,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#polaris.dataset.Dataset.load_zarr_root_from_hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_zarr_root_from_hub
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.dataset.Dataset.get_data" class="md-nav__link">
     <span class="md-ellipsis">
       get_data
@@ -1887,6 +1923,24 @@
   <a href="#polaris.dataset._base.BaseDataset.dtypes" class="md-nav__link">
     <span class="md-ellipsis">
       dtypes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset._base.BaseDataset.load_zarr_root_from_hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_zarr_root_from_hub
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.dataset._base.BaseDataset.load_zarr_root_from_local" class="md-nav__link">
+    <span class="md-ellipsis">
+      load_zarr_root_from_local
     </span>
   </a>
   
@@ -2208,6 +2262,25 @@ If the dataset doesn't use Zarr, this will simply return an empty list.</p>
 </div>
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.dataset.Dataset.load_zarr_root_from_hub" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">load_zarr_root_from_hub</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">load_zarr_root_from_hub</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Loads a Zarr archive from the Hub.</p>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -2972,6 +3045,49 @@ See also <a class="autorefs autorefs-internal" href="#polaris.dataset._base.Base
 </div>
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.dataset._base.BaseDataset.load_zarr_root_from_hub" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">load_zarr_root_from_hub</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">load_zarr_root_from_hub</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Loads a Zarr archive from the Polaris Hub.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.dataset._base.BaseDataset.load_zarr_root_from_local" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">load_zarr_root_from_local</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">load_zarr_root_from_local</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Loads a locally stored Zarr archive.</p>
+<p>We use memory mapping by default because our experiments show that it's consistently faster</p>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 

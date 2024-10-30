@@ -2182,7 +2182,7 @@ See <a href="https://github.com/polaris-hub/polaris/issues/30">this Github issue
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_dataset</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">HubOwner</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="n">ChecksumStrategy</span> <span class="o">=</span> <span class="s1">&#39;verify_unless_zarr&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetV1</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_dataset</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">HubOwner</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="n">ChecksumStrategy</span> <span class="o">=</span> <span class="s1">&#39;verify_unless_zarr&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetV1</span> <span class="o">|</span> <span class="n">DatasetV2</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2265,7 +2265,7 @@ will infer a practical default based on the dataset's storage location.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code>DatasetV1</code>
+                  <code>DatasetV1 | DatasetV2</code>
             </td>
             <td>
               <div class="doc-md-description">
