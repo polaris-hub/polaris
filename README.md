@@ -22,7 +22,7 @@
 | License | [![Code license](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/polaris-hub/polaris/blob/main/LICENSE) |
 | Downloads | [![PyPI - Downloads](https://img.shields.io/pypi/dm/polaris-lib)](https://pypi.org/project/polaris-lib/) |
 | | [![Conda](https://img.shields.io/conda/dn/conda-forge/polaris)](https://anaconda.org/conda-forge/polaris) |
-| Citation | [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13652588.svg)](https://doi.org/10.5281/zenodo.13652588) |
+| Citation | [![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs42256--024--00911--w-blue)](https://doi.org/10.1038/s42256-024-00911-w) |
 
 Polaris establishes a novel, industry‑certified standard to foster the development of impactful methods in AI-based drug discovery.
 
@@ -65,7 +65,10 @@ Please refer to the [documentation](https://polaris-hub.github.io/polaris/), whi
 
 ## How to cite
 
-Please cite Polaris if you use it in your research: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13652588.svg)](https://doi.org/10.5281/zenodo.13652588)
+Please cite Polaris if you use it in your research. A list of relevant publications: 
+
+- [![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs42256--024--00911--w-blue)](https://doi.org/10.1038/s42256-024-00911-w) - Nature Correspondence, Call to Action.
+- [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13652587.svg)](https://doi.org/10.5281/zenodo.13652587) - Zenodo, Code Repository.
 
 ## Installation
 
