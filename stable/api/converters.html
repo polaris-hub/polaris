@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.42">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1100,7 +1100,7 @@
   
   
     <li class="md-nav__item">
-      <a href="hub.external_auth_client.html" class="md-nav__link">
+      <a href="hub.external_client.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1597,6 +1597,11 @@
 
 
 
+
+
+
+
+
   <div class="doc doc-children">
 
 
@@ -1662,7 +1667,9 @@
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column</code></td>
+            <td>
+                <code>column</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1676,7 +1683,9 @@
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>index</code></td>
+            <td>
+                <code>index</code>
+            </td>
             <td>
                   <code><span title="typing.Union">Union</span>[int, slice]</code>
             </td>
@@ -1745,7 +1754,9 @@ or can be kept in the molecule object.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>mol_column</code></td>
+            <td>
+                <code>mol_column</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1759,7 +1770,9 @@ or can be kept in the molecule object.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>smiles_column</code></td>
+            <td>
+                <code>smiles_column</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[str]</code>
             </td>
@@ -1773,7 +1786,9 @@ or can be kept in the molecule object.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_isomeric_smiles</code></td>
+            <td>
+                <code>use_isomeric_smiles</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -1787,7 +1802,9 @@ or can be kept in the molecule object.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mol_id_column</code></td>
+            <td>
+                <code>mol_id_column</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[str]</code>
             </td>
@@ -1801,7 +1818,9 @@ or can be kept in the molecule object.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mol_prop_as_cols</code></td>
+            <td>
+                <code>mol_prop_as_cols</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -1815,7 +1834,9 @@ or can be kept in the molecule object.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>groupby_key</code></td>
+            <td>
+                <code>groupby_key</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[str]</code>
             </td>
@@ -1831,6 +1852,11 @@ to the molecules into a single datapoint.</p>
           </tr>
       </tbody>
     </table>
+
+
+
+
+
 
 
 
@@ -1886,6 +1912,11 @@ fully supported by the Hub.</p>
 </details>        <p>A <code>.zarr</code> file can contain groups and arrays, where each group can again contain groups and arrays.
 Within Polaris, the Zarr archive is expected to have a flat hierarchy where each array corresponds
 to a single column and each array contains the values for all datapoints in that column.</p>
+
+
+
+
+
 
 
 
@@ -1955,7 +1986,9 @@ and <a href="https://github.com/biotite-dev/biotite/blob/main/src/biotite/struct
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>pdb_column</code></td>
+            <td>
+                <code>pdb_column</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1969,7 +2002,9 @@ and <a href="https://github.com/biotite-dev/biotite/blob/main/src/biotite/struct
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_jobs</code></td>
+            <td>
+                <code>n_jobs</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -1983,7 +2018,9 @@ and <a href="https://github.com/biotite-dev/biotite/blob/main/src/biotite/struct
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>zarr_chunks</code></td>
+            <td>
+                <code>zarr_chunks</code>
+            </td>
             <td>
                   <code><span title="typing.Sequence">Sequence</span>[<span title="typing.Optional">Optional</span>[int]]</code>
             </td>
@@ -1998,6 +2035,11 @@ and <a href="https://github.com/biotite-dev/biotite/blob/main/src/biotite/struct
           </tr>
       </tbody>
     </table>
+
+
+
+
+
 
 
 
@@ -2253,7 +2295,7 @@ and <a href="https://github.com/biotite-dev/biotite/blob/main/src/biotite/struct
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.42">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1100,7 +1100,7 @@
   
   
     <li class="md-nav__item">
-      <a href="hub.external_auth_client.html" class="md-nav__link">
+      <a href="hub.external_client.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1533,12 +1533,12 @@ Only when uploading to the Hub, some of the attributes are required.</p>
           <tr class="doc-section-item">
             <td><code><span title="polaris._artifact.BaseArtifactModel.name">name</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.SlugCompatibleStringType" href="utils.types.html#polaris.utils.types.SlugCompatibleStringType">SlugCompatibleStringType</a>]</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.SlugCompatibleStringType" href="utils.types.html#polaris.utils.types.SlugCompatibleStringType">SlugCompatibleStringType</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A slug-compatible name for the dataset.
-Together with the owner, this is used by the Hub to uniquely identify the benchmark.</p>
+                <p>A slug-compatible name for the artifact.
+Together with the owner, this is used by the Hub to uniquely identify the artifact.</p>
               </div>
             </td>
           </tr>
@@ -1549,7 +1549,7 @@ Together with the owner, this is used by the Hub to uniquely identify the benchm
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A beginner-friendly, short description of the dataset.</p>
+                <p>A beginner-friendly, short description of the artifact.</p>
               </div>
             </td>
           </tr>
@@ -1560,14 +1560,14 @@ Together with the owner, this is used by the Hub to uniquely identify the benchm
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A list of tags to categorize the benchmark by. This is used by the hub to search over benchmarks.</p>
+                <p>A list of tags to categorize the artifact by. This is used by the hub to search over artifacts.</p>
               </div>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td><code><span title="polaris._artifact.BaseArtifactModel.user_attributes">user_attributes</span></code></td>
             <td>
-                  <code><span title="typing.Dict">Dict</span>[str, str]</code>
+                  <code>dict[str, str]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1578,13 +1578,13 @@ Together with the owner, this is used by the Hub to uniquely identify the benchm
           <tr class="doc-section-item">
             <td><code><span title="polaris._artifact.BaseArtifactModel.owner">owner</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a>]</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A slug-compatible name for the owner of the dataset.
-If the dataset comes from the Polaris Hub, this is the associated owner (organization or user).
-Together with the name, this is used by the Hub to uniquely identify the benchmark.</p>
+                <p>A slug-compatible name for the owner of the artifact.
+If the artifact comes from the Polaris Hub, this is the associated owner (organization or user).
+Together with the name, this is used by the Hub to uniquely identify the artifact.</p>
               </div>
             </td>
           </tr>
@@ -1601,6 +1601,11 @@ Together with the name, this is used by the Hub to uniquely identify the benchma
           </tr>
       </tbody>
     </table>
+
+
+
+
+
 
 
 
@@ -1627,12 +1632,12 @@ Together with the name, this is used by the Hub to uniquely identify the benchma
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">from_json</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">from_json</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Loads a benchmark from a JSON file.</p>
+        <p>Loads an artifact from a JSON file.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1647,13 +1652,15 @@ Together with the name, this is used by the Hub to uniquely identify the benchma
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>path</code></td>
+            <td>
+                <code>path</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Loads a benchmark specification from a JSON file.</p>
+                <p>Path to a JSON file containing the artifact definition.</p>
               </div>
             </td>
             <td>
@@ -1675,12 +1682,12 @@ Together with the name, this is used by the Hub to uniquely identify the benchma
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Saves the benchmark to a JSON file.</p>
+        <p>Saves an artifact to a JSON file.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1695,13 +1702,15 @@ Together with the name, this is used by the Hub to uniquely identify the benchma
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>path</code></td>
+            <td>
+                <code>path</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Saves the benchmark specification to a JSON file.</p>
+                <p>Path to save the artifact definition as JSON.</p>
               </div>
             </td>
             <td>
@@ -1937,7 +1946,7 @@ Together with the name, this is used by the Hub to uniquely identify the benchma
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

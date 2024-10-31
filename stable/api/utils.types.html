@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.42">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1098,7 +1098,7 @@
   
   
     <li class="md-nav__item">
-      <a href="hub.external_auth_client.html" class="md-nav__link">
+      <a href="hub.external_client.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1400,6 +1400,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#polaris.utils.types.AnyUrlString" class="md-nav__link">
+    <span class="md-ellipsis">
+      AnyUrlString
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#polaris.utils.types.DirectionType" class="md-nav__link">
     <span class="md-ellipsis">
       DirectionType
@@ -1457,6 +1466,15 @@
   <a href="#polaris.utils.types.ChecksumStrategy" class="md-nav__link">
     <span class="md-ellipsis">
       ChecksumStrategy
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.utils.types.ArtifactUrn" class="md-nav__link">
+    <span class="md-ellipsis">
+      ArtifactUrn
     </span>
   </a>
   
@@ -1692,6 +1710,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#polaris.utils.types.AnyUrlString" class="md-nav__link">
+    <span class="md-ellipsis">
+      AnyUrlString
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#polaris.utils.types.DirectionType" class="md-nav__link">
     <span class="md-ellipsis">
       DirectionType
@@ -1749,6 +1776,15 @@
   <a href="#polaris.utils.types.ChecksumStrategy" class="md-nav__link">
     <span class="md-ellipsis">
       ChecksumStrategy
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.utils.types.ArtifactUrn" class="md-nav__link">
+    <span class="md-ellipsis">
+      ArtifactUrn
     </span>
   </a>
   
@@ -1840,6 +1876,11 @@
 
 
     <div class="doc doc-contents first">
+
+
+
+
+
 
 
 
@@ -2067,8 +2108,32 @@ which is a <a class="autorefs autorefs-internal" href="#polaris.utils.types.Slug
 
     <div class="doc doc-contents ">
 
-        <p>A validated URL that will be turned into a string.
+        <p>A validated HTTP URL that will be turned into a string.
 This is useful for interactions with httpx and authlib, who have their own URL types.</p>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="polaris.utils.types.AnyUrlString" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">AnyUrlString</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">AnyUrlString</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BeforeValidator</span><span class="p">(</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">validate_python</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span><span class="p">)]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>A validated generic URL that will be turned into a string.
+This is useful for interactions with other libraries that expect a string.</p>
     </div>
 
 </div>
@@ -2239,6 +2304,29 @@ This can be used to sort the metric score, indicate the optmization direction of
 
 
 
+<h3 id="polaris.utils.types.ArtifactUrn" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">ArtifactUrn</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ArtifactUrn</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">StringConstraints</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;^urn:polaris:</span><span class="se">\\</span><span class="s1">w+:</span><span class="se">\\</span><span class="s1">w+:</span><span class="se">\\</span><span class="s1">w+$&#39;</span><span class="p">)]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>A Uniform Resource Name (URN) for an artifact on the Polaris Hub.</p>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h3 id="polaris.utils.types.DatasetIndex" class="doc doc-heading">
             <span class="doc doc-object-name doc-attribute-name">DatasetIndex</span>
 
@@ -2288,6 +2376,11 @@ The externalId and type are added to be consistent with the model returned by th
 
 
 
+
+
+
+
+
   <div class="doc doc-children">
 
 
@@ -2310,7 +2403,7 @@ The externalId and type are added to be consistent with the model returned by th
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">normalize</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HubOwner</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">HubOwner</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">normalize</span><span class="p">(</span><span class="n">owner</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2346,6 +2439,11 @@ The externalId and type are added to be consistent with the model returned by th
 
 
         <p>The high-level classification of different targets.</p>
+
+
+
+
+
 
 
 
@@ -2389,6 +2487,11 @@ The externalId and type are added to be consistent with the model returned by th
 
 
 
+
+
+
+
+
   <div class="doc doc-children">
 
 
@@ -2424,6 +2527,11 @@ The externalId and type are added to be consistent with the model returned by th
 
 
         <p>The major artifact types which Polaris supports</p>
+
+
+
+
+
 
 
 
@@ -2653,7 +2761,7 @@ The externalId and type are added to be consistent with the model returned by th
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.42">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1100,7 +1100,7 @@
   
   
     <li class="md-nav__item">
-      <a href="hub.external_auth_client.html" class="md-nav__link">
+      <a href="hub.external_client.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1671,7 +1671,7 @@
 
 
         <p>The <code>DatasetFactory</code> makes it easier to create complex datasets.</p>
-<p>It is based on the the factory design pattern and allows a user to specify specific handlers
+<p>It is based on the factory design pattern and allows a user to specify specific handlers
 (i.e. <a class="autorefs autorefs-internal" href="converters.html#polaris.dataset.converters.Converter"><code>Converter</code></a> objects) for different file types.
 These converters are used to convert commonly used file types in drug discovery
 to something that can be used within Polaris while losing as little information as possible.</p>
@@ -1691,9 +1691,14 @@ If your dataset is saved in a single file and you don't need anything fancy, you
 <details class="question" open>
   <summary>How to make adding meta-data easier?</summary>
   <p>The <code>DatasetFactory</code> is designed to more easily pull together data from different sources.
-However, adding meta-data remains a laborous process. How could we make this simpler through
+However, adding meta-data remains a laborious process. How could we make this simpler through
 the Python API?</p>
 </details>
+
+
+
+
+
 
 
 
@@ -1783,7 +1788,9 @@ All data for a single dataset is expected to be stored in the same Zarr archive.
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>ext</code></td>
+            <td>
+                <code>ext</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1798,7 +1805,9 @@ There can only be a single converter per file extension.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>converter</code></td>
+            <td>
+                <code>converter</code>
+            </td>
             <td>
                   <code><a class="autorefs autorefs-internal" title="polaris.dataset.converters.Converter" href="converters.html#polaris.dataset.converters.Converter">Converter</a></code>
             </td>
@@ -1827,7 +1836,7 @@ the file to a Polaris-compatible format.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_column</span><span class="p">(</span><span class="n">column</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ColumnAnnotation</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Adapter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_column</span><span class="p">(</span><span class="n">column</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">ColumnAnnotation</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Adapter</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1838,7 +1847,7 @@ the file to a Polaris-compatible format.</p>
 <li>The name attribute of the column to be set.</li>
 <li>The name attribute of the column to be unique.</li>
 <li>If the column is a pointer column, the <code>zarr_root_path</code> needs to be set.</li>
-<li>The length of the column to match the length of the alredy constructed table.</li>
+<li>The length of the column to match the length of the already constructed table.</li>
 </ol>
 
 
@@ -1854,7 +1863,9 @@ the file to a Polaris-compatible format.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column</code></td>
+            <td>
+                <code>column</code>
+            </td>
             <td>
                   <code><span title="pandas.Series">Series</span></code>
             </td>
@@ -1868,9 +1879,11 @@ the file to a Polaris-compatible format.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>annotation</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.ColumnAnnotation" href="dataset.html#polaris.dataset.ColumnAnnotation">ColumnAnnotation</a>]</code>
+                <code>annotation</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.dataset.ColumnAnnotation" href="dataset.html#polaris.dataset.ColumnAnnotation">ColumnAnnotation</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1896,7 +1909,7 @@ the file to a Polaris-compatible format.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_columns</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ColumnAnnotation</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Adapter</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">merge_on</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_columns</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ColumnAnnotation</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">adapters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Adapter</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">merge_on</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1921,7 +1934,9 @@ the same expectations as for <a class="autorefs autorefs-internal" href="#polari
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -1935,9 +1950,11 @@ the same expectations as for <a class="autorefs autorefs-internal" href="#polari
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>annotations</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <a class="autorefs autorefs-internal" title="polaris.dataset.ColumnAnnotation" href="dataset.html#polaris.dataset.ColumnAnnotation">ColumnAnnotation</a>]]</code>
+                <code>annotations</code>
+            </td>
+            <td>
+                  <code>dict[str, <a class="autorefs autorefs-internal" title="polaris.dataset.ColumnAnnotation" href="dataset.html#polaris.dataset.ColumnAnnotation">ColumnAnnotation</a>] | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1949,9 +1966,11 @@ the same expectations as for <a class="autorefs autorefs-internal" href="#polari
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>merge_on</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[str]</code>
+                <code>merge_on</code>
+            </td>
+            <td>
+                  <code>str | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1998,7 +2017,9 @@ If no converter is found for the file extension, it raises an error.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>path</code></td>
+            <td>
+                <code>path</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2026,7 +2047,7 @@ If no converter is found for the file extension, it raises an error.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_from_files</span><span class="p">(</span><span class="n">paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="s1">&#39;columns&#39;</span><span class="p">])</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">add_from_files</span><span class="p">(</span><span class="n">paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="s1">&#39;columns&#39;</span><span class="p">])</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2047,9 +2068,11 @@ If no converter is found for the file extension, it raises an error.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>paths</code></td>
             <td>
-                  <code><span title="typing.List">List</span>[str]</code>
+                <code>paths</code>
+            </td>
+            <td>
+                  <code>list[str]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2061,7 +2084,9 @@ If no converter is found for the file extension, it raises an error.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>axis</code></td>
+            <td>
+                <code>axis</code>
+            </td>
             <td>
                   <code><span title="typing.Literal">Literal</span>[0, 1, &#39;index&#39;, &#39;columns&#39;]</code>
             </td>
@@ -2110,7 +2135,7 @@ If no converter is found for the file extension, it raises an error.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">reset</span><span class="p">(</span><span class="n">zarr_root_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">reset</span><span class="p">(</span><span class="n">zarr_root_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2131,9 +2156,11 @@ Note that this will not reset the registered converters.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>zarr_root_path</code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[str]</code>
+                <code>zarr_root_path</code>
+            </td>
+            <td>
+                  <code>str | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2169,7 +2196,7 @@ for your next dataset, this arguments needs to be passed.</p>
 
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">create_dataset_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">zarr_root_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetV1</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">create_dataset_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">zarr_root_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetV1</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2191,7 +2218,7 @@ For creating more complicated datasets, please use the <code>DatasetFactory</cod
 
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">create_dataset_from_files</span><span class="p">(</span><span class="n">paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">zarr_root_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="s1">&#39;columns&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetV1</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">create_dataset_from_files</span><span class="p">(</span><span class="n">paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">zarr_root_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="s1">&#39;columns&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetV1</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2213,7 +2240,9 @@ For creating more complicated datasets, please use the <code>DatasetFactory</cod
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>axis</code></td>
+            <td>
+                <code>axis</code>
+            </td>
             <td>
                   <code><span title="typing.Literal">Literal</span>[0, 1, &#39;index&#39;, &#39;columns&#39;]</code>
             </td>
@@ -2449,7 +2478,7 @@ For creating more complicated datasets, please use the <code>DatasetFactory</cod
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
