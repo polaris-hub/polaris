@@ -238,7 +238,9 @@ class DatasetV2(BaseDataset):
         new_zarr_root_path = str(destination / "data.zarr")
 
         # Lu: Avoid serializing and sending None to hub app.
-        serialized = self.model_dump(exclude_none=True)
+        serialized = self.model_dump(
+            exclude_none=True, exclude={"zarr_manifest_path", "zarr_manifest_md5sum"}
+        )
         serialized["zarrRootPath"] = new_zarr_root_path
 
         # Copy over Zarr data to the destination
