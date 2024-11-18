@@ -316,7 +316,7 @@ class PolarisHubClient(OAuth2Client):
             error_msg="Failed to fetch dataset.",
         ):
             try:
-                return self._get_v1_dataset(owner, name, ArtifactSubtype.STANDARD.value, verify_checksum)
+                return self._get_v1_dataset(owner, name, ArtifactSubtype.STANDARD, verify_checksum)
             except PolarisRetrieveArtifactError:
                 # If the v1 dataset is not found, try to load a v2 dataset
                 return self._get_v2_dataset(owner, name)
@@ -341,7 +341,7 @@ class PolarisHubClient(OAuth2Client):
         """
         url = (
             f"/v1/dataset/{owner}/{name}"
-            if artifact_type == ArtifactSubtype.STANDARD.value
+            if artifact_type == ArtifactSubtype.STANDARD
             else f"/v2/competition/dataset/{owner}/{name}"
         )
         response = self._base_request_to_hub(url=url, method="GET")
@@ -558,7 +558,7 @@ class PolarisHubClient(OAuth2Client):
 
         if isinstance(dataset, DatasetV1):
             return self._upload_v1_dataset(
-                dataset, ArtifactSubtype.STANDARD.value, timeout, access, owner, if_exists
+                dataset, ArtifactSubtype.STANDARD, timeout, access, owner, if_exists
             )
         elif isinstance(dataset, DatasetV2):
             return self._upload_v2_dataset(dataset, timeout, access, owner, if_exists)
@@ -606,7 +606,7 @@ class PolarisHubClient(OAuth2Client):
             # We do so separately for the Zarr archive and Parquet file.
             url = (
                 f"/v1/dataset/{dataset.artifact_id}"
-                if artifact_type == ArtifactSubtype.STANDARD.value
+                if artifact_type == ArtifactSubtype.STANDARD
                 else f"/v2/competition/dataset/{dataset.owner}/{dataset.name}"
             )
             response = self._base_request_to_hub(
@@ -652,7 +652,7 @@ class PolarisHubClient(OAuth2Client):
                     )
 
             base_artifact_url = (
-                "datasets" if artifact_type == ArtifactSubtype.STANDARD.value else "/competition/datasets"
+                "datasets" if artifact_type == ArtifactSubtype.STANDARD else "/competition/datasets"
             )
             progress_indicator.update_success_msg(
                 f"Your {artifact_type} dataset has been successfully uploaded to the Hub. "
@@ -757,7 +757,7 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
         """
-        return self._upload_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
+        return self._upload_benchmark(benchmark, ArtifactSubtype.STANDARD, access, owner)
 
     def _upload_benchmark(
         self,
@@ -800,9 +800,7 @@ class PolarisHubClient(OAuth2Client):
             benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
             benchmark_json["access"] = access
 
-            path_params = (
-                "/v1/benchmark" if artifact_type == ArtifactSubtype.STANDARD.value else "/v2/competition"
-            )
+            path_params = "/v1/benchmark" if artifact_type == ArtifactSubtype.STANDARD else "/v2/competition"
             url = f"{path_params}/{benchmark.owner}/{benchmark.name}"
             response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
