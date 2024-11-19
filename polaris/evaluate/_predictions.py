@@ -1,5 +1,3 @@
-from typing import Self
-
 import numpy as np
 from pydantic import (
     BaseModel,
@@ -9,6 +7,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from typing_extensions import Self
 
 from polaris.utils.misc import convert_lists_to_arrays
 from polaris.utils.types import IncomingPredictionsType, PredictionsType
