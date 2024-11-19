@@ -1,6 +1,8 @@
 from typing import Any
 
-from polaris.utils.types import SlugCompatibleStringType, SlugStringType
+import numpy as np
+
+from polaris.utils.types import ListOrArrayType, SlugCompatibleStringType, SlugStringType
 
 
 def listit(t: Any):
@@ -16,3 +18,19 @@ def slugify(sluggable: SlugCompatibleStringType) -> SlugStringType:
     Converts a slug-compatible string to a slug.
     """
     return sluggable.lower().replace("_", "-").strip("-")
+
+
+def convert_lists_to_arrays(predictions: ListOrArrayType | dict) -> np.array | dict:
+    """
+    Recursively converts all plain Python lists in the predictions object to numpy arrays
+    """
+
+    def convert_to_array(v):
+        if isinstance(v, np.ndarray):
+            return v
+        elif isinstance(v, list):
+            return np.array(v)
+        elif isinstance(v, dict):
+            return {k: convert_to_array(v) for k, v in v.items()}
+
+    return convert_to_array(predictions)

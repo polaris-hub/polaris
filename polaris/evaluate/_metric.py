@@ -3,7 +3,6 @@ from typing import Callable, Literal
 
 import numpy as np
 from pydantic import BaseModel, Field
-
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
@@ -16,18 +15,14 @@ from sklearn.metrics import (
     r2_score,
     roc_auc_score,
 )
-from sklearn.metrics import (
-    cohen_kappa_score as sk_cohen_kappa_score,
-)
 
 from polaris.evaluate.metrics import (
-    cohen_kappa_score,
     absolute_average_fold_error,
-    spearman,
+    cohen_kappa_score,
     pearsonr,
+    spearman,
 )
 from polaris.evaluate.metrics.docking_metrics import rmsd_coverage
-
 from polaris.utils.types import DirectionType
 
 

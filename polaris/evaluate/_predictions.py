@@ -8,6 +8,7 @@ from pydantic import (
     model_validator,
 )
 
+from polaris.utils.misc import convert_lists_to_arrays
 from polaris.utils.types import IncomingPredictionsType, PredictionsType
 
 
@@ -75,11 +76,8 @@ class BenchmarkPredictions(BaseModel):
         test_set_sizes = validator.validate_python(data.get("test_set_sizes"))
 
         # Normalize the predictions to a standard representation
-        predictions = cls._convert_lists_to_arrays(predictions)
+        predictions = convert_lists_to_arrays(predictions)
         predictions = cls._normalize_predictions(predictions, target_labels, test_set_labels)
-
-        # Normalize the predictions to a standard representation
-        cls._check_test_set_size(predictions, test_set_sizes)
 
         return {
             "predictions": predictions,
@@ -87,6 +85,24 @@ class BenchmarkPredictions(BaseModel):
             "test_set_labels": test_set_labels,
             "test_set_sizes": test_set_sizes,
         }
+
+    @model_validator(mode="after")
+    @classmethod
+    def check_test_set_size(
+        cls, predictions: PredictionsType, test_set_sizes: dict[str, int]
+    ) -> PredictionsType:
+        """Verify that the size of all predictions"""
+        for test_set_label, test_set in predictions.items():
+            for target in test_set.values():
+                if test_set_label not in test_set_sizes:
+                    raise ValueError(f"Expected size for test set '{test_set_label}' is not defined")
+
+                if len(target) != test_set_sizes[test_set_label]:
+                    raise ValueError(
+                        f"Predictions size mismatch: The predictions for test set '{test_set_label}' "
+                        f"should have a size of {test_set_sizes[test_set_label]}, but have a size of {len(target)}."
+                    )
+        return predictions
 
     @classmethod
     def _normalize_predictions(
@@ -156,42 +172,10 @@ class BenchmarkPredictions(BaseModel):
             return False
 
         # Inner-level of the dictionary should correspond to the target columns
-        for _, test_set_predictions in predictions.items():
+        for test_set_predictions in predictions.values():
             if not isinstance(test_set_predictions, dict):
                 return False
             if set(test_set_predictions.keys()) != set(target_labels):
                 return False
 
         return True
-
-    @classmethod
-    def _check_test_set_size(
-        cls, predictions: PredictionsType, test_set_sizes: dict[str, int]
-    ) -> PredictionsType:
-        for test_set_label, test_set in predictions.items():
-            for target in test_set.values():
-                if test_set_label not in test_set_sizes:
-                    raise ValueError(f"Expected size for test set '{test_set_label}' is not defined")
-
-                if len(target) != test_set_sizes[test_set_label]:
-                    raise ValueError(
-                        f"Predictions size mismatch: The predictions for test set '{test_set_label}' "
-                        f"should have a size of {test_set_sizes[test_set_label]}, but have a size of {len(target)}."
-                    )
-        return predictions
-
-    @classmethod
-    def _convert_lists_to_arrays(cls, predictions: IncomingPredictionsType) -> IncomingPredictionsType:
-        """
-        Recursively converts all plain Python lists in the predictions object to numpy arrays
-        """
-
-        def convert_to_array(v):
-            if isinstance(v, np.ndarray):
-                return v
-            elif isinstance(v, list):
-                return np.array(v)
-            elif isinstance(v, dict):
-                return {k: convert_to_array(v) for k, v in v.items()}
-
-        return convert_to_array(predictions)
