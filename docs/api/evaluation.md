@@ -1,3 +1,7 @@
+::: polaris.evaluate.BenchmarkPredictions
+
+---
+
 ::: polaris.evaluate.ResultsMetadata
     options:
         filters: ["!^_"]

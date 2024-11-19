@@ -2,7 +2,6 @@ import json
 from datetime import datetime
 from typing import ClassVar, Optional, Union
 
-import numpy as np
 import pandas as pd
 from pydantic import (
     BaseModel,
@@ -16,18 +15,16 @@ from pydantic import (
 from pydantic.alias_generators import to_camel
 
 from polaris._artifact import BaseArtifactModel
-from polaris.evaluate import Metric
+from polaris.evaluate import BenchmarkPredictions, Metric
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import slugify
 from polaris.utils.types import (
     AccessType,
-    CompetitionPredictionsType,
     HttpUrlString,
     HubOwner,
     HubUser,
-    PredictionsType,
     SlugCompatibleStringType,
 )
 
@@ -261,44 +258,16 @@ class CompetitionResults(EvaluationResult):
         return f"{self.competition_owner}/{slugify(self.competition_name)}"
 
 
-class CompetitionPredictions(ResultsMetadata):
-    """Class specific to predictions for competition benchmarks.
+class CompetitionPredictions(ResultsMetadata, BenchmarkPredictions):
+    """
+    Predictions for competition benchmarks.
 
     This object is to be used as input to [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
     It is used to ensure that the structure of the predictions are compatible with evaluation methods on the Polaris Hub.
+    In addition to the predictions, it contains additional meta-data to create a results object.
 
     Attributes:
-        predictions: The predictions created for a given competition's test set(s).
+        access: The access the returned results should have
     """
 
-    predictions: Union[PredictionsType, CompetitionPredictionsType]
     access: Optional[AccessType] = "private"
-
-    @field_validator("predictions")
-    @classmethod
-    def _convert_predictions(cls, value: Union[PredictionsType, CompetitionPredictionsType]):
-        """Convert prediction arrays from a list type to a numpy array. This is required for certain
-        operations during prediction evaluation"""
-
-        if isinstance(value, list):
-            return np.array(value)
-        elif isinstance(value, np.ndarray):
-            return value
-        elif isinstance(value, dict):
-            for key, val in value.items():
-                value[key] = cls._convert_predictions(val)
-            return value
-
-    @field_serializer("predictions")
-    def _serialize_predictions(self, value: PredictionsType):
-        """Used to serialize a Predictions object such that it can be sent over the wire during
-        external evaluation for competitions"""
-
-        if isinstance(value, np.ndarray):
-            return value.tolist()
-        elif isinstance(value, list):
-            return value
-        elif isinstance(value, dict):
-            for key, val in value.items():
-                value[key] = self._serialize_predictions(val)
-            return value

@@ -1,12 +1,12 @@
 from enum import Enum
-from typing import Callable, Literal, Optional
+from typing import Callable, Literal
 
 import numpy as np
 from pydantic import BaseModel, Field
-
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
+    balanced_accuracy_score,
     explained_variance_score,
     f1_score,
     matthews_corrcoef,
@@ -14,17 +14,15 @@ from sklearn.metrics import (
     mean_squared_error,
     r2_score,
     roc_auc_score,
-    balanced_accuracy_score,
 )
 
 from polaris.evaluate.metrics import (
-    cohen_kappa_score,
     absolute_average_fold_error,
-    spearman,
+    cohen_kappa_score,
     pearsonr,
+    spearman,
 )
 from polaris.evaluate.metrics.docking_metrics import rmsd_coverage
-
 from polaris.utils.types import DirectionType
 
 
@@ -107,7 +105,7 @@ class Metric(Enum):
         return self.value.y_type
 
     def score(
-        self, y_true: np.ndarray, y_pred: Optional[np.ndarray] = None, y_prob: Optional[np.ndarray] = None
+        self, y_true: np.ndarray, y_pred: np.ndarray | None = None, y_prob: np.ndarray | None = None
     ) -> float:
         """Endpoint for computing the metric.
 
@@ -134,7 +132,7 @@ class Metric(Enum):
         return self.fn(**kwargs, **self.value.kwargs)
 
     def __call__(
-        self, y_true: np.ndarray, y_pred: Optional[np.ndarray] = None, y_prob: Optional[np.ndarray] = None
+        self, y_true: np.ndarray, y_pred: np.ndarray | None = None, y_prob: np.ndarray | None = None
     ) -> float:
         """For convenience, make metrics callable"""
         return self.score(y_true, y_pred, y_prob)

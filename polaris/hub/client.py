@@ -23,9 +23,9 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.competition import CompetitionSpecification
+
+from polaris.evaluate import BenchmarkResults, CompetitionPredictions, CompetitionResults
 from polaris.dataset import CompetitionDataset, Dataset, DatasetV1
-from polaris.evaluate import BenchmarkResults, CompetitionResults
-from polaris.evaluate._results import CompetitionPredictions
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
