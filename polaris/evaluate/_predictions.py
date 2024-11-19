@@ -1,3 +1,5 @@
+from typing import Self
+
 import numpy as np
 from pydantic import (
     BaseModel,
@@ -87,22 +89,19 @@ class BenchmarkPredictions(BaseModel):
         }
 
     @model_validator(mode="after")
-    @classmethod
-    def check_test_set_size(
-        cls, predictions: PredictionsType, test_set_sizes: dict[str, int]
-    ) -> PredictionsType:
+    def check_test_set_size(self) -> Self:
         """Verify that the size of all predictions"""
-        for test_set_label, test_set in predictions.items():
+        for test_set_label, test_set in self.predictions.items():
             for target in test_set.values():
-                if test_set_label not in test_set_sizes:
+                if test_set_label not in self.test_set_sizes:
                     raise ValueError(f"Expected size for test set '{test_set_label}' is not defined")
 
-                if len(target) != test_set_sizes[test_set_label]:
+                if len(target) != self.test_set_sizes[test_set_label]:
                     raise ValueError(
                         f"Predictions size mismatch: The predictions for test set '{test_set_label}' "
-                        f"should have a size of {test_set_sizes[test_set_label]}, but have a size of {len(target)}."
+                        f"should have a size of {self.test_set_sizes[test_set_label]}, but have a size of {len(target)}."
                     )
-        return predictions
+        return self
 
     @classmethod
     def _normalize_predictions(

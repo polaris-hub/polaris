@@ -20,7 +20,7 @@ def slugify(sluggable: SlugCompatibleStringType) -> SlugStringType:
     return sluggable.lower().replace("_", "-").strip("-")
 
 
-def convert_lists_to_arrays(predictions: ListOrArrayType | dict) -> np.array | dict:
+def convert_lists_to_arrays(predictions: ListOrArrayType | dict) -> np.ndarray | dict:
     """
     Recursively converts all plain Python lists in the predictions object to numpy arrays
     """
