@@ -4,7 +4,16 @@ import sys
 from loguru import logger
 
 from ._version import __version__
-from .loader import load_benchmark, load_dataset, load_competition
+from .loader import load_benchmark, load_competition, load_dataset
+
+try:
+    # Register imagecodecs if they are available.
+    from imagecodecs.numcodecs import register_codecs
+
+    register_codecs()
+except ImportError:
+    pass
+
 
 __all__ = ["load_dataset", "load_benchmark", "__version__", "load_competition"]
 

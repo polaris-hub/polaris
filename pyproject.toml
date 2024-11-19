@@ -81,6 +81,9 @@ doc = [
     "nbconvert",
     "mike >=1.0.0"
 ]
+codecs = [
+    "imagecodecs",
+]
 
 
 [project.scripts]
