@@ -13,6 +13,8 @@ class CompetitionDataset(DatasetV1):
     of the training data for a given competition.
     """
 
+    _artifact_type = "competitionDataset"
+
     @model_validator(mode="after")
     def _validate_model(self) -> Self:
         """We reject the instantiation of competition datasets which leverage Zarr for the time being"""

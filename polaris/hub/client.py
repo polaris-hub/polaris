@@ -23,13 +23,15 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.competition import CompetitionSpecification
-from polaris.dataset import CompetitionDataset, DatasetV1
+
 from polaris.evaluate import BenchmarkResults, CompetitionPredictions, CompetitionResults
-from polaris.hub.external_auth_client import ExternalAuthClient
+from polaris.dataset import CompetitionDataset, Dataset, DatasetV1
+from polaris.experimental._dataset_v2 import DatasetV2
+from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
-from polaris.hub.polarisfs import PolarisFileSystem
 from polaris.hub.settings import PolarisHubSettings
-from polaris.utils.context import ProgressIndicator, tmp_attribute_change
+from polaris.hub.storage import StorageSession
+from polaris.utils.context import ProgressIndicator
 from polaris.utils.errors import (
     InvalidDatasetError,
     PolarisCreateArtifactError,
@@ -37,13 +39,11 @@ from polaris.utils.errors import (
     PolarisRetrieveArtifactError,
     PolarisUnauthorizedError,
 )
-from polaris.utils.misc import should_verify_checksum
 from polaris.utils.types import (
     AccessType,
     ArtifactSubtype,
     ChecksumStrategy,
     HubOwner,
-    IOMode,
     SupportedLicenseType,
     TimeoutTypes,
     ZarrConflictResolution,
@@ -139,16 +139,22 @@ class PolarisHubClient(OAuth2Client):
             )
         return super()._prepare_token_endpoint_body(body, grant_type, **kwargs)
 
-    def ensure_active_token(self, token: OAuth2Token) -> bool:
+    def ensure_active_token(self, token: OAuth2Token | None = None) -> bool:
         """
         Override the active check to trigger a refetch of the token if it is not active.
         """
+        if token is None:
+            # This won't be needed with if we set a lower bound for authlib: >=1.3.2
+            # See https://github.com/lepture/authlib/pull/625
+            # As of now, this latest version is not available on Conda though.
+            token = self.token
+
         is_active = super().ensure_active_token(token)
         if is_active:
             return True
 
         # Check if external token is still valid
-        if not self.external_client.ensure_active_token(self.external_client.token):
+        if not self.external_client.ensure_active_token():
             return False
 
         # If so, use it to get a new Hub token
@@ -255,7 +261,7 @@ class PolarisHubClient(OAuth2Client):
             overwrite: Whether to overwrite the current token if the user is already logged in.
             auto_open_browser: Whether to automatically open the browser to visit the authorization URL.
         """
-        if overwrite or self.token is None or not self.ensure_active_token(self.token):
+        if overwrite or self.token is None or not self.ensure_active_token():
             self.external_client.interactive_login(overwrite=overwrite, auto_open_browser=auto_open_browser)
             self.token = self.fetch_token()
 
@@ -292,7 +298,7 @@ class PolarisHubClient(OAuth2Client):
         owner: str | HubOwner,
         name: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
-    ) -> DatasetV1:
+    ) -> DatasetV1 | DatasetV2:
         """Load a standard dataset from the Polaris Hub.
 
         Args:
@@ -304,14 +310,23 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `Dataset` instance, if it exists.
         """
-        return self._get_dataset(owner, name, ArtifactSubtype.STANDARD.value, verify_checksum)
+        with ProgressIndicator(
+            start_msg="Fetching dataset...",
+            success_msg="Fetched dataset.",
+            error_msg="Failed to fetch dataset.",
+        ):
+            try:
+                return self._get_v1_dataset(owner, name, ArtifactSubtype.STANDARD.value, verify_checksum)
+            except PolarisRetrieveArtifactError:
+                # If the v1 dataset is not found, try to load a v2 dataset
+                return self._get_v2_dataset(owner, name)
 
-    def _get_dataset(
+    def _get_v1_dataset(
         self,
-        owner: Union[str, HubOwner],
+        owner: str | HubOwner,
         name: str,
         artifact_type: ArtifactSubtype,
-        verify_checksum: bool = True,
+        verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> DatasetV1:
         """Loads either a standard or competition dataset from Polaris Hub
 
@@ -324,85 +339,54 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `Dataset` instance, if it exists.
         """
-        with ProgressIndicator(
-            start_msg="Fetching artifact...",
-            success_msg="Fetched artifact.",
-            error_msg="Failed to fetch dataset.",
-        ):
-            url = (
-                f"/v1/dataset/{owner}/{name}"
-                if artifact_type == ArtifactSubtype.STANDARD.value
-                else f"/v2/competition/dataset/{owner}/{name}"
-            )
-            response = self._base_request_to_hub(url=url, method="GET")
-            storage_response = self.get(response["tableContent"]["url"])
-
-            # This should be a 307 redirect with the signed URL
-            if storage_response.status_code != 307:
-                try:
-                    storage_response.raise_for_status()
-                except HTTPStatusError as error:
-                    raise PolarisHubError(
-                        message="Could not get signed URL from Polaris Hub.", response=storage_response
-                    ) from error
-
-            storage_response = storage_response.json()
-            url = storage_response["url"]
-            headers = storage_response["headers"]
-
-            response["table"] = self._load_from_signed_url(url=url, headers=headers, load_fn=pd.read_parquet)
-
-            if artifact_type == ArtifactSubtype.COMPETITION:
-                dataset = CompetitionDataset(**response)
-                md5Sum = response["maskedMd5Sum"]
-            else:
-                dataset = DatasetV1(**response)
-                md5Sum = response["md5Sum"]
-
-            if should_verify_checksum(verify_checksum, dataset):
-                dataset.verify_checksum(md5Sum)
-            else:
-                dataset.md5sum = md5Sum
-
-            return dataset
-
-    def open_zarr_file(
-        self, owner: str | HubOwner, name: str, path: str, mode: IOMode, as_consolidated: bool = True
-    ) -> zarr.hierarchy.Group:
-        """Open a Zarr file from a Polaris dataset
-
-        Args:
-            owner: Which Hub user or organization owns the artifact.
-            name: Name of the dataset.
-            path: Path to the Zarr file within the dataset.
-            mode: The mode in which the file is opened.
-            as_consolidated: Whether to open the store with consolidated metadata for optimized reading.
-                This is only applicable in 'r' and 'r+' modes.
-
-        Returns:
-            The Zarr object representing the dataset.
-        """
-        if as_consolidated and mode not in ["r", "r+"]:
-            raise ValueError("Consolidated archives can only be used with 'r' or 'r+' mode.")
-
-        polaris_fs = PolarisFileSystem(
-            polaris_client=self,
-            dataset_owner=owner,
-            dataset_name=name,
+        url = (
+            f"/v1/dataset/{owner}/{name}"
+            if artifact_type == ArtifactSubtype.STANDARD.value
+            else f"/v2/competition/dataset/{owner}/{name}"
         )
+        response = self._base_request_to_hub(url=url, method="GET")
 
-        try:
-            store = zarr.storage.FSStore(path, fs=polaris_fs)
-            if mode in ["r", "r+"] and as_consolidated:
-                return zarr.open_consolidated(store, mode=mode)
-            return zarr.open(store, mode=mode)
+        # Disregard the Zarr root in the response. We'll get it from the storage token instead.
+        response.pop("zarrRootPath", None)
 
-        except HTTPStatusError as error:
-            # In this case, we can pass the response to provide more information
-            raise PolarisHubError(message="Error opening Zarr store", response=error.response) from error
-        # This catches all other types of exceptions
-        except Exception as error:
-            raise PolarisHubError(message="Error opening Zarr store") from error
+        # Load the dataset table and optional Zarr archive
+        with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
+            table = pd.read_parquet(storage.get_root())
+            zarr_root_path = storage.paths.extension
+
+            if zarr_root_path is not None:
+                # For V1 datasets, the Zarr Root is optional.
+                # It should be None if the dataset does not use pointer columns
+                zarr_root_path = str(zarr_root_path)
+
+        if artifact_type == ArtifactSubtype.COMPETITION:
+            dataset = CompetitionDataset(table=table, zarr_root_path=zarr_root_path, **response)
+            md5sum = response["maskedMd5Sum"]
+        else:
+            dataset = DatasetV1(table=table, zarr_root_path=zarr_root_path, **response)
+            md5sum = response["md5Sum"]
+
+        if dataset.should_verify_checksum(verify_checksum):
+            dataset.verify_checksum(md5sum)
+        else:
+            dataset.md5sum = md5sum
+
+        return dataset
+
+    def _get_v2_dataset(self, owner: str | HubOwner, name: str) -> DatasetV2:
+        """"""
+        url = f"/v2/dataset/{owner}/{name}"
+        response = self._base_request_to_hub(url=url, method="GET")
+
+        # Disregard the Zarr root in the response. We'll get it from the storage token instead.
+        response.pop("zarrRootPath", None)
+
+        # Load the Zarr archive
+        with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
+            zarr_root_path = str(storage.paths.root)
+
+        dataset = DatasetV2(zarr_root_path=zarr_root_path, **response)
+        return dataset
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available benchmarks on the Polaris Hub.
@@ -468,7 +452,7 @@ class PolarisHubClient(OAuth2Client):
 
             benchmark = benchmark_cls(**response)
 
-            if should_verify_checksum(verify_checksum, benchmark.dataset):
+            if benchmark.dataset.should_verify_checksum(verify_checksum):
                 benchmark.verify_checksum()
             else:
                 benchmark.md5sum = response["md5Sum"]
@@ -532,27 +516,13 @@ class PolarisHubClient(OAuth2Client):
 
     def upload_dataset(
         self,
-        dataset: DatasetV1,
+        dataset: DatasetV1 | DatasetV2,
         access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
         owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
     ):
-        """Wrapper method for uploading standard datasets to Polaris Hub"""
-        return self._upload_dataset(
-            dataset, ArtifactSubtype.STANDARD.value, access, timeout, owner, if_exists
-        )
-
-    def _upload_dataset(
-        self,
-        dataset: DatasetV1,
-        artifact_type: ArtifactSubtype,
-        access: AccessType = "private",
-        timeout: TimeoutTypes = (10, 200),
-        owner: Union[HubOwner, str, None] = None,
-        if_exists: ZarrConflictResolution = "replace",
-    ):
-        """Upload the dataset to the Polaris Hub.
+        """Upload a dataset to the Polaris Hub.
 
         Info: Owner
             You have to manually specify the owner in the dataset data model. Because the owner could
@@ -576,43 +546,60 @@ class PolarisHubClient(OAuth2Client):
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
         """
+        # Normalize timeout
+        if timeout is None:
+            timeout = self.settings.default_timeout
+
+        # Check if a dataset license was specified prior to upload
+        if not dataset.license:
+            raise InvalidDatasetError(
+                f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some licenses are supported - {get_args(SupportedLicenseType)}."
+            )
+
+        if isinstance(dataset, DatasetV1):
+            return self._upload_v1_dataset(
+                dataset, ArtifactSubtype.STANDARD.value, timeout, access, owner, if_exists
+            )
+        elif isinstance(dataset, DatasetV2):
+            return self._upload_v2_dataset(dataset, timeout, access, owner, if_exists)
+
+    def _upload_v1_dataset(
+        self,
+        dataset: DatasetV1,
+        artifact_type: ArtifactSubtype,
+        timeout: TimeoutTypes,
+        access: AccessType,
+        owner: HubOwner | str | None,
+        if_exists: ZarrConflictResolution,
+    ):
+        """
+        Upload a V1 dataset to the Polaris Hub.
+        """
+
         with ProgressIndicator(
             start_msg="Uploading artifact...",
             success_msg="Uploaded artifact.",
             error_msg="Failed to upload dataset.",
         ) as progress_indicator:
-            # Check if a dataset license was specified prior to upload
-            if not dataset.license:
-                raise InvalidDatasetError(
-                    f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some licenses are supported - {get_args(SupportedLicenseType)}."
-                )
-
-            # Normalize timeout
-            if timeout is None:
-                timeout = self.settings.default_timeout
-
             # Get the serialized data-model
-            # We exclude the table as it handled separately and we exclude the cache_dir as it is user-specific
+            # We exclude the table as it handled separately
             dataset.owner = HubOwner.normalize(owner or dataset.owner)
-            dataset_json = dataset.model_dump(
-                exclude={"cache_dir", "table"}, exclude_none=True, by_alias=True
-            )
+            dataset_json = dataset.model_dump(exclude={"table"}, exclude_none=True, by_alias=True)
 
             # If the dataset uses Zarr, we will save the Zarr archive to the Hub as well
             if dataset.uses_zarr:
-                dataset_json["zarrRootPath"] = f"{PolarisFileSystem.protocol}://data.zarr"
+                dataset_json["zarrRootPath"] = f"{StorageSession.polaris_protocol}://data.zarr"
 
             # Uploading a dataset is a three-step process.
             # 1. Upload the dataset meta data to the hub and prepare the hub to receive the data
             # 2. Upload the parquet file to the hub
             # 3. Upload the associated Zarr archive
-            # TODO: Revert step 1 in case step 2 fails - Is this needed? Or should this be taken care of by the hub?
 
             # Prepare the parquet file
-            buffer = BytesIO()
-            dataset.table.to_parquet(buffer, engine="auto")
-            parquet_size = len(buffer.getbuffer())
-            parquet_md5 = md5(buffer.getbuffer()).hexdigest()
+            in_memory_parquet = BytesIO()
+            dataset.table.to_parquet(in_memory_parquet)
+            parquet_size = len(in_memory_parquet.getbuffer())
+            parquet_md5 = md5(in_memory_parquet.getbuffer()).hexdigest()
 
             # Step 1: Upload meta-data
             # Instead of directly uploading the data, we announce to the hub that we intend to upload it.
@@ -638,65 +625,32 @@ class PolarisHubClient(OAuth2Client):
                 timeout=timeout,
             )
 
-            # Step 2: Upload the parquet file
-            # create an empty PUT request to get the table content URL from cloudflare
-            hub_response = self.request(
-                url=response["tableContent"]["url"],
-                method="PUT",
-                headers={
-                    "Content-type": "application/vnd.apache.parquet",
-                },
-                timeout=timeout,
-                json={"artifactType": artifact_type},
-            )
+            with StorageSession(self, "write", dataset.urn) as storage:
+                # Step 2: Upload the parquet file
+                logger.info("Copying Parquet file to the Hub. This may take a while.")
+                storage.set_root(in_memory_parquet.getvalue())
 
-            if hub_response.status_code == 307:
-                # If the hub returns a 307 redirect, we need to follow it to get the signed URL
-                hub_response_body = hub_response.json()
+                # Step 3: Upload any associated Zarr archive
+                if dataset.uses_zarr:
+                    logger.info("Copying Zarr archive to the Hub. This may take a while.")
 
-                # Upload the data to the cloudflare url
-                bucket_response = self.request(
-                    url=hub_response_body["url"],
-                    method=hub_response_body["method"],
-                    headers={
-                        "Content-type": "application/vnd.apache.parquet",
-                        **hub_response_body["headers"],
-                    },
-                    content=buffer.getvalue(),
-                    auth=None,
-                    timeout=timeout,  # required for large size dataset
-                )
-                bucket_response.raise_for_status()
-
-            else:
-                hub_response.raise_for_status()
-
-            # Step 3: Upload any associated Zarr archive
-            if dataset.uses_zarr:
-                with tmp_attribute_change(self.settings, "default_timeout", timeout):
-                    # Copy the Zarr archive to the hub
-                    dest = self.open_zarr_file(
-                        owner=dataset.owner,
-                        name=dataset.name,
-                        path=dataset_json["zarrRootPath"],
-                        mode="w",
-                        as_consolidated=False,
-                    )
+                    destination = storage.extension_store
 
                     # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
                     # metadata based on Zarr developers' recommendations can be tracked at:
                     # https://github.com/zarr-developers/zarr-python/issues/1731
                     zarr.consolidate_metadata(dataset.zarr_root.store.store)
                     zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
-                    dest.store[".zmetadata"] = zmetadata_content
+                    destination[".zmetadata"] = zmetadata_content
 
-                    logger.info("Copying Zarr archive to the Hub. This may take a while.")
+                    # Copy the Zarr archive to the hub
                     zarr.copy_store(
                         source=dataset.zarr_root.store.store,
-                        dest=dest.store,
+                        dest=destination,
                         log=logger.debug,
                         if_exists=if_exists,
                     )
+
             base_artifact_url = (
                 "datasets" if artifact_type == ArtifactSubtype.STANDARD.value else "/competition/datasets"
             )
@@ -706,6 +660,75 @@ class PolarisHubClient(OAuth2Client):
             )
 
             return response
+
+    def _upload_v2_dataset(
+        self,
+        dataset: DatasetV2,
+        timeout: TimeoutTypes,
+        access: AccessType,
+        owner: HubOwner | str | None,
+        if_exists: ZarrConflictResolution,
+    ):
+        """
+        Upload a V2 dataset to the Polaris Hub.
+        """
+
+        with ProgressIndicator(
+            start_msg="Uploading artifact...",
+            success_msg="Uploaded artifact.",
+            error_msg="Failed to upload dataset.",
+        ) as progress_indicator:
+            # Get the serialized data-model
+            dataset.owner = HubOwner.normalize(owner or dataset.owner)
+            dataset_json = dataset.model_dump(exclude_none=True, by_alias=True)
+
+            # Step 1: Upload dataset meta-data
+            url = f"/v2/dataset/{dataset.owner}/{dataset.name}"
+            response = self._base_request_to_hub(
+                url=url,
+                method="PUT",
+                json={
+                    "zarrManifestFileContent": {
+                        "md5Sum": dataset.zarr_manifest_md5sum,
+                    },
+                    "access": access,
+                    **dataset_json,
+                },
+                timeout=timeout,
+            )
+
+            with StorageSession(self, "write", dataset.urn) as storage:
+                # Step 2: Upload the manifest file
+                logger.info("Copying the dataset manifest file to the Hub.")
+                with open(dataset.zarr_manifest_path, "rb") as manifest_file:
+                    storage.set_manifest(manifest_file.read())
+
+                # Step 3: Upload the Zarr archive
+                logger.info("Copying Zarr archive to the Hub. This may take a while.")
+
+                destination = storage.root_store
+
+                # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
+                # metadata based on Zarr developers' recommendations can be tracked at:
+                # https://github.com/zarr-developers/zarr-python/issues/1731
+                zarr.consolidate_metadata(dataset.zarr_root.store.store)
+                zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
+                destination[".zmetadata"] = zmetadata_content
+
+                # Copy the Zarr archive to the hub
+                zarr.copy_store(
+                    source=dataset.zarr_root.store.store,
+                    dest=destination,
+                    log=logger.debug,
+                    if_exists=if_exists,
+                )
+
+        progress_indicator.update_success_msg(
+            f"Your V2 dataset has been successfully uploaded to the Hub. "
+            f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
+        )
+
+        return response
 
     def upload_benchmark(
         self,
@@ -790,7 +813,10 @@ class PolarisHubClient(OAuth2Client):
             return response
 
     def get_competition(
-        self, owner: Union[str, HubOwner], name: str, verify_checksum: bool = True
+        self,
+        owner: str | HubOwner,
+        name: str,
+        verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> CompetitionSpecification:
         """Load a competition from the Polaris Hub.
 
@@ -806,7 +832,7 @@ class PolarisHubClient(OAuth2Client):
 
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
         #  but we'd need to change the signature of get_dataset to use it
-        response["dataset"] = self._get_dataset(
+        response["dataset"] = self._get_v1_dataset(
             response["dataset"]["owner"]["slug"],
             response["dataset"]["name"],
             ArtifactSubtype.COMPETITION,
@@ -860,7 +886,7 @@ class PolarisHubClient(OAuth2Client):
             success_msg="Evaluated competition predictions.",
             error_msg="Failed to evaluate competition predictions.",
         ) as progress_indicator:
-            competition.owner = HubOwner(**competition.owner)
+            competition.owner = HubOwner.normalize(competition.owner)
 
             response = self._base_request_to_hub(
                 url=f"/v2/competition/{competition.owner}/{competition.name}/evaluate",

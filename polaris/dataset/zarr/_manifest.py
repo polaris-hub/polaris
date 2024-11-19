@@ -1,14 +1,17 @@
 import os
 from hashlib import md5
+from pathlib import Path
 
-import pyarrow as pa
-import pyarrow.parquet as pq
+from pyarrow import Table, schema, string
+from pyarrow.parquet import write_table
 
 # PyArrow table schema for the V2 Zarr manifest file
-ZARR_MANIFEST_SCHEMA = pa.schema([("path", pa.string()), ("checksum", pa.string())])
+ZARR_MANIFEST_SCHEMA = schema([("path", string()), ("md5_checksum", string())])
+
+ROW_GROUP_SIZE = 128 * 1024 * 1024  # 128 MB
 
 
-def generate_zarr_manifest(zarr_root_path: str, output_dir: str):
+def generate_zarr_manifest(zarr_root_path: str, output_dir: str) -> str:
     """
     Entry point function which triggers the creation of a Zarr manifest for a V2 dataset.
 
@@ -16,49 +19,40 @@ def generate_zarr_manifest(zarr_root_path: str, output_dir: str):
         zarr_root_path: The path to the root of a Zarr archive
         output_dir: The path to the directory which will hold the generated manifest
     """
-
     zarr_manifest_path = f"{output_dir}/zarr_manifest.parquet"
 
-    with pq.ParquetWriter(zarr_manifest_path, ZARR_MANIFEST_SCHEMA) as writer:
-        recursively_build_manifest(zarr_root_path, writer, zarr_root_path)
+    entries = manifest_entries(zarr_root_path, zarr_root_path)
+    manifest = Table.from_pylist(mapping=entries, schema=ZARR_MANIFEST_SCHEMA)
+    write_table(manifest, zarr_manifest_path, row_group_size=ROW_GROUP_SIZE)
 
     return zarr_manifest_path
 
 
-def recursively_build_manifest(dir_path: str, writer: pq.ParquetWriter, zarr_root_path: str) -> str:
+def manifest_entries(dir_path: str, root_path: str) -> list[dict[str, str]]:
     """
-    Recursive function that traverses a Zarr archive to build a V2 manifest file.
+    Recursive function that traverses a directory, returning entries consisting of every file's path and MD5 hash
 
     Parameters:
-        dir_path: The path to the current directory being processed in the archive
-        writer: Writer object for incrementally adding rows to the manifest Parquet file
-        zarr_root_path: The root path which triggered the first recursive call
+        dir_path: The path to the current directory being traversed
+        root_path: The root path from which to compute a relative path
     """
-
-    # Get iterator of items located in the directory at `dir_path`
+    entries = []
     with os.scandir(dir_path) as it:
-        #
-        # Loop through directory items in iterator
         for entry in it:
-            if entry.is_dir():
-                #
-                # If item is a directory, recurse into that directory
-                recursively_build_manifest(entry.path, writer, zarr_root_path)
-            elif entry.is_file():
-                #
-                # If item is a file, calculate its relative path and chunk checksum. Then, append that
-                # to the Zarr manifest parquet.
-                table = pa.Table.from_pydict(
+            if entry.is_file():
+                entries.append(
                     {
-                        "path": [os.path.relpath(entry.path, zarr_root_path)],
-                        "checksum": [calculate_file_md5(entry.path)],
-                    },
-                    schema=ZARR_MANIFEST_SCHEMA,
+                        "path": str(Path(entry.path).relative_to(root_path)),
+                        "md5_checksum": calculate_file_md5(entry.path),
+                    }
                 )
-                writer.write_table(table)
+            elif entry.is_dir():
+                entries.extend(manifest_entries(entry.path, root_path))
+
+    return entries
 
 
-def calculate_file_md5(file_path: str):
+def calculate_file_md5(file_path: str) -> str:
     """Calculates the md5 hash for a file at a given path"""
 
     md5_hash = md5()

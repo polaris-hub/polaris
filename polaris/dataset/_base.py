@@ -1,8 +1,10 @@
 import abc
 import json
 from pathlib import Path
-from typing import Any, Dict, MutableMapping, Optional, Union
+from typing import Any, MutableMapping
+from uuid import uuid4
 
+import fsspec
 import numpy as np
 import zarr
 from loguru import logger
@@ -21,11 +23,12 @@ from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.dataset.zarr._utils import load_zarr_group_to_memory
-from polaris.hub.polarisfs import PolarisFileSystem
+from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
     AccessType,
+    ChecksumStrategy,
     DatasetIndex,
     HttpUrlString,
     HubOwner,
@@ -58,7 +61,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         source: The data source, e.g. a DOI, Github repo or URI.
         license: The dataset license. Polaris only supports some Creative Commons licenses. See [`SupportedLicenseType`][polaris.utils.types.SupportedLicenseType] for accepted ID values.
         curation_reference: A reference to the curation process, e.g. a DOI, Github repo or URI.
-        cache_dir: Where the dataset would be cached if you call the `cache()` method.
+
     For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
 
     Raises:
@@ -67,24 +70,22 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
     # Public attributes
     # Data
-    default_adapters: Dict[str, Adapter] = Field(default_factory=dict)
-    zarr_root_path: Optional[str] = None
+    default_adapters: dict[str, Adapter] = Field(default_factory=dict)
+    zarr_root_path: str | None = None
 
     # Additional meta-data
     readme: str = ""
-    annotations: Dict[str, ColumnAnnotation] = Field(default_factory=dict)
-    source: Optional[HttpUrlString] = None
-    license: Optional[SupportedLicenseType] = None
-    curation_reference: Optional[HttpUrlString] = None
-
-    # Config
-    cache_dir: Optional[Path] = None
+    annotations: dict[str, ColumnAnnotation] = Field(default_factory=dict)
+    source: HttpUrlString | None = None
+    license: SupportedLicenseType | None = None
+    curation_reference: HttpUrlString | None = None
 
     # Private attributes
-    _zarr_root: Optional[zarr.Group] = PrivateAttr(None)
-    _zarr_data: Optional[MutableMapping[str, np.ndarray]] = PrivateAttr(None)
-    _client = PrivateAttr(None)  # Optional[PolarisHubClient]
+    _zarr_root: zarr.Group | None = PrivateAttr(None)
+    _zarr_data: MutableMapping[str, np.ndarray] | None = PrivateAttr(None)
     _warn_about_remote_zarr: bool = PrivateAttr(True)
+    _cache_dir: str | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.
+    _verify_checksum_strategy: ChecksumStrategy = PrivateAttr("verify_unless_zarr")
 
     @field_validator("default_adapters", mode="before")
     def _validate_adapters(cls, value):
@@ -92,16 +93,9 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         return {k: Adapter[v] if isinstance(v, str) else v for k, v in value.items()}
 
     @field_serializer("default_adapters")
-    def _serialize_adapters(self, value: dict[str, Adapter]):
+    def _serialize_adapters(self, value: dict[str, Adapter]) -> dict[str, str]:
         """Serializes the adapters"""
         return {k: v.name for k, v in value.items()}
-
-    @field_serializer("cache_dir", "zarr_root_path")
-    def _serialize_paths(value):
-        """Serialize the paths"""
-        if value is not None:
-            value = str(value)
-        return value
 
     @model_validator(mode="after")
     def _validate_base_dataset_model(self) -> Self:
@@ -125,16 +119,17 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
         return self
 
-    @property
-    def client(self):
-        """The Polaris Hub client used to interact with the Polaris Hub."""
+    @model_validator(mode="after")
+    def _ensure_cache_dir_exists(self) -> Self:
+        """
+        Set the default cache dir if none and make sure it exists
+        """
+        if self._cache_dir is None:
+            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / str(uuid4()))
+        fs, path = fsspec.url_to_fs(self._cache_dir)
+        fs.mkdirs(path, exist_ok=True)
 
-        # Import it here to prevent circular imports
-        from polaris.hub.client import PolarisHubClient
-
-        if self._client is None:
-            self._client = PolarisHubClient()
-        return self._client
+        return self
 
     @property
     def uses_zarr(self) -> bool:
@@ -168,38 +163,58 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             See also [`Dataset.load_to_memory`][polaris.dataset.Dataset.load_to_memory].
         """
 
+        from polaris.hub.storage import StorageSession
+
         if self._zarr_root is not None:
             return self._zarr_root
 
         if self.zarr_root_path is None:
             return None
 
-        # We open the archive in read-only mode if it is saved on the Hub
-        saved_on_hub = PolarisFileSystem.is_polarisfs_path(self.zarr_root_path)
+        saved_on_hub = self.zarr_root_path.startswith(StorageSession.polaris_protocol)
 
         if self._warn_about_remote_zarr:
-            saved_remote = saved_on_hub or not Path(self.zarr_root_path).exists()
-
-            if saved_remote:
+            if saved_on_hub:
+                # TODO (cwognum): The user now has no easy way of knowing whether the dataset is "small enough".
                 logger.warning(
                     f"You're loading data from a remote location. "
-                    f"To speed up this process, consider caching the dataset first "
-                    f"using {self.__class__.__name__}.cache()"
+                    f"If the dataset is small enough, consider caching the dataset first "
+                    f"using {self.__class__.__name__}.cache() for more performant data access."
                 )
                 self._warn_about_remote_zarr = False
 
         try:
             if saved_on_hub:
-                self._zarr_root = self.client.open_zarr_file(self.owner, self.name, self.zarr_root_path, "r+")
+                self._zarr_root = self.load_zarr_root_from_hub()
             else:
-                # We use memory mapping by default because our experiments show that it's consistently faster
-                store = MemoryMappedDirectoryStore(self.zarr_root_path)
-                self._zarr_root = zarr.open_consolidated(store, mode="r+")
+                self._zarr_root = self.load_zarr_root_from_local()
+
         except KeyError as error:
             raise InvalidDatasetError(
                 "A Zarr archive associated with a Polaris dataset has to be consolidated."
             ) from error
         return self._zarr_root
+
+    @abc.abstractmethod
+    def load_zarr_root_from_hub(self):
+        """
+        Loads a Zarr archive from the Polaris Hub.
+        """
+        raise NotImplementedError
+
+    def load_zarr_root_from_local(self):
+        """
+        Loads a locally stored Zarr archive.
+
+        We use memory mapping by default because our experiments show that it's consistently faster
+        """
+        if not Path(self.zarr_root_path).exists():
+            raise FileNotFoundError(
+                f"The Zarr archive at {self.zarr_root_path} does not exist. "
+                "If the data is not stored on the Polaris Hub, it needs to be stored locally."
+            )
+        store = MemoryMappedDirectoryStore(self.zarr_root_path)
+        return zarr.open_consolidated(store, mode="r+")
 
     @computed_field
     @property
@@ -229,6 +244,10 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     @abc.abstractmethod
     def dtypes(self) -> dict[str, np.dtype]:
         """Return the dtype for each of the columns for the dataset"""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
         raise NotImplementedError
 
     def load_to_memory(self):
@@ -273,7 +292,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upload_to_hub(self, access: AccessType = "private", owner: Union[HubOwner, str, None] = None):
+    def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
         """Uploads the dataset to the Polaris Hub."""
         raise NotImplementedError
 
@@ -310,15 +329,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         """
         raise NotImplementedError
 
-    def cache(self) -> str:
-        """Caches the dataset by downloading all additional data for pointer columns to a local directory.
-
-        Returns:
-            The path to the cache directory.
-        """
-        self.to_json(self.cache_dir, load_zarr_from_new_location=True)
-        return self.cache_dir
-
     def size(self) -> tuple[int, int]:
         return self.n_rows, self.n_columns
 
@@ -350,8 +360,3 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
     def __str__(self):
         return self.__repr__()
-
-    def __del__(self):
-        """Close the connection of the client"""
-        if self._client is not None:
-            self._client.close()

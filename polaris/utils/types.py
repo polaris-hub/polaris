@@ -3,6 +3,7 @@ from typing import Annotated, Any, Literal, Optional, Tuple, Union
 
 import numpy as np
 from pydantic import (
+    AnyUrl,
     BaseModel,
     BeforeValidator,
     ConfigDict,
@@ -11,7 +12,7 @@ from pydantic import (
     TypeAdapter,
 )
 from pydantic.alias_generators import to_camel
-from typing_extensions import TypeAlias
+from typing_extensions import Self, TypeAlias
 
 SplitIndicesType: TypeAlias = list[int]
 """
@@ -72,7 +73,6 @@ Can only use alpha-numeric characters, underscores and dashes.
 The string must be at least 4 and at most 64 characters long.
 """
 
-
 HubUser: TypeAlias = SlugCompatibleStringType
 """
 A user on the Polaris Hub is identified by a username,
@@ -81,10 +81,16 @@ which is a [`SlugCompatibleStringType`][polaris.utils.types.SlugCompatibleString
 
 HttpUrlAdapter = TypeAdapter(HttpUrl)
 HttpUrlString: TypeAlias = Annotated[str, BeforeValidator(lambda v: HttpUrlAdapter.validate_python(v) and v)]
-
 """
-A validated URL that will be turned into a string.
+A validated HTTP URL that will be turned into a string.
 This is useful for interactions with httpx and authlib, who have their own URL types.
+"""
+
+AnyUrlAdapter = TypeAdapter(AnyUrl)
+AnyUrlString: TypeAlias = Annotated[str, BeforeValidator(lambda v: AnyUrlAdapter.validate_python(v) and v)]
+"""
+A validated generic URL that will be turned into a string.
+This is useful for interactions with other libraries that expect a string.
 """
 
 DirectionType: TypeAlias = float | Literal["min", "max"]
@@ -125,6 +131,11 @@ ChecksumStrategy: TypeAlias = Literal["verify", "verify_unless_zarr", "ignore"]
 Type to specify which action to take to verify the data integrity of an artifact through a checksum.
 """
 
+ArtifactUrn: TypeAlias = Annotated[str, StringConstraints(pattern=r"^urn:polaris:\w+:\w+:\w+$")]
+"""
+A Uniform Resource Name (URN) for an artifact on the Polaris Hub.
+"""
+
 RowIndex: TypeAlias = int | str
 ColumnIndex: TypeAlias = str
 DatasetIndex: TypeAlias = RowIndex | tuple[RowIndex, ColumnIndex]
@@ -157,7 +168,7 @@ class HubOwner(BaseModel):
         return self.slug
 
     @staticmethod
-    def normalize(owner: Union[str, "HubOwner"]) -> "HubOwner":
+    def normalize(owner: str | Self) -> Self:
         """
         Normalize a string or `HubOwner` instance to a `HubOwner` instance.
         """
@@ -169,6 +180,7 @@ class TargetType(Enum):
 
     REGRESSION = "regression"
     CLASSIFICATION = "classification"
+    DOCKING = "docking"
 
 
 class TaskType(Enum):

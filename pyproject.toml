@@ -44,7 +44,8 @@ dependencies = [
     "httpx",
     "tenacity",
     "filelock",
-    "numpy < 2", # We need to pin numpy to avoid issues with fastpdb/biotite.
+    "numpy < 2",
+    # We need to pin numpy to avoid issues with fastpdb/biotite.
     "pandas",
     "scipy",
     "scikit-learn",
@@ -52,9 +53,11 @@ dependencies = [
     "datamol >=0.12.1",
     "fastpdb",
     "zarr",
-    "pyarrow",
+    "pyarrow < 18",
     "fsspec[http]",
-    "yaspin"
+    "yaspin",
+    "typing-extensions>=4.12.0",
+    "boto3>=1.35.0",
 ]
 
 [project.optional-dependencies]
@@ -64,7 +67,8 @@ dev = [
     "pytest-cov",
     "ruff",
     "jupyterlab",
-    "ipywidgets"
+    "ipywidgets",
+    "moto[s3]>=5.0.14",
 ]
 doc = [
     "mkdocs",
@@ -133,10 +137,10 @@ output = "coverage.xml"
 lint.ignore = [
     "E501", # Never enforce `E501` (line length violations).
 ]
-line-length = 110
-target-version = "py310"
 
 lint.per-file-ignores."__init__.py" = [
     "F401", # imported but unused
     "E402", # Module level import not at top of file
 ]
+line-length = 110
+target-version = "py310"

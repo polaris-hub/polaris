@@ -1,6 +1,5 @@
 import json
 import re
-import uuid
 from pathlib import Path
 from typing import Any, ClassVar, Literal
 
@@ -12,11 +11,10 @@ from pydantic import PrivateAttr, computed_field, model_validator
 from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
-from polaris.dataset._base import _CACHE_SUBDIR, BaseDataset
+from polaris.dataset._base import BaseDataset
 from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
-from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.errors import InvalidDatasetError
-from polaris.utils.types import AccessType, HubOwner, ZarrConflictResolution
+from polaris.utils.types import AccessType, ChecksumStrategy, HubOwner, ZarrConflictResolution
 
 _INDEX_ARRAY_KEY = "__index__"
 
@@ -41,6 +39,8 @@ class DatasetV2(BaseDataset):
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
     """
+
+    _artifact_type = "dataset"
 
     version: ClassVar[Literal[2]] = 2
     _zarr_manifest_path: str | None = PrivateAttr(None)
@@ -78,12 +78,6 @@ class DatasetV2(BaseDataset):
                 f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
             )
 
-        # Set the default cache dir if none and make sure it exists
-        if self.cache_dir is None:
-            dataset_id = self._zarr_manifest_md5sum if self.has_zarr_manifest_md5sum else str(uuid.uuid4())
-            self.cache_dir = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / dataset_id
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
-
         return self
 
     @property
@@ -99,7 +93,7 @@ class DatasetV2(BaseDataset):
         """Return all row indices for the dataset
 
         Warning: Memory consumption
-            This feature is added for completeness sake, but when datasets get large could consume a lot of memory.
+            This feature is added for completeness' sake, but it should be noted that large datasets could consume a lot of memory.
             E.g. storing a billion indices with np.in64 would consume 8GB of memory. Use with caution.
         """
         return np.arange(len(self), dtype=int)
@@ -119,10 +113,21 @@ class DatasetV2(BaseDataset):
             dtypes[group] = np.dtype(object)
         return dtypes
 
+    def load_zarr_root_from_hub(self):
+        """
+        Loads a Zarr archive from the Hub.
+        """
+        from polaris.hub.client import PolarisHubClient
+        from polaris.hub.storage import StorageSession
+
+        with PolarisHubClient() as client:
+            with StorageSession(client, "read", self.urn) as storage:
+                return zarr.open_consolidated(store=storage.root_store)
+
     @property
     def zarr_manifest_path(self) -> str:
         if self._zarr_manifest_path is None:
-            zarr_manifest_path = generate_zarr_manifest(self.zarr_root_path, self.cache_dir)
+            zarr_manifest_path = generate_zarr_manifest(self.zarr_root_path, self._cache_dir)
             self._zarr_manifest_path = zarr_manifest_path
 
         return self._zarr_manifest_path
@@ -186,11 +191,14 @@ class DatasetV2(BaseDataset):
         return arr
 
     def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
-        """Uploads the dataset to the Polaris Hub."""
+        """
+        Uploads the dataset to the Polaris Hub.
+        """
 
-        # NOTE (cwognum):  Leaving this for a later PR, because I want
-        #  to do it simultaneously with a PR on the Hub side.
-        raise NotImplementedError
+        from polaris.hub.client import PolarisHubClient
+
+        with PolarisHubClient() as client:
+            client.upload_dataset(self, owner=owner, access=access)
 
     @classmethod
     def from_json(cls, path: str):
@@ -202,7 +210,6 @@ class DatasetV2(BaseDataset):
         """
         with fsspec.open(path, "r") as f:
             data = json.load(f)
-        data.pop("cache_dir", None)
         return cls.model_validate(data)
 
     def to_json(
@@ -230,8 +237,10 @@ class DatasetV2(BaseDataset):
         dataset_path = str(destination / "dataset.json")
         new_zarr_root_path = str(destination / "data.zarr")
 
-        # Lu: Avoid serilizing and sending None to hub app.
-        serialized = self.model_dump(exclude={"cache_dir"}, exclude_none=True)
+        # Lu: Avoid serializing and sending None to hub app.
+        serialized = self.model_dump(
+            exclude_none=True, exclude={"zarr_manifest_path", "zarr_manifest_md5sum"}
+        )
         serialized["zarrRootPath"] = new_zarr_root_path
 
         # Copy over Zarr data to the destination
@@ -256,7 +265,22 @@ class DatasetV2(BaseDataset):
             json.dump(serialized, f)
         return dataset_path
 
+    def cache(self) -> str:
+        """Caches the dataset by downloading all additional data for pointer columns to a local directory.
+
+        Returns:
+            The path to the cache directory.
+        """
+        self.to_json(self._cache_dir, load_zarr_from_new_location=True)
+        return self._cache_dir
+
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude={"zarr_md5sum_manifest"})
+        repr_dict = self.model_dump(exclude={"zarr_manifest_path", "zarr_manifest_md5sum"})
         return repr_dict
+
+    def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
+        """
+        Determines whether to verify the checksum of the dataset based on the strategy.
+        """
+        return False
