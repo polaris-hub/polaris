@@ -67,6 +67,7 @@ Please refer to the [documentation](https://polaris-hub.github.io/polaris/), whi
 
 Please cite Polaris if you use it in your research. A list of relevant publications: 
 
+- [![DOI](https://img.shields.io/badge/DOI-10.26434%2Fchemrxiv--2024--6dbwv--v2-blue)](https://doi.org/10.26434/chemrxiv-2024-6dbwv-v2) - Preprint, Method Comparison Guidelines.
 - [![DOI](https://img.shields.io/badge/DOI-10.1038%2Fs42256--024--00911--w-blue)](https://doi.org/10.1038/s42256-024-00911-w) - Nature Correspondence, Call to Action.
 - [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13652587.svg)](https://doi.org/10.5281/zenodo.13652587) - Zenodo, Code Repository.
 
