@@ -385,9 +385,9 @@ def test_multi_task_benchmark_multiple_test_sets(test_dataset):
 
 
 @pytest.fixture(scope="function")
-def test_docking_dataset(tmpdir, sdf_files, test_org_owner):
+def test_docking_dataset(tmp_path, sdf_files, test_org_owner):
     # toy docking dataset
-    factory = DatasetFactory(tmpdir.join("ligands.zarr"))
+    factory = DatasetFactory(str(tmp_path / "ligands.zarr"))
 
     converter = SDFConverter(mol_prop_as_cols=True)
     factory.register_converter("sdf", converter)

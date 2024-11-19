@@ -65,8 +65,8 @@ def test_dataset_v2_load_to_memory(test_dataset_v2):
     assert d2 < d1
 
 
-def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
-    save_dir = tmpdir.join("save_dir")
+def test_dataset_v2_serialization(test_dataset_v2, tmp_path):
+    save_dir = str(tmp_path / "save_dir")
     path = test_dataset_v2.to_json(save_dir)
     new_dataset = DatasetV2.from_json(path)
     for i in range(5):
@@ -74,19 +74,19 @@ def test_dataset_v2_serialization(test_dataset_v2, tmpdir):
         assert np.array_equal(new_dataset.get_data(i, "B"), test_dataset_v2.get_data(i, "B"))
 
 
-def test_dataset_v2_caching(test_dataset_v2, tmpdir):
-    cache_dir = tmpdir.join("cache").strpath
+def test_dataset_v2_caching(test_dataset_v2, tmp_path):
+    cache_dir = str(tmp_path / "cache")
     test_dataset_v2._cache_dir = cache_dir
     test_dataset_v2.cache()
     assert str(test_dataset_v2.zarr_root_path).startswith(cache_dir)
 
 
-def test_dataset_v1_v2_compatibility(test_dataset, tmpdir):
+def test_dataset_v1_v2_compatibility(test_dataset, tmp_path):
     # A DataFrame is ultimately a collection of labeled numpy arrays
     # We can thus also saved these same arrays to a Zarr archive
     df = test_dataset.table
 
-    path = tmpdir.join("data/v1v2.zarr")
+    path = str(tmp_path / "data" / "v1v2.zarr")
 
     root = zarr.open(path, "w")
     root.array("smiles", data=df["smiles"].values, dtype=object, object_codec=numcodecs.VLenUTF8())
@@ -108,10 +108,10 @@ def test_dataset_v1_v2_compatibility(test_dataset, tmpdir):
         assert y1 == y2
 
 
-def test_dataset_v2_with_pdbs(pdb_paths, tmpdir):
+def test_dataset_v2_with_pdbs(pdb_paths, tmp_path):
     # The PDB example is interesting because it creates a more complex Zarr archive
     # that includes subgroups
-    zarr_root_path = str(tmpdir.join("pdbs.zarr"))
+    zarr_root_path = str(tmp_path / "pdbs.zarr")
     factory = DatasetFactory(zarr_root_path)
 
     # Build a V1 dataset

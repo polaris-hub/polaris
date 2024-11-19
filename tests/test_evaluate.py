@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import datamol as dm
 import numpy as np
@@ -16,7 +17,7 @@ from polaris.evaluate._results import BenchmarkResults
 from polaris.utils.types import HubOwner
 
 
-def test_result_to_json(tmpdir: str, test_user_owner: HubOwner):
+def test_result_to_json(tmp_path: Path, test_user_owner: HubOwner):
     scores = pd.DataFrame(
         {
             "Test set": ["A", "A", "A", "A", "B", "B", "B", "B"],
@@ -40,7 +41,7 @@ def test_result_to_json(tmpdir: str, test_user_owner: HubOwner):
         contributors=["my-user", "other-user"],
     )
 
-    path = os.path.join(tmpdir, "result.json")
+    path = str(tmp_path / "result.json")
     result.to_json(path)
     BenchmarkResults.from_json(path)
     assert po.__version__ == result.polaris_version
