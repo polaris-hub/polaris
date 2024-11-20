@@ -5,9 +5,13 @@ import pandas as pd
 import pytest
 import zarr
 from datamol.utils import fs
+from numcodecs.abc import Codec
+from numcodecs.registry import codec_registry, register_codec
 
 from polaris.dataset import DatasetV1, Subset, create_dataset_from_file
+from polaris.dataset.zarr._utils import check_zarr_codecs
 from polaris.loader import load_dataset
+from polaris.utils.errors import InvalidZarrCodec
 
 
 @pytest.mark.parametrize("with_caching", [True, False])
@@ -218,3 +222,37 @@ def test_dataset__get_item__with_pointer_columns(zarr_archive, tmpdir):
 
     _check_row_equality(dataset[0], {"A": root["A"][0, :], "B": root["B"][0, :]})
     _check_row_equality(dataset[10], {"A": root["A"][10, :], "B": root["B"][10, :]})
+
+
+def test_missing_codec_error(tmpdir):
+    """Check if the right error gets raised if a required codec is missing"""
+
+    class CustomCodec(Codec):
+        codec_id = "polaris_custom_test_codec"
+
+        def encode(self, buf):
+            buf = b"Random bytes"
+            return buf
+
+        def decode(self, buf, out=None):
+            return np.random.random(100)
+
+    path = tmpdir.join("archive.zarr")
+
+    # Write
+    register_codec(CustomCodec)
+    root = zarr.open(path, mode="w")
+    root.array("A", data=np.random.random(100), compressor=CustomCodec())
+
+    # Read without codec
+    codec_registry.pop(CustomCodec.codec_id)
+    root = zarr.open(path, mode="r")
+
+    with pytest.raises(InvalidZarrCodec) as err_info:
+        check_zarr_codecs(root)
+    assert err_info.value.codec_id == CustomCodec.codec_id
+
+    # Read with codec
+    register_codec(CustomCodec)
+    root = zarr.open(path, mode="r")
+    check_zarr_codecs(root)
