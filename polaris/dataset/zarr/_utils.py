@@ -40,5 +40,5 @@ def check_zarr_codecs(group: zarr.Group):
             raise error
 
         # Remove prefix and apostrophes
-        codec_id = error_message.removeprefix(prefix)[1:-1]
+        codec_id = error_message.removeprefix(prefix).strip("'")
         raise InvalidZarrCodec(codec_id)
