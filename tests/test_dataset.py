@@ -231,8 +231,7 @@ def test_missing_codec_error(tmpdir):
         codec_id = "polaris_custom_test_codec"
 
         def encode(self, buf):
-            buf = b"Random bytes"
-            return buf
+            return b"Random bytes"
 
         def decode(self, buf, out=None):
             return np.random.random(100)
