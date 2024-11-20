@@ -127,9 +127,9 @@ def test_benchmark_metrics_verification(test_single_task_benchmark, test_multi_t
         )
 
 
-def test_benchmark_from_json(test_single_task_benchmark, tmpdir):
+def test_benchmark_from_json(test_single_task_benchmark, tmp_path):
     """Test whether we can successfully save and load a benchmark from JSON."""
-    path = test_single_task_benchmark.to_json(str(tmpdir))
+    path = test_single_task_benchmark.to_json(str(tmp_path))
     new_benchmark = SingleTaskBenchmarkSpecification.from_json(path)
     assert new_benchmark == test_single_task_benchmark
 

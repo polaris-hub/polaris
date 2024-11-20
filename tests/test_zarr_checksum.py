@@ -106,11 +106,11 @@ def test_process_tree() -> None:
     assert checksum.digest == "e53fcb7b5c36b2f4647fbf826a44bdc9-2-2"
 
 
-def test_checksum_for_zarr_archive(zarr_archive, tmpdir):
+def test_checksum_for_zarr_archive(zarr_archive, tmp_path):
     # NOTE: This test was not in the original code base of the zarr-checksum package.
     checksum, _ = compute_zarr_checksum(zarr_archive)
 
-    path = tmpdir.join("copy")
+    path = tmp_path / "copy"
     copytree(zarr_archive, path)
     assert checksum == compute_zarr_checksum(str(path))[0]
 

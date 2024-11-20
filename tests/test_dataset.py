@@ -22,8 +22,8 @@ def test_load_data(tmp_path, with_slice, with_caching):
     # Dummy data (could e.g. be a 3D structure or Image)
     arr = np.random.random((100, 100))
 
-    tmpdir = str(tmp_path)
-    zarr_path = fs.join(tmpdir, "data.zarr")
+    tmp_path = str(tmp_path)
+    zarr_path = fs.join(tmp_path, "data.zarr")
 
     root = zarr.open(zarr_path, "w")
     root.array("A", data=arr)
@@ -34,7 +34,7 @@ def test_load_data(tmp_path, with_slice, with_caching):
     dataset = DatasetV1(table=table, annotations={"A": {"is_pointer": True}}, zarr_root_path=zarr_path)
 
     if with_caching:
-        dataset._cache_dir = fs.join(tmpdir, "cache")
+        dataset._cache_dir = fs.join(tmp_path, "cache")
         dataset.cache()
 
     data = dataset.get_data(row=0, col="A")
@@ -85,10 +85,10 @@ def test_dataset_checksum(test_dataset):
     assert DatasetV1(**kwargs) != test_dataset
 
 
-def test_dataset_from_zarr(zarr_archive, tmpdir):
+def test_dataset_from_zarr(zarr_archive, tmp_path):
     """Test whether loading works when the zarr archive contains a single array or multiple arrays."""
     archive = zarr_archive
-    dataset = create_dataset_from_file(archive, tmpdir.join("data"))
+    dataset = create_dataset_from_file(archive, tmp_path / "data")
 
     assert len(dataset.table) == 100
     for i in range(100):
@@ -96,11 +96,11 @@ def test_dataset_from_zarr(zarr_archive, tmpdir):
         assert dataset.get_data(row=i, col="B").shape == (2048,)
 
 
-def test_dataset_from_json(test_dataset, tmpdir):
+def test_dataset_from_json(test_dataset, tmp_path):
     """Test whether the dataset can be saved and loaded from json."""
-    test_dataset.to_json(str(tmpdir))
+    test_dataset.to_json(str(tmp_path))
 
-    path = fs.join(str(tmpdir), "dataset.json")
+    path = fs.join(str(tmp_path), "dataset.json")
 
     new_dataset = DatasetV1.from_json(path)
     assert test_dataset == new_dataset
@@ -109,14 +109,14 @@ def test_dataset_from_json(test_dataset, tmpdir):
     assert test_dataset == new_dataset
 
 
-def test_dataset_from_zarr_to_json_and_back(zarr_archive, tmpdir):
+def test_dataset_from_zarr_to_json_and_back(zarr_archive, tmp_path):
     """
     Test whether a dataset with pointer columns, instantiated from a zarr archive,
     can be saved to and loaded from json.
     """
 
-    json_dir = tmpdir.join("json")
-    zarr_dir = tmpdir.join("zarr")
+    json_dir = tmp_path / "json"
+    zarr_dir = tmp_path / "zarr"
 
     archive = zarr_archive
     dataset = create_dataset_from_file(archive, zarr_dir)
@@ -129,14 +129,14 @@ def test_dataset_from_zarr_to_json_and_back(zarr_archive, tmpdir):
     assert dataset == new_dataset
 
 
-def test_dataset_caching(zarr_archive, tmpdir):
+def test_dataset_caching(zarr_archive, tmp_path):
     """Test whether the dataset remains the same after caching."""
 
-    original_dataset = create_dataset_from_file(zarr_archive, tmpdir.join("original1"))
-    cached_dataset = create_dataset_from_file(zarr_archive, tmpdir.join("original2"))
+    original_dataset = create_dataset_from_file(zarr_archive, tmp_path / "original1")
+    cached_dataset = create_dataset_from_file(zarr_archive, tmp_path / "original2")
     assert original_dataset == cached_dataset
 
-    cached_dataset._cache_dir = tmpdir.join("cached").strpath
+    cached_dataset._cache_dir = str(tmp_path / "cached")
     cache_dir = cached_dataset.cache(verify_checksum=True)
     assert cached_dataset.zarr_root_path.startswith(cache_dir)
 
@@ -151,9 +151,9 @@ def test_dataset_index():
     assert next(iter(subset)) == (np.array([2]), np.array([5]))
 
 
-def test_dataset_in_memory_optimization(zarr_archive, tmpdir):
+def test_dataset_in_memory_optimization(zarr_archive, tmp_path):
     """Check if optimization makes a default Zarr archive faster."""
-    dataset = create_dataset_from_file(zarr_archive, tmpdir.join("dataset"))
+    dataset = create_dataset_from_file(zarr_archive, tmp_path / "dataset")
     subset = Subset(dataset=dataset, indices=range(100), input_cols=["A"], target_cols=["B"])
 
     t1 = perf_counter()
@@ -205,10 +205,10 @@ def test_dataset__get_item__():
     assert dataset["Z"] == {"A": 3, "B": 6, "C": 9}
 
 
-def test_dataset__get_item__with_pointer_columns(zarr_archive, tmpdir):
+def test_dataset__get_item__with_pointer_columns(zarr_archive, tmp_path):
     """Test the __getitem__() interface for a dataset with pointer columns (i.e. part of the data stored in Zarr)."""
 
-    dataset = create_dataset_from_file(zarr_archive, tmpdir.join("data"))
+    dataset = create_dataset_from_file(zarr_archive, tmp_path / "data")
     root = zarr.open(zarr_archive)
 
     # Get a specific cell
@@ -224,7 +224,7 @@ def test_dataset__get_item__with_pointer_columns(zarr_archive, tmpdir):
     _check_row_equality(dataset[10], {"A": root["A"][10, :], "B": root["B"][10, :]})
 
 
-def test_missing_codec_error(tmpdir):
+def test_missing_codec_error(tmp_path):
     """Check if the right error gets raised if a required codec is missing"""
 
     class CustomCodec(Codec):
@@ -236,7 +236,7 @@ def test_missing_codec_error(tmpdir):
         def decode(self, buf, out=None):
             return np.random.random(100)
 
-    path = tmpdir.join("archive.zarr")
+    path = tmp_path / "archive.zarr"
 
     # Write
     register_codec(CustomCodec)
