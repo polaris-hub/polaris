@@ -39,7 +39,7 @@ class InvalidZarrCodec(Exception):
         self.codec_id = codec_id
         super().__init__(
             f"This Zarr archive requires the {self.codec_id} codec. "
-            f"Install all optional codecs with 'pip install polaris-lib[codecs]'."
+            "Install all optional codecs with 'pip install polaris-lib[codecs]'."
         )
 
 
