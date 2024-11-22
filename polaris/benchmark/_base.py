@@ -21,6 +21,7 @@ from typing_extensions import Self
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset import CompetitionDataset, DatasetV1, Subset
 from polaris.evaluate import BenchmarkResults, Metric
+from polaris.evaluate._metric import BaseComplexMetric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.mixins import ChecksumMixin
@@ -103,7 +104,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
-    metrics: Union[str, Metric, list[str | Metric]]
+    metrics: Union[str, Metric, BaseComplexMetric, list[str | Metric | BaseComplexMetric]]
     main_metric: str | Metric | None = None
 
     # Additional meta-data
