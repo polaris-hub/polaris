@@ -38,6 +38,8 @@ class PolarisHubSettings(BaseSettings):
 
     # Hub authentication settings
     hub_token_url: HttpUrlString | None = None
+    username: str | None = None
+    password: str | None = None
 
     # External authentication settings
     authorize_url: HttpUrlString = "https://clerk.polarishub.io/oauth/authorize"

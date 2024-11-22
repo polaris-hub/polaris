@@ -2,7 +2,7 @@ import json
 import ssl
 from hashlib import md5
 from io import BytesIO
-from typing import Callable, Union, get_args
+from typing import Union, get_args
 from urllib.parse import urljoin
 
 import certifi
@@ -11,10 +11,9 @@ import pandas as pd
 import zarr
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
-from authlib.oauth2 import TokenAuth
+from authlib.oauth2 import OAuth2Error, TokenAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
 from httpx import HTTPStatusError, Response
-from httpx._types import HeaderTypes, URLTypes
 from loguru import logger
 
 from polaris.benchmark import (
@@ -23,9 +22,8 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.competition import CompetitionSpecification
-
-from polaris.evaluate import BenchmarkResults, CompetitionPredictions, CompetitionResults
 from polaris.dataset import CompetitionDataset, Dataset, DatasetV1
+from polaris.evaluate import BenchmarkResults, CompetitionPredictions, CompetitionResults
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
@@ -110,7 +108,6 @@ class PolarisHubClient(OAuth2Client):
             # OAuth2Client
             token_endpoint=self.settings.hub_token_url,
             token_endpoint_auth_method="none",
-            grant_type="urn:ietf:params:oauth:grant-type:token-exchange",
             # httpx.Client
             base_url=self.settings.api_url,
             cert=self.settings.ca_bundle,
@@ -161,12 +158,21 @@ class PolarisHubClient(OAuth2Client):
         self.token = self.fetch_token()
         return True
 
-    def _load_from_signed_url(self, url: URLTypes, load_fn: Callable, headers: HeaderTypes | None = None):
-        """Utility function to load a file from a signed URL"""
-        response = self.get(url, auth=None, headers=headers)  # type: ignore
-        response.raise_for_status()
-        content = BytesIO(response.content)
-        return load_fn(content)
+    def fetch_token(self, **kwargs):
+        """
+        Handles the optional support for password grant type, and provide better error messages.
+        """
+        try:
+            return super().fetch_token(
+                username=self.settings.username,
+                password=self.settings.password,
+                grant_type="password" if self.settings.username and self.settings.password else "urn:ietf:params:oauth:grant-type:token-exchange",
+                **kwargs
+            )
+        except(OAuthError, OAuth2Error) as error:
+            raise PolarisHubError(
+                message=f"Could not obtain a token to access the Hub. Error was: {error.error} - {error.description}"
+            ) from error
 
     def _base_request_to_hub(self, url: str, method: str, **kwargs):
         """Utility function since most API methods follow the same pattern"""
