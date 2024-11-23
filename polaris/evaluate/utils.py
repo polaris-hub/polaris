@@ -3,6 +3,7 @@ import pandas as pd
 from numpy.typing import NDArray
 
 from polaris.evaluate import BenchmarkPredictions, BenchmarkResults, Metric, ResultsType
+from polaris.evaluate._ground_truth import GroundTruth
 from polaris.utils.types import IncomingPredictionsType
 
 
@@ -69,7 +70,7 @@ def evaluate_benchmark(
     test_set_labels: list[str],
     test_set_sizes: dict[str, int],
     metrics: list[Metric],
-    y_true: IncomingPredictionsType,
+    y_true: dict[str, GroundTruth],
     y_pred: IncomingPredictionsType | None = None,
     y_prob: IncomingPredictionsType | None = None,
 ):
@@ -77,14 +78,8 @@ def evaluate_benchmark(
     Utility function that contains the evaluation logic for a benchmark
     """
 
-    # Normalize the ground truth and predictions to a consistent, internal representation.
+    # Normalize the and predictions to a consistent, internal representation.
     # Format is a two-level dictionary: {test_set_label: {target_label: np.ndarray}}
-    y_true = BenchmarkPredictions(
-        predictions=y_true,
-        target_labels=target_cols,
-        test_set_labels=test_set_labels,
-        test_set_sizes=test_set_sizes,
-    )
     if y_pred is not None:
         y_pred = BenchmarkPredictions(
             predictions=y_pred,
@@ -111,7 +106,7 @@ def evaluate_benchmark(
             if metric.is_multitask:
                 # Multi-task but with a metric across targets
                 score = metric(
-                    y_true=y_true.get_subset(test_set_subset=[test_label]),
+                    y_true=y_true[test_label],
                     y_pred=_optionally_subset(y_pred, test_set_labels=test_label),
                     y_prob=_optionally_subset(y_prob, test_set_labels=test_label),
                 )
@@ -123,14 +118,14 @@ def evaluate_benchmark(
             for target_label in target_cols:
                 # Single-task metrics for a multi-task benchmark
                 # In such a setting, there can be NaN values, which we thus have to filter out.
-                y_true_subset = y_true.get_subset(test_set_subset=[test_label], target_subset=[target_label])
+                y_true_subset = y_true[test_label]
+                y_true_array = y_true_subset.as_array(target_label)
+                mask = mask_index(y_true_array)
 
-                # Get the mask for the target values
-                y_true_subset_arr = y_true_subset.flatten()
-                mask = mask_index(y_true_subset_arr)
+                y_true_subset.set_mask(mask)
 
                 score = metric(
-                    y_true=y_true_subset.mask(mask),
+                    y_true=y_true_subset,
                     y_pred=_safe_mask(y_pred, mask, test_set_labels=test_label, target_labels=target_label),
                     y_prob=_safe_mask(y_prob, mask, test_set_labels=test_label, target_labels=target_label),
                 )

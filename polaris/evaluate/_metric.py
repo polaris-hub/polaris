@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Callable, Literal, TypeAlias
 
 import numpy as np
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
@@ -17,6 +17,7 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
+from polaris.evaluate._ground_truth import GroundTruth
 from polaris.evaluate._predictions import BenchmarkPredictions
 from polaris.evaluate.metrics import (
     absolute_average_fold_error,
@@ -51,6 +52,17 @@ def _check_predictions(
         pred = y_prob
 
     return pred
+
+
+def rxrx_ap(y_true, y_score):
+    if len(y_score) == 0 or not np.any(y_true):
+        raise ValueError("Can't be done")
+    sorted_indices = np.argsort(y_score)[::-1]
+    sorted_labels = y_true[sorted_indices]
+    tp_cumsum = np.cumsum(sorted_labels)
+    precision = tp_cumsum / np.arange(1, len(sorted_labels) + 1)
+    ap = np.sum(precision * sorted_labels) / sorted_labels.sum()
+    return ap
 
 
 class MetricInfo(BaseModel):
@@ -102,6 +114,7 @@ class Metric(Enum):
     mcc = MetricInfo(fn=matthews_corrcoef, direction="max")
     cohen_kappa = MetricInfo(fn=cohen_kappa_score, direction="max")
     pr_auc = MetricInfo(fn=average_precision_score, direction="max", y_type="y_score")
+    rxrx_pr_auc = MetricInfo(fn=rxrx_ap, direction="max", y_type="y_score")
 
     # binary only
     f1 = MetricInfo(fn=f1_score, kwargs={"average": "binary"}, direction="max")
@@ -138,7 +151,7 @@ class Metric(Enum):
 
     def score(
         self,
-        y_true: BenchmarkPredictions,
+        y_true: GroundTruth,
         y_pred: BenchmarkPredictions | None = None,
         y_prob: BenchmarkPredictions | None = None,
     ) -> float:
@@ -152,12 +165,12 @@ class Metric(Enum):
         ```
         """
         pred = _check_predictions(y_pred, y_prob, self.y_type)
-        kwargs = {"y_true": y_true.flatten(), self.y_type: pred.flatten()}
+        kwargs = {"y_true": y_true.as_array(), self.y_type: pred.flatten()}
         return self.fn(**kwargs, **self.value.kwargs)
 
     def __call__(
         self,
-        y_true: BenchmarkPredictions,
+        y_true: GroundTruth,
         y_pred: BenchmarkPredictions | None = None,
         y_prob: BenchmarkPredictions | None = None,
     ) -> float:
@@ -165,6 +178,15 @@ class Metric(Enum):
 
 
 class BaseComplexMetric(BaseModel, abc.ABC):
+    metric: Metric
+
+    @field_validator("metric", mode="before")
+    @classmethod
+    def validate_metric(cls, value):
+        if not isinstance(value, Metric):
+            value = Metric[value]
+        return value
+
     @property
     @abc.abstractmethod
     def fn(self) -> Callable:
@@ -186,7 +208,7 @@ class BaseComplexMetric(BaseModel, abc.ABC):
     @abc.abstractmethod
     def score(
         self,
-        y_true: BenchmarkPredictions,
+        y_true: GroundTruth,
         y_pred: BenchmarkPredictions | None = None,
         y_prob: BenchmarkPredictions | None = None,
     ) -> float:
@@ -194,7 +216,7 @@ class BaseComplexMetric(BaseModel, abc.ABC):
 
     def __call__(
         self,
-        y_true: BenchmarkPredictions,
+        y_true: GroundTruth,
         y_pred: BenchmarkPredictions | None = None,
         y_prob: BenchmarkPredictions | None = None,
     ) -> float:
@@ -204,8 +226,9 @@ class BaseComplexMetric(BaseModel, abc.ABC):
 class GroupedMetric(BaseComplexMetric):
     """"""
 
-    metric: Metric
     group_by: str
+    on_error: Literal["ignore", "raise", "default"] = "raise"
+    default: float | None = None
 
     @property
     def fn(self) -> Callable:
@@ -224,20 +247,30 @@ class GroupedMetric(BaseComplexMetric):
 
     def score(
         self,
-        y_true: BenchmarkPredictions,
+        y_true: GroundTruth,
         y_pred: BenchmarkPredictions | None = None,
         y_prob: BenchmarkPredictions | None = None,
     ) -> float:
         pred = _check_predictions(y_pred, y_prob, self.y_type)
 
-        df = pred.as_dataframe(prediction_label=self.y_type)
-        df["y_true"] = y_true.flatten()
+        df = y_true.as_dataframe()
+        df[self.y_type] = pred.flatten()
 
         scores = []
         for _, group in df.groupby(self.group_by):
-            y_true_group = group["y_true"].values
+            y_true_group = group["active"].values
             y_pred_group = group[self.y_type].values
             kwargs = {"y_true": y_true_group, self.y_type: y_pred_group}
-            scores.append(self.fn(**kwargs, **self.metric.value.kwargs))
 
-        return np.mean(scores)
+            try:
+                score = self.fn(**kwargs, **self.metric.value.kwargs)
+            except Exception as err:
+                if self.on_error == "ignore":
+                    continue
+                elif self.on_error == "raise":
+                    raise
+                elif self.default is not None:
+                    raise ValueError("Default value must be provided when on_error is 'default'") from err
+                score = self.default
+            scores.append(score)
+        return np.nanmean(scores)

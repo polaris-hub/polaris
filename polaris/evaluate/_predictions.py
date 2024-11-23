@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 import numpy as np
-import pandas as pd
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -180,32 +179,6 @@ class BenchmarkPredictions(BaseModel):
                 return False
 
         return True
-
-    def as_dataframe(
-        self, test_set_label: str = "test_set", target_label: str = "target", prediction_label: str = "y_pred"
-    ) -> pd.DataFrame:
-        """
-        Convert the predictions to a pandas DataFrame with three columns.
-
-        Args:
-            test_set_label: The name of the column that contains the test set names.
-            target_label: The name of the column that contains the target column names.
-            prediction_label: The name of the column that contains the predictions.
-        """
-        df = pd.DataFrame(columns=[test_set_label, target_label, prediction_label])
-
-        for test_set_name, test_set in self.predictions.items():
-            for target_name, target in test_set.items():
-                df_ = pd.DataFrame(
-                    {
-                        test_set_label: test_set_name,
-                        target_label: target_name,
-                        prediction_label: target,
-                    }
-                )
-                df = pd.concat([df, df_], ignore_index=True)
-
-        return df
 
     def get_subset(
         self, test_set_subset: list[str] | None = None, target_subset: list[str] | None = None

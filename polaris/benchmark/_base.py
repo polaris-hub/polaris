@@ -21,6 +21,7 @@ from typing_extensions import Self
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset import CompetitionDataset, DatasetV1, Subset
 from polaris.evaluate import BenchmarkResults, Metric
+from polaris.evaluate._ground_truth import GroundTruth
 from polaris.evaluate._metric import BaseComplexMetric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
@@ -148,9 +149,23 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         if not isinstance(v, list):
             v = [v]
 
-        v = [m if isinstance(m, Metric) else Metric[m] for m in v]
+        tmp = []
+        unique_metrics = set()
+        for m in v:
+            if isinstance(m, str):
+                m = Metric[m]
+            elif isinstance(m, dict):
+                m = BaseComplexMetric(**m)
 
-        if len(set(v)) != len(v):
+            if isinstance(m, Metric):
+                unique_metrics.add(m.name)
+            else:
+                unique_metrics.add(m.metric.name)
+
+            tmp.append(m)
+        v = tmp
+
+        if len(unique_metrics) != len(v):
             raise InvalidBenchmarkError("The task specifies duplicate metrics")
 
         if len(v) == 0:
@@ -475,19 +490,15 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
-        y_true_subset = self._get_test_set(hide_targets=False)
-        y_true_values = {k: v.targets for k, v in y_true_subset.items()}
-
-        # Simplify the case where there is only one test set
-        if len(y_true_values) == 1:
-            y_true_values = y_true_values["test"]
+        test_sets = self._get_test_set(hide_targets=False)
+        y_true = {k: GroundTruth(test_set=v) for k, v in test_sets.items()}
 
         scores = evaluate_benchmark(
             target_cols=self.target_cols,
             test_set_labels=self.test_set_labels,
             test_set_sizes=self.test_set_sizes,
             metrics=self.metrics,
-            y_true=y_true_values,
+            y_true=y_true,
             y_pred=y_pred,
             y_prob=y_prob,
         )
