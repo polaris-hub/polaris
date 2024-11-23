@@ -166,10 +166,12 @@ class PolarisHubClient(OAuth2Client):
             return super().fetch_token(
                 username=self.settings.username,
                 password=self.settings.password,
-                grant_type="password" if self.settings.username and self.settings.password else "urn:ietf:params:oauth:grant-type:token-exchange",
-                **kwargs
+                grant_type="password"
+                if self.settings.username and self.settings.password
+                else "urn:ietf:params:oauth:grant-type:token-exchange",
+                **kwargs,
             )
-        except(OAuthError, OAuth2Error) as error:
+        except (OAuthError, OAuth2Error) as error:
             raise PolarisHubError(
                 message=f"Could not obtain a token to access the Hub. Error was: {error.error} - {error.description}"
             ) from error
