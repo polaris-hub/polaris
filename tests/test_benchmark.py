@@ -191,11 +191,12 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     kwargs["target_cols"] = kwargs["target_cols"][1:] + ["iupac"]
     _check_for_failure(kwargs)
 
+    # Input columns
     kwargs = obj.model_dump()
     kwargs["input_cols"] = kwargs["input_cols"][1:] + ["iupac"]
     _check_for_failure(kwargs)
 
-    # --- Don't fail if not checksum is provided ---
+    # --- Don't fail if no checksum is provided ---
     kwargs["md5sum"] = None
     dataset = cls(**kwargs)
     assert dataset.md5sum is not None
