@@ -121,6 +121,10 @@ class PolarisHubClient(OAuth2Client):
             settings=self.settings, cache_auth_token=cache_auth_token, **kwargs
         )
 
+    @property
+    def has_user_password(self) -> bool:
+        return bool(self.settings.username and self.settings.password)
+
     def _prepare_token_endpoint_body(self, body, grant_type, **kwargs):
         """
         Override to support required fields for the token exchange grant type.
@@ -150,8 +154,8 @@ class PolarisHubClient(OAuth2Client):
         if is_active:
             return True
 
-        # Check if external token is still valid
-        if not self.external_client.ensure_active_token():
+        # Check if external token is still valid, or we're using password auth
+        if not (self.has_user_password or self.external_client.ensure_active_token()):
             return False
 
         # If so, use it to get a new Hub token
@@ -167,7 +171,7 @@ class PolarisHubClient(OAuth2Client):
                 username=self.settings.username,
                 password=self.settings.password,
                 grant_type="password"
-                if self.settings.username and self.settings.password
+                if self.has_user_password
                 else "urn:ietf:params:oauth:grant-type:token-exchange",
                 **kwargs,
             )
