@@ -20,9 +20,7 @@ from typing_extensions import Self
 
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset import CompetitionDataset, DatasetV1, Subset
-from polaris.evaluate import BenchmarkResults, Metric
-from polaris.evaluate._ground_truth import GroundTruth
-from polaris.evaluate._metric import BaseComplexMetric
+from polaris.evaluate import BenchmarkResults, GroupedMetric, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.mixins import ChecksumMixin
@@ -105,7 +103,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
-    metrics: Union[str, Metric, BaseComplexMetric, list[str | Metric | BaseComplexMetric]]
+    metrics: str | Metric | GroupedMetric | list[str | Metric | GroupedMetric]
     main_metric: str | Metric | None = None
 
     # Additional meta-data
@@ -154,8 +152,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         for m in v:
             if isinstance(m, str):
                 m = Metric[m]
-            elif isinstance(m, dict):
-                m = BaseComplexMetric(**m)
 
             if isinstance(m, Metric):
                 unique_metrics.add(m.name)
@@ -490,8 +486,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
-        test_sets = self._get_test_set(hide_targets=False)
-        y_true = {k: GroundTruth(test_set=v) for k, v in test_sets.items()}
+        y_true = self._get_test_set(hide_targets=False)
 
         scores = evaluate_benchmark(
             target_cols=self.target_cols,

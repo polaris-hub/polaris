@@ -1,4 +1,3 @@
-import abc
 from enum import Enum
 from typing import Callable, Literal, TypeAlias
 
@@ -6,7 +5,6 @@ import numpy as np
 from pydantic import BaseModel, Field, field_validator
 from sklearn.metrics import (
     accuracy_score,
-    average_precision_score,
     balanced_accuracy_score,
     explained_variance_score,
     f1_score,
@@ -17,21 +15,22 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
-from polaris.evaluate._ground_truth import GroundTruth
+from polaris.dataset._subset import Subset
 from polaris.evaluate._predictions import BenchmarkPredictions
 from polaris.evaluate.metrics import (
     absolute_average_fold_error,
+    average_precision_score,
     cohen_kappa_score,
     pearsonr,
     spearman,
 )
 from polaris.evaluate.metrics.docking_metrics import rmsd_coverage
-from polaris.utils.types import DirectionType
+from polaris.utils.types import DirectionType, PredictionKwargs
 
-PredictionKwargs: TypeAlias = Literal["y_pred", "y_prob", "y_score"]
+GroundTruth: TypeAlias = Subset
 
 
-def _check_predictions(
+def check_predictions(
     y_pred: BenchmarkPredictions,
     y_prob: BenchmarkPredictions,
     y_type: PredictionKwargs,
@@ -54,15 +53,18 @@ def _check_predictions(
     return pred
 
 
-def rxrx_ap(y_true, y_score):
-    if len(y_score) == 0 or not np.any(y_true):
-        raise ValueError("Can't be done")
-    sorted_indices = np.argsort(y_score)[::-1]
-    sorted_labels = y_true[sorted_indices]
-    tp_cumsum = np.cumsum(sorted_labels)
-    precision = tp_cumsum / np.arange(1, len(sorted_labels) + 1)
-    ap = np.sum(precision * sorted_labels) / sorted_labels.sum()
-    return ap
+def mask_index(input_values):
+    if np.issubdtype(input_values.dtype, np.number):
+        mask = ~np.isnan(input_values)
+    else:
+        # Create a mask to identify NaNs
+        mask = np.full(input_values.shape, True, dtype=bool)
+        # Iterate over the array to identify NaNs
+        for index, value in np.ndenumerate(input_values):
+            # Any None value is NaN
+            if value is None:
+                mask[index] = False
+    return mask
 
 
 class MetricInfo(BaseModel):
@@ -83,8 +85,16 @@ class MetricInfo(BaseModel):
     direction: DirectionType
     y_type: PredictionKwargs = "y_pred"
 
+    @field_validator("is_multitask")
+    @classmethod
+    def disable_multitask_metrics(cls, value):
+        raise NotImplementedError(
+            "Multitask metrics are not yet supported and will require non-obvious changes to the Metric interface."
+        )
 
-# NOTE (cwognum): This can't inherit from an ABC class as well as an enum.
+
+# NOTE (cwognum): I would like to define a common interface for the GroupedMetric and Metric.
+# However, because Metric is an enum, it can't inherit from an ABC class as well.
 # Is there a way to define an interface for an enum? Or should we maybe just drop the enum at this point?
 
 
@@ -114,7 +124,6 @@ class Metric(Enum):
     mcc = MetricInfo(fn=matthews_corrcoef, direction="max")
     cohen_kappa = MetricInfo(fn=cohen_kappa_score, direction="max")
     pr_auc = MetricInfo(fn=average_precision_score, direction="max", y_type="y_score")
-    rxrx_pr_auc = MetricInfo(fn=rxrx_ap, direction="max", y_type="y_score")
 
     # binary only
     f1 = MetricInfo(fn=f1_score, kwargs={"average": "binary"}, direction="max")
@@ -164,8 +173,14 @@ class Metric(Enum):
         assert metric.score(y_true=first, y_pred=second) == metric(y_true=first, y_pred=second)
         ```
         """
-        pred = _check_predictions(y_pred, y_prob, self.y_type)
-        kwargs = {"y_true": y_true.as_array(), self.y_type: pred.flatten()}
+        y_true_targets = y_true.as_array("y")
+        pred = check_predictions(y_pred, y_prob, self.y_type)
+
+        # Because we don't have multi-task metrics yet, we can assume this is a single-task metric
+        # With single-task metrics for multi-task benchmarks, it can happen that some target values are NaN.
+        # We mask these here.
+        mask = mask_index(y_true_targets)
+        kwargs = {"y_true": y_true_targets[mask], self.y_type: pred.mask(mask).flatten()}
         return self.fn(**kwargs, **self.value.kwargs)
 
     def __call__(
@@ -177,8 +192,15 @@ class Metric(Enum):
         return self.score(y_true, y_pred, y_prob)
 
 
-class BaseComplexMetric(BaseModel, abc.ABC):
+class GroupedMetric(BaseModel):
+    """"""
+
     metric: Metric
+
+    group_by: str
+    on_error: Literal["ignore", "raise", "default"] = "raise"
+    default: float | None = None
+    aggregation: Literal["mean", "median"] = "mean"
 
     @field_validator("metric", mode="before")
     @classmethod
@@ -186,49 +208,6 @@ class BaseComplexMetric(BaseModel, abc.ABC):
         if not isinstance(value, Metric):
             value = Metric[value]
         return value
-
-    @property
-    @abc.abstractmethod
-    def fn(self) -> Callable:
-        """The callable that actually computes the metric"""
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def is_multitask(self) -> bool:
-        """Whether the metric expects a single set of predictions or a dict of predictions."""
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def y_type(self) -> bool:
-        """Whether the metric expects preditive probablities."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def score(
-        self,
-        y_true: GroundTruth,
-        y_pred: BenchmarkPredictions | None = None,
-        y_prob: BenchmarkPredictions | None = None,
-    ) -> float:
-        raise NotImplementedError
-
-    def __call__(
-        self,
-        y_true: GroundTruth,
-        y_pred: BenchmarkPredictions | None = None,
-        y_prob: BenchmarkPredictions | None = None,
-    ) -> float:
-        return self.score(y_true, y_pred, y_prob)
-
-
-class GroupedMetric(BaseComplexMetric):
-    """"""
-
-    group_by: str
-    on_error: Literal["ignore", "raise", "default"] = "raise"
-    default: float | None = None
 
     @property
     def fn(self) -> Callable:
@@ -251,16 +230,22 @@ class GroupedMetric(BaseComplexMetric):
         y_pred: BenchmarkPredictions | None = None,
         y_prob: BenchmarkPredictions | None = None,
     ) -> float:
-        pred = _check_predictions(y_pred, y_prob, self.y_type)
+        pred = check_predictions(y_pred, y_prob, self.y_type)
 
         df = y_true.as_dataframe()
         df[self.y_type] = pred.flatten()
 
         scores = []
         for _, group in df.groupby(self.group_by):
-            y_true_group = group["active"].values
+            # Because we don't have multi-task metrics yet, we can assume this is a single-task metric
+            y_true_group = group[y_true.target_cols[0]].values
             y_pred_group = group[self.y_type].values
-            kwargs = {"y_true": y_true_group, self.y_type: y_pred_group}
+
+            # With single-task metrics for multi-task benchmarks, it can happen that some target values are NaN.
+            # We mask these here.
+            mask = mask_index(y_true_group)
+
+            kwargs = {"y_true": y_true_group[mask], self.y_type: y_pred_group[mask]}
 
             try:
                 score = self.fn(**kwargs, **self.metric.value.kwargs)
@@ -273,4 +258,17 @@ class GroupedMetric(BaseComplexMetric):
                     raise ValueError("Default value must be provided when on_error is 'default'") from err
                 score = self.default
             scores.append(score)
-        return np.nanmean(scores)
+
+        if self.aggregation == "mean":
+            score = np.mean(scores)
+        else:
+            score = np.median(scores)
+        return score
+
+    def __call__(
+        self,
+        y_true: GroundTruth,
+        y_pred: BenchmarkPredictions | None = None,
+        y_prob: BenchmarkPredictions | None = None,
+    ) -> float:
+        return self.score(y_true, y_pred, y_prob)

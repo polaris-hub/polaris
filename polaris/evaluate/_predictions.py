@@ -222,7 +222,6 @@ class BenchmarkPredictions(BaseModel):
 
     def flatten(self) -> int:
         """Return the predictions as a single, flat numpy array"""
-
         if len(self.test_set_labels) != 1 and len(self.target_labels) != 1:
             raise ValueError(
                 "Can only flatten predictions for benchmarks with a single test set and a single target"

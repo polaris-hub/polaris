@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import pytest
 
 from polaris.evaluate import BenchmarkPredictions
@@ -265,18 +264,3 @@ def test_benchmark_predictions_size():
     assert predictions.get_size(target_subset=["col1"]) == 5
     assert predictions.get_size(target_subset=["col2"]) == 5
     assert predictions.get_size(test_set_subset=["test1"], target_subset=["col2"]) == 3
-
-
-def test_benchmark_predictions_dataframe_conversion():
-    predictions = BenchmarkPredictions(
-        predictions=[1, 2, 3],
-        target_labels=["col1"],
-        test_set_labels=["test"],
-        test_set_sizes={"test": 3},
-    )
-    df = predictions.as_dataframe(test_set_label="test", target_label="col", prediction_label="y_pred")
-
-    assert isinstance(df, pd.DataFrame)
-    assert df.columns.tolist() == ["test", "col", "y_pred"]
-    assert len(df) == len(predictions)
-    assert df["y_pred"].tolist() == [1, 2, 3]

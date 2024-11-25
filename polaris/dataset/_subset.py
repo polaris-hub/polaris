@@ -1,6 +1,8 @@
+from copy import deepcopy
 from typing import Callable, List, Literal, Optional, Sequence, Union
 
 import numpy as np
+import pandas as pd
 
 from polaris.dataset import DatasetV1
 from polaris.dataset._adapters import Adapter
@@ -188,6 +190,38 @@ class Subset:
             ret = {k: np.array([v[k] for v in ret]) for k in self.input_cols}
 
         return ret
+
+    def as_dataframe(self) -> pd.DataFrame:
+        """
+        Returns the subset as a Pandas DataFrame.
+        """
+        # Create an empty dataframe
+        cols = self.input_cols + self.target_cols
+        df = pd.DataFrame(columns=cols)
+
+        # Fill the dataframe
+        targets = self.targets
+        if not self.is_multi_task:
+            targets = {self.target_cols[0]: targets}
+
+        for k in targets:
+            df[k] = targets[k]
+
+        inputs = self.inputs
+        if not self.is_multi_input:
+            inputs = {self.input_cols[0]: inputs}
+
+        for k in inputs:
+            df[k] = inputs[k]
+
+        return df
+
+    def filter_by_target(self, target_cols: List[str] | str) -> "Subset":
+        """Filter the subset to only include the specified target columns."""
+        target_cols = target_cols if isinstance(target_cols, list) else [target_cols]
+        copy = deepcopy(self)
+        copy.target_cols = target_cols
+        return copy
 
     def __len__(self):
         return len(self.indices)

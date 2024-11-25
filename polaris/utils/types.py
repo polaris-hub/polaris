@@ -150,6 +150,12 @@ but this gets complex.
 """
 
 
+PredictionKwargs: TypeAlias = Literal["y_pred", "y_prob", "y_score"]
+"""
+The type of predictions expected by the metric interface.
+"""
+
+
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
 
