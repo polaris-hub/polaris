@@ -345,7 +345,7 @@ class StorageSession(OAuth2Client):
         Error handling for token fetching.
         """
         try:
-            return super().fetch_token()
+            return super().fetch_token(**kwargs)
         except (OAuthError, OAuth2Error) as error:
             raise PolarisHubError(
                 message=f"Could not obtain a token to access the storage backend. Error was: {error.error} - {error.description}"

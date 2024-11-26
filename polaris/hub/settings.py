@@ -26,6 +26,11 @@ class PolarisHubSettings(BaseSettings):
         client_id: The OAuth2 client ID.
         ca_bundle: The path to a CA bundle file for requests.
             Allows for custom SSL certificates to be used.
+        default_timeout: The default timeout for requests.
+        hub_token_url: The URL of the Polaris Hub token endpoint.
+            A default value is generated based on the hub URL, and this should not need to be overridden.
+        username: The username for the Polaris Hub, for the optional password-based authentication.
+        password: The password for the specified username.
     """
 
     # Configuration of the pydantic model
@@ -38,6 +43,8 @@ class PolarisHubSettings(BaseSettings):
 
     # Hub authentication settings
     hub_token_url: HttpUrlString | None = None
+    username: str | None = None
+    password: str | None = None
 
     # External authentication settings
     authorize_url: HttpUrlString = "https://clerk.polarishub.io/oauth/authorize"
