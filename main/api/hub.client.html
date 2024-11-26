@@ -1645,6 +1645,51 @@ Allows for custom SSL certificates to be used.</p>
               </div>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.default_timeout">default_timeout</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.TimeoutTypes" href="utils.types.html#polaris.utils.types.TimeoutTypes">TimeoutTypes</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The default timeout for requests.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.hub_token_url">hub_token_url</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The URL of the Polaris Hub token endpoint.
+A default value is generated based on the hub URL, and this should not need to be overridden.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.username">username</span></code></td>
+            <td>
+                  <code>str | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The username for the Polaris Hub, for the optional password-based authentication.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.hub.settings.PolarisHubSettings.password">password</span></code></td>
+            <td>
+                  <code>str | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The password for the specified username.</p>
+              </div>
+            </td>
+          </tr>
       </tbody>
     </table>
 
