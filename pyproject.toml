@@ -60,7 +60,7 @@ dependencies = [
     "boto3>=1.35.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest",
     "pytest-xdist",
@@ -80,6 +80,9 @@ doc = [
     "mdx_truly_sane_lists",
     "nbconvert",
     "mike >=1.0.0"
+]
+codecs = [
+    "imagecodecs",
 ]
 
 

@@ -13,7 +13,7 @@ from polaris.dataset import Subset
 from polaris.dataset._factory import DatasetFactory
 from polaris.dataset.converters._pdb import PDBConverter
 from polaris.dataset.zarr._manifest import generate_zarr_manifest
-from polaris.experimental._dataset_v2 import DatasetV2, _INDEX_ARRAY_KEY
+from polaris.experimental._dataset_v2 import _INDEX_ARRAY_KEY, DatasetV2
 
 
 def test_dataset_v2_get_columns(test_dataset_v2):
@@ -96,7 +96,7 @@ def test_dataset_v1_v2_compatibility(test_dataset, tmp_path):
     zarr.consolidate_metadata(path)
 
     kwargs = test_dataset.model_dump(exclude=["table", "zarr_root_path"])
-    dataset = DatasetV2(**kwargs, zarr_root_path=str(path))
+    dataset = DatasetV2(**kwargs, zarr_root_path=path)
 
     subset_1 = Subset(dataset=test_dataset, indices=range(5), input_cols=["smiles"], target_cols=["calc"])
     subset_2 = Subset(dataset=dataset, indices=range(5), input_cols=["smiles"], target_cols=["calc"])

@@ -32,6 +32,17 @@ class InvalidZarrChecksum(Exception):
     pass
 
 
+class InvalidZarrCodec(Exception):
+    """Raised when an expected codec is not registered."""
+
+    def __init__(self, codec_id: str):
+        self.codec_id = codec_id
+        super().__init__(
+            f"This Zarr archive requires the {self.codec_id} codec. "
+            "Install all optional codecs with 'pip install polaris-lib[codecs]'."
+        )
+
+
 class PolarisHubError(Exception):
     BOLD = "\033[1m"
     YELLOW = "\033[93m"

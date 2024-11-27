@@ -5,9 +5,13 @@ import pandas as pd
 import pytest
 import zarr
 from datamol.utils import fs
+from numcodecs.abc import Codec
+from numcodecs.registry import codec_registry, register_codec
 
 from polaris.dataset import DatasetV1, Subset, create_dataset_from_file
+from polaris.dataset.zarr._utils import check_zarr_codecs
 from polaris.loader import load_dataset
+from polaris.utils.errors import InvalidZarrCodec
 
 
 @pytest.mark.parametrize("with_caching", [True, False])
@@ -18,8 +22,8 @@ def test_load_data(tmp_path, with_slice, with_caching):
     # Dummy data (could e.g. be a 3D structure or Image)
     arr = np.random.random((100, 100))
 
-    tmpdir = str(tmp_path)
-    zarr_path = fs.join(tmpdir, "data.zarr")
+    tmp_path = str(tmp_path)
+    zarr_path = fs.join(tmp_path, "data.zarr")
 
     root = zarr.open(zarr_path, "w")
     root.array("A", data=arr)
@@ -30,7 +34,7 @@ def test_load_data(tmp_path, with_slice, with_caching):
     dataset = DatasetV1(table=table, annotations={"A": {"is_pointer": True}}, zarr_root_path=zarr_path)
 
     if with_caching:
-        dataset._cache_dir = fs.join(tmpdir, "cache")
+        dataset._cache_dir = fs.join(tmp_path, "cache")
         dataset.cache()
 
     data = dataset.get_data(row=0, col="A")
@@ -218,3 +222,36 @@ def test_dataset__get_item__with_pointer_columns(zarr_archive, tmp_path):
 
     _check_row_equality(dataset[0], {"A": root["A"][0, :], "B": root["B"][0, :]})
     _check_row_equality(dataset[10], {"A": root["A"][10, :], "B": root["B"][10, :]})
+
+
+def test_missing_codec_error(tmp_path):
+    """Check if the right error gets raised if a required codec is missing"""
+
+    class CustomCodec(Codec):
+        codec_id = "polaris_custom_test_codec"
+
+        def encode(self, buf):
+            return b"Random bytes"
+
+        def decode(self, buf, out=None):
+            return np.random.random(100)
+
+    path = tmp_path / "archive.zarr"
+
+    # Write
+    register_codec(CustomCodec)
+    root = zarr.open(path, mode="w")
+    root.array("A", data=np.random.random(100), compressor=CustomCodec())
+
+    # Read without codec
+    codec_registry.pop(CustomCodec.codec_id)
+    root = zarr.open(path, mode="r")
+
+    with pytest.raises(InvalidZarrCodec) as err_info:
+        check_zarr_codecs(root)
+    assert err_info.value.codec_id == CustomCodec.codec_id
+
+    # Read with codec
+    register_codec(CustomCodec)
+    root = zarr.open(path, mode="r")
+    check_zarr_codecs(root)
