@@ -1,7 +1,7 @@
 import json
 from hashlib import md5
 from itertools import chain
-from typing import Any, Callable, Optional, TypeAlias, Union
+from typing import Any, Callable, ClassVar, Literal, Optional, TypeAlias, Union
 
 import fsspec
 import numpy as np
@@ -96,6 +96,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     """
 
     _artifact_type = "benchmark"
+    version: ClassVar[Literal[1]] = 1
 
     # Public attributes
     # Data
