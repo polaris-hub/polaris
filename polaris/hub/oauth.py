@@ -91,11 +91,40 @@ class DatasetV2Paths(BaseModel):
         return re.sub(r"^\w+://", "", self.manifest)
 
 
+class BenchmarkV2Paths(BaseModel):
+    training: AnyUrlString
+    test: dict[str, AnyUrlString] = Field(default_factory=dict)
+
+    @computed_field
+    @property
+    def training_test_paths(self) -> dict[str, str]:
+        """
+        Combine 'training' and test paths into a single dictionary with relative paths.
+        """
+        training_test_paths = {"training": self.relative_training}
+        training_test_paths.update({key: self._get_relative_path(url) for key, url in self.test.items()})
+        return training_test_paths
+
+    @computed_field
+    @property
+    def relative_training(self) -> str:
+        """
+        Get the relative path of the 'training' URL.
+        """
+        return self._get_relative_path(self.training)
+
+    def _get_relative_path(self, url: str) -> str:
+        """
+        Strip protocol from the given URL to get a relative path.
+        """
+        return re.sub(r"^\w+://", "", url)
+
+
 class StorageTokenData(BaseModel):
     key: str
     secret: str
     endpoint: HttpUrlString
-    paths: DatasetV1Paths | DatasetV2Paths = Field(union_mode="smart")
+    paths: DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths = Field(union_mode="smart")
 
 
 class HubOAuth2Token(BaseModel):

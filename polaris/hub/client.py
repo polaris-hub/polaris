@@ -19,11 +19,14 @@ from loguru import logger
 from polaris.benchmark import (
     BenchmarkSpecification,
     MultiTaskBenchmarkSpecification,
+    MultiTaskBenchmarkV2Specification,
     SingleTaskBenchmarkSpecification,
+    SingleTaskBenchmarkV2Specification
 )
 from polaris.competition import CompetitionSpecification
 from polaris.dataset import CompetitionDataset, Dataset, DatasetV1
 from polaris.evaluate import BenchmarkResults, CompetitionPredictions, CompetitionResults
+from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
@@ -425,7 +428,7 @@ class PolarisHubClient(OAuth2Client):
         owner: str | HubOwner,
         name: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
-    ) -> BenchmarkSpecification:
+    ) -> BenchmarkSpecification | BenchmarkV2Specification:
         """Load a benchmark from the Polaris Hub.
 
         Args:
@@ -437,37 +440,81 @@ class PolarisHubClient(OAuth2Client):
             A `BenchmarkSpecification` instance, if it exists.
         """
         with ProgressIndicator(
-            start_msg="Fetching artifact...",
-            success_msg="Fetched artifact.",
+            start_msg="Fetching benchmark...",
+            success_msg="Fetched benchmark.",
             error_msg="Failed to fetch benchmark.",
         ):
-            response = self._base_request_to_hub(url=f"/v1/benchmark/{owner}/{name}", method="GET")
-            response_data = response.json()
+            try:
+                return self._get_v1_benchmark(owner, name, verify_checksum)
+            except PolarisRetrieveArtifactError:
+                # If the v1 benchmark is not found, try to load a v2 benchmark
+                return self._get_v2_benchmark(owner, name)
 
-            # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
-            #  but we'd need to change the signature of get_dataset to use it
-            response_data["dataset"] = self.get_dataset(
-                response_data["dataset"]["owner"]["slug"],
-                response_data["dataset"]["name"],
-                verify_checksum=verify_checksum,
-            )
+    def _get_v1_benchmark(
+        self,
+        owner: str | HubOwner,
+        name: str,
+        verify_checksum: ChecksumStrategy = "verify_unless_zarr",
+    ) -> BenchmarkSpecification:
+        response = self._base_request_to_hub(url=f"/v1/benchmark/{owner}/{name}", method="GET")
 
-            # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
-            #  Maybe through structural pattern matching, introduced in Py3.10, or Pydantic's discriminated unions?
-            benchmark_cls = (
-                SingleTaskBenchmarkSpecification
-                if len(response_data["targetCols"]) == 1
-                else MultiTaskBenchmarkSpecification
-            )
+        # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
+        #  but we'd need to change the signature of get_dataset to use it
+        response["dataset"] = self.get_dataset(
+            response["dataset"]["owner"]["slug"],
+            response["dataset"]["name"],
+            verify_checksum=verify_checksum,
+        )
 
-            benchmark = benchmark_cls(**response_data)
+        # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
+        #  Maybe through structural pattern matching, introduced in Py3.10, or Pydantic's discriminated unions?
+        benchmark_cls = (
+            SingleTaskBenchmarkSpecification
+            if len(response["targetCols"]) == 1
+            else MultiTaskBenchmarkSpecification
+        )
 
-            if benchmark.dataset.should_verify_checksum(verify_checksum):
-                benchmark.verify_checksum()
-            else:
-                benchmark.md5sum = response_data["md5Sum"]
+        benchmark = benchmark_cls(**response)
 
-            return benchmark
+        if benchmark.dataset.should_verify_checksum(verify_checksum):
+            benchmark.verify_checksum()
+        else:
+            benchmark.md5sum = response["md5Sum"]
+
+        return benchmark
+
+    def _get_v2_benchmark(
+        self,
+        owner: str | HubOwner,
+        name: str,
+        verify_checksum: ChecksumStrategy = "verify_unless_zarr",
+    ) -> BenchmarkV2Specification:
+        response = self._base_request_to_hub(url=f"/v2/benchmark/{owner}/{name}", method="GET")
+
+        # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
+        #  but we'd need to change the signature of get_dataset to use it
+        response["dataset"] = self.get_dataset(
+            response["dataset"]["owner"]["slug"],
+            response["dataset"]["name"],
+            verify_checksum=verify_checksum,
+        )
+
+        # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
+        #  Maybe through structural pattern matching, introduced in Py3.10, or Pydantic's discriminated unions?
+        benchmark_cls = (
+            SingleTaskBenchmarkV2Specification
+            if len(response["targetCols"]) == 1
+            else MultiTaskBenchmarkV2Specification
+        )
+
+        benchmark = benchmark_cls(**response)
+
+        if benchmark.dataset.should_verify_checksum(verify_checksum):
+            benchmark.verify_checksum()
+        else:
+            benchmark.md5sum = response["md5Sum"]
+
+        return benchmark
 
     def upload_results(
         self,
@@ -729,7 +776,7 @@ class PolarisHubClient(OAuth2Client):
 
     def upload_benchmark(
         self,
-        benchmark: BenchmarkSpecification,
+        benchmark: BenchmarkSpecification | BenchmarkV2Specification,
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
     ):
@@ -754,9 +801,14 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
         """
-        return self._upload_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
+        # (mercuryseries): check ArtifactSubtype here and call competition v2 endpoint if necessary
+        # to avoid having to check the type of the benchmark in the upload methods
+        if isinstance(benchmark, BenchmarkSpecification):
+            return self._upload_v1_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
+        elif isinstance(benchmark, BenchmarkV2Specification):
+            return self._upload_v2_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
 
-    def _upload_benchmark(
+    def _upload_v1_benchmark(
         self,
         benchmark: BenchmarkSpecification | CompetitionSpecification,
         artifact_type: ArtifactSubtype,
@@ -809,6 +861,37 @@ class PolarisHubClient(OAuth2Client):
                 f"View it here: {urljoin(self.settings.hub_url, url)}"
             )
             return response_data
+
+    def _upload_v2_benchmark(
+        self,
+        benchmark: BenchmarkSpecification | CompetitionSpecification,
+        artifact_type: ArtifactSubtype,
+        access: AccessType = "private",
+        owner: Union[HubOwner, str, None] = None,
+    ):
+        with ProgressIndicator(
+            start_msg="Uploading artifact...",
+            success_msg="Uploaded artifact.",
+            error_msg="Failed to upload benchmark.",
+        ) as progress_indicator:
+            # Get the serialized data-model
+            # We exclude the dataset as we expect it to exist on the hub already.
+            benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
+            benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
+            benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
+            benchmark_json["access"] = access
+
+            path_params = (
+                "/v2/benchmark" if artifact_type == ArtifactSubtype.STANDARD.value else "/v2/competition"
+            )
+            url = f"{path_params}/{benchmark.owner}/{benchmark.name}"
+            response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
+
+            progress_indicator.update_success_msg(
+                f"Your {artifact_type} benchmark has been successfully uploaded to the Hub. "
+                f"View it here: {urljoin(self.settings.hub_url, url)}"
+            )
+            return response
 
     def get_competition(
         self,
