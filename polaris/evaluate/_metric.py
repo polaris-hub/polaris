@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import Callable, Literal, TypeAlias
+from typing import Callable, Literal, Self, TypeAlias
 
 import numpy as np
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_serializer, field_validator, model_validator
 from sklearn.metrics import (
     accuracy_score,
     balanced_accuracy_score,
@@ -193,7 +193,16 @@ class Metric(Enum):
 
 
 class GroupedMetric(BaseModel):
-    """"""
+    """
+    A GroupedMetric is a Metric that evaluates predictions grouped by a specific column.
+
+    Attributes:
+        metric: The callable metric to evaluate.
+        group_by: The column to group by.
+        on_error: The behavior when an error occurs during evaluation.
+        default: The default value to return when an error occurs and on_error is 'default'.
+        aggregation: The aggregation method to use for summarizing the metrics per group into a single score.
+    """
 
     metric: Metric
 
@@ -208,6 +217,18 @@ class GroupedMetric(BaseModel):
         if not isinstance(value, Metric):
             value = Metric[value]
         return value
+
+    @model_validator(mode="after")
+    def check_default_required(self) -> Self:
+        handling = self.on_error
+        default = self.default
+        if handling == "default" and default is None:
+            raise ValueError("Default value must be provided when on_error is 'default'")
+        return self
+
+    @field_serializer("metric")
+    def serialize_metric(self, value: Metric) -> str:
+        return value.name
 
     @property
     def fn(self) -> Callable:
@@ -236,6 +257,7 @@ class GroupedMetric(BaseModel):
         df[self.y_type] = pred.flatten()
 
         scores = []
+        print(df)
         for _, group in df.groupby(self.group_by):
             # Because we don't have multi-task metrics yet, we can assume this is a single-task metric
             y_true_group = group[y_true.target_cols[0]].values
@@ -249,13 +271,11 @@ class GroupedMetric(BaseModel):
 
             try:
                 score = self.fn(**kwargs, **self.metric.value.kwargs)
-            except Exception as err:
+            except Exception:
                 if self.on_error == "ignore":
                     continue
                 elif self.on_error == "raise":
                     raise
-                elif self.default is not None:
-                    raise ValueError("Default value must be provided when on_error is 'default'") from err
                 score = self.default
             scores.append(score)
 
@@ -272,3 +292,14 @@ class GroupedMetric(BaseModel):
         y_prob: BenchmarkPredictions | None = None,
     ) -> float:
         return self.score(y_true, y_pred, y_prob)
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    def __str__(self) -> str:
+        model_obj = self.model_dump(mode="json")
+        sorted_keys = sorted(model_obj.keys())
+        return f"{type(self)}({', '.join([f'{key}={model_obj[key]}' for key in sorted_keys])})"
+
+    def __hash__(self) -> int:
+        return hash(str(self))

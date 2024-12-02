@@ -218,9 +218,11 @@ class Subset:
 
     def filter_by_target(self, target_cols: List[str] | str) -> "Subset":
         """Filter the subset to only include the specified target columns."""
-        target_cols = target_cols if isinstance(target_cols, list) else [target_cols]
+        target_cols_subset = target_cols if isinstance(target_cols, list) else [target_cols]
+        if not all(col in self.target_cols for col in target_cols_subset):
+            raise ValueError("All new target columns need to be in the original subset.")
         copy = deepcopy(self)
-        copy.target_cols = target_cols
+        copy.target_cols = target_cols_subset
         return copy
 
     def __len__(self):

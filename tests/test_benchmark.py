@@ -21,6 +21,7 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
         "target_cols": obj.target_cols,
         "input_cols": obj.input_cols,
         "metrics": obj.metrics,
+        "main_metric": obj.main_metric,
         "name": obj.name,
     }
 
@@ -121,8 +122,9 @@ def test_benchmark_metrics_verification(test_single_task_benchmark, test_multi_t
     with pytest.raises(KeyError):
         cls(metrics="invalid", **default_kwargs)
     with pytest.raises(ValueError):
+        metrics_list = list(base.metrics)
         cls(
-            metrics=base.metrics + [base.metrics[0]],
+            metrics=metrics_list + [metrics_list[0]],
             **default_kwargs,
         )
 
@@ -143,6 +145,7 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
 
     obj = test_single_task_benchmark if is_single_task else test_multi_task_benchmark
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
+    metrics_list = list(obj.metrics)
 
     # Make sure the `md5sum` is part of the model dump even if not initiated yet.
     # This is important for uploads to the Hub.
@@ -162,7 +165,7 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     assert cls(**kwargs).md5sum == original
 
     # With a different ordering of the metrics
-    kwargs["metrics"] = kwargs["metrics"][::-1]
+    kwargs["metrics"] = metrics_list[::-1]
     assert cls(**kwargs).md5sum == original
 
     # With a different ordering of the split
@@ -184,7 +187,7 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
 
     # Metrics
     kwargs = obj.model_dump()
-    kwargs["metrics"] = kwargs["metrics"][1:] + ["accuracy"]
+    kwargs["metrics"] = metrics_list[1:] + ["accuracy"]
     _check_for_failure(kwargs)
 
     # Target columns

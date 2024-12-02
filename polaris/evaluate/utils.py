@@ -2,6 +2,7 @@ import pandas as pd
 
 from polaris.dataset._subset import Subset
 from polaris.evaluate import BenchmarkPredictions, BenchmarkResults, Metric, ResultsType
+from polaris.evaluate._metric import GroupedMetric
 from polaris.utils.types import IncomingPredictionsType
 
 
@@ -33,7 +34,7 @@ def evaluate_benchmark(
     target_cols: list[str],
     test_set_labels: list[str],
     test_set_sizes: dict[str, int],
-    metrics: list[Metric],
+    metrics: set[Metric | GroupedMetric],
     y_true: dict[str, Subset],
     y_pred: IncomingPredictionsType | None = None,
     y_prob: IncomingPredictionsType | None = None,

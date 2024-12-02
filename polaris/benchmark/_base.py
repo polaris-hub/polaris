@@ -103,8 +103,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
-    metrics: str | Metric | GroupedMetric | list[str | Metric | GroupedMetric]
-    main_metric: str | Metric | None = None
+    metrics: set[Metric | GroupedMetric]
+    main_metric: Metric | GroupedMetric
 
     # Additional meta-data
     readme: str = ""
@@ -136,46 +136,46 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             raise InvalidBenchmarkError("The task specifies duplicate columns")
         return v
 
-    @field_validator("metrics")
-    def _validate_metrics(cls, v):
+    @field_validator("metrics", mode="before")
+    @classmethod
+    def _validate_metrics(cls, v) -> set[Metric | GroupedMetric]:
         """
         Verifies all specified metrics are either a Metric object or a valid metric name.
         Also verifies there are no duplicate metrics.
 
         If there are multiple test sets, it is assumed the same metrics are used across test sets.
         """
-        if not isinstance(v, list):
+        if isinstance(v, str):
             v = [v]
 
-        tmp = []
-        unique_metrics = set()
-        for m in v:
+        for i, m in enumerate(v):
             if isinstance(m, str):
-                m = Metric[m]
-
-            if isinstance(m, Metric):
-                unique_metrics.add(m.name)
-            else:
-                unique_metrics.add(m.metric.name)
-
-            tmp.append(m)
-        v = tmp
+                v[i] = Metric[m]
+            elif isinstance(m, dict):
+                v[i] = GroupedMetric(**m)
+        unique_metrics = set(v)
 
         if len(unique_metrics) != len(v):
             raise InvalidBenchmarkError("The task specifies duplicate metrics")
 
-        if len(v) == 0:
+        if len(unique_metrics) == 0:
             raise InvalidBenchmarkError("Specify at least one metric")
 
-        return v
+        return unique_metrics
 
-    @field_validator("main_metric")
+    @field_validator("main_metric", mode="before")
+    @classmethod
     def _validate_main_metric(cls, v):
         """Converts the main metric to a Metric object if it is a string."""
-        # lu: v can be None.
         if v and not isinstance(v, Metric):
             v = Metric[v]
         return v
+
+    @model_validator(mode="after")
+    def _validate_main_metric_is_in_metrics(self) -> Self:
+        if self.main_metric not in self.metrics:
+            raise InvalidBenchmarkError("The main metric should be one of the specified metrics")
+        return self
 
     @model_validator(mode="after")
     def _validate_split(self) -> Self:
@@ -274,22 +274,20 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                 v[target] = TargetType(v[target])
         return v
 
-    @model_validator(mode="after")
-    def _validate_model(self) -> Self:
-        """
-        Sets a default metric if missing.
-        """
-        # Set a default main metric if not set yet
-        if self.main_metric is None:
-            self.main_metric = self.metrics[0]
-        return self
-
-    @field_serializer("metrics", "main_metric")
-    def _serialize_metrics(self, v):
+    @field_serializer("metrics")
+    def _serialize_metrics(self, v: set[Metric | GroupedMetric]):
         """Return the string identifier so we can serialize the object"""
-        if isinstance(v, Metric):
-            return v.name
-        return [m.name for m in v]
+        metrics = sorted([m.name for m in v if isinstance(m, Metric)])
+        grouped_metrics = sorted(
+            [m.model_dump() for m in v if isinstance(m, GroupedMetric)],
+            key=lambda k: k["metric"],
+        )
+        return metrics + grouped_metrics
+
+    @field_serializer("main_metric")
+    def _serialize_main_metric(self, v: Metric | GroupedMetric):
+        """Return the string identifier so we can serialize the object"""
+        return v.name if isinstance(v, Metric) else v.model_dump()
 
     @field_serializer("split")
     def _serialize_split(self, v):
@@ -314,8 +312,11 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             hash_fn.update(c.encode("utf-8"))
         for c in sorted(self.input_cols):
             hash_fn.update(c.encode("utf-8"))
-        for m in sorted(self.metrics, key=lambda k: k.name):
-            hash_fn.update(m.name.encode("utf-8"))
+        for name in sorted([m.name for m in self.metrics if isinstance(m, Metric)]):
+            hash_fn.update(name.encode("utf-8"))
+        for d in sorted([m.model_dump() for m in self.metrics if isinstance(m, GroupedMetric)]):
+            s = f"{type(d)}{json.dumps(d, sort_keys="True")}"
+            hash_fn.update(s.encode("utf-8"))
 
         # Train set
         s = json.dumps(sorted(self.split[0]))

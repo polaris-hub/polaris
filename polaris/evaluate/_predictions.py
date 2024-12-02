@@ -195,11 +195,11 @@ class BenchmarkPredictions(BaseModel):
 
         predictions = defaultdict(dict)
         for test_set_name in self.predictions.keys():
-            if test_set_subset is not None and test_set_name not in test_set_subset:
+            if test_set_name not in test_set_subset:
                 continue
 
             for target_name, target in self.predictions[test_set_name].items():
-                if target_subset is not None and target_name not in target_subset:
+                if target_name not in target_subset:
                     continue
 
                 predictions[test_set_name][target_name] = target
@@ -220,7 +220,7 @@ class BenchmarkPredictions(BaseModel):
             return sum(self.test_set_sizes.values()) * len(self.target_labels)
         return len(self.get_subset(test_set_subset, target_subset))
 
-    def flatten(self) -> int:
+    def flatten(self) -> np.ndarray:
         """Return the predictions as a single, flat numpy array"""
         if len(self.test_set_labels) != 1 and len(self.target_labels) != 1:
             raise ValueError(
