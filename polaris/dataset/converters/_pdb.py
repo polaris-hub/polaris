@@ -166,8 +166,10 @@ class PDBConverter(Converter):
         # Create group and add
         if append:
             if self.pdb_column not in factory.zarr_root:
-                raise RuntimeError(f"Group {self.pdb_column} doesn't exist in {factory.zarr_root}. \
-                    Please make sure the Group {self.pdb_column} is created. Or set `append` to `False`.")
+                raise RuntimeError(
+                    f"Group {self.pdb_column} doesn't exist in {factory.zarr_root}. \
+                    Please make sure the Group {self.pdb_column} is created. Or set `append` to `False`."
+                )
             else:
                 pdb_group = factory.zarr_root[self.pdb_column]
         else:
