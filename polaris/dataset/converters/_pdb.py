@@ -10,6 +10,7 @@ from fastpdb import struc
 from polaris.dataset import ColumnAnnotation, Modality
 from polaris.dataset._adapters import Adapter
 from polaris.dataset.converters._base import Converter, FactoryProduct
+from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 
 if TYPE_CHECKING:
     from polaris.dataset import DatasetFactory
@@ -48,6 +49,10 @@ def zarr_to_pdb(atom_dict: zarr.Group):
 
     atom_array = []
 
+    # Load to memory once to drastically speed up the conversion
+    # Otherwise you keep decompressing and copying entire chunks of data to just use a single row
+    atom_dict = load_zarr_group_to_memory(atom_dict)
+
     # convert dictionary to array list of Atom object
     array_length = atom_dict["X"].shape[0]
     for ind in range(array_length):
@@ -66,6 +71,8 @@ def zarr_to_pdb(atom_dict: zarr.Group):
             atom_id=atom_dict["atom_id"][ind],
         )
         atom_array.append(atom)
+
+    # Note that this is a `fastpdb` AtomArray, not a NumPy array.
     return struc.array(atom_array)
 
 
