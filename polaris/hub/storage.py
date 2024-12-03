@@ -3,8 +3,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from hashlib import md5
 from io import BytesIO
+from itertools import islice
 from pathlib import PurePath
-from typing import Any, Generator, Literal, Mapping, Sequence, TypeAlias
+from typing import Any, Callable, Generator, Literal, Mapping, Sequence, TypeAlias
 
 import boto3
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
@@ -12,12 +13,14 @@ from authlib.oauth2 import OAuth2Error
 from authlib.oauth2.rfc6749 import OAuth2Token
 from botocore.exceptions import BotoCoreError, ClientError
 from typing_extensions import Self
+from zarr import CopyError
 from zarr.context import Context
 from zarr.storage import Store
+from zarr.util import buffer_size
 
 from polaris.hub.oauth import DatasetV1Paths, DatasetV2Paths, HubStorageOAuth2Token
 from polaris.utils.errors import PolarisHubError
-from polaris.utils.types import ArtifactUrn
+from polaris.utils.types import ArtifactUrn, ZarrConflictResolution
 
 Scope: TypeAlias = Literal["read", "write"]
 
@@ -59,6 +62,7 @@ class S3Store(Store):
     """
 
     _erasable = False
+    _batch_size = 200
 
     def __init__(
         self,
@@ -124,6 +128,101 @@ class S3Store(Store):
             self.s3_client.complete_multipart_upload(
                 Bucket=self.bucket_name, Key=full_key, UploadId=upload_id, MultipartUpload={"Parts": parts}
             )
+
+    ## Custom methods
+
+    def copy_from_source(
+        self, source: Store, if_exists: ZarrConflictResolution = "replace", log: Callable = lambda: None
+    ) -> tuple[int, int, int]:
+        """
+        Copy the content of the source store to this store.
+
+        We leverage the internal knowledge of this store to make the operation more efficient than `zarr.copy_store`:
+            - Conditional `put_object` operation for the "skip" conflict resolution
+            - Parallel, concurrent `put_object` operations using a thread pool
+
+        Args:
+            source: source store
+            if_exists: behavior if the destination key already exists
+            log: optional logging function
+        """
+
+        def copy_key(key: str, source: Store, if_exists: ZarrConflictResolution) -> tuple[int, int, int]:
+            """
+            Sub-function, intended to be dispatched through a thread pool executor.
+            It will execute the copy operation for a single key from the source.
+            """
+            copied = skipped = bytes_copied = 0
+
+            with handle_s3_errors():
+                data = source[key]
+                if isinstance(data, memoryview):
+                    data = data.tobytes()
+
+                md5_hash = md5(data)
+                try:
+                    # The default is to replace the existing key.
+                    # Setting this header will raise an error if the key already exists.
+                    extra = {"IfNoneMatch": "*"} if if_exists == "skip" else {}
+                    self.s3_client.put_object(
+                        Bucket=self.bucket_name,
+                        Key=self._full_key(key),
+                        Body=data,
+                        ContentType=self.content_type,
+                        ContentMD5=b64encode(md5_hash.digest()).decode(),
+                        Metadata={
+                            "md5sum": md5_hash.hexdigest(),
+                        },
+                        **extra,
+                    )
+                    bytes_copied = buffer_size(data)
+                    copied = 1
+                except ClientError as error:
+                    error_code = error.response["Error"]["Code"]
+                    # Raised when the key already exists and IfNoneMatch is set
+                    if error_code == "PreconditionFailed":
+                        match if_exists:
+                            case "skip":
+                                skipped = 1
+                            case "raise":
+                                raise CopyError(f"key {key!r} exists in destination")
+                    else:
+                        raise
+            return copied, skipped, bytes_copied
+
+        source_store_version = getattr(source, "_store_version", 2)
+        if source_store_version != self._store_version:
+            raise ValueError("zarr stores must share the same protocol version")
+
+        # The executor will allocate min(nbr_CPU + 4, 32) threads
+        with ThreadPoolExecutor() as executor:
+            total_copied = total_skipped = total_bytes_copied = 0
+
+            all_source_keys = sorted(source.keys())
+
+            # Batch the keys, otherwise we end up with too many files open at the same time
+            # If we had Python 3.12, that would be itertools.batched, but alas...
+            batch_iter = iter(all_source_keys)
+            while batch := tuple(islice(batch_iter, self._batch_size)):
+                # Create a future for each key to copy
+                future_to_key = [
+                    executor.submit(copy_key, source_key, source, if_exists) for source_key in batch
+                ]
+
+                # As each future completes, collect the results
+                for future in as_completed(future_to_key):
+                    result_copied, result_skipped, result_bytes_copied = future.result()
+                    total_copied += result_copied
+                    total_skipped += result_skipped
+                    total_bytes_copied += result_bytes_copied
+
+                log(
+                    f"Copied {total_copied} ({total_bytes_copied} bytes), skipped {total_skipped}, of {len(all_source_keys)} keys"
+                )
+
+            return total_copied, total_skipped, total_bytes_copied
+
+    ## Optional Zarr store methods
 
     def listdir(self, path: str = "") -> Generator[str, None, None]:
         """
@@ -193,7 +292,7 @@ class S3Store(Store):
             response = self.s3_client.head_object(Bucket=self.bucket_name, Key=self._full_key(key))
             return response["ContentLength"]
 
-    ## MutableMapping implementation, expected by Zarr
+    ## MutableMapping implementation, expected by Zarr store
 
     def __getitem__(self, key: str) -> bytes:
         """
