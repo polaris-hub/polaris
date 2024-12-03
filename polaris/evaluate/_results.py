@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from typing import ClassVar
 
@@ -84,22 +83,12 @@ class ResultsMetadata(BaseArtifactModel):
     # Private attributes
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
 
-    def _repr_dict_(self) -> dict:
-        """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude={"results"})
-
-        df = self.results.copy(deep=True)
-        df["Metric"] = df["Metric"].apply(lambda x: x.name if isinstance(x, Metric) else x)
-        repr_dict["results"] = json.loads(df.to_json(orient="records"))
-
-        return repr_dict
-
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         """For pretty-printing in Jupyter Notebooks"""
-        return dict2html(self._repr_dict_())
+        return dict2html(self.model_dump())
 
     def __repr__(self):
-        return json.dumps(self._repr_dict_(), indent=2)
+        return self.model_dump_json(indent=2)
 
 
 class EvaluationResult(ResultsMetadata):
@@ -162,7 +151,7 @@ class EvaluationResult(ResultsMetadata):
 
     @field_validator("results")
     @classmethod
-    def _validate_results(cls, v: pd.DataFrame):
+    def _validate_results(cls, v: pd.DataFrame) -> pd.DataFrame:
         """
         Ensure the results are a valid dataframe and have the expected columns
         """
@@ -183,18 +172,14 @@ class EvaluationResult(ResultsMetadata):
         return v
 
     @field_serializer("results")
-    def _serialize_results(self, value: pd.DataFrame):
+    def _serialize_results(self, value: pd.DataFrame) -> list[ResultRecords]:
         """Change from the Metric enum to a string representation"""
-        self.results["Metric"] = self.results["Metric"].apply(
-            lambda x: x.name if isinstance(x, Metric) else x
-        )
-
         serialized = []
-        grouped = self.results.groupby(["Test set", "Target label"])
+        grouped = value.groupby(["Test set", "Target label"])
         for (test_set, target_label), group in grouped:
             metrics = {row["Metric"]: row["Score"] for _, row in group.iterrows()}
             record = ResultRecords(test_set=test_set, target_label=target_label, scores=metrics)
-            serialized.append(record.model_dump(by_alias=True))
+            serialized.append(record)
 
         return serialized
 
@@ -214,13 +199,13 @@ class BenchmarkResults(EvaluationResult):
 
     _artifact_type = "result"
 
-    benchmark_artifact_id: str = Field(None)
+    benchmark_artifact_id: str | None = Field(None)
     benchmark_name: SlugCompatibleStringType | None = Field(None, deprecated=True)
     benchmark_owner: HubOwner | None = Field(None, deprecated=True)
 
     @model_validator(mode="after")
     def set_benchmark_artifact_id(self):
-        if self.benchmark_artifact_id is None:
+        if self.benchmark_artifact_id is None and self.benchmark_name and self.benchmark_owner:
             self.benchmark_artifact_id = f"{self.benchmark_owner}/{slugify(self.benchmark_name)}"
         return self
 

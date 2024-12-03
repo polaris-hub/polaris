@@ -350,7 +350,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
         raise NotImplementedError
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         """For pretty-printing in Jupyter Notebooks"""
         return dict2html(self._repr_dict_())
 
