@@ -48,11 +48,7 @@ jobs:
         run: python -m pip install --no-deps -e . # -e (editable is needed for code coverage)
 
       - name: Run tests
-        run: pytest
-        env:
-            POLARIS_HUB_URL: "https://polarishub.io"  # This is needed because we otherwise use the .env file
-            POLARIS_USERNAME: ${{ secrets.POLARIS_USERNAME }}
-            POLARIS_PASSWORD: ${{ secrets.POLARIS_PASSWORD }}
+        run: POLARIS_USERNAME=${{ secrets.POLARIS_USERNAME }} POLARIS_PASSWORD=${{ secrets.POLARIS_PASSWORD }} pytest
 
       - name: Test CLI
         run: polaris --help
