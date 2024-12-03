@@ -71,8 +71,8 @@ class S3Store(Store):
         content_type: str = "application/octet-stream",
     ) -> None:
         path = PurePath(path)
-        prefix = path.name
-        bucket_name = path.parent
+        prefix = str(path.name)
+        bucket_name = str(path.parent)
 
         self.s3_client = boto3.client(
             "s3",
