@@ -70,7 +70,9 @@ class S3Store(Store):
         part_size: int = 10 * 1024 * 1024,  # 10MB
         content_type: str = "application/octet-stream",
     ) -> None:
-        bucket_name, prefix = PurePath(path).parts
+        path = PurePath(path)
+        prefix = path.name
+        bucket_name = path.parent
 
         self.s3_client = boto3.client(
             "s3",
