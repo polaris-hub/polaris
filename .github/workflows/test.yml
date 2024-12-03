@@ -47,10 +47,10 @@ jobs:
         run: uv pip install --no-deps -e . # -e (editable is needed for code coverage)
 
       - name: Run tests
-        run: POLARIS_USERNAME=${{ secrets.POLARIS_USERNAME }} POLARIS_PASSWORD=${{ secrets.POLARIS_PASSWORD }} pytest
+        run: POLARIS_USERNAME=${{ secrets.POLARIS_USERNAME }} POLARIS_PASSWORD=${{ secrets.POLARIS_PASSWORD }} uv run pytest
 
       - name: Test CLI
-        run: polaris --help
+        run: uv run polaris --help
 
       - name: Test building the doc
-        run: mkdocs build
+        run: uv run mkdocs build
