@@ -49,7 +49,8 @@ jobs:
 
       - name: Run tests
         run: pytest
-        env: 
+        env:
+            POLARIS_HUB_URL: "https://polarishub.io"  # This is needed because we otherwise use the .env file
             POLARIS_USERNAME: ${{ secrets.POLARIS_USERNAME }}
             POLARIS_PASSWORD: ${{ secrets.POLARIS_PASSWORD }}
 
