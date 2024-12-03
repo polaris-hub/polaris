@@ -180,8 +180,10 @@ class DatasetV2(BaseDataset):
 
         # If it is a group, there is no deterministic order for the child keys.
         # We therefore use a special array that defines the index.
-        if isinstance(group_or_array, zarr.Group):
-            row = group_or_array[_INDEX_ARRAY_KEY][row]
+        # If loaded to memory, the group is represented by a dictionary.
+        if isinstance(group_or_array, zarr.Group) or isinstance(group_or_array, dict):
+            # Indices in a group should always be strings
+            row = str(group_or_array[_INDEX_ARRAY_KEY][row])
         arr = group_or_array[row]
 
         # Adapt the input to the specified format

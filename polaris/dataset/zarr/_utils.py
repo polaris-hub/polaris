@@ -14,6 +14,12 @@ except ImportError:
 
 def load_zarr_group_to_memory(group: zarr.Group) -> dict:
     """Loads an entire Zarr group into memory."""
+
+    if isinstance(group, dict):
+        # If a Zarr group is already loaded to memory (e.g. with dataset.load_to_memory()),
+        # the adapter would receive a dictionary instead of a Zarr group.
+        return group
+
     data = {}
     for key, item in group.items():
         if isinstance(item, zarr.Array):
