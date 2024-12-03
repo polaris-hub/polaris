@@ -104,7 +104,7 @@ jobs:
           git push origin "${{ inputs.release-version }}"
 
       - name: Build the wheel and sdist
-        run: uv python -m build --no-isolation
+        run: uv run python -m build --no-isolation
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
