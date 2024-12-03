@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from hashlib import md5
 from io import BytesIO
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Any, Generator, Literal, Mapping, Sequence, TypeAlias
 
 import boto3
@@ -70,7 +70,7 @@ class S3Store(Store):
         part_size: int = 10 * 1024 * 1024,  # 10MB
         content_type: str = "application/octet-stream",
     ) -> None:
-        bucket_name, prefix = path.split("/", 1)
+        bucket_name, prefix = PurePath(path).parts
 
         self.s3_client = boto3.client(
             "s3",
