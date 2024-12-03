@@ -56,4 +56,4 @@ jobs:
         run: uv run polaris --help
 
       - name: Test building the doc
-        run: uv python -m mkdocs build
+        run: uv run python -m mkdocs build
