@@ -70,7 +70,7 @@ class S3Store(Store):
         part_size: int = 10 * 1024 * 1024,  # 10MB
         content_type: str = "application/octet-stream",
     ) -> None:
-        bucket_name = str(path.parent)
+        bucket_name, prefix = path.split("/", 1)
 
         self.s3_client = boto3.client(
             "s3",
