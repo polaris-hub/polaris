@@ -389,7 +389,7 @@ class StorageSession(OAuth2Client):
                 content_type = "application/octet-stream"
 
         store = S3Store(
-            path=str(path.parent),
+            path=path.parent.as_posix(),
             access_key=storage_data.key,
             secret_key=storage_data.secret,
             token=f"jwt/{self.token.access_token}",
@@ -405,7 +405,7 @@ class StorageSession(OAuth2Client):
         storage_data = self.token.extra_data
 
         store = S3Store(
-            path=str(path.parent),
+            path=path.parent.as_posix(),
             access_key=storage_data.key,
             secret_key=storage_data.secret,
             token=f"jwt/{self.token.access_token}",
