@@ -1738,7 +1738,7 @@ this class normalizes different formats to a single, internal representation.</p
           <tr class="doc-section-item">
             <td><code><span title="polaris.evaluate.ResultsMetadata.github_url">github_url</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1749,7 +1749,7 @@ this class normalizes different formats to a single, internal representation.</p
           <tr class="doc-section-item">
             <td><code><span title="polaris.evaluate.ResultsMetadata.paper_url">paper_url</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a>]</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HttpUrlString" href="utils.types.html#polaris.utils.types.HttpUrlString">HttpUrlString</a> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1760,7 +1760,7 @@ this class normalizes different formats to a single, internal representation.</p
           <tr class="doc-section-item">
             <td><code><span title="polaris.evaluate.ResultsMetadata.contributors">contributors</span></code></td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[list[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubUser" href="utils.types.html#polaris.utils.types.HubUser">HubUser</a>]]</code>
+                  <code>list[<a class="autorefs autorefs-internal" title="polaris.utils.types.HubUser" href="utils.types.html#polaris.utils.types.HubUser">HubUser</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1886,7 +1886,7 @@ to say something about which (type of) methods performs best <em>in general</em>
           <tr class="doc-section-item">
             <td><code><span title="polaris.evaluate.EvaluationResult.results">results</span></code></td>
             <td>
-                  <code><span title="polaris.evaluate._results.ResultsType">ResultsType</span></code>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1980,7 +1980,7 @@ the results with the Polaris Hub.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_to_hub</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PolarisHubSettings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_auth_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">access</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AccessType</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">HubOwner</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_to_hub</span><span class="p">(</span><span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s1">&#39;private&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">:</span> <span class="n">HubOwner</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BenchmarkResults</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
