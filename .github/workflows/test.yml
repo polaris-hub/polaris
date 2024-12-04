@@ -41,7 +41,7 @@ jobs:
           cache-dependency-glob: ./pyproject.toml
 
       - name: Install the project
-        run: uv venv --python ${{ matrix.python-version }} && uv sync --all-groups
+        run: uv sync --all-groups --python ${{ matrix.python-version }}
 
       - name: Install library
         run: uv pip install --no-deps -e . # -e (editable is needed for code coverage)
