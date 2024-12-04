@@ -29,7 +29,7 @@ jobs:
           cache-dependency-glob: ./pyproject.toml
       
       - name: Install the project
-        run: uv venv --python ${{ matrix.python-version }} && uv sync --all-groups
+        run: uv sync --all-groups --python 3.12
 
       - name: Configure git
         run: |

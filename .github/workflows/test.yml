@@ -43,9 +43,6 @@ jobs:
       - name: Install the project
         run: uv sync --all-groups --python ${{ matrix.python-version }}
 
-      - name: Install library
-        run: uv pip install --no-deps -e . # -e (editable is needed for code coverage)
-
       - name: Run tests
         run: uv run pytest
         env:

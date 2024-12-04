@@ -34,15 +34,10 @@ jobs:
           cache-dependency-glob: ./pyproject.toml
       
       - name: Install the project
-        run: |
-          uv venv --python 3.12
-          uv sync --all-groups
+        run: uv sync --all-groups --python 3.12
 
       - name: Install build dependencies
         run: uv pip install python-build semver setuptools_scm
-
-      - name: Install library
-        run: uv pip install --no-deps .
 
       - name: Check the version is valid semver
         run: |
