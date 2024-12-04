@@ -122,7 +122,7 @@ class EvaluationResult(ResultsMetadata):
 
     @field_validator("results", mode="before")
     @classmethod
-    def _convert_results(cls, v: list[ResultRecords | dict]) -> pd.DataFrame:
+    def _convert_results(cls, v: pd.DataFrame | list[ResultRecords | dict]) -> pd.DataFrame:
         """
         Convert the results to a dataframe if they are not already in that format
         """
