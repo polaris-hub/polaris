@@ -198,11 +198,10 @@ class S3Store(Store):
         with ThreadPoolExecutor() as executor:
             total_copied = total_skipped = total_bytes_copied = 0
 
-            all_source_keys = sorted(source.keys())
+            number_source_keys = sum(1 for _ in source.keys())
 
             # Batch the keys, otherwise we end up with too many files open at the same time
-            # If we had Python 3.12, that would be itertools.batched, but alas...
-            batch_iter = iter(all_source_keys)
+            batch_iter = iter(source.keys())
             while batch := tuple(islice(batch_iter, self._batch_size)):
                 # Create a future for each key to copy
                 future_to_key = [
@@ -217,7 +216,7 @@ class S3Store(Store):
                     total_bytes_copied += result_bytes_copied
 
                 log(
-                    f"Copied {total_copied} ({total_bytes_copied} bytes), skipped {total_skipped}, of {len(all_source_keys)} keys"
+                    f"Copied {total_copied} ({total_bytes_copied / (1024**2):.2f} MiB), skipped {total_skipped}, of {number_source_keys} keys. {(total_copied + total_skipped) / number_source_keys * 100:.2f}% completed."
                 )
 
             return total_copied, total_skipped, total_bytes_copied

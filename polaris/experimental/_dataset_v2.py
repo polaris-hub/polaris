@@ -228,7 +228,7 @@ class DatasetV2(BaseDataset):
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
             load_zarr_from_new_location: Whether to update the current instance to load data from the location
-                the data is saved to. Only relevant for Zarr-datasets.
+                the data is saved to.
 
         Returns:
             The path to the JSON file.
