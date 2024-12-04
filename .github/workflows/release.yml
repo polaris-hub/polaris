@@ -37,7 +37,7 @@ jobs:
         run: uv sync --all-groups --python 3.12
 
       - name: Install build dependencies
-        run: uv pip install python-build semver setuptools_scm
+        run: uv pip install build semver setuptools_scm
 
       - name: Check the version is valid semver
         run: |
