@@ -14,4 +14,4 @@ class MemoryMappedDirectoryStore(zarr.DirectoryStore):
 
     def _fromfile(self, fn):
         with open(fn, "rb") as fh:
-            return memoryview(mmap.mmap(fh.fileno(), 0, prot=mmap.PROT_READ))
+            return memoryview(mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ))

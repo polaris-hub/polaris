@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from hashlib import md5
 from io import BytesIO
-from pathlib import Path
+from pathlib import PurePath
 from typing import Any, Generator, Literal, Mapping, Sequence, TypeAlias
 
 import boto3
@@ -376,7 +376,7 @@ class StorageSession(OAuth2Client):
     def paths(self) -> DatasetV1Paths | DatasetV2Paths:
         return self.token.extra_data.paths
 
-    def _set_file(self, path: Path, value: bytes | bytearray) -> None:
+    def _set_file(self, path: PurePath, value: bytes | bytearray) -> None:
         """
         Internal method to upload non-zarr file to the storage backend.
         """
@@ -389,7 +389,7 @@ class StorageSession(OAuth2Client):
                 content_type = "application/octet-stream"
 
         store = S3Store(
-            path=str(path.parent),
+            path=path.parent.as_posix(),
             access_key=storage_data.key,
             secret_key=storage_data.secret,
             token=f"jwt/{self.token.access_token}",
@@ -398,14 +398,14 @@ class StorageSession(OAuth2Client):
         )
         store[path.name] = value
 
-    def _get_file(self, path: Path) -> BytesIO:
+    def _get_file(self, path: PurePath) -> BytesIO:
         """
         Internal method to download non-zarr file from the storage backend.
         """
         storage_data = self.token.extra_data
 
         store = S3Store(
-            path=str(path.parent),
+            path=path.parent.as_posix(),
             access_key=storage_data.key,
             secret_key=storage_data.secret,
             token=f"jwt/{self.token.access_token}",
@@ -421,7 +421,7 @@ class StorageSession(OAuth2Client):
         if not isinstance(self.paths, DatasetV1Paths):
             raise NotImplementedError("Only DatasetV1Paths are supported for setting the root path")
 
-        path = Path(self.paths.relative_root)
+        path = PurePath(self.paths.relative_root)
         self._set_file(path, value)
 
     def get_root(self) -> BytesIO:
@@ -431,7 +431,7 @@ class StorageSession(OAuth2Client):
         if not isinstance(self.paths, DatasetV1Paths):
             raise NotImplementedError("Only DatasetV1Paths are supported for getting the root path")
 
-        path = Path(self.paths.relative_root)
+        path = PurePath(self.paths.relative_root)
         return self._get_file(path)
 
     def set_manifest(self, value: bytes | bytearray) -> None:
@@ -441,7 +441,7 @@ class StorageSession(OAuth2Client):
         if not isinstance(self.paths, DatasetV2Paths):
             raise NotImplementedError("Only DatasetV2Paths are supported for setting the manifest path")
 
-        path = Path(self.paths.relative_manifest)
+        path = PurePath(self.paths.relative_manifest)
         self._set_file(path, value)
 
     def get_manifest(self) -> BytesIO:
@@ -451,7 +451,7 @@ class StorageSession(OAuth2Client):
         if not isinstance(self.paths, DatasetV2Paths):
             raise NotImplementedError("Only DatasetV2Paths are supported for getting the manifest path")
 
-        path = Path(self.paths.relative_manifest)
+        path = PurePath(self.paths.relative_manifest)
         return self._get_file(path)
 
     @property
