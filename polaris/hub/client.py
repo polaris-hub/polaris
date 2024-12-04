@@ -150,13 +150,10 @@ class PolarisHubClient(OAuth2Client):
             # As of now, this latest version is not available on Conda though.
             token = self.token
 
-        if token is None:
-            self.token = self.fetch_token()
-            return True
-
-        is_active = super().ensure_active_token(token)
-        if is_active:
-            return True
+        if token:
+            is_active = super().ensure_active_token(token)
+            if is_active:
+                return True
 
         # Check if external token is still valid, or we're using password auth
         if not (self.has_user_password or self.external_client.ensure_active_token()):
