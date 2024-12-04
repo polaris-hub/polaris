@@ -1,5 +1,6 @@
 import abc
 import json
+from os import PathLike
 from pathlib import Path
 from typing import Any, MutableMapping
 from uuid import uuid4
@@ -173,15 +174,14 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
         saved_on_hub = self.zarr_root_path.startswith(StorageSession.polaris_protocol)
 
-        if self._warn_about_remote_zarr:
-            if saved_on_hub:
-                # TODO (cwognum): The user now has no easy way of knowing whether the dataset is "small enough".
-                logger.warning(
-                    f"You're loading data from a remote location. "
-                    f"If the dataset is small enough, consider caching the dataset first "
-                    f"using {self.__class__.__name__}.cache() for more performant data access."
-                )
-                self._warn_about_remote_zarr = False
+        if self._warn_about_remote_zarr and saved_on_hub:
+            # TODO (cwognum): The user now has no easy way of knowing whether the dataset is "small enough".
+            logger.warning(
+                f"You're loading data from a remote location. "
+                f"If the dataset is small enough, consider caching the dataset first "
+                f"using {self.__class__.__name__}.cache() for more performant data access."
+            )
+            self._warn_about_remote_zarr = False
 
         try:
             if saved_on_hub:
@@ -310,12 +310,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def to_json(
-        self,
-        destination: str,
-        if_exists: ZarrConflictResolution = "replace",
-        load_zarr_from_new_location: bool = False,
-    ) -> str:
+    def to_json(self, destination: str, if_exists: ZarrConflictResolution = "replace") -> str:
         """
         Save the dataset to a destination directory as a JSON file.
 
@@ -323,8 +318,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             destination: The _directory_ to save the associated data to.
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
-            load_zarr_from_new_location: Whether to update the current instance to load data from the location
-                the data is saved to. Only relevant for Zarr-datasets.
 
         Returns:
             The path to the JSON file.
@@ -362,3 +355,35 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
     def __str__(self):
         return self.__repr__()
+
+    def _cache_zarr(self, destination: str | PathLike, if_exists: ZarrConflictResolution):
+        """
+        Caches the Zarr archive to a local directory.
+        """
+        from polaris.hub.storage import S3Store
+
+        if not self.uses_zarr:
+            return
+
+        current_zarr_root = Path(self.zarr_root_path)
+        destination_zarr_root = Path(destination) / current_zarr_root.name
+
+        # Copy over Zarr data to the destination
+        self._warn_about_remote_zarr = False
+
+        logger.info(f"Copying Zarr archive to {destination_zarr_root}. This may take a while.")
+        destination_store = zarr.open(str(destination_zarr_root), "w")
+        source_store = self.zarr_root.store.store
+
+        if isinstance(source_store, S3Store):
+            source_store.copy_to_destination(destination_store.store, if_exists, logger.info)
+        else:
+            zarr.copy_store(
+                source=self.zarr_root.store.store,
+                dest=destination_store.store,
+                log=logger.info,
+                if_exists=if_exists,
+            )
+        self.zarr_root_path = str(destination_zarr_root)
+        self._zarr_root = None
+        self._zarr_data = None

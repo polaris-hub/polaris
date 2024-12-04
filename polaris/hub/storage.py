@@ -131,6 +131,55 @@ class S3Store(Store):
 
     ## Custom methods
 
+    def copy_to_destination(
+        self, destination: Store, if_exists: ZarrConflictResolution = "replace", log: Callable = lambda: None
+    ) -> tuple[int, int, int]:
+        """
+        Copy the content of this store to the destination store.
+
+        We leverage the internal knowledge of this store to make the operation more efficient than `zarr.copy_store`:
+            - Parallel, concurrent `getitems` operations using a thread pool
+
+        Zarr V3 supports partial writes, that would allow us to stream the response back into the store. Unfortunately,
+        it's not supported right now by the library version we use, so we'll have to read the whole response into memory
+        and write it back to the destination.
+
+        Args:
+            destination: destination store
+            if_exists: behavior if the destination key already exists
+            log: optional logging function
+        """
+
+        destination_store_version = getattr(destination, "_store_version", 2)
+        if destination_store_version != self._store_version:
+            raise ValueError("zarr stores must share the same protocol version")
+
+        total_copied = total_skipped = total_bytes_copied = 0
+
+        number_source_keys = len(self)
+
+        batch_iter = iter(self)
+        while batch := tuple(islice(batch_iter, self._batch_size)):
+            to_put = batch if if_exists == "replace" else filter(lambda key: key not in destination, batch)
+            skipped = len(batch) - len(to_put)
+
+            if skipped > 0 and if_exists == "raise":
+                raise CopyError(f"keys {to_put} exist in destination")
+
+            items = self.getitems(to_put, contexts={})
+            for key, content in items.items():
+                destination[key] = content
+                total_bytes_copied += buffer_size(content)
+
+            total_copied += len(to_put)
+            total_skipped += skipped
+
+            log(
+                f"Copied {total_copied} ({total_bytes_copied / (1024 ** 2):.2f} MiB), skipped {total_skipped}, of {number_source_keys} keys. {(total_copied + total_skipped) / number_source_keys * 100:.2f}% completed."
+            )
+
+        return total_copied, total_skipped, total_bytes_copied
+
     def copy_from_source(
         self, source: Store, if_exists: ZarrConflictResolution = "replace", log: Callable = lambda: None
     ) -> tuple[int, int, int]:
@@ -198,7 +247,7 @@ class S3Store(Store):
         with ThreadPoolExecutor() as executor:
             total_copied = total_skipped = total_bytes_copied = 0
 
-            number_source_keys = sum(1 for _ in source.keys())
+            number_source_keys = len(source)
 
             # Batch the keys, otherwise we end up with too many files open at the same time
             batch_iter = iter(source.keys())
