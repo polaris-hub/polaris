@@ -1,6 +1,5 @@
-import json
 from datetime import datetime
-from typing import ClassVar, Optional, Union
+from typing import ClassVar
 
 import pandas as pd
 from pydantic import (
@@ -11,12 +10,12 @@ from pydantic import (
     computed_field,
     field_serializer,
     field_validator,
+    model_validator,
 )
 from pydantic.alias_generators import to_camel
 
 from polaris._artifact import BaseArtifactModel
 from polaris.evaluate import BenchmarkPredictions, Metric
-from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import slugify
@@ -41,12 +40,13 @@ class ResultRecords(BaseModel):
 
     test_set: TestLabelType
     target_label: TargetLabelType
-    scores: dict[Union[Metric, str], float]
+    scores: dict[Metric, float]
 
     # Model config
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-    @field_validator("scores")
+    @field_validator("scores", mode="before")
+    @classmethod
     def validate_scores(cls, v):
         validated = {}
         for metric, score in v.items():
@@ -59,12 +59,9 @@ class ResultRecords(BaseModel):
         return validated
 
     @field_serializer("scores")
-    def serialize_scores(self, value: dict):
+    def serialize_scores(self, value: dict[Metric, float]) -> dict[str, float]:
         """Change from the Metric enum to a string representation"""
         return {metric.name: score for metric, score in value.items()}
-
-
-ResultsType = Union[pd.DataFrame, list[ResultRecords | dict]]
 
 
 class ResultsMetadata(BaseArtifactModel):
@@ -79,29 +76,19 @@ class ResultsMetadata(BaseArtifactModel):
     """
 
     # Additional meta-data
-    github_url: Optional[HttpUrlString] = None
-    paper_url: Optional[HttpUrlString] = None
-    contributors: Optional[list[HubUser]] = None
+    github_url: HttpUrlString | None = None
+    paper_url: HttpUrlString | None = None
+    contributors: list[HubUser] = Field(default_factory=list)
 
     # Private attributes
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
 
-    def _repr_dict_(self) -> dict:
-        """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude=["results"])
-
-        df = self.results.copy(deep=True)
-        df["Metric"] = df["Metric"].apply(lambda x: x.name if isinstance(x, Metric) else x)
-        repr_dict["results"] = json.loads(df.to_json(orient="records"))
-
-        return repr_dict
-
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         """For pretty-printing in Jupyter Notebooks"""
-        return dict2html(self._repr_dict_())
+        return dict2html(self.model_dump())
 
     def __repr__(self):
-        return json.dumps(self._repr_dict_(), indent=2)
+        return self.model_dump_json(indent=2)
 
 
 class EvaluationResult(ResultsMetadata):
@@ -131,34 +118,43 @@ class EvaluationResult(ResultsMetadata):
     RESULTS_COLUMNS: ClassVar[list[str]] = ["Test set", "Target label", "Metric", "Score"]
 
     # Results attribute
-    results: ResultsType
+    results: pd.DataFrame
+
+    @field_validator("results", mode="before")
+    @classmethod
+    def _convert_results(cls, v: pd.DataFrame | list[ResultRecords | dict]) -> pd.DataFrame:
+        """
+        Convert the results to a dataframe if they are not already in that format
+        """
+        if isinstance(v, pd.DataFrame):
+            return v
+
+        try:
+            df = pd.DataFrame(columns=cls.RESULTS_COLUMNS)
+            for record in v:
+                if isinstance(record, dict):
+                    record = ResultRecords(**record)
+
+                for metric, score in record.scores.items():
+                    df.loc[len(df)] = {
+                        "Test set": record.test_set,
+                        "Target label": record.target_label,
+                        "Metric": metric,
+                        "Score": score,
+                    }
+            return df
+
+        except (ValueError, UnicodeDecodeError) as error:
+            raise InvalidResultError(
+                f"The provided dictionary cannot be parsed into a {cls.__name__} instance."
+            ) from error
 
     @field_validator("results")
-    def _validate_results(cls, v):
-        """Ensure the results are a valid dataframe and have the expected columns"""
-
-        # If not a dataframe, assume it is a JSON-serialized export of a dataframe.
-        if not isinstance(v, pd.DataFrame):
-            try:
-                df = pd.DataFrame(columns=cls.RESULTS_COLUMNS)
-                for record in v:
-                    if isinstance(record, dict):
-                        record = ResultRecords(**record)
-
-                    for metric, score in record.scores.items():
-                        df.loc[len(df)] = {
-                            "Test set": record.test_set,
-                            "Target label": record.target_label,
-                            "Metric": metric,
-                            "Score": score,
-                        }
-                v = df
-
-            except (ValueError, UnicodeDecodeError) as error:
-                raise InvalidResultError(
-                    f"The provided dictionary cannot be parsed into a {cls.__name__} instance."
-                ) from error
-
+    @classmethod
+    def _validate_results(cls, v: pd.DataFrame) -> pd.DataFrame:
+        """
+        Ensure the results are a valid dataframe and have the expected columns
+        """
         # Check if the dataframe contains _only_ the expected columns
         if set(v.columns) != set(cls.RESULTS_COLUMNS):
             raise InvalidResultError(
@@ -176,18 +172,14 @@ class EvaluationResult(ResultsMetadata):
         return v
 
     @field_serializer("results")
-    def _serialize_results(self, value: ResultsType):
+    def _serialize_results(self, value: pd.DataFrame) -> list[ResultRecords]:
         """Change from the Metric enum to a string representation"""
-        self.results["Metric"] = self.results["Metric"].apply(
-            lambda x: x.name if isinstance(x, Metric) else x
-        )
-
         serialized = []
-        grouped = self.results.groupby(["Test set", "Target label"])
+        grouped = value.groupby(["Test set", "Target label"])
         for (test_set, target_label), group in grouped:
             metrics = {row["Metric"]: row["Score"] for _, row in group.iterrows()}
             record = ResultRecords(test_set=test_set, target_label=target_label, scores=metrics)
-            serialized.append(record.model_dump(by_alias=True))
+            serialized.append(record)
 
         return serialized
 
@@ -207,29 +199,29 @@ class BenchmarkResults(EvaluationResult):
 
     _artifact_type = "result"
 
-    benchmark_name: SlugCompatibleStringType = Field(..., frozen=True)
-    benchmark_owner: Optional[HubOwner] = Field(None, frozen=True)
+    benchmark_artifact_id: str | None = Field(None)
+    benchmark_name: SlugCompatibleStringType | None = Field(None, deprecated=True)
+    benchmark_owner: HubOwner | None = Field(None, deprecated=True)
 
-    @computed_field
-    @property
-    def benchmark_artifact_id(self) -> str:
-        return f"{self.benchmark_owner}/{slugify(self.benchmark_name)}"
+    @model_validator(mode="after")
+    def set_benchmark_artifact_id(self):
+        if self.benchmark_artifact_id is None and self.benchmark_name and self.benchmark_owner:
+            self.benchmark_artifact_id = f"{self.benchmark_owner}/{slugify(self.benchmark_name)}"
+        return self
 
     def upload_to_hub(
         self,
-        settings: Optional[PolarisHubSettings] = None,
-        cache_auth_token: bool = True,
-        access: Optional[AccessType] = "private",
-        owner: Union[HubOwner, str, None] = None,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
         **kwargs: dict,
-    ):
+    ) -> "BenchmarkResults":
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_results`][polaris.hub.client.PolarisHubClient.upload_results] method.
         """
         from polaris.hub.client import PolarisHubClient
 
-        with PolarisHubClient(settings=settings, cache_auth_token=cache_auth_token, **kwargs) as client:
+        with PolarisHubClient(**kwargs) as client:
             return client.upload_results(self, access=access, owner=owner)
 
 
@@ -250,7 +242,7 @@ class CompetitionResults(EvaluationResult):
     _artifact_type = "competitionResult"
 
     competition_name: SlugCompatibleStringType = Field(..., frozen=True)
-    competition_owner: Optional[HubOwner] = Field(None, frozen=True)
+    competition_owner: HubOwner | None = Field(None, frozen=True)
 
     @computed_field
     @property
@@ -270,4 +262,4 @@ class CompetitionPredictions(ResultsMetadata, BenchmarkPredictions):
         access: The access the returned results should have
     """
 
-    access: Optional[AccessType] = "private"
+    access: AccessType = "private"

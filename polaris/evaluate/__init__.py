@@ -6,7 +6,6 @@ from polaris.evaluate._results import (
     CompetitionResults,
     EvaluationResult,
     ResultsMetadata,
-    ResultsType,
 )
 from polaris.evaluate.utils import evaluate_benchmark
 
@@ -17,7 +16,6 @@ __all__ = [
     "EvaluationResult",
     "BenchmarkResults",
     "CompetitionResults",
-    "ResultsType",
     "evaluate_benchmark",
     "CompetitionPredictions",
     "BenchmarkPredictions",
