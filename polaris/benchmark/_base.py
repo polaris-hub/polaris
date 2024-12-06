@@ -315,7 +315,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         for name in sorted([m.name for m in self.metrics if isinstance(m, Metric)]):
             hash_fn.update(name.encode("utf-8"))
         for d in sorted([m.model_dump() for m in self.metrics if isinstance(m, GroupedMetric)]):
-            s = f"{type(d)}{json.dumps(d, sort_keys="True")}"
+            s = f"{type(d)}{json.dumps(d, sort_keys='True')}"
             hash_fn.update(s.encode("utf-8"))
 
         # Train set

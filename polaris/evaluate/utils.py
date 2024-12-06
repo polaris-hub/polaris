@@ -1,7 +1,7 @@
 import pandas as pd
 
 from polaris.dataset._subset import Subset
-from polaris.evaluate import BenchmarkPredictions, BenchmarkResults, Metric, ResultsType
+from polaris.evaluate import BenchmarkPredictions, BenchmarkResults, Metric
 from polaris.evaluate._metric import GroupedMetric
 from polaris.utils.types import IncomingPredictionsType
 
