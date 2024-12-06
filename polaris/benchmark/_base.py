@@ -1,7 +1,8 @@
+import abc
 import json
 from hashlib import md5
 from itertools import chain
-from typing import Any, Callable, ClassVar, Literal, Optional, TypeAlias, Union
+from typing import Any, Callable, ClassVar, Literal
 
 import fsspec
 import numpy as np
@@ -21,7 +22,7 @@ from sklearn.utils.multiclass import type_of_target
 from typing_extensions import Self
 
 from polaris._artifact import BaseArtifactModel
-from polaris.dataset import CompetitionDataset, DatasetV1, Subset
+from polaris.dataset import DatasetV1, Subset
 from polaris.evaluate import BenchmarkResults, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
@@ -38,10 +39,8 @@ from polaris.utils.types import (
     TaskType,
 )
 
-ColumnsType: TypeAlias = str | list[str]
 
-
-class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
+class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
     """This class wraps a [`Dataset`][polaris.dataset.Dataset] with additional data
      to specify the evaluation logic.
 
@@ -87,7 +86,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         dataset: The dataset the benchmark specification is based on.
         target_cols: The column(s) of the original dataset that should be used as target.
         input_cols: The column(s) of the original dataset that should be used as input.
-        split: The predefined train-test split to use for evaluation.
         metrics: The metrics to use for evaluating performance
         main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
@@ -98,39 +96,24 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     """
 
     _artifact_type = "benchmark"
-    version: ClassVar[Literal[1]] = 1
 
     # Public attributes
-    # Data
-    dataset: Union[DatasetV1, CompetitionDataset, str, dict[str, Any]]
-    target_cols: ColumnsType
-    input_cols: ColumnsType
-    split: SplitType
+    dataset: BaseArtifactModel
+    target_cols: list[str]
+    input_cols: list[str]
     metrics: set[Metric] = Field(min_length=1)
     main_metric: Metric | str
-
-    # Additional meta-data
     readme: str = ""
-    target_types: dict[str, Union[TargetType, str, None]] = Field(default_factory=dict, validate_default=True)
-
-    @field_validator("dataset")
-    def _validate_dataset(cls, v):
-        """
-        Allows either passing a Dataset object or the kwargs to create one
-        """
-        if isinstance(v, dict):
-            v = DatasetV1(**v)
-        elif isinstance(v, str):
-            v = DatasetV1.from_json(v)
-        return v
+    target_types: dict[str, TargetType | str | None] = Field(default_factory=dict, validate_default=True)
 
     @field_validator("target_cols", "input_cols")
-    def _validate_cols(cls, v, info: ValidationInfo):
+    def _validate_cols(cls, v: str | list[str], info: ValidationInfo):
         """Verifies all columns are present in the dataset."""
         if not isinstance(v, list):
             v = [v]
         if len(v) == 0:
             raise InvalidBenchmarkError("Specify at least a single column")
+        # TODO: Move this down to V1 Benchmark, and add implementation in V2 Benchmark
         if info.data.get("dataset") is not None and not all(
             c in info.data["dataset"].table.columns for c in v
         ):
@@ -186,63 +169,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                     break
         if self.main_metric not in self.metrics:
             raise InvalidBenchmarkError("The main metric should be one of the specified metrics")
-        return self
-
-    @model_validator(mode="after")
-    def _validate_split(self) -> Self:
-        """
-        Verifies that:
-          1) There are no empty test partitions
-          2) All indices are valid given the dataset
-          3) There is no duplicate indices in any of the sets
-          4) There is no overlap between the train and test set
-          5) No row exists in the test set where all labels are missing/empty
-        """
-
-        if not isinstance(self.split[1], dict):
-            self.split = self.split[0], {"test": self.split[1]}
-        split = self.split
-
-        # Train partition can be empty (zero-shot)
-        # Test partitions cannot be empty
-        if any(len(v) == 0 for v in split[1].values()):
-            raise InvalidBenchmarkError("The predefined split contains empty test partitions")
-
-        train_idx_list = split[0]
-        full_test_idx_list = list(chain.from_iterable(split[1].values()))
-
-        if len(train_idx_list) == 0:
-            logger.info(
-                "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
-            )
-
-        train_idx_set = set(train_idx_list)
-        full_test_idx_set = set(full_test_idx_list)
-
-        # The train and test indices do not overlap
-        if len(train_idx_set & full_test_idx_set) > 0:
-            raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
-
-        # Check for duplicate indices within the train set
-        if len(train_idx_set) != len(train_idx_list):
-            raise InvalidBenchmarkError("The training set contains duplicate indices")
-
-        # Check for duplicate indices within a given test set. Because a user can specify
-        # multiple test sets for a given benchmark and it is acceptable for indices to be shared
-        # across test sets, we check for duplicates in each test set independently.
-        for test_set_name, test_set_idx_list in split[1].items():
-            if len(test_set_idx_list) != len(set(test_set_idx_list)):
-                raise InvalidBenchmarkError(
-                    f'Test set with name "{test_set_name}" contains duplicate indices'
-                )
-
-        # All indices are valid given the dataset
-        dataset = self.dataset
-        if dataset is not None:
-            max_i = len(dataset)
-            if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
-                raise InvalidBenchmarkError("The predefined split contains invalid indices")
-
         return self
 
     @field_validator("target_types")
@@ -308,74 +234,10 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """Convert from enum to string to make sure it's serializable"""
         return {k: v.value for k, v in target_types.items()}
 
-    def _compute_checksum(self):
-        """
-        Computes a hash of the benchmark.
-
-        This is meant to uniquely identify the benchmark and can be used to verify the version.
-        """
-
-        hash_fn = md5()
-        hash_fn.update(self.dataset.md5sum.encode("utf-8"))
-        for c in sorted(self.target_cols):
-            hash_fn.update(c.encode("utf-8"))
-        for c in sorted(self.input_cols):
-            hash_fn.update(c.encode("utf-8"))
-        for m in sorted(str(m) for m in self.metrics):
-            hash_fn.update(m.encode("utf-8"))
-
-        # Train set
-        s = json.dumps(sorted(self.split[0]))
-        hash_fn.update(s.encode("utf-8"))
-
-        # Test sets
-        for k in sorted(self.split[1].keys()):
-            s = json.dumps(sorted(self.split[1][k]))
-            hash_fn.update(k.encode("utf-8"))
-            hash_fn.update(s.encode("utf-8"))
-
-        checksum = hash_fn.hexdigest()
-        return checksum
-
     @computed_field
     @property
     def dataset_artifact_id(self) -> str:
         return self.dataset.artifact_id
-
-    @computed_field
-    @property
-    def n_train_datapoints(self) -> int:
-        """The size of the train set."""
-        return len(self.split[0])
-
-    @computed_field
-    @property
-    def n_test_sets(self) -> int:
-        """The number of test sets"""
-        return len(self.split[1])
-
-    @computed_field
-    @property
-    def n_test_datapoints(self) -> dict[str, int]:
-        """The size of (each of) the test set(s)."""
-        return {k: len(v) for k, v in self.split[1].items()}
-
-    @computed_field
-    @property
-    def n_classes(self) -> dict[str, int]:
-        """The number of classes for each of the target columns."""
-        n_classes = {}
-        for target in self.target_cols:
-            target_type = self.target_types.get(target)
-            if (
-                target_type is None
-                or target_type == TargetType.REGRESSION
-                or target_type == TargetType.DOCKING
-            ):
-                continue
-            # TODO: Don't use table attribute
-            n_classes[target] = self.dataset.table.loc[:, target].nunique()
-        return n_classes
 
     @computed_field
     @property
@@ -384,19 +246,67 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
         return v.value
 
-    @computed_field
+    @abc.abstractmethod
+    def get_train_test_split(
+        self, featurization_fn: Callable | None = None
+    ) -> tuple[Subset, dict[str, Subset]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _get_test_sets(
+        self, hide_targets=True, featurization_fn: Callable | None = None
+    ) -> dict[str, Subset]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @property
+    def n_classes(self) -> dict[str, int]:
+        """
+        The number of classes for each of the target columns.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @property
+    def n_test_datapoints(self) -> dict[str, int]:
+        """
+        The size of (each of) the test set(s).
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
     @property
     def test_set_labels(self) -> list[str]:
-        """The labels of the test sets."""
-        return sorted(list(self.split[1].keys()))
+        """
+        The labels of the test sets.
+        """
+        raise NotImplementedError
 
-    @computed_field
+    @abc.abstractmethod
+    @property
+    def n_train_datapoints(self) -> int:
+        """
+        The size of the train set.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    @property
+    def n_test_sets(self) -> int:
+        """
+        The number of test sets
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
     @property
     def test_set_sizes(self) -> dict[str, int]:
-        """The sizes of the test sets."""
-        return {k: len(v) for k, v in self.split[1].items()}
+        """
+        The sizes of the test sets.
+        """
+        raise NotImplementedError
 
-    def _get_subset(self, indices, hide_targets=True, featurization_fn=None):
+    def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
         """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
         internally to construct the train and test sets."""
         return Subset(
@@ -407,49 +317,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             hide_targets=hide_targets,
             featurization_fn=featurization_fn,
         )
-
-    def _get_test_set(
-        self, hide_targets=True, featurization_fn: Optional[Callable] = None
-    ) -> Union["Subset", dict[str, Subset]]:
-        """Construct the test set(s), given the split in the benchmark specification. Used
-        internally to construct the test set for client use and evaluation.
-        """
-
-        def make_test_subset(vals):
-            return self._get_subset(vals, hide_targets=hide_targets, featurization_fn=featurization_fn)
-
-        test_split = self.split[1]
-        test = {k: make_test_subset(v) for k, v in test_split.items()}
-
-        return test
-
-    def get_train_test_split(
-        self, featurization_fn: Optional[Callable] = None
-    ) -> tuple[Subset, Union["Subset", dict[str, Subset]]]:
-        """Construct the train and test sets, given the split in the benchmark specification.
-
-        Returns [`Subset`][polaris.dataset.Subset] objects, which offer several ways of accessing the data
-        and can thus easily serve as a basis to build framework-specific (e.g. PyTorch, Tensorflow)
-        data-loaders on top of.
-
-        Args:
-            featurization_fn: A function to apply to the input data. If a multi-input benchmark, this function
-                expects an input in the format specified by the `input_format` parameter.
-
-        Returns:
-            A tuple with the train `Subset` and test `Subset` objects.
-                If there are multiple test sets, these are returned in a dictionary and each test set has
-                an associated name. The targets of the test set can not be accessed.
-        """
-
-        train = self._get_subset(self.split[0], hide_targets=False, featurization_fn=featurization_fn)
-        test = self._get_test_set(hide_targets=True, featurization_fn=featurization_fn)
-
-        # For improved UX, we return the object instead of the dictionary if there is only one test set.
-        # Internally, however, assume that the test set is always a dictionary simplifies the code.
-        if len(test) == 1:
-            test = test["test"]
-        return train, test
 
     def evaluate(
         self,
@@ -511,10 +378,10 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     def upload_to_hub(
         self,
-        settings: Optional[PolarisHubSettings] = None,
+        settings: PolarisHubSettings | None = None,
         cache_auth_token: bool = True,
-        access: Optional[AccessType] = "private",
-        owner: Union[HubOwner, str, None] = None,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
         **kwargs: dict,
     ):
         """
@@ -556,7 +423,13 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         return path
 
-    def _repr_html_(self) -> str:
+    def _repr_dict_(self) -> dict:
+        """Utility function for pretty-printing to the command line and jupyter notebooks"""
+        repr_dict = self.model_dump(exclude={"dataset"})
+        repr_dict["dataset_name"] = self.dataset.name
+        return repr_dict
+
+    def _repr_html_(self):
         """For pretty printing in Jupyter."""
         return dict2html(self.model_dump(exclude={"dataset", "split"}))
 
@@ -565,6 +438,188 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     def __str__(self):
         return self.__repr__()
+
+
+class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
+    version: ClassVar[Literal[1]] = 1
+
+    dataset: DatasetV1
+    split: SplitType = Field(..., exclude=True)
+
+    @field_validator("dataset")
+    def _validate_dataset(cls, v: DatasetV1 | str | dict[str, Any]):
+        """
+        Allows either passing a Dataset object or the kwargs to create one
+        """
+        match v:
+            case dict():
+                return DatasetV1(**v)
+            case str():
+                return DatasetV1.from_json(v)
+            case DatasetV1():
+                return v
+
+    @model_validator(mode="after")
+    def _validate_split(self) -> Self:
+        """
+        Verifies that:
+          1) There are no empty test partitions
+          2) All indices are valid given the dataset
+          3) There is no duplicate indices in any of the sets
+          4) There is no overlap between the train and test set
+          5) No row exists in the test set where all labels are missing/empty
+        """
+
+        if not isinstance(self.split[1], dict):
+            self.split = self.split[0], {"test": self.split[1]}
+        split = self.split
+
+        # Train partition can be empty (zero-shot)
+        # Test partitions cannot be empty
+        if any(len(v) == 0 for v in split[1].values()):
+            raise InvalidBenchmarkError("The predefined split contains empty test partitions")
+
+        train_idx_list = split[0]
+        full_test_idx_list = list(chain.from_iterable(split[1].values()))
+
+        if len(train_idx_list) == 0:
+            logger.info(
+                "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
+            )
+
+        train_idx_set = set(train_idx_list)
+        full_test_idx_set = set(full_test_idx_list)
+
+        # The train and test indices do not overlap
+        if len(train_idx_set & full_test_idx_set) > 0:
+            raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
+
+        # Check for duplicate indices within the train set
+        if len(train_idx_set) != len(train_idx_list):
+            raise InvalidBenchmarkError("The training set contains duplicate indices")
+
+        # Check for duplicate indices within a given test set. Because a user can specify
+        # multiple test sets for a given benchmark and it is acceptable for indices to be shared
+        # across test sets, we check for duplicates in each test set independently.
+        for test_set_name, test_set_idx_list in split[1].items():
+            if len(test_set_idx_list) != len(set(test_set_idx_list)):
+                raise InvalidBenchmarkError(
+                    f'Test set with name "{test_set_name}" contains duplicate indices'
+                )
+
+        # All indices are valid given the dataset
+        dataset = self.dataset
+        if dataset is not None:
+            max_i = len(dataset)
+            if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
+                raise InvalidBenchmarkError("The predefined split contains invalid indices")
+
+        return self
+
+    def _compute_checksum(self):
+        """
+        Computes a hash of the benchmark.
+
+        This is meant to uniquely identify the benchmark and can be used to verify the version.
+        """
+
+        hash_fn = md5()
+        hash_fn.update(self.dataset.md5sum.encode("utf-8"))
+        for c in sorted(self.target_cols):
+            hash_fn.update(c.encode("utf-8"))
+        for c in sorted(self.input_cols):
+            hash_fn.update(c.encode("utf-8"))
+        for m in sorted(str(m) for m in self.metrics):
+            hash_fn.update(m.encode("utf-8"))
+
+        # Train set
+        s = json.dumps(sorted(self.split[0]))
+        hash_fn.update(s.encode("utf-8"))
+
+        # Test sets
+        for k in sorted(self.split[1].keys()):
+            s = json.dumps(sorted(self.split[1][k]))
+            hash_fn.update(k.encode("utf-8"))
+            hash_fn.update(s.encode("utf-8"))
+
+        checksum = hash_fn.hexdigest()
+        return checksum
+
+    def _get_test_sets(
+        self, hide_targets=True, featurization_fn: Callable | None = None
+    ) -> dict[str, Subset]:
+        """Construct the test set(s), given the split in the benchmark specification. Used
+        internally to construct the test set for client use and evaluation.
+        """
+        test_split = self.split[1]
+        return {
+            k: self._get_subset(v, hide_targets=hide_targets, featurization_fn=featurization_fn)
+            for k, v in test_split.items()
+        }
+
+    def get_train_test_split(
+        self, featurization_fn: Callable | None = None
+    ) -> tuple[Subset, dict[str, Subset]]:
+        """Construct the train and test sets, given the split in the benchmark specification.
+
+        Returns [`Subset`][polaris.dataset.Subset] objects, which offer several ways of accessing the data
+        and can thus easily serve as a basis to build framework-specific (e.g. PyTorch, Tensorflow)
+        data-loaders on top of.
+
+        Args:
+            featurization_fn: A function to apply to the input data. If a multi-input benchmark, this function
+                expects an input in the format specified by the `input_format` parameter.
+
+        Returns:
+            A tuple with the train `Subset` and test `Subset` objects.
+                If there are multiple test sets, these are returned in a dictionary and each test set has
+                an associated name. The targets of the test set can not be accessed.
+        """
+        train = self._get_subset(self.split[0], hide_targets=False, featurization_fn=featurization_fn)
+        test = self._get_test_sets(hide_targets=True, featurization_fn=featurization_fn)
+        return train, test
+
+    @computed_field
+    @property
+    def test_set_sizes(self) -> dict[str, int]:
+        """The sizes of the test sets."""
+        return {k: len(v) for k, v in self.split[1].items()}
+
+    @computed_field
+    @property
+    def n_test_sets(self) -> int:
+        """The number of test sets"""
+        return len(self.split[1])
+
+    @computed_field
+    @property
+    def n_train_datapoints(self) -> int:
+        """The size of the train set."""
+        return len(self.split[0])
+
+    @computed_field
+    @property
+    def test_set_labels(self) -> list[str]:
+        """The labels of the test sets."""
+        return sorted(list(self.split[1].keys()))
+
+    @computed_field
+    @property
+    def n_test_datapoints(self) -> dict[str, int]:
+        """The size of (each of) the test set(s)."""
+        if self.n_test_sets == 1:
+            return {"test": len(self.split[1])}
+        else:
+            return {k: len(v) for k, v in self.split[1].items()}
+
+    @computed_field
+    @property
+    def n_classes(self) -> dict[str, int]:
+        return {
+            target: self.dataset.table.loc[:, target].nunique()
+            for target in self.target_cols
+            if self.target_types.get(target) == TargetType.CLASSIFICATION
+        }
 
     def __eq__(self, other):
         if not isinstance(other, BenchmarkSpecification):

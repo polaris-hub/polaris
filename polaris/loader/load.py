@@ -6,10 +6,12 @@ from datamol.utils import fs
 from polaris.benchmark._definitions import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
-    SingleTaskBenchmarkV2Specification,
-    MultiTaskBenchmarkV2Specification,
 )
 from polaris.dataset import DatasetV1, create_dataset_from_file
+from polaris.experimental._benchmark_v2 import (
+    MultiTaskBenchmarkV2Specification,
+    SingleTaskBenchmarkV2Specification,
+)
 from polaris.hub.client import PolarisHubClient
 from polaris.utils.types import ChecksumStrategy
 
