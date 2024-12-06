@@ -15,7 +15,7 @@ authors = [
     { name = "Julien St-Laurent", email = "julien.stl@valencelabs.com" },
 ]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.13"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
