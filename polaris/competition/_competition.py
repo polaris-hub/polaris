@@ -1,13 +1,13 @@
 from datetime import datetime
 from typing import Optional
 
-from polaris.benchmark import BenchmarkSpecification
+from polaris.benchmark._base import BenchmarkV1Specification
 from polaris.evaluate import CompetitionPredictions
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.types import HubOwner
 
 
-class CompetitionSpecification(BenchmarkSpecification):
+class CompetitionSpecification(BenchmarkV1Specification):
     """Much of the underlying data model and logic is shared across Benchmarks and Competitions, and
     anything within this class serves as a point of differentiation between the two.
 

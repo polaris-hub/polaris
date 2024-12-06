@@ -19,14 +19,16 @@ from loguru import logger
 from polaris.benchmark import (
     BenchmarkSpecification,
     MultiTaskBenchmarkSpecification,
-    MultiTaskBenchmarkV2Specification,
     SingleTaskBenchmarkSpecification,
-    SingleTaskBenchmarkV2Specification
 )
 from polaris.competition import CompetitionSpecification
 from polaris.dataset import CompetitionDataset, Dataset, DatasetV1
 from polaris.evaluate import BenchmarkResults, CompetitionPredictions, CompetitionResults
-from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
+from polaris.experimental._benchmark_v2 import (
+    BenchmarkV2Specification,
+    MultiTaskBenchmarkV2Specification,
+    SingleTaskBenchmarkV2Specification,
+)
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth

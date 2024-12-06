@@ -73,6 +73,11 @@ Can only use alpha-numeric characters, underscores and dashes.
 The string must be at least 4 and at most 64 characters long.
 """
 
+Md5StringType: TypeAlias = Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{32}$")]
+"""
+A string that represents an MD5 hash.
+"""
+
 HubUser: TypeAlias = SlugCompatibleStringType
 """
 A user on the Polaris Hub is identified by a username,
