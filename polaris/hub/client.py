@@ -2,7 +2,7 @@ import json
 import ssl
 from hashlib import md5
 from io import BytesIO
-from typing import Union, get_args
+from typing import get_args
 from urllib.parse import urljoin
 
 import certifi
@@ -17,7 +17,7 @@ from httpx import HTTPStatusError, Response
 from loguru import logger
 
 from polaris.benchmark import (
-    BenchmarkSpecification,
+    BenchmarkV1Specification,
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
@@ -430,7 +430,7 @@ class PolarisHubClient(OAuth2Client):
         owner: str | HubOwner,
         name: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
-    ) -> BenchmarkSpecification | BenchmarkV2Specification:
+    ) -> BenchmarkV1Specification | BenchmarkV2Specification:
         """Load a benchmark from the Polaris Hub.
 
         Args:
@@ -457,7 +457,7 @@ class PolarisHubClient(OAuth2Client):
         owner: str | HubOwner,
         name: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
-    ) -> BenchmarkSpecification:
+    ) -> BenchmarkV1Specification:
         response = self._base_request_to_hub(url=f"/v1/benchmark/{owner}/{name}", method="GET")
 
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
@@ -778,7 +778,7 @@ class PolarisHubClient(OAuth2Client):
 
     def upload_benchmark(
         self,
-        benchmark: BenchmarkSpecification | BenchmarkV2Specification,
+        benchmark: BenchmarkV1Specification | BenchmarkV2Specification,
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
     ):
@@ -805,17 +805,17 @@ class PolarisHubClient(OAuth2Client):
         """
         # (mercuryseries): check ArtifactSubtype here and call competition v2 endpoint if necessary
         # to avoid having to check the type of the benchmark in the upload methods
-        if isinstance(benchmark, BenchmarkSpecification):
+        if isinstance(benchmark, BenchmarkV1Specification):
             return self._upload_v1_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
         elif isinstance(benchmark, BenchmarkV2Specification):
             return self._upload_v2_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
 
     def _upload_v1_benchmark(
         self,
-        benchmark: BenchmarkSpecification | CompetitionSpecification,
+        benchmark: BenchmarkV1Specification,
         artifact_type: ArtifactSubtype,
         access: AccessType = "private",
-        owner: Union[HubOwner, str, None] = None,
+        owner: HubOwner | str | None = None,
     ):
         """Upload a standard or competition benchmark to the Polaris Hub.
 
@@ -866,10 +866,10 @@ class PolarisHubClient(OAuth2Client):
 
     def _upload_v2_benchmark(
         self,
-        benchmark: BenchmarkSpecification | CompetitionSpecification,
+        benchmark: BenchmarkV1Specification,
         artifact_type: ArtifactSubtype,
         access: AccessType = "private",
-        owner: Union[HubOwner, str, None] = None,
+        owner: HubOwner | str | None = None,
     ):
         with ProgressIndicator(
             start_msg="Uploading artifact...",
