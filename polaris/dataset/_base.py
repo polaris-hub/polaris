@@ -1,7 +1,7 @@
 import abc
 import json
 from os import PathLike
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Any, MutableMapping
 from uuid import uuid4
 
@@ -126,7 +126,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         Set the default cache dir if none and make sure it exists
         """
         if self._cache_dir is None:
-            self._cache_dir = str(Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / str(uuid4()))
+            self._cache_dir = str(PurePath(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR / str(uuid4()))
         fs, path = fsspec.url_to_fs(self._cache_dir)
         fs.mkdirs(path, exist_ok=True)
 
@@ -365,8 +365,8 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         if not self.uses_zarr:
             return
 
-        current_zarr_root = Path(self.zarr_root_path)
-        destination_zarr_root = Path(destination) / current_zarr_root.name
+        current_zarr_root = PurePath(self.zarr_root_path)
+        destination_zarr_root = PurePath(destination) / current_zarr_root.name
 
         # Copy over Zarr data to the destination
         self._warn_about_remote_zarr = False
