@@ -431,10 +431,10 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
 
     def _repr_html_(self):
         """For pretty printing in Jupyter."""
-        return dict2html(self.model_dump(exclude={"dataset", "split"}))
+        return dict2html(self.model_dump(exclude={"dataset"}))
 
     def __repr__(self):
-        return self.model_dump_json(exclude={"dataset", "split"}, indent=2)
+        return self.model_dump_json(exclude={"dataset"}, indent=2)
 
     def __str__(self):
         return self.__repr__()

@@ -1,8 +1,7 @@
 from typing import Any, Callable, ClassVar, Generator, Literal, Sequence
 
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
-from pydantic.alias_generators import to_camel
+from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
 from pyroaring import BitMap
 from typing_extensions import Self
 
@@ -15,8 +14,6 @@ from polaris.utils.types import TargetType
 
 
 class IndexSet(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-
     indices: BitMap = Field(default_factory=BitMap, exclude=True)
 
     @field_validator("indices", mode="before")
@@ -43,7 +40,7 @@ class SplitV2(BaseModel):
     @classmethod
     def _validate_training_set(cls, v: IndexSet):
         """
-        Train index set can be empty (zero-shot)
+        Training index set can be empty (zero-shot)
         """
         if v.datapoints == 0:
             logger.info(
@@ -62,7 +59,7 @@ class SplitV2(BaseModel):
     @model_validator(mode="after")
     def validate_set_overlap(self) -> Self:
         """
-        The train and test indices do not overlap
+        The training and test index sets do not overlap
         """
         if self.training.intersect(self.test):
             raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
@@ -131,6 +128,8 @@ class BenchmarkV2Specification(BenchmarkSpecification):
         """
         Verifies that:
           - All indices are valid given the dataset
+
+          # TODO: Do we do these?
           3) There is no duplicate indices in any of the sets
           5) No row exists in the test set where all labels are missing/empty
         """
