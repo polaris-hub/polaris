@@ -290,7 +290,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return v.name if isinstance(v, Metric) else v.model_dump()
 
     @field_serializer("split")
-    def _serialize_split(self, v):
+    def _serialize_split(self, v: SplitType):
         """Convert any tuple to list to make sure it's serializable"""
         return listit(v)
 
@@ -330,6 +330,11 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         checksum = hash_fn.hexdigest()
         return checksum
+
+    @computed_field
+    @property
+    def dataset_artifact_id(self) -> str:
+        return self.dataset.artifact_id
 
     @computed_field
     @property
@@ -384,7 +389,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     @computed_field
     @property
-    def test_set_sizes(self) -> list[str]:
+    def test_set_sizes(self) -> dict[str, int]:
         """The sizes of the test sets."""
         return {k: len(v) for k, v in self.split[1].items()}
 
@@ -499,7 +504,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             y_prob=y_prob,
         )
 
-        return BenchmarkResults(results=scores, benchmark_name=self.name, benchmark_owner=self.owner)
+        return BenchmarkResults(results=scores, benchmark_artifact_id=self.artifact_id)
 
     def upload_to_hub(
         self,
@@ -548,20 +553,12 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         return path
 
-    def _repr_dict_(self) -> dict:
-        """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump()
-        repr_dict.pop("dataset")
-        repr_dict.pop("split")
-        repr_dict["dataset_name"] = self.dataset.name
-        return repr_dict
-
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         """For pretty printing in Jupyter."""
-        return dict2html(self._repr_dict_())
+        return dict2html(self.model_dump(exclude={"dataset", "split"}))
 
     def __repr__(self):
-        return json.dumps(self._repr_dict_(), indent=2)
+        return self.model_dump_json(exclude={"dataset", "split"}, indent=2)
 
     def __str__(self):
         return self.__repr__()

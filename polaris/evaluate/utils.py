@@ -62,7 +62,7 @@ def evaluate_benchmark(
 
     # Compute the results
     # Results are saved in a tabular format. For more info, see the BenchmarkResults docs.
-    scores: ResultsType = pd.DataFrame(columns=BenchmarkResults.RESULTS_COLUMNS)
+    scores = pd.DataFrame(columns=BenchmarkResults.RESULTS_COLUMNS)
 
     # For every test set...
     for test_label in test_set_labels:
