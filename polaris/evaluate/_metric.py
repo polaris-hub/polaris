@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Callable, Literal, Self, TypeAlias
+from typing import Callable, Literal, TypeAlias
 
 import numpy as np
 from pydantic import BaseModel, Field, field_serializer, field_validator, model_validator
@@ -14,6 +14,7 @@ from sklearn.metrics import (
     r2_score,
     roc_auc_score,
 )
+from typing_extensions import Self
 
 from polaris.dataset._subset import Subset
 from polaris.evaluate._predictions import BenchmarkPredictions
