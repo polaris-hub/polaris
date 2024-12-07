@@ -1,3 +1,5 @@
+from typing import Collection
+
 from pydantic import computed_field, field_validator
 
 from polaris.benchmark._base import BenchmarkV1Specification
@@ -5,10 +7,12 @@ from polaris.utils.types import TaskType
 
 
 class SingleTaskMixin:
-    """Mixin for single-task benchmarks."""
+    """
+    Mixin for single-task benchmarks.
+    """
 
     @field_validator("target_cols", check_fields=False)
-    def validate_target_cols(cls, v):
+    def validate_target_cols(cls, v: Collection[str]) -> Collection[str]:
         if len(v) != 1:
             raise ValueError("A single-task benchmark should specify exactly one target column.")
         return v
@@ -21,10 +25,12 @@ class SingleTaskMixin:
 
 
 class MultiTaskMixin:
-    """Mixin for multi-task benchmarks."""
+    """
+    Mixin for multi-task benchmarks.
+    """
 
     @field_validator("target_cols", check_fields=False)
-    def validate_target_cols(cls, v):
+    def validate_target_cols(cls, v: Collection[str]) -> Collection[str]:
         if len(v) <= 1:
             raise ValueError("A multi-task benchmark should specify at least two target columns.")
         return v
@@ -32,17 +38,23 @@ class MultiTaskMixin:
     @computed_field
     @property
     def task_type(self) -> str:
-        """Return MULTI_TASK for multi-task benchmarks."""
+        """
+        Return MULTI_TASK for multi-task benchmarks.
+        """
         return TaskType.MULTI_TASK.value
 
 
 class SingleTaskBenchmarkSpecification(SingleTaskMixin, BenchmarkV1Specification):
-    """Single-task benchmark for the base specification."""
+    """
+    Single-task benchmark for the base specification.
+    """
 
     pass
 
 
 class MultiTaskBenchmarkSpecification(MultiTaskMixin, BenchmarkV1Specification):
-    """Multi-task benchmark for the base specification."""
+    """
+    Multitask benchmark for the base specification.
+    """
 
     pass

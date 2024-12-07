@@ -2,20 +2,20 @@ import abc
 import json
 from hashlib import md5
 from itertools import chain
-from typing import Any, Callable, ClassVar, Literal
+from pathlib import Path
+from typing import Any, Callable, ClassVar, Literal, Sequence, TypeAlias
 
 import fsspec
 import numpy as np
-from datamol.utils import fs
 from loguru import logger
 from pydantic import (
     Field,
-    ValidationInfo,
     computed_field,
     field_serializer,
     field_validator,
     model_validator,
 )
+from pydantic_core.core_schema import ValidationInfo
 from sklearn.utils.multiclass import type_of_target
 from typing_extensions import Self
 
@@ -36,6 +36,8 @@ from polaris.utils.types import (
     TargetType,
     TaskType,
 )
+
+ColumnName: TypeAlias = str
 
 
 class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
@@ -97,31 +99,40 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
 
     # Public attributes
     dataset: BaseArtifactModel
-    target_cols: list[str]
-    input_cols: list[str]
+    target_cols: set[ColumnName] = Field(min_length=1)
+    input_cols: set[ColumnName] = Field(min_length=1)
     metrics: str | Metric | list[str | Metric]
     main_metric: str | Metric | None = None
     readme: str = ""
-    target_types: dict[str, TargetType | str | None] = Field(default_factory=dict, validate_default=True)
+    target_types: dict[ColumnName, TargetType] = Field(default_factory=dict, validate_default=True)
 
-    @field_validator("target_cols", "input_cols")
-    def _validate_cols(cls, v: str | list[str], info: ValidationInfo):
+    @field_validator("target_cols", "input_cols", mode="before")
+    @classmethod
+    def _parse_cols(cls, v: str | Sequence[str], info: ValidationInfo) -> set[str]:
         """Verifies all columns are present in the dataset."""
-        if not isinstance(v, list):
-            v = [v]
-        if len(v) == 0:
-            raise InvalidBenchmarkError("Specify at least a single column")
-        # TODO: Move this down to V1 Benchmark, and add implementation in V2 Benchmark
-        if info.data.get("dataset") is not None and not all(
-            c in info.data["dataset"].table.columns for c in v
-        ):
-            raise InvalidBenchmarkError("Not all specified columns were found in the dataset.")
-        if len(set(v)) != len(v):
-            raise InvalidBenchmarkError("The task specifies duplicate columns")
+        if isinstance(v, str):
+            v = {v}
+        else:
+            v = set(v)
         return v
 
+    @field_validator("target_types", mode="before")
+    @classmethod
+    def _parse_target_types(
+        cls, v: dict[ColumnName, TargetType | str | None]
+    ) -> dict[ColumnName, TargetType]:
+        """
+        Converts the target types to TargetType enums if they are strings.
+        """
+        return {
+            target: TargetType(val) if isinstance(val, str) else val
+            for target, val in v.items()
+            if val is not None
+        }
+
     @field_validator("metrics")
-    def _validate_metrics(cls, v):
+    @classmethod
+    def _validate_metrics(cls, v: str | Metric | list[str | Metric]) -> list[Metric]:
         """
         Verifies all specified metrics are either a Metric object or a valid metric name.
         Also verifies there are no duplicate metrics.
@@ -142,55 +153,39 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
         return v
 
     @field_validator("main_metric")
-    def _validate_main_metric(cls, v):
+    @classmethod
+    def _validate_main_metric(cls, v: str | Metric | None) -> Metric:
         """Converts the main metric to a Metric object if it is a string."""
-        # lu: v can be None.
-        if v and not isinstance(v, Metric):
+        if isinstance(v, str):
             v = Metric[v]
         return v
 
-    @field_validator("target_types")
-    def _validate_target_types(cls, v, info: ValidationInfo):
-        """Try to automatically infer the target types if not already set"""
+    @model_validator(mode="after")
+    def _validate_cols(self) -> Self:
+        """
+        Verifies that all specified columns are present in the dataset.
+        """
+        columns = self.target_cols | self.input_cols
+        dataset_columns = set(self.dataset.columns)
+        if not columns.issubset(dataset_columns):
+            raise InvalidBenchmarkError("Not all specified columns were found in the dataset.")
 
-        dataset = info.data.get("dataset")
-        target_cols = info.data.get("target_cols")
-
-        if dataset is None or target_cols is None:
-            return v
-
-        for target in target_cols:
-            if target not in v:
-                # Skip inferring the target type for pointer columns.
-                # This would be complex to implement properly.
-                # For these columns, dataset creators can still manually specify the target type.
-                anno = dataset.annotations.get(target)
-                if anno is not None and anno.is_pointer:
-                    v[target] = None
-                    continue
-
-                val = dataset.table.loc[:, target]
-
-                # Non numeric columns can be targets (e.g. prediction molecular reactions),
-                # but in that case we currently don't infer the target type.
-                if not np.issubdtype(val.dtype, np.number):
-                    v[target] = None
-                    continue
-
-                # remove the nans for mutiple task dataset when the table is sparse
-                target_type = type_of_target(val[~np.isnan(val)])
-                if target_type == "continuous":
-                    v[target] = TargetType.REGRESSION
-                elif target_type in ["binary", "multiclass"]:
-                    v[target] = TargetType.CLASSIFICATION
-                else:
-                    v[target] = None
-            elif not isinstance(v, TargetType):
-                v[target] = TargetType(v[target])
-        return v
+        return self
 
     @model_validator(mode="after")
-    def _validate_model(self) -> Self:
+    def _validate_target_types(self) -> Self:
+        """
+        Verifies that all target types are for benchmark targets.
+        """
+        columns = set(self.target_types.keys())
+        if not columns.issubset(self.target_cols):
+            raise InvalidBenchmarkError(
+                f"Not all specified target types were found in the target columns. {columns} - {self.target_cols}"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _ensure_main_metric(self) -> Self:
         """
         Sets a default metric if missing.
         """
@@ -206,15 +201,14 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
             return v.name
         return [m.name for m in v]
 
-    @field_serializer("split")
-    def _serialize_split(self, v: SplitType):
-        """Convert any tuple to list to make sure it's serializable"""
-        return listit(v)
-
     @field_serializer("target_types")
     def _serialize_target_types(self, v):
         """Convert from enum to string to make sure it's serializable"""
         return {k: v.value for k, v in self.target_types.items()}
+
+    @field_serializer("target_cols", "input_cols")
+    def _serialize_columns(self, v: set[str]) -> list[str]:
+        return list(v)
 
     @computed_field
     @property
@@ -229,59 +223,45 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
         return v.value
 
     @abc.abstractmethod
-    def get_train_test_split(
-        self, featurization_fn: Callable | None = None
-    ) -> tuple[Subset, dict[str, Subset]]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def _get_test_sets(
         self, hide_targets=True, featurization_fn: Callable | None = None
     ) -> dict[str, Subset]:
         raise NotImplementedError
 
-    @abc.abstractmethod
     @property
-    def n_classes(self) -> dict[str, int]:
-        """
-        The number of classes for each of the target columns.
-        """
-        raise NotImplementedError
-
     @abc.abstractmethod
-    @property
     def n_test_datapoints(self) -> dict[str, int]:
         """
         The size of (each of) the test set(s).
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def test_set_labels(self) -> list[str]:
         """
         The labels of the test sets.
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def n_train_datapoints(self) -> int:
         """
         The size of the train set.
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def n_test_sets(self) -> int:
         """
         The number of test sets
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def test_set_sizes(self) -> dict[str, int]:
         """
         The sizes of the test sets.
@@ -398,17 +378,17 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
         Returns:
             The path to the JSON file.
         """
-
-        fs.mkdir(destination, exist_ok=True)
+        dest = Path(destination)
+        dest.mkdir(parents=True, exist_ok=True)
 
         data = self.model_dump()
-        data["dataset"] = self.dataset.to_json(destination=destination)
+        data["dataset"] = self.dataset.to_json(destination)
 
-        path = fs.join(destination, "benchmark.json")
-        with fsspec.open(path, "w") as f:
+        path = dest / "benchmark.json"
+        with fsspec.open(str(path), "w") as f:
             json.dump(data, f)
 
-        return path
+        return str(path)
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
@@ -428,13 +408,14 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
 
 
 class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
-    version: ClassVar[Literal[1]] = 1
+    _version: ClassVar[Literal[1]] = 1
 
     dataset: DatasetV1
-    split: SplitType = Field(..., exclude=True)
+    split: SplitType
 
-    @field_validator("dataset")
-    def _validate_dataset(cls, v: DatasetV1 | str | dict[str, Any]):
+    @field_validator("dataset", mode="before")
+    @classmethod
+    def _parse_dataset(cls, v: DatasetV1 | str | dict[str, Any]) -> DatasetV1:
         """
         Allows either passing a Dataset object or the kwargs to create one
         """
@@ -445,6 +426,35 @@ class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
                 return DatasetV1.from_json(v)
             case DatasetV1():
                 return v
+
+    @model_validator(mode="after")
+    def _infer_target_types(self) -> Self:
+        """Try to automatically infer the target types if not already set"""
+
+        for target in filter(lambda target: target not in self.target_types, self.target_cols):
+            # Skip inferring the target type for pointer columns.
+            # This would be complex to implement properly.
+            # For these columns, dataset creators can still manually specify the target type.
+            column_annotation = self.dataset.annotations.get(target)
+            if column_annotation is not None and column_annotation.is_pointer:
+                continue
+
+            val = self.dataset.table.loc[:, target]
+
+            # Non-numeric columns can be targets (e.g. prediction molecular reactions),
+            # but in that case we currently don't infer the target type.
+            if not np.issubdtype(val.dtype, np.number):
+                continue
+
+            # Remove the nans for multiple task dataset when the table is sparse
+            target_type = type_of_target(val[~np.isnan(val)])
+            match target_type:
+                case "continuous":
+                    self.target_types[target] = TargetType.REGRESSION
+                case "binary" | "multiclass":
+                    self.target_types[target] = TargetType.CLASSIFICATION
+
+        return self
 
     @model_validator(mode="after")
     def _validate_split(self) -> Self:
@@ -503,7 +513,12 @@ class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
 
         return self
 
-    def _compute_checksum(self):
+    @field_serializer("split")
+    def _serialize_split(self, v: SplitType):
+        """Convert any tuple to list to make sure it's serializable"""
+        return listit(v)
+
+    def _compute_checksum(self) -> str:
         """
         Computes a hash of the benchmark.
 
@@ -546,7 +561,7 @@ class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
 
     def get_train_test_split(
         self, featurization_fn: Callable | None = None
-    ) -> tuple[Subset, dict[str, Subset]]:
+    ) -> tuple[Subset, Subset | dict[str, Subset]]:
         """Construct the train and test sets, given the split in the benchmark specification.
 
         Returns [`Subset`][polaris.dataset.Subset] objects, which offer several ways of accessing the data
@@ -564,6 +579,11 @@ class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
         """
         train = self._get_subset(self.split[0], hide_targets=False, featurization_fn=featurization_fn)
         test = self._get_test_sets(hide_targets=True, featurization_fn=featurization_fn)
+
+        # For improved UX, we return the object instead of the dictionary if there is only one test set.
+        # Internally, however, assume that the test set is always a dictionary simplifies the code.
+        if len(test) == 1:
+            test = test["test"]
         return train, test
 
     @computed_field
@@ -602,13 +622,16 @@ class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
     @computed_field
     @property
     def n_classes(self) -> dict[str, int]:
+        """
+        The number of classes for each of the target columns.
+        """
         return {
             target: self.dataset.table.loc[:, target].nunique()
             for target in self.target_cols
             if self.target_types.get(target) == TargetType.CLASSIFICATION
         }
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, BenchmarkSpecification):
             return False
         return self.md5sum == other.md5sum

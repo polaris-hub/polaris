@@ -1,19 +1,21 @@
 from typing import Any, Callable, ClassVar, Generator, Literal, Sequence
 
 from loguru import logger
-from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 from pyroaring import BitMap
 from typing_extensions import Self
 
-from polaris.benchmark._base import BenchmarkSpecification
+from polaris.benchmark import BenchmarkSpecification
+from polaris.benchmark._base import ColumnName
 from polaris.benchmark._definitions import MultiTaskMixin, SingleTaskMixin
 from polaris.dataset import Subset
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.utils.errors import InvalidBenchmarkError
-from polaris.utils.types import TargetType
 
 
 class IndexSet(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     indices: BitMap = Field(default_factory=BitMap, exclude=True)
 
     @field_validator("indices", mode="before")
@@ -28,7 +30,7 @@ class IndexSet(BaseModel):
 
     @computed_field
     @property
-    def datapoints(self):
+    def datapoints(self) -> int:
         return len(self.indices)
 
 
@@ -92,7 +94,7 @@ class SplitV2(BaseModel):
 
     @computed_field
     @property
-    def max_index(self):
+    def max_index(self) -> int:
         return max(self.training.indices.max(), self.test.indices.max())
 
     def test_items(self) -> Generator[tuple[str, IndexSet], None, None]:
@@ -101,17 +103,18 @@ class SplitV2(BaseModel):
 
 
 class BenchmarkV2Specification(BenchmarkSpecification):
-    version: ClassVar[Literal[2]] = 2
+    _version: ClassVar[Literal[2]] = 2
 
     dataset: DatasetV2
     split: SplitV2 = Field(..., exclude=True)
+    n_classes: dict[ColumnName, int]
 
     @field_validator("dataset", mode="before")
     @classmethod
-    def _validate_dataset(
+    def _parse_dataset(
         cls,
         v: DatasetV2 | str | dict[str, Any],
-    ):
+    ) -> DatasetV2:
         """
         Allows either passing a Dataset object or the kwargs to create one
         """
@@ -124,16 +127,23 @@ class BenchmarkV2Specification(BenchmarkSpecification):
                 return v
 
     @model_validator(mode="after")
+    def _validate_n_classes(self) -> Self:
+        """
+        The number of classes for each of the target columns.
+        """
+        columns = set(self.n_classes.keys())
+        if not columns.issubset(self.target_cols):
+            raise InvalidBenchmarkError("Not all specified class numbers were found in the target columns.")
+
+        return self
+
+    @model_validator(mode="after")
     def _validate_split_in_dataset(self) -> Self:
         """
         Verifies that:
           - All indices are valid given the dataset
-
-          # TODO: Do we do these?
-          3) There is no duplicate indices in any of the sets
-          5) No row exists in the test set where all labels are missing/empty
         """
-        dataset_length = len(self.dataset) if self.dataset else 0
+        dataset_length = len(self.dataset)
         if self.split.max_index >= dataset_length:
             raise InvalidBenchmarkError("The predefined split contains invalid indices")
 
@@ -159,19 +169,13 @@ class BenchmarkV2Specification(BenchmarkSpecification):
 
     @computed_field
     @property
-    def n_classes(self) -> dict[str, int]:
-        """
-        The number of classes for each of the target columns.
-        """
-        n_classes = {}
-        for target in (
-            target
-            for target in self.target_cols
-            if self.target_types.get(target) == TargetType.CLASSIFICATION
-        ):
-            # TODO: Don't use table attribute
-            n_classes[target] = self.dataset.table.loc[:, target].nunique()
-        return n_classes
+    def test_set_sizes(self) -> dict[str, int]:
+        return {label: index_set.datapoints for label, index_set in self.split.test_items()}
+
+    @computed_field
+    @property
+    def test_set_labels(self) -> list[str]:
+        return list(label for label, _ in self.split.test_items())
 
     def _get_test_sets(
         self, hide_targets=True, featurization_fn: Callable | None = None
