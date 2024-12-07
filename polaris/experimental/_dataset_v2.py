@@ -1,5 +1,6 @@
 import json
 import re
+from os import PathLike
 from pathlib import Path
 from typing import Any, ClassVar, Literal
 
@@ -180,8 +181,10 @@ class DatasetV2(BaseDataset):
 
         # If it is a group, there is no deterministic order for the child keys.
         # We therefore use a special array that defines the index.
-        if isinstance(group_or_array, zarr.Group):
-            row = group_or_array[_INDEX_ARRAY_KEY][row]
+        # If loaded to memory, the group is represented by a dictionary.
+        if isinstance(group_or_array, zarr.Group) or isinstance(group_or_array, dict):
+            # Indices in a group should always be strings
+            row = str(group_or_array[_INDEX_ARRAY_KEY][row])
         arr = group_or_array[row]
 
         # Adapt the input to the specified format
@@ -214,9 +217,8 @@ class DatasetV2(BaseDataset):
 
     def to_json(
         self,
-        destination: str,
+        destination: str | Path,
         if_exists: ZarrConflictResolution = "replace",
-        load_zarr_from_new_location: bool = False,
     ) -> str:
         """
         Save the dataset to a destination directory as a JSON file.
@@ -225,8 +227,6 @@ class DatasetV2(BaseDataset):
             destination: The _directory_ to save the associated data to.
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
-            load_zarr_from_new_location: Whether to update the current instance to load data from the location
-                the data is saved to. Only relevant for Zarr-datasets.
 
         Returns:
             The path to the JSON file.
@@ -234,45 +234,41 @@ class DatasetV2(BaseDataset):
         destination = Path(destination)
         destination.mkdir(exist_ok=True, parents=True)
 
-        dataset_path = str(destination / "dataset.json")
-        new_zarr_root_path = str(destination / "data.zarr")
+        # Make a copy to cache the data, and then serialize that
+        copy = self.model_copy()
+        copy.cache(destination, if_exists=if_exists)
 
-        # Lu: Avoid serializing and sending None to hub app.
-        serialized = self.model_dump(
+        serialized = copy.model_dump_json(
             exclude_none=True, exclude={"zarr_manifest_path", "zarr_manifest_md5sum"}
         )
-        serialized["zarrRootPath"] = new_zarr_root_path
 
-        # Copy over Zarr data to the destination
-        self._warn_about_remote_zarr = False
+        destination_json = destination / f"{copy.slug}.json"
+        destination_json.write_text(serialized)
+        return str(destination_json)
 
-        logger.info(f"Copying Zarr archive to {new_zarr_root_path}. This may take a while.")
-        dest = zarr.open(new_zarr_root_path, "w")
+    def cache(
+        self, destination: str | PathLike | None = None, if_exists: ZarrConflictResolution = "replace"
+    ) -> str:
+        """
+        Caches the dataset by downloading the Zarr archive to a local directory.
 
-        zarr.copy_store(
-            source=self.zarr_root.store.store,
-            dest=dest.store,
-            log=logger.debug,
-            if_exists=if_exists,
-        )
-
-        if load_zarr_from_new_location:
-            self.zarr_root_path = new_zarr_root_path
-            self._zarr_root = None
-            self._zarr_data = None
-
-        with fsspec.open(dataset_path, "w") as f:
-            json.dump(serialized, f)
-        return dataset_path
-
-    def cache(self) -> str:
-        """Caches the dataset by downloading all additional data for pointer columns to a local directory.
+        Args:
+            destination: The directory to cache the data to. If None, will use the default cache directory.
+            if_exists: Action for handling existing files at the destination. Options are 'raise' to throw
+                an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
 
         Returns:
-            The path to the cache directory.
+            The path to the directory where data has been cached to.
         """
-        self.to_json(self._cache_dir, load_zarr_from_new_location=True)
-        return self._cache_dir
+        if not destination:
+            destination = self._cache_dir
+
+        destination = Path(destination)
+        destination.mkdir(exist_ok=True, parents=True)
+
+        self._cache_zarr(destination, if_exists)
+
+        return str(destination)
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""

@@ -3,8 +3,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from hashlib import md5
 from io import BytesIO
-from pathlib import Path
-from typing import Any, Generator, Literal, Mapping, Sequence, TypeAlias
+from itertools import islice
+from pathlib import PurePath
+from typing import Any, Callable, Generator, Literal, Mapping, Sequence, TypeAlias
 
 import boto3
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
@@ -12,12 +13,14 @@ from authlib.oauth2 import OAuth2Error
 from authlib.oauth2.rfc6749 import OAuth2Token
 from botocore.exceptions import BotoCoreError, ClientError
 from typing_extensions import Self
+from zarr import CopyError
 from zarr.context import Context
 from zarr.storage import Store
+from zarr.util import buffer_size
 
 from polaris.hub.oauth import DatasetV1Paths, DatasetV2Paths, HubStorageOAuth2Token
 from polaris.utils.errors import PolarisHubError
-from polaris.utils.types import ArtifactUrn
+from polaris.utils.types import ArtifactUrn, ZarrConflictResolution
 
 Scope: TypeAlias = Literal["read", "write"]
 
@@ -59,6 +62,7 @@ class S3Store(Store):
     """
 
     _erasable = False
+    _batch_size = 200
 
     def __init__(
         self,
@@ -124,6 +128,149 @@ class S3Store(Store):
             self.s3_client.complete_multipart_upload(
                 Bucket=self.bucket_name, Key=full_key, UploadId=upload_id, MultipartUpload={"Parts": parts}
             )
+
+    ## Custom methods
+
+    def copy_to_destination(
+        self, destination: Store, if_exists: ZarrConflictResolution = "replace", log: Callable = lambda: None
+    ) -> tuple[int, int, int]:
+        """
+        Copy the content of this store to the destination store.
+
+        We leverage the internal knowledge of this store to make the operation more efficient than `zarr.copy_store`:
+            - Parallel, concurrent `getitems` operations using a thread pool
+
+        Zarr V3 supports partial writes, that would allow us to stream the response back into the store. Unfortunately,
+        it's not supported right now by the library version we use, so we'll have to read the whole response into memory
+        and write it back to the destination.
+
+        Args:
+            destination: destination store
+            if_exists: behavior if the destination key already exists
+            log: optional logging function
+        """
+
+        destination_store_version = getattr(destination, "_store_version", 2)
+        if destination_store_version != self._store_version:
+            raise ValueError("zarr stores must share the same protocol version")
+
+        total_copied = total_skipped = total_bytes_copied = 0
+
+        number_source_keys = len(self)
+
+        batch_iter = iter(self)
+        while batch := tuple(islice(batch_iter, self._batch_size)):
+            to_put = batch if if_exists == "replace" else filter(lambda key: key not in destination, batch)
+            skipped = len(batch) - len(to_put)
+
+            if skipped > 0 and if_exists == "raise":
+                raise CopyError(f"keys {to_put} exist in destination")
+
+            items = self.getitems(to_put, contexts={})
+            for key, content in items.items():
+                destination[key] = content
+                total_bytes_copied += buffer_size(content)
+
+            total_copied += len(to_put)
+            total_skipped += skipped
+
+            log(
+                f"Copied {total_copied} ({total_bytes_copied / (1024 ** 2):.2f} MiB), skipped {total_skipped}, of {number_source_keys} keys. {(total_copied + total_skipped) / number_source_keys * 100:.2f}% completed."
+            )
+
+        return total_copied, total_skipped, total_bytes_copied
+
+    def copy_from_source(
+        self, source: Store, if_exists: ZarrConflictResolution = "replace", log: Callable = lambda: None
+    ) -> tuple[int, int, int]:
+        """
+        Copy the content of the source store to this store.
+
+        We leverage the internal knowledge of this store to make the operation more efficient than `zarr.copy_store`:
+            - Conditional `put_object` operation for the "skip" conflict resolution
+            - Parallel, concurrent `put_object` operations using a thread pool
+
+        Args:
+            source: source store
+            if_exists: behavior if the destination key already exists
+            log: optional logging function
+        """
+
+        def copy_key(key: str, source: Store, if_exists: ZarrConflictResolution) -> tuple[int, int, int]:
+            """
+            Sub-function, intended to be dispatched through a thread pool executor.
+            It will execute the copy operation for a single key from the source.
+            """
+            copied = skipped = bytes_copied = 0
+
+            with handle_s3_errors():
+                data = source[key]
+                if isinstance(data, memoryview):
+                    data = data.tobytes()
+
+                md5_hash = md5(data)
+                try:
+                    # The default is to replace the existing key.
+                    # Setting this header will raise an error if the key already exists.
+                    extra = {"IfNoneMatch": "*"} if if_exists == "skip" else {}
+                    self.s3_client.put_object(
+                        Bucket=self.bucket_name,
+                        Key=self._full_key(key),
+                        Body=data,
+                        ContentType=self.content_type,
+                        ContentMD5=b64encode(md5_hash.digest()).decode(),
+                        Metadata={
+                            "md5sum": md5_hash.hexdigest(),
+                        },
+                        **extra,
+                    )
+                    bytes_copied = buffer_size(data)
+                    copied = 1
+                except ClientError as error:
+                    error_code = error.response["Error"]["Code"]
+                    # Raised when the key already exists and IfNoneMatch is set
+                    if error_code == "PreconditionFailed":
+                        match if_exists:
+                            case "skip":
+                                skipped = 1
+                            case "raise":
+                                raise CopyError(f"key {key!r} exists in destination")
+                    else:
+                        raise
+            return copied, skipped, bytes_copied
+
+        source_store_version = getattr(source, "_store_version", 2)
+        if source_store_version != self._store_version:
+            raise ValueError("zarr stores must share the same protocol version")
+
+        # The executor will allocate min(nbr_CPU + 4, 32) threads
+        with ThreadPoolExecutor() as executor:
+            total_copied = total_skipped = total_bytes_copied = 0
+
+            number_source_keys = len(source)
+
+            # Batch the keys, otherwise we end up with too many files open at the same time
+            batch_iter = iter(source.keys())
+            while batch := tuple(islice(batch_iter, self._batch_size)):
+                # Create a future for each key to copy
+                future_to_key = [
+                    executor.submit(copy_key, source_key, source, if_exists) for source_key in batch
+                ]
+
+                # As each future completes, collect the results
+                for future in as_completed(future_to_key):
+                    result_copied, result_skipped, result_bytes_copied = future.result()
+                    total_copied += result_copied
+                    total_skipped += result_skipped
+                    total_bytes_copied += result_bytes_copied
+
+                log(
+                    f"Copied {total_copied} ({total_bytes_copied / (1024**2):.2f} MiB), skipped {total_skipped}, of {number_source_keys} keys. {(total_copied + total_skipped) / number_source_keys * 100:.2f}% completed."
+                )
+
+            return total_copied, total_skipped, total_bytes_copied
+
+    ## Optional Zarr store methods
 
     def listdir(self, path: str = "") -> Generator[str, None, None]:
         """
@@ -193,7 +340,7 @@ class S3Store(Store):
             response = self.s3_client.head_object(Bucket=self.bucket_name, Key=self._full_key(key))
             return response["ContentLength"]
 
-    ## MutableMapping implementation, expected by Zarr
+    ## MutableMapping implementation, expected by Zarr store
 
     def __getitem__(self, key: str) -> bytes:
         """
@@ -376,7 +523,7 @@ class StorageSession(OAuth2Client):
     def paths(self) -> DatasetV1Paths | DatasetV2Paths:
         return self.token.extra_data.paths
 
-    def _set_file(self, path: Path, value: bytes | bytearray) -> None:
+    def _set_file(self, path: PurePath, value: bytes | bytearray) -> None:
         """
         Internal method to upload non-zarr file to the storage backend.
         """
@@ -389,7 +536,7 @@ class StorageSession(OAuth2Client):
                 content_type = "application/octet-stream"
 
         store = S3Store(
-            path=str(path.parent),
+            path=path.parent.as_posix(),
             access_key=storage_data.key,
             secret_key=storage_data.secret,
             token=f"jwt/{self.token.access_token}",
@@ -398,14 +545,14 @@ class StorageSession(OAuth2Client):
         )
         store[path.name] = value
 
-    def _get_file(self, path: Path) -> BytesIO:
+    def _get_file(self, path: PurePath) -> BytesIO:
         """
         Internal method to download non-zarr file from the storage backend.
         """
         storage_data = self.token.extra_data
 
         store = S3Store(
-            path=str(path.parent),
+            path=path.parent.as_posix(),
             access_key=storage_data.key,
             secret_key=storage_data.secret,
             token=f"jwt/{self.token.access_token}",
@@ -421,7 +568,7 @@ class StorageSession(OAuth2Client):
         if not isinstance(self.paths, DatasetV1Paths):
             raise NotImplementedError("Only DatasetV1Paths are supported for setting the root path")
 
-        path = Path(self.paths.relative_root)
+        path = PurePath(self.paths.relative_root)
         self._set_file(path, value)
 
     def get_root(self) -> BytesIO:
@@ -431,7 +578,7 @@ class StorageSession(OAuth2Client):
         if not isinstance(self.paths, DatasetV1Paths):
             raise NotImplementedError("Only DatasetV1Paths are supported for getting the root path")
 
-        path = Path(self.paths.relative_root)
+        path = PurePath(self.paths.relative_root)
         return self._get_file(path)
 
     def set_manifest(self, value: bytes | bytearray) -> None:
@@ -441,7 +588,7 @@ class StorageSession(OAuth2Client):
         if not isinstance(self.paths, DatasetV2Paths):
             raise NotImplementedError("Only DatasetV2Paths are supported for setting the manifest path")
 
-        path = Path(self.paths.relative_manifest)
+        path = PurePath(self.paths.relative_manifest)
         self._set_file(path, value)
 
     def get_manifest(self) -> BytesIO:
@@ -451,7 +598,7 @@ class StorageSession(OAuth2Client):
         if not isinstance(self.paths, DatasetV2Paths):
             raise NotImplementedError("Only DatasetV2Paths are supported for getting the manifest path")
 
-        path = Path(self.paths.relative_manifest)
+        path = PurePath(self.paths.relative_manifest)
         return self._get_file(path)
 
     @property
