@@ -1,5 +1,6 @@
 import json
 from hashlib import md5
+from os import PathLike
 from pathlib import Path
 from typing import Any, ClassVar, List, Literal
 
@@ -8,7 +9,6 @@ import numpy as np
 import pandas as pd
 import zarr
 from datamol.utils import fs as dmfs
-from loguru import logger
 from pydantic import PrivateAttr, computed_field, field_validator, model_validator
 from typing_extensions import Self
 
@@ -236,72 +236,6 @@ class DatasetV1(BaseDataset, ChecksumMixin):
             data = json.load(f)
         return cls.model_validate(data)
 
-    def to_json(
-        self,
-        destination: str | Path,
-        if_exists: ZarrConflictResolution = "replace",
-        load_zarr_from_new_location: bool = False,
-    ) -> str:
-        """
-        Save the dataset to a destination directory as a JSON file.
-
-        Warning: Multiple files
-            Perhaps unintuitive, this method creates multiple files.
-
-            1. `/path/to/destination/dataset.json`: This file can be loaded with `Dataset.from_json`.
-            2. `/path/to/destination/table.parquet`: The `Dataset.table` attribute is saved here.
-            3. _(Optional)_ `/path/to/destination/data/*`: Any additional blobs of data referenced by the
-                    pointer columns will be stored here.
-
-        Args:
-            destination: The _directory_ to save the associated data to.
-            if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
-                an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
-            load_zarr_from_new_location: Whether to update the current instance to load data from the location
-                the data is saved to. Only relevant for Zarr-datasets.
-
-        Returns:
-            The path to the JSON file.
-        """
-        destination = Path(destination)
-        destination.mkdir(exist_ok=True, parents=True)
-
-        table_path = str(destination / "table.parquet")
-        dataset_path = str(destination / "dataset.json")
-        new_zarr_root_path = str(destination / "data.zarr")
-
-        # Lu: Avoid serializing and sending None to hub app.
-        serialized = self.model_dump(exclude_none=True)
-        serialized["table"] = table_path
-
-        # Copy over Zarr data to the destination
-        if self.uses_zarr:
-            serialized["zarrRootPath"] = new_zarr_root_path
-
-            self._warn_about_remote_zarr = False
-
-            logger.info(f"Copying Zarr archive to {new_zarr_root_path}. This may take a while.")
-
-            dest = zarr.open(new_zarr_root_path, "w")
-
-            zarr.copy_store(
-                source=self.zarr_root.store.store,
-                dest=dest.store,
-                log=logger.debug,
-                if_exists=if_exists,
-            )
-
-            if load_zarr_from_new_location:
-                self.zarr_root_path = new_zarr_root_path
-                self._zarr_root = None
-                self._zarr_data = None
-
-        self.table.to_parquet(table_path)
-        with fsspec.open(dataset_path, "w") as f:
-            json.dump(serialized, f)
-
-        return dataset_path
-
     def _split_index_from_path(self, path: str) -> tuple[str, int | None]:
         """
         Paths can have an additional index appended to them.
@@ -331,21 +265,75 @@ class DatasetV1(BaseDataset, ChecksumMixin):
             return False
         return self.md5sum == other.md5sum
 
-    def cache(self, verify_checksum: bool = True) -> str:
+    def _table_serialization_path(self, destination: Path) -> Path:
+        return destination / "table.parquet"
+
+    def to_json(self, destination: str | Path, if_exists: ZarrConflictResolution = "replace") -> str:
+        """
+        Save the dataset to a destination directory as a JSON file.
+
+        Warning: Multiple files
+            Perhaps unintuitive, this method creates multiple files.
+
+            1. `/path/to/destination/[dataset.slug].json`: This file can be loaded with `Dataset.from_json`.
+            2. `/path/to/destination/table.parquet`: The `Dataset.table` attribute is saved here.
+            3. _(Optional)_ `/path/to/destination/[dataset.zarr_root]`: Any additional blobs of data referenced by the
+                    pointer columns will be stored here.
+
+        Args:
+            destination: The _directory_ to save the associated data to.
+            if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
+                an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
+
+        Returns:
+            The path to the JSON file.
+        """
+        destination = Path(destination)
+        destination.mkdir(exist_ok=True, parents=True)
+
+        # Make a copy to cache the data, and then serialize that
+        copy = self.model_copy()
+        copy.cache(destination, if_exists=if_exists)
+
+        serialized = copy.model_dump(exclude_none=True, exclude={"zarr_manifest_path", "table"})
+        serialized["table"] = str(copy._table_serialization_path(destination))
+
+        destination_json = destination / f"{copy.slug}.json"
+        destination_json.write_text(json.dumps(serialized))
+        return str(destination_json)
+
+    def cache(
+        self,
+        destination: str | PathLike | None = None,
+        if_exists: ZarrConflictResolution = "replace",
+        verify_checksum: bool = True,
+    ) -> str:
         """Caches the dataset by downloading all additional data for pointer columns to a local directory.
 
         Args:
+            destination: The directory to cache the data to. If None, will use the default cache directory.
+            if_exists: Action for handling existing files at the destination. Options are 'raise' to throw
+                an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
             verify_checksum: Whether to verify the checksum of the dataset after caching.
 
         Returns:
-            The path to the cache directory.
+            The path to the directory where data has been cached to.
         """
-        self.to_json(self._cache_dir, load_zarr_from_new_location=True)
+        if not destination:
+            destination = self._cache_dir
+
+        destination = Path(destination)
+        destination.mkdir(exist_ok=True, parents=True)
+
+        table_path = self._table_serialization_path(destination)
+        self.table.to_parquet(table_path)
+
+        self._cache_zarr(destination, if_exists)
 
         if verify_checksum:
             self.verify_checksum()
 
-        return self._cache_dir
+        return str(destination)
 
     def should_verify_checksum(self, strategy: ChecksumStrategy) -> bool:
         """

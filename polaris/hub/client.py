@@ -646,11 +646,8 @@ class PolarisHubClient(OAuth2Client):
                     destination[".zmetadata"] = zmetadata_content
 
                     # Copy the Zarr archive to the hub
-                    zarr.copy_store(
-                        source=dataset.zarr_root.store.store,
-                        dest=destination,
-                        log=logger.debug,
-                        if_exists=if_exists,
+                    destination.copy_from_source(
+                        dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
                     )
 
             base_artifact_url = (
@@ -719,11 +716,8 @@ class PolarisHubClient(OAuth2Client):
                 destination[".zmetadata"] = zmetadata_content
 
                 # Copy the Zarr archive to the hub
-                zarr.copy_store(
-                    source=dataset.zarr_root.store.store,
-                    dest=destination,
-                    log=logger.debug,
-                    if_exists=if_exists,
+                destination.copy_from_source(
+                    dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
                 )
 
         progress_indicator.update_success_msg(
