@@ -1265,6 +1265,24 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#polaris.hub.storage.S3Store.copy_to_destination" class="md-nav__link">
+    <span class="md-ellipsis">
+      copy_to_destination
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.hub.storage.S3Store.copy_from_source" class="md-nav__link">
+    <span class="md-ellipsis">
+      copy_from_source
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.hub.storage.S3Store.listdir" class="md-nav__link">
     <span class="md-ellipsis">
       listdir
@@ -1614,6 +1632,178 @@ Each session is associated with a specific scope and resource.</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.hub.storage.S3Store.copy_to_destination" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">copy_to_destination</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">copy_to_destination</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="n">Store</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="n">log</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Copy the content of this store to the destination store.</p>
+<p>We leverage the internal knowledge of this store to make the operation more efficient than <code>zarr.copy_store</code>:
+    - Parallel, concurrent <code>getitems</code> operations using a thread pool</p>
+<p>Zarr V3 supports partial writes, that would allow us to stream the response back into the store. Unfortunately,
+it's not supported right now by the library version we use, so we'll have to read the whole response into memory
+and write it back to the destination.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>destination</code>
+            </td>
+            <td>
+                  <code><span title="zarr.storage.Store">Store</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>destination store</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>if_exists</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.ZarrConflictResolution" href="utils.types.html#polaris.utils.types.ZarrConflictResolution">ZarrConflictResolution</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>behavior if the destination key already exists</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;replace&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>log</code>
+            </td>
+            <td>
+                  <code><span title="typing.Callable">Callable</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>optional logging function</p>
+              </div>
+            </td>
+            <td>
+                  <code>lambda: None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.hub.storage.S3Store.copy_from_source" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">copy_from_source</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">copy_from_source</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="n">Store</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="n">log</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Copy the content of the source store to this store.</p>
+<p>We leverage the internal knowledge of this store to make the operation more efficient than <code>zarr.copy_store</code>:
+    - Conditional <code>put_object</code> operation for the "skip" conflict resolution
+    - Parallel, concurrent <code>put_object</code> operations using a thread pool</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>source</code>
+            </td>
+            <td>
+                  <code><span title="zarr.storage.Store">Store</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>source store</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>if_exists</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.ZarrConflictResolution" href="utils.types.html#polaris.utils.types.ZarrConflictResolution">ZarrConflictResolution</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>behavior if the destination key already exists</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;replace&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>log</code>
+            </td>
+            <td>
+                  <code><span title="typing.Callable">Callable</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>optional logging function</p>
+              </div>
+            </td>
+            <td>
+                  <code>lambda: None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 

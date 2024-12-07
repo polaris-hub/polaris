@@ -2290,7 +2290,7 @@ the content of the referenced file is loaded to memory.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="n">load_zarr_from_new_location</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2302,9 +2302,9 @@ the content of the referenced file is loaded to memory.</p>
   <summary>Multiple files</summary>
   <p>Perhaps unintuitive, this method creates multiple files.</p>
 <ol>
-<li><code>/path/to/destination/dataset.json</code>: This file can be loaded with <code>Dataset.from_json</code>.</li>
+<li><code>/path/to/destination/[dataset.slug].json</code>: This file can be loaded with <code>Dataset.from_json</code>.</li>
 <li><code>/path/to/destination/table.parquet</code>: The <code>Dataset.table</code> attribute is saved here.</li>
-<li><em>(Optional)</em> <code>/path/to/destination/data/*</code>: Any additional blobs of data referenced by the
+<li><em>(Optional)</em> <code>/path/to/destination/[dataset.zarr_root]</code>: Any additional blobs of data referenced by the
         pointer columns will be stored here.</li>
 </ol>
 </details>
@@ -2353,23 +2353,6 @@ an error, 'replace' to overwrite, or 'skip' to proceed without altering the exis
                   <code>&#39;replace&#39;</code>
             </td>
           </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>load_zarr_from_new_location</code>
-            </td>
-            <td>
-                  <code>bool</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Whether to update the current instance to load data from the location
-the data is saved to. Only relevant for Zarr-datasets.</p>
-              </div>
-            </td>
-            <td>
-                  <code>False</code>
-            </td>
-          </tr>
       </tbody>
     </table>
 
@@ -2408,7 +2391,7 @@ the data is saved to. Only relevant for Zarr-datasets.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">cache</span><span class="p">(</span><span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">cache</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="n">verify_checksum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2427,6 +2410,39 @@ the data is saved to. Only relevant for Zarr-datasets.</p>
         </tr>
       </thead>
       <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>destination</code>
+            </td>
+            <td>
+                  <code>str | <span title="os.PathLike">PathLike</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The directory to cache the data to. If None, will use the default cache directory.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>if_exists</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.ZarrConflictResolution" href="utils.types.html#polaris.utils.types.ZarrConflictResolution">ZarrConflictResolution</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Action for handling existing files at the destination. Options are 'raise' to throw
+an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;replace&#39;</code>
+            </td>
+          </tr>
           <tr class="doc-section-item">
             <td>
                 <code>verify_checksum</code>
@@ -2462,7 +2478,7 @@ the data is saved to. Only relevant for Zarr-datasets.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The path to the cache directory.</p>
+                <p>The path to the directory where data has been cached to.</p>
               </div>
             </td>
           </tr>
@@ -3134,7 +3150,7 @@ the content of the referenced file is loaded to memory.</p>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="n">load_zarr_from_new_location</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">to_json</span><span class="p">(</span><span class="n">destination</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">if_exists</span><span class="p">:</span> <span class="n">ZarrConflictResolution</span> <span class="o">=</span> <span class="s1">&#39;replace&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3158,7 +3174,7 @@ the content of the referenced file is loaded to memory.</p>
                 <code>destination</code>
             </td>
             <td>
-                  <code>str</code>
+                  <code>str | <span title="pathlib.Path">Path</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3184,23 +3200,6 @@ an error, 'replace' to overwrite, or 'skip' to proceed without altering the exis
             </td>
             <td>
                   <code>&#39;replace&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>load_zarr_from_new_location</code>
-            </td>
-            <td>
-                  <code>bool</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Whether to update the current instance to load data from the location
-the data is saved to. Only relevant for Zarr-datasets.</p>
-              </div>
-            </td>
-            <td>
-                  <code>False</code>
             </td>
           </tr>
       </tbody>
