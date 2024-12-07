@@ -85,15 +85,19 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
     with fsspec.open(path, "r") as fd:
         data = json.load(fd)
 
-    # TODO (cwognum): As this gets more complex, how do we effectivly choose which class we should use?
-    #  e.g. we might end up with a single class per benchmark.
     is_single_task = isinstance(data["target_cols"], str) or len(data["target_cols"]) == 1
-    if data["version"] == 1:
-        cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
-    elif data["version"] == 2:
-        cls = SingleTaskBenchmarkV2Specification if is_single_task else MultiTaskBenchmarkV2Specification
-    else:
-        raise ValueError(f"Unsupported benchmark version: {data['version']}")
+
+    match data["version"]:
+        case 1 if is_single_task:
+            cls = SingleTaskBenchmarkSpecification
+        case 1:
+            cls = MultiTaskBenchmarkSpecification
+        case 2 if is_single_task:
+            cls = SingleTaskBenchmarkV2Specification
+        case 2:
+            cls = MultiTaskBenchmarkV2Specification
+        case _:
+            raise ValueError(f"Unsupported benchmark version: {data['version']}")
 
     benchmark = cls.from_json(path)
 

@@ -33,7 +33,7 @@ def test_single_task_benchmark_loop_with_multiple_test_sets(test_single_task_ben
     model.fit(X=x_train, y=y)
 
     y_pred = {}
-    task_name = test_single_task_benchmark_multiple_test_sets.target_cols[0]
+    task_name, *_ = test_single_task_benchmark_multiple_test_sets.target_cols
     for k, test_subset in test.items():
         x_test = np.array([dm.to_fp(dm.to_mol(smi)) for smi in test_subset.inputs])
         y_pred[k] = {task_name: model.predict(x_test)}
@@ -57,7 +57,7 @@ def test_single_task_benchmark_clf_loop_with_multiple_test_sets(
 
     y_prob = {}
     y_pred = {}
-    task_name = test_single_task_benchmark_clf_multiple_test_sets.target_cols[0]
+    task_name, *_ = test_single_task_benchmark_clf_multiple_test_sets.target_cols
     for k, test_subset in test.items():
         x_test = np.array([dm.to_fp(dm.to_mol(smi)) for smi in test_subset.inputs])
         y_prob[k] = {task_name: model.predict_proba(x_test)[:, :1]}  # for binary classification

@@ -137,24 +137,24 @@ def test_benchmark_from_json(test_single_task_benchmark, tmp_path):
     assert new_benchmark == test_single_task_benchmark
 
 
-@pytest.mark.parametrize("is_single_task", [True, False])
-def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_multi_task_benchmark):
+@pytest.mark.parametrize("fixture", ["test_single_task_benchmark", "test_multi_task_benchmark"])
+def test_benchmark_checksum(fixture, request):
     """Test whether the checksum captures our notion of equality."""
 
-    obj = test_single_task_benchmark if is_single_task else test_multi_task_benchmark
-    cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
+    benchmark = request.getfixturevalue(fixture)
+    cls = type(benchmark)
 
     # Make sure the `md5sum` is part of the model dump even if not initiated yet.
     # This is important for uploads to the Hub.
-    assert obj._md5sum is None and "md5sum" in obj.model_dump()
+    assert benchmark._md5sum is None and "md5sum" in benchmark.model_dump()
 
-    original = obj.md5sum
+    original = benchmark.md5sum
     assert original is not None
 
     # --- Test that the checksum is the same with insignificant changes ---
 
     # Without any changes, same hash
-    kwargs = obj.model_dump()
+    kwargs = benchmark.model_dump()
     assert cls(**kwargs).md5sum == original
 
     # With a different ordering of the target columns
@@ -174,25 +174,26 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
         assert cls(**_kwargs).md5sum != _kwargs["md5sum"]
 
     # Split
-    kwargs = obj.model_dump()
+    kwargs = benchmark.model_dump()
     kwargs["split"] = kwargs["split"][0][1:], kwargs["split"][1]
     _check_for_failure(kwargs)
 
-    kwargs = obj.model_dump()
+    kwargs = benchmark.model_dump()
     kwargs["split"] = kwargs["split"][0], kwargs["split"][1]["test"][1:]
     _check_for_failure(kwargs)
 
     # Metrics
-    kwargs = obj.model_dump()
+    kwargs = benchmark.model_dump()
     kwargs["metrics"] = kwargs["metrics"][1:] + ["accuracy"]
     _check_for_failure(kwargs)
 
     # Target columns
-    kwargs = obj.model_dump()
+    kwargs = benchmark.model_dump()
     kwargs["target_cols"] = kwargs["target_cols"][1:] + ["iupac"]
+    kwargs.pop("target_types", None)  # Reset target types that matches deleted target column
     _check_for_failure(kwargs)
 
-    kwargs = obj.model_dump()
+    kwargs = benchmark.model_dump()
     kwargs["input_cols"] = kwargs["input_cols"][1:] + ["iupac"]
     _check_for_failure(kwargs)
 
