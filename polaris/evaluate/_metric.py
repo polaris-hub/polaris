@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import Callable, Literal, TypeAlias
+from typing import Annotated, Callable, Literal, TypeAlias
 
 import numpy as np
-from pydantic import BaseModel, Field, field_serializer, field_validator, model_validator
+from pydantic import BaseModel, Field, TypeAdapter, field_serializer, field_validator, model_validator
 from sklearn.metrics import (
     accuracy_score,
     balanced_accuracy_score,
@@ -31,7 +31,7 @@ from polaris.utils.types import DirectionType, PredictionKwargs
 GroundTruth: TypeAlias = Subset
 
 
-def check_predictions(
+def prepare_predictions(
     y_pred: BenchmarkPredictions,
     y_prob: BenchmarkPredictions,
     y_type: PredictionKwargs,
@@ -52,6 +52,15 @@ def check_predictions(
         pred = y_prob
 
     return pred
+
+
+def prepare_metric_kwargs(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_type: PredictionKwargs,
+) -> BenchmarkPredictions:
+    mask = mask_index(y_true)
+    return {"y_true": y_true[mask], y_type: y_pred[mask]}
 
 
 def mask_index(input_values):
@@ -94,12 +103,7 @@ class MetricInfo(BaseModel):
         )
 
 
-# NOTE (cwognum): I would like to define a common interface for the GroupedMetric and Metric.
-# However, because Metric is an enum, it can't inherit from an ABC class as well.
-# Is there a way to define an interface for an enum? Or should we maybe just drop the enum at this point?
-
-
-class Metric(Enum):
+class BaseMetric(Enum):
     """
     A metric within the Polaris ecosystem is uniquely identified by its name
     and is associated with additional metadata in a `MetricInfo` instance.
@@ -144,92 +148,29 @@ class Metric(Enum):
     # docking related metrics
     rmsd_coverage = MetricInfo(fn=rmsd_coverage, direction="max", y_type="y_pred")
 
-    @property
-    def fn(self) -> Callable:
-        """The callable that actually computes the metric"""
-        return self.value.fn
 
-    @property
-    def is_multitask(self) -> bool:
-        """Whether the metric expects a single set of predictions or a dict of predictions."""
-        return self.value.is_multitask
-
-    @property
-    def y_type(self) -> bool:
-        """Whether the metric expects preditive probablities."""
-        return self.value.y_type
-
-    def score(
-        self,
-        y_true: GroundTruth,
-        y_pred: BenchmarkPredictions | None = None,
-        y_prob: BenchmarkPredictions | None = None,
-    ) -> float:
-        """Endpoint for computing the metric.
-
-        For convenience, calling a `Metric` will result in this method being called.
-
-        ```python
-        metric = Metric.mean_absolute_error
-        assert metric.score(y_true=first, y_pred=second) == metric(y_true=first, y_pred=second)
-        ```
-        """
-        y_true_targets = y_true.as_array("y")
-        pred = check_predictions(y_pred, y_prob, self.y_type)
-
-        # Because we don't have multi-task metrics yet, we can assume this is a single-task metric
-        # With single-task metrics for multi-task benchmarks, it can happen that some target values are NaN.
-        # We mask these here.
-        mask = mask_index(y_true_targets)
-        kwargs = {"y_true": y_true_targets[mask], self.y_type: pred.mask(mask).flatten()}
-        return self.fn(**kwargs, **self.value.kwargs)
-
-    def __call__(
-        self,
-        y_true: GroundTruth,
-        y_pred: BenchmarkPredictions | None = None,
-        y_prob: BenchmarkPredictions | None = None,
-    ) -> float:
-        return self.score(y_true, y_pred, y_prob)
-
-
-class GroupedMetric(BaseModel):
-    """
-    A GroupedMetric is a Metric that evaluates predictions grouped by a specific column.
-
-    Attributes:
-        metric: The callable metric to evaluate.
-        group_by: The column to group by.
-        on_error: The behavior when an error occurs during evaluation.
-        default: The default value to return when an error occurs and on_error is 'default'.
-        aggregation: The aggregation method to use for summarizing the metrics per group into a single score.
-    """
-
-    metric: Metric
-
-    group_by: str
-    on_error: Literal["ignore", "raise", "default"] = "raise"
-    default: float | None = None
-    aggregation: Literal["mean", "median"] = "mean"
+class Metric(BaseModel):
+    metric: BaseMetric
+    kind: Literal[None] = None
+    name: str | None = None
 
     @field_validator("metric", mode="before")
     @classmethod
-    def validate_metric(cls, value):
-        if not isinstance(value, Metric):
-            value = Metric[value]
+    def validate_metric(cls, value) -> BaseMetric:
+        if not isinstance(value, BaseMetric):
+            value = BaseMetric[value]
         return value
 
-    @model_validator(mode="after")
-    def check_default_required(self) -> Self:
-        handling = self.on_error
-        default = self.default
-        if handling == "default" and default is None:
-            raise ValueError("Default value must be provided when on_error is 'default'")
-        return self
-
     @field_serializer("metric")
-    def serialize_metric(self, value: Metric) -> str:
+    def serialize_metric(self, value: BaseMetric) -> str:
         return value.name
+
+    @model_validator(mode="after")
+    def set_name_if_none(self) -> Self:
+        if self.name is None:
+            kind = self.kind or ""
+            self.name = f"{kind}_{self.metric.name}"
+        return self
 
     @property
     def fn(self) -> Callable:
@@ -252,39 +193,22 @@ class GroupedMetric(BaseModel):
         y_pred: BenchmarkPredictions | None = None,
         y_prob: BenchmarkPredictions | None = None,
     ) -> float:
-        pred = check_predictions(y_pred, y_prob, self.y_type)
+        """Endpoint for computing the metric.
 
-        df = y_true.as_dataframe()
-        df[self.y_type] = pred.flatten()
+        For convenience, calling a `Metric` will result in this method being called.
 
-        scores = []
-        print(df)
-        for _, group in df.groupby(self.group_by):
-            # Because we don't have multi-task metrics yet, we can assume this is a single-task metric
-            y_true_group = group[y_true.target_cols[0]].values
-            y_pred_group = group[self.y_type].values
-
-            # With single-task metrics for multi-task benchmarks, it can happen that some target values are NaN.
-            # We mask these here.
-            mask = mask_index(y_true_group)
-
-            kwargs = {"y_true": y_true_group[mask], self.y_type: y_pred_group[mask]}
-
-            try:
-                score = self.fn(**kwargs, **self.metric.value.kwargs)
-            except Exception:
-                if self.on_error == "ignore":
-                    continue
-                elif self.on_error == "raise":
-                    raise
-                score = self.default
-            scores.append(score)
-
-        if self.aggregation == "mean":
-            score = np.mean(scores)
-        else:
-            score = np.median(scores)
-        return score
+        ```python
+        metric = Metric(metric="mean_absolute_error")
+        assert metric.score(y_true=first, y_pred=second) == metric(y_true=first, y_pred=second)
+        ```
+        """
+        pred = prepare_predictions(y_pred, y_prob, self.y_type)
+        kwargs = prepare_metric_kwargs(
+            y_true.as_array("y"),
+            pred.flatten(),
+            self.y_type,
+        )
+        return self.fn(**kwargs, **self.metric.value.kwargs)
 
     def __call__(
         self,
@@ -294,13 +218,95 @@ class GroupedMetric(BaseModel):
     ) -> float:
         return self.score(y_true, y_pred, y_prob)
 
-    def __repr__(self) -> str:
-        return str(self)
-
-    def __str__(self) -> str:
-        model_obj = self.model_dump(mode="json")
-        sorted_keys = sorted(model_obj.keys())
-        return f"{type(self)}({', '.join([f'{key}={model_obj[key]}' for key in sorted_keys])})"
-
     def __hash__(self) -> int:
-        return hash(str(self))
+        return hash(self.name)
+
+    def __eq__(self, other) -> bool:
+        match other:
+            case Metric():
+                return other.name == self.name
+            case _:
+                return False
+
+
+class GroupedMetricConfig(BaseModel):
+    group_by: str
+    on_error: Literal["ignore", "raise", "default"] = "raise"
+    default: float | None = None
+    aggregation: Literal["mean", "median"] = "mean"
+
+
+class GroupedMetric(Metric):
+    """
+    A GroupedMetric is a Metric that evaluates predictions grouped by a specific column.
+
+    Attributes:
+        metric: The callable metric to evaluate.
+        config: Configuration for the grouped metric.
+    """
+
+    kind: Literal["grouped"] = "grouped"
+    config: GroupedMetricConfig
+
+    @model_validator(mode="after")
+    def check_default_required(self) -> Self:
+        handling = self.config.on_error
+        default = self.config.default
+        if handling == "default" and default is None:
+            raise ValueError("Default value must be provided when on_error is 'default'")
+        return self
+
+    def score(
+        self,
+        y_true: GroundTruth,
+        y_pred: BenchmarkPredictions | None = None,
+        y_prob: BenchmarkPredictions | None = None,
+    ) -> float:
+        pred = prepare_predictions(y_pred, y_prob, self.y_type)
+
+        df = y_true.as_dataframe()
+        df[self.y_type] = pred.flatten()
+
+        scores = []
+        for _, group in df.groupby(self.config.group_by):
+            y_true_group = group[y_true.target_cols[0]].values
+            y_pred_group = group[self.y_type].values
+
+            kwargs = prepare_metric_kwargs(
+                y_true_group,
+                y_pred_group,
+                self.y_type,
+            )
+
+            try:
+                score = self.fn(**kwargs, **self.metric.value.kwargs)
+            except Exception:
+                if self.config.on_error == "ignore":
+                    continue
+                elif self.config.on_error == "raise":
+                    raise
+                score = self.config.default
+            scores.append(score)
+
+        if self.config.aggregation == "mean":
+            score = np.mean(scores)
+        else:
+            score = np.median(scores)
+        return score
+
+
+MetricType: TypeAlias = Metric | GroupedMetric
+AnnotatedMetricType = Annotated[MetricType, Field(..., discriminator="kind")]
+
+
+def instantiate_metric(m: MetricType | str | dict):
+    if isinstance(m, str):
+        return Metric(metric=m)
+
+    if isinstance(m, dict):
+        if "kind" not in m:
+            m["kind"] = None
+        adapter = TypeAdapter(AnnotatedMetricType)
+        return adapter.validate_python(m)
+
+    return m

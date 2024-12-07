@@ -228,20 +228,6 @@ class BenchmarkPredictions(BaseModel):
             )
         return self.predictions[self.test_set_labels[0]][self.target_labels[0]]
 
-    def mask(self, mask: np.ndarray) -> "BenchmarkPredictions":
-        """Mask part of the predictions"""
-        if len(self.test_set_labels) != 1:
-            raise ValueError("Can only mask predictions for benchmarks with a single test set")
-        if len(mask) != self.get_size():
-            raise ValueError("The mask should have the same length as the predictions")
-
-        preds = self.model_copy(deep=True)
-        for test_set in preds.test_set_labels:
-            for target in preds.target_labels:
-                v = preds.predictions[test_set][target]
-                preds.predictions[test_set][target] = v[mask]
-        return preds
-
     def __len__(self) -> int:
         """Return the total number of predictions"""
         return self.get_size()
