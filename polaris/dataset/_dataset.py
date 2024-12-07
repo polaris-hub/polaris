@@ -50,7 +50,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
     """
 
     _artifact_type = "dataset"
-    version: ClassVar[Literal[1]] = 1
+    _version: ClassVar[Literal[1]] = 1
 
     # Public attributes
     # Data

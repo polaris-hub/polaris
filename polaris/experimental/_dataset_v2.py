@@ -43,7 +43,7 @@ class DatasetV2(BaseDataset):
 
     _artifact_type = "dataset"
 
-    version: ClassVar[Literal[2]] = 2
+    _version: ClassVar[Literal[2]] = 2
     _zarr_manifest_path: str | None = PrivateAttr(None)
     _zarr_manifest_md5sum: str | None = PrivateAttr(None)
 
