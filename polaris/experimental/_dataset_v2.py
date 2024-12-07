@@ -217,7 +217,7 @@ class DatasetV2(BaseDataset):
 
     def to_json(
         self,
-        destination: str,
+        destination: str | Path,
         if_exists: ZarrConflictResolution = "replace",
     ) -> str:
         """

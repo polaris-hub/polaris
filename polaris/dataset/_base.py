@@ -310,7 +310,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def to_json(self, destination: str, if_exists: ZarrConflictResolution = "replace") -> str:
+    def to_json(self, destination: str | Path, if_exists: ZarrConflictResolution = "replace") -> str:
         """
         Save the dataset to a destination directory as a JSON file.
 
@@ -372,15 +372,15 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         self._warn_about_remote_zarr = False
 
         logger.info(f"Copying Zarr archive to {destination_zarr_root}. This may take a while.")
-        destination_store = zarr.open(str(destination_zarr_root), "w")
+        destination_store = zarr.open(str(destination_zarr_root), "w").store
         source_store = self.zarr_root.store.store
 
         if isinstance(source_store, S3Store):
-            source_store.copy_to_destination(destination_store.store, if_exists, logger.info)
+            source_store.copy_to_destination(destination_store, if_exists, logger.info)
         else:
             zarr.copy_store(
-                source=self.zarr_root.store.store,
-                dest=destination_store.store,
+                source=source_store,
+                dest=destination_store,
                 log=logger.info,
                 if_exists=if_exists,
             )
