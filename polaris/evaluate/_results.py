@@ -56,7 +56,7 @@ class ResultRecords(BaseModel):
         return validated
 
     @field_serializer("scores")
-    def serialize_scores(self, value: list[tuple[MetricType, float]]) -> dict[dict, float]:
+    def serialize_scores(self, value: list[tuple[MetricType, float]]) -> list[tuple[dict, float]]:
         """Change from the Metric enum to a string representation"""
         return [(metric.model_dump(), score) for metric, score in value]
 

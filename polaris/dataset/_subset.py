@@ -3,6 +3,7 @@ from typing import Callable, List, Literal, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
+from typing_extensions import Self
 
 from polaris.dataset import DatasetV1
 from polaris.dataset._adapters import Adapter
@@ -194,6 +195,9 @@ class Subset:
     def as_dataframe(self) -> pd.DataFrame:
         """
         Returns the subset as a Pandas DataFrame.
+
+        Warning: Memory usage
+            This method loads the entire dataset in memory.
         """
         # Create an empty dataframe
         cols = self.input_cols + self.target_cols
@@ -216,13 +220,24 @@ class Subset:
 
         return df
 
-    def filter_by_target(self, target_cols: List[str] | str) -> "Subset":
-        """Filter the subset to only include the specified target columns."""
+    def filter_by_target(self, target_cols: List[str] | str) -> Self:
+        """
+        Filter the subset to only include the specified target columns.
+
+        Args:
+            target_cols: The target columns to keep.
+        """
+
+        # Verify all target columns are in the original subset
         target_cols_subset = target_cols if isinstance(target_cols, list) else [target_cols]
         if not all(col in self.target_cols for col in target_cols_subset):
             raise ValueError("All new target columns need to be in the original subset.")
+
+        # Create a new subset with the filtered target columns
+        # This is as easy as setting the target_cols attribute to the new list of columns
         copy = deepcopy(self)
         copy.target_cols = target_cols_subset
+
         return copy
 
     def __len__(self):

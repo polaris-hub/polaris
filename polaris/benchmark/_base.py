@@ -278,19 +278,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return v
 
     @field_serializer("metrics")
-    def _serialize_metrics(self, v: set[MetricType]):
-        """Return the string identifier so we can serialize the object"""
-        metrics = sorted([m.metric.name for m in v if isinstance(m, Metric)])
-        grouped_metrics = sorted(
-            [m.model_dump() for m in v if isinstance(m, GroupedMetric)],
-            key=lambda k: k["metric"],
-        )
-        return metrics + grouped_metrics
-
-    @field_serializer("main_metric")
-    def _serialize_main_metric(self, v: MetricType):
-        """Return the string identifier so we can serialize the object"""
-        return v.metric.name if isinstance(v, Metric) else v.model_dump()
+    def _serialize_metrics(self, v: set[MetricType]) -> list[dict]:
+        """Convert the set to a list"""
+        return [m.model_dump() for m in v]
 
     @field_serializer("split")
     def _serialize_split(self, v: SplitType):
@@ -315,6 +305,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             hash_fn.update(c.encode("utf-8"))
         for c in sorted(self.input_cols):
             hash_fn.update(c.encode("utf-8"))
+        # We distinguish between Metrics and GroupedMetrics for backwards compatibility.
         for name in sorted([m.name for m in self.metrics if isinstance(m, Metric)]):
             hash_fn.update(name.encode("utf-8"))
         for d in sorted([m.model_dump() for m in self.metrics if isinstance(m, GroupedMetric)]):

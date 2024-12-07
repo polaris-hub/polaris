@@ -36,7 +36,14 @@ def prepare_predictions(
     y_prob: BenchmarkPredictions,
     y_type: PredictionKwargs,
 ) -> BenchmarkPredictions:
-    """Check that the correct type of predictions are passed to the metric."""
+    """
+    Check that the correct type of predictions are passed to the metric.
+
+    Args:
+        y_pred: The predicted target values, if any.
+        y_prob: The predicted target probabilities, if any.
+        y_type: The type of predictions expected by the metric interface
+    """
 
     if y_pred is None and y_prob is None:
         raise ValueError("Neither `y_pred` nor `y_prob` is specified.")
@@ -54,16 +61,14 @@ def prepare_predictions(
     return pred
 
 
-def prepare_metric_kwargs(
-    y_true: np.ndarray,
-    y_pred: np.ndarray,
-    y_type: PredictionKwargs,
-) -> BenchmarkPredictions:
-    mask = mask_index(y_true)
-    return {"y_true": y_true[mask], y_type: y_pred[mask]}
-
-
 def mask_index(input_values):
+    """
+    Mask the NaN values in the input array
+
+    Args:
+        input_values: The input array to mask.
+    """
+
     if np.issubdtype(input_values.dtype, np.number):
         mask = ~np.isnan(input_values)
     else:
@@ -75,6 +80,23 @@ def mask_index(input_values):
             if value is None:
                 mask[index] = False
     return mask
+
+
+def prepare_metric_kwargs(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_type: PredictionKwargs,
+) -> BenchmarkPredictions:
+    """
+    Prepare the arguments for the metric function.
+
+    Args:
+        y_true: The true target values of shape (n_samples,)
+        y_pred: The predicted target values of shape (n_samples,).
+        y_type: The type of predictions expected by the metric interface.
+    """
+    mask = mask_index(y_true)
+    return {"y_true": y_true[mask], y_type: y_pred[mask]}
 
 
 class MetricInfo(BaseModel):
@@ -105,10 +127,9 @@ class MetricInfo(BaseModel):
 
 class BaseMetric(Enum):
     """
-    A metric within the Polaris ecosystem is uniquely identified by its name
-    and is associated with additional metadata in a `MetricInfo` instance.
-
-    Implemented as an enum.
+    A base metric within Polaris is the actual callable that computes a "goodness" score
+    for a given set of predictions and ground truth. It's uniquely identified by a string label
+    and is tagged with additional metadata.
     """
 
     # TODO (cwognum):
@@ -143,33 +164,52 @@ class BaseMetric(Enum):
     roc_auc_ovo = MetricInfo(
         fn=roc_auc_score, kwargs={"multi_class": "ovo"}, direction="max", y_type="y_score"
     )
-    # TODO: add metrics to handle multitask multiclass predictions.
 
     # docking related metrics
     rmsd_coverage = MetricInfo(fn=rmsd_coverage, direction="max", y_type="y_pred")
 
 
 class Metric(BaseModel):
+    """
+    A Metric in Polaris.
+
+    Any metric implementation in Polaris object wraps a BaseMetric. This class holds the most vanilla implementation.
+    It does some minor preprocessing on the inputs and then simply passes these arguments to the BaseMetric.
+
+    It serves as a base class for more complex metrics.
+
+    Attributes:
+        metric: The actual callable that is at the core of the metric implementation.
+        kind: The kind of metric, uses to discriminate different types of metrics in a discriminated union.
+        name: The name of the metric. The metrics for a specific benchmark need to be uniquely named.
+            In most cases, a sensible default will be set and the user doesn't need to worry about this.
+        config: For more complex metrics, this object should hold all parameters for the metric.
+    """
+
     metric: BaseMetric
-    kind: Literal[None] = None
+    kind: Literal["default"] = "default"
     name: str | None = None
+    config: BaseModel | None = None
 
     @field_validator("metric", mode="before")
     @classmethod
     def validate_metric(cls, value) -> BaseMetric:
+        """Instantiate the metric if it is provided as a string."""
         if not isinstance(value, BaseMetric):
             value = BaseMetric[value]
         return value
 
     @field_serializer("metric")
     def serialize_metric(self, value: BaseMetric) -> str:
+        """The BaseMetric is uniquely identified by a string."""
         return value.name
 
     @model_validator(mode="after")
     def set_name_if_none(self) -> Self:
+        """Set a sensible default if no name is provided."""
         if self.name is None:
-            kind = self.kind or ""
-            self.name = f"{kind}_{self.metric.name}"
+            prefix = "" if self.kind == "default" else f"{self.kind}_"
+            self.name = f"{prefix}{self.metric.name}"
         return self
 
     @property
@@ -184,7 +224,7 @@ class Metric(BaseModel):
 
     @property
     def y_type(self) -> bool:
-        """Whether the metric expects preditive probablities."""
+        """The type of input the metric expects."""
         return self.metric.value.y_type
 
     def score(
@@ -193,14 +233,12 @@ class Metric(BaseModel):
         y_pred: BenchmarkPredictions | None = None,
         y_prob: BenchmarkPredictions | None = None,
     ) -> float:
-        """Endpoint for computing the metric.
+        """Compute the metric.
 
-        For convenience, calling a `Metric` will result in this method being called.
-
-        ```python
-        metric = Metric(metric="mean_absolute_error")
-        assert metric.score(y_true=first, y_pred=second) == metric(y_true=first, y_pred=second)
-        ```
+        Args:
+            y_true: The true target values.
+            y_pred: The predicted target values, if any.
+            y_prob: The predicted target probabilities, if any.
         """
         pred = prepare_predictions(y_pred, y_prob, self.y_type)
         kwargs = prepare_metric_kwargs(
@@ -216,7 +254,18 @@ class Metric(BaseModel):
         y_pred: BenchmarkPredictions | None = None,
         y_prob: BenchmarkPredictions | None = None,
     ) -> float:
+        """
+        For convenience, calling a `Metric` is the same as calling its `score` method.
+
+        ```python
+        metric = Metric(metric="mean_absolute_error")
+        assert metric.score(y_true=first, y_pred=second) == metric(y_true=first, y_pred=second)
+        ```
+        """
         return self.score(y_true, y_pred, y_prob)
+
+    # For any given benchmark, all of its metrics need to have a unique name.
+    # Within the scope of a given benchmark metric is thus uniquely identified by its name.
 
     def __hash__(self) -> int:
         return hash(self.name)
@@ -230,6 +279,16 @@ class Metric(BaseModel):
 
 
 class GroupedMetricConfig(BaseModel):
+    """
+    The configuration for a GroupedMetric
+
+    Attributes:
+        group_by: The column to group by.
+        on_error: How to handle errors when computing the metric.
+        default: The default value to use when an error occurs.
+        aggregation: The aggregation method to use when combining the metric scores.
+    """
+
     group_by: str
     on_error: Literal["ignore", "raise", "default"] = "raise"
     default: float | None = None
@@ -238,11 +297,16 @@ class GroupedMetricConfig(BaseModel):
 
 class GroupedMetric(Metric):
     """
-    A GroupedMetric is a Metric that evaluates predictions grouped by a specific column.
+    A GroupedMetric is a Metric that computes the metric separately for each group in a dataset.
+    A final score is then computed by aggregating the scores for each group.
+
+    Warning: Memory usage
+        The current implementation of GroupedMetric relies on a Pandas DataFrame and loads
+        the entire test set (including inputs) into memory. It is therefore not suited for large benchmarks.
 
     Attributes:
-        metric: The callable metric to evaluate.
-        config: Configuration for the grouped metric.
+        kind: The kind of metric, uses to discriminate different types of metrics in a discriminated union.
+        config: The configuration for the grouped metric.
     """
 
     kind: Literal["grouped"] = "grouped"
@@ -250,6 +314,7 @@ class GroupedMetric(Metric):
 
     @model_validator(mode="after")
     def check_default_required(self) -> Self:
+        """Check that a default value is provided when on_error is 'default'."""
         handling = self.config.on_error
         default = self.config.default
         if handling == "default" and default is None:
@@ -262,12 +327,24 @@ class GroupedMetric(Metric):
         y_pred: BenchmarkPredictions | None = None,
         y_prob: BenchmarkPredictions | None = None,
     ) -> float:
+        """Compute the metric.
+
+        Args:
+            y_true: The true target values.
+            y_pred: The predicted target values, if any.
+            y_prob: The predicted target probabilities, if any.
+        """
+
         pred = prepare_predictions(y_pred, y_prob, self.y_type)
 
+        # NOTE (cwognum): We rely on pandas to due the grouping.
+        # This does imply a memory bottleneck.
         df = y_true.as_dataframe()
         df[self.y_type] = pred.flatten()
 
+        # Compute the metric for each group
         scores = []
+
         for _, group in df.groupby(self.config.group_by):
             y_true_group = group[y_true.target_cols[0]].values
             y_pred_group = group[self.y_type].values
@@ -278,6 +355,9 @@ class GroupedMetric(Metric):
                 self.y_type,
             )
 
+            # A group can be arbitrarily small (e.g. only 1 item), which also has implications
+            # for its target distribution (e.g. only the positive class). These conditions can
+            # lead to errors in the metric computation, which we handle here.
             try:
                 score = self.fn(**kwargs, **self.metric.value.kwargs)
             except Exception:
@@ -288,6 +368,7 @@ class GroupedMetric(Metric):
                 score = self.config.default
             scores.append(score)
 
+        # Aggregate the per-group score in a single score.
         if self.config.aggregation == "mean":
             score = np.mean(scores)
         else:
@@ -295,17 +376,28 @@ class GroupedMetric(Metric):
         return score
 
 
+# Keeping this code in this file for now because it's closely coupled with the Metric classes above.
+
 MetricType: TypeAlias = Metric | GroupedMetric
+"""
+A union of all supported Metric types in Polaris.
+"""
+
 AnnotatedMetricType = Annotated[MetricType, Field(..., discriminator="kind")]
+"""
+Annotates the MetricType with a discriminator field.
+"""
 
 
 def instantiate_metric(m: MetricType | str | dict):
+    """Instantiate a metric from a string, a Metric object, or a dictionary."""
+
     if isinstance(m, str):
         return Metric(metric=m)
 
     if isinstance(m, dict):
         if "kind" not in m:
-            m["kind"] = None
+            m["kind"] = "default"
         adapter = TypeAdapter(AnnotatedMetricType)
         return adapter.validate_python(m)
 
