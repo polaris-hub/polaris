@@ -104,7 +104,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
-    metrics: set[MetricType]
+    metrics: set[MetricType] = Field(min_length=1)
     main_metric: MetricType
 
     # Additional meta-data
