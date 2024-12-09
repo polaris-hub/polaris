@@ -40,7 +40,7 @@ class ResultRecords(BaseModel):
 
     test_set: TestLabelType
     target_label: TargetLabelType
-    scores: dict[Metric, float]
+    scores: list[tuple[Metric, float]]
 
     # Model config
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
@@ -48,20 +48,13 @@ class ResultRecords(BaseModel):
     @field_validator("scores", mode="before")
     @classmethod
     def validate_scores(cls, v):
-        validated = {}
-        for metric, score in v.items():
-            if not isinstance(metric, Metric):
-                try:
-                    metric = Metric[metric]
-                except KeyError as error:
-                    raise ValueError("Invalid metric name") from error
-            validated[metric] = score
+        validated = []
+        for metric, score in v:
+            if isinstance(metric, str):
+                metric = {"label": metric}
+            metric = Metric(**metric)
+            validated.append((metric, score))
         return validated
-
-    @field_serializer("scores")
-    def serialize_scores(self, value: dict[Metric, float]) -> dict[str, float]:
-        """Change from the Metric enum to a string representation"""
-        return {metric.name: score for metric, score in value.items()}
 
 
 class ResultsMetadata(BaseArtifactModel):
@@ -135,7 +128,7 @@ class EvaluationResult(ResultsMetadata):
                 if isinstance(record, dict):
                     record = ResultRecords(**record)
 
-                for metric, score in record.scores.items():
+                for metric, score in record.scores:
                     df.loc[len(df)] = {
                         "Test set": record.test_set,
                         "Target label": record.target_label,
@@ -177,7 +170,7 @@ class EvaluationResult(ResultsMetadata):
         serialized = []
         grouped = value.groupby(["Test set", "Target label"])
         for (test_set, target_label), group in grouped:
-            metrics = {row["Metric"]: row["Score"] for _, row in group.iterrows()}
+            metrics = [(row["Metric"], row["Score"]) for _, row in group.iterrows()]
             record = ResultRecords(test_set=test_set, target_label=target_label, scores=metrics)
             serialized.append(record)
 

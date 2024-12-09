@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import stats
+from sklearn.metrics import average_precision_score as sk_average_precision_score
 from sklearn.metrics import cohen_kappa_score as sk_cohen_kappa_score
 
 
@@ -40,3 +41,10 @@ def absolute_average_fold_error(y_true: np.ndarray, y_pred: np.ndarray) -> float
 def cohen_kappa_score(y_true, y_pred, **kwargs):
     """Scikit learn cohen_kappa_score wraper with renamed arguments"""
     return sk_cohen_kappa_score(y1=y_true, y2=y_pred, **kwargs)
+
+
+def average_precision_score(y_true, y_score, **kwargs):
+    """Scikit learn average_precision_score wrapper that throws an error if y_true has no positive class"""
+    if len(y_true) == 0 or not np.any(y_true):
+        raise ValueError("Average precision requires at least a single positive class")
+    return sk_average_precision_score(y_true=y_true, y_score=y_score, **kwargs)

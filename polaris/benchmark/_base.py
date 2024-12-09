@@ -103,8 +103,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
-    metrics: Union[str, Metric, list[str | Metric]]
-    main_metric: str | Metric | None = None
+    metrics: set[Metric] = Field(min_length=1)
+    main_metric: Metric
 
     # Additional meta-data
     readme: str = ""
@@ -136,34 +136,50 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             raise InvalidBenchmarkError("The task specifies duplicate columns")
         return v
 
-    @field_validator("metrics")
-    def _validate_metrics(cls, v):
+    @field_validator("metrics", mode="before")
+    @classmethod
+    def _validate_metrics(cls, v) -> set[Metric]:
         """
         Verifies all specified metrics are either a Metric object or a valid metric name.
         Also verifies there are no duplicate metrics.
 
         If there are multiple test sets, it is assumed the same metrics are used across test sets.
         """
+        if isinstance(v, str):
+            v = {"label": v}
+        if isinstance(v, set):
+            v = list(v)
         if not isinstance(v, list):
             v = [v]
 
-        v = [m if isinstance(m, Metric) else Metric[m] for m in v]
+        def _convert(m: str | dict | Metric) -> Metric:
+            if isinstance(m, str):
+                return Metric(label=m)
+            if isinstance(m, dict):
+                return Metric(**m)
+            return m
 
-        if len(set(v)) != len(v):
-            raise InvalidBenchmarkError("The task specifies duplicate metrics")
+        v = [_convert(m) for m in v]
 
-        if len(v) == 0:
-            raise InvalidBenchmarkError("Specify at least one metric")
+        unique_metrics = set(v)
 
-        return v
+        if len(unique_metrics) != len(v):
+            raise InvalidBenchmarkError("The benchmark specifies duplicate metrics.")
+        return unique_metrics
 
-    @field_validator("main_metric")
+    @field_validator("main_metric", mode="before")
+    @classmethod
     def _validate_main_metric(cls, v):
         """Converts the main metric to a Metric object if it is a string."""
-        # lu: v can be None.
-        if v and not isinstance(v, Metric):
-            v = Metric[v]
+        if v and isinstance(v, str):
+            v = Metric(label=v)
         return v
+
+    @model_validator(mode="after")
+    def _validate_main_metric_is_in_metrics(self) -> Self:
+        if self.main_metric not in self.metrics:
+            raise InvalidBenchmarkError("The main metric should be one of the specified metrics")
+        return self
 
     @model_validator(mode="after")
     def _validate_split(self) -> Self:
@@ -262,22 +278,10 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                 v[target] = TargetType(v[target])
         return v
 
-    @model_validator(mode="after")
-    def _validate_model(self) -> Self:
-        """
-        Sets a default metric if missing.
-        """
-        # Set a default main metric if not set yet
-        if self.main_metric is None:
-            self.main_metric = self.metrics[0]
-        return self
-
-    @field_serializer("metrics", "main_metric")
-    def _serialize_metrics(self, v):
-        """Return the string identifier so we can serialize the object"""
-        if isinstance(v, Metric):
-            return v.name
-        return [m.name for m in v]
+    @field_serializer("metrics")
+    def _serialize_metrics(self, v: set[Metric]) -> list[dict]:
+        """Convert the set to a list"""
+        return list(v)
 
     @field_serializer("split")
     def _serialize_split(self, v: SplitType):
@@ -285,9 +289,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return listit(v)
 
     @field_serializer("target_types")
-    def _serialize_target_types(self, v):
+    def _serialize_target_types(self, target_types):
         """Convert from enum to string to make sure it's serializable"""
-        return {k: v.value for k, v in self.target_types.items()}
+        return {k: v.value for k, v in target_types.items()}
 
     def _compute_checksum(self):
         """
@@ -302,8 +306,11 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             hash_fn.update(c.encode("utf-8"))
         for c in sorted(self.input_cols):
             hash_fn.update(c.encode("utf-8"))
-        for m in sorted(self.metrics, key=lambda k: k.name):
-            hash_fn.update(m.name.encode("utf-8"))
+        # We distinguish between default and non-default metrics for the sake of backwards compatibility.
+        for label in sorted([m.label for m in self.metrics if m.kind == "default"]):
+            hash_fn.update(label.encode("utf-8"))
+        for hash in sorted(hash(m) for m in self.metrics if m.kind != "default"):
+            hash_fn.update(str(hash).encode("utf-8"))
 
         # Train set
         s = json.dumps(sorted(self.split[0]))
@@ -479,19 +486,14 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
-        y_true_subset = self._get_test_set(hide_targets=False)
-        y_true_values = {k: v.targets for k, v in y_true_subset.items()}
-
-        # Simplify the case where there is only one test set
-        if len(y_true_values) == 1:
-            y_true_values = y_true_values["test"]
+        y_true = self._get_test_set(hide_targets=False)
 
         scores = evaluate_benchmark(
             target_cols=self.target_cols,
             test_set_labels=self.test_set_labels,
             test_set_sizes=self.test_set_sizes,
             metrics=self.metrics,
-            y_true=y_true_values,
+            y_true=y_true,
             y_pred=y_pred,
             y_prob=y_prob,
         )

@@ -245,3 +245,22 @@ def test_benchmark_predictions_serialization():
     assert deserialized.test_set_labels == ["test"]
     assert set(deserialized.test_set_sizes.keys()) == {"test"}
     assert deserialized.test_set_sizes["test"] == 3
+
+
+def test_benchmark_predictions_size():
+    predictions = BenchmarkPredictions(
+        predictions={
+            "test1": {"col1": [1, 2, 3], "col2": [4, 5, 6]},
+            "test2": {"col1": [7, 8], "col2": [9, 10]},
+        },
+        target_labels=["col1", "col2"],
+        test_set_labels=["test1", "test2"],
+        test_set_sizes={"test1": 3, "test2": 2},
+    )
+    assert len(predictions) == 10
+    assert predictions.get_size() == 10
+    assert predictions.get_size(test_set_subset=["test1"]) == 6
+    assert predictions.get_size(test_set_subset=["test2"]) == 4
+    assert predictions.get_size(target_subset=["col1"]) == 5
+    assert predictions.get_size(target_subset=["col2"]) == 5
+    assert predictions.get_size(test_set_subset=["test1"], target_subset=["col2"]) == 3
