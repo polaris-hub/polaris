@@ -20,8 +20,7 @@ from typing_extensions import Self
 
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset import CompetitionDataset, DatasetV1, Subset
-from polaris.evaluate import BenchmarkResults, GroupedMetric, Metric
-from polaris.evaluate._metric import MetricType, instantiate_metric
+from polaris.evaluate import BenchmarkResults, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.mixins import ChecksumMixin
@@ -104,8 +103,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
-    metrics: set[MetricType] = Field(min_length=1)
-    main_metric: MetricType
+    metrics: set[Metric] = Field(min_length=1)
+    main_metric: Metric
 
     # Additional meta-data
     readme: str = ""
@@ -139,7 +138,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     @field_validator("metrics", mode="before")
     @classmethod
-    def _validate_metrics(cls, v) -> set[MetricType]:
+    def _validate_metrics(cls, v) -> set[Metric]:
         """
         Verifies all specified metrics are either a Metric object or a valid metric name.
         Also verifies there are no duplicate metrics.
@@ -147,31 +146,33 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         If there are multiple test sets, it is assumed the same metrics are used across test sets.
         """
         if isinstance(v, str):
-            v = [v]
-        if not isinstance(v, list):
+            v = {"label": v}
+        if isinstance(v, set):
             v = list(v)
+        if not isinstance(v, list):
+            v = [v]
 
-        for i, m in enumerate(v):
-            v[i] = instantiate_metric(m)
+        def _convert(m: str | dict | Metric) -> Metric:
+            if isinstance(m, str):
+                return Metric(label=m)
+            if isinstance(m, dict):
+                return Metric(**m)
+            return m
+
+        v = [_convert(m) for m in v]
 
         unique_metrics = set(v)
 
         if len(unique_metrics) != len(v):
-            raise InvalidBenchmarkError(
-                "The task specifies duplicate metrics. Make sure each metric has a unique name, e.g. Metric(name=...)"
-            )
-
-        if len(unique_metrics) == 0:
-            raise InvalidBenchmarkError("Specify at least one metric")
-
+            raise InvalidBenchmarkError("The benchmark specifies duplicate metrics.")
         return unique_metrics
 
     @field_validator("main_metric", mode="before")
     @classmethod
     def _validate_main_metric(cls, v):
         """Converts the main metric to a Metric object if it is a string."""
-        if v and not isinstance(v, MetricType):
-            v = instantiate_metric(v)
+        if v and isinstance(v, str):
+            v = Metric(label=v)
         return v
 
     @model_validator(mode="after")
@@ -278,9 +279,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return v
 
     @field_serializer("metrics")
-    def _serialize_metrics(self, v: set[MetricType]) -> list[dict]:
+    def _serialize_metrics(self, v: set[Metric]) -> list[dict]:
         """Convert the set to a list"""
-        return [m.model_dump() for m in v]
+        return list(v)
 
     @field_serializer("split")
     def _serialize_split(self, v: SplitType):
@@ -288,9 +289,9 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         return listit(v)
 
     @field_serializer("target_types")
-    def _serialize_target_types(self, v):
+    def _serialize_target_types(self, target_types):
         """Convert from enum to string to make sure it's serializable"""
-        return {k: v.value for k, v in self.target_types.items()}
+        return {k: v.value for k, v in target_types.items()}
 
     def _compute_checksum(self):
         """
@@ -305,12 +306,11 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             hash_fn.update(c.encode("utf-8"))
         for c in sorted(self.input_cols):
             hash_fn.update(c.encode("utf-8"))
-        # We distinguish between Metrics and GroupedMetrics for backwards compatibility.
-        for name in sorted([m.name for m in self.metrics if isinstance(m, Metric)]):
-            hash_fn.update(name.encode("utf-8"))
-        for d in sorted([m.model_dump() for m in self.metrics if isinstance(m, GroupedMetric)]):
-            s = json.dumps(d, sort_keys="True")
-            hash_fn.update(s.encode("utf-8"))
+        # We distinguish between default and non-default metrics for the sake of backwards compatibility.
+        for label in sorted([m.label for m in self.metrics if m.kind == "default"]):
+            hash_fn.update(label.encode("utf-8"))
+        for hash in sorted(hash(m) for m in self.metrics if m.kind != "default"):
+            hash_fn.update(str(hash).encode("utf-8"))
 
         # Train set
         s = json.dumps(sorted(self.split[0]))

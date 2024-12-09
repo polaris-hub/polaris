@@ -1,9 +1,11 @@
+import json
 import os
 
 import datamol as dm
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.metrics import f1_score, roc_auc_score
 
 import polaris as po
 from polaris.benchmark import (
@@ -11,7 +13,7 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.dataset import DatasetV1
-from polaris.evaluate._metric import BaseMetric, Metric
+from polaris.evaluate._metric import DEFAULT_METRICS, Metric
 from polaris.evaluate._results import BenchmarkResults
 from polaris.utils.types import HubOwner
 
@@ -42,6 +44,10 @@ def test_result_to_json(tmp_path: str, test_user_owner: HubOwner):
 
     path = os.path.join(tmp_path, "result.json")
     result.to_json(path)
+
+    with open(path) as f:
+        print(json.load(f))
+
     BenchmarkResults.from_json(path)
     assert po.__version__ == result.polaris_version
 
@@ -117,8 +123,8 @@ def test_metrics_multitask_clf(test_multi_task_benchmark_clf: MultiTaskBenchmark
 
 
 def test_metric_direction():
-    for metric in BaseMetric:
-        assert metric.value.direction in ["min", "max", 1]
+    for metric_info in DEFAULT_METRICS.values():
+        assert metric_info.direction in ["min", "max", 1]
 
 
 def test_metric_y_types(
@@ -136,28 +142,28 @@ def test_metric_y_types(
 
     # If y_type == "y_pred" and y_pred is None, an error is thrown.
     with pytest.raises(ValueError, match="Metric requires `y_pred` input"):
-        test_single_task_benchmark_clf.metrics = [Metric(metric="accuracy")]
+        test_single_task_benchmark_clf.metrics = [Metric(label="accuracy")]
         test_single_task_benchmark_clf.evaluate(y_prob=probabilities)
 
     # If y_type != "y_pred" and y_prob is None, an error is thrown.
     with pytest.raises(ValueError, match="Metric requires `y_prob` input"):
-        test_single_task_benchmark_clf.metrics = [Metric(metric="roc_auc")]
+        test_single_task_benchmark_clf.metrics = [Metric(label="roc_auc")]
         test_single_task_benchmark_clf.evaluate(y_pred=predictions)
 
     # If y_type != "y_pred" and y_prob is None, an error is thrown.
     with pytest.raises(ValueError, match="Metric requires `y_prob` input"):
-        test_single_task_benchmark_clf.metrics = [Metric(metric="pr_auc")]
+        test_single_task_benchmark_clf.metrics = [Metric(label="pr_auc")]
         test_single_task_benchmark_clf.evaluate(y_pred=predictions)
 
     # If y_type != "y_pred" and y_pred is not None and y_prob is not None, it uses y_prob as expected!
-    test_single_task_benchmark_clf.metrics = [Metric(metric="roc_auc")]
+    test_single_task_benchmark_clf.metrics = [Metric(label="roc_auc")]
     result = test_single_task_benchmark_clf.evaluate(y_pred=predictions, y_prob=probabilities)
-    assert result.results.Score.values[0] == BaseMetric.roc_auc.value.fn(y_true=test_y, y_score=probabilities)
+    assert result.results.Score.values[0] == roc_auc_score(y_true=test_y, y_score=probabilities)
 
     # If y_type == "y_pred" and y_pred is not None and y_prob is not None, it uses y_pred as expected!
-    test_single_task_benchmark_clf.metrics = [Metric(metric="f1")]
+    test_single_task_benchmark_clf.metrics = [Metric(label="f1")]
     result = test_single_task_benchmark_clf.evaluate(y_pred=predictions, y_prob=probabilities)
-    assert result.results.Score.values[0] == BaseMetric.f1.value.fn(y_true=test_y, y_pred=predictions)
+    assert result.results.Score.values[0] == f1_score(y_true=test_y, y_pred=predictions)
 
 
 def test_metrics_docking(test_docking_benchmark: SingleTaskBenchmarkSpecification, caffeine, ibuprofen):

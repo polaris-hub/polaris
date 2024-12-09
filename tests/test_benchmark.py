@@ -6,7 +6,7 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.evaluate._metric import GroupedMetric
+from polaris.evaluate import Metric
 
 
 @pytest.mark.parametrize("is_single_task", [True, False])
@@ -118,11 +118,11 @@ def test_benchmark_metrics_verification(test_single_task_benchmark, test_multi_t
     }
 
     # Invalid metric
-    with pytest.raises(KeyError):
+    with pytest.raises(ValidationError):
         cls(metrics=["invalid"], **default_kwargs)
-    with pytest.raises(KeyError):
+    with pytest.raises(ValidationError):
         cls(metrics="invalid", **default_kwargs)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValidationError):
         metrics_list = list(base.metrics)
         cls(
             metrics=metrics_list + [metrics_list[0]],
@@ -225,16 +225,15 @@ def test_benchmark_duplicate_metrics(test_single_task_benchmark):
     """Test whether setting an invalid checksum raises an error."""
     m = test_single_task_benchmark.model_dump()
 
-    with pytest.raises(ValueError, match="The task specifies duplicate metrics"):
+    with pytest.raises(ValidationError, match="The benchmark specifies duplicate metric"):
         m["metrics"] = [
-            GroupedMetric(metric="roc_auc", config={"group_by": "CLASS_expt"}),
-            GroupedMetric(metric="roc_auc", config={"group_by": "MULTICLASS_calc"}),
+            Metric(label="roc_auc", config={"group_by": "CLASS_expt"}),
+            Metric(label="roc_auc", config={"group_by": "CLASS_expt"}),
         ]
-        print([x.name for x in m["metrics"]])
         m["main_metric"] = m["metrics"][0]
         SingleTaskBenchmarkSpecification(**m)
 
-    m["metrics"][0].name = "roc_auc_2"
+    m["metrics"][0].config.group_by = "MULTICLASS_calc"
     SingleTaskBenchmarkSpecification(**m)
 
 
@@ -249,7 +248,7 @@ def test_benchmark_metric_deserialization(test_single_task_benchmark):
 
     # Should work with dictionaries
     m["metrics"] = [
-        {"metric": "mean_absolute_error", "kind": "grouped", "config": {"group_by": "CLASS_expt"}},
-        {"metric": "accuracy"},
+        {"label": "mean_absolute_error", "config": {"group_by": "CLASS_expt"}},
+        {"label": "accuracy"},
     ]
     SingleTaskBenchmarkSpecification(**m)

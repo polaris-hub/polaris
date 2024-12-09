@@ -4,7 +4,7 @@ import pytest
 
 from polaris.benchmark import BenchmarkSpecification
 from polaris.dataset import Dataset
-from polaris.evaluate._metric import GroupedMetric, Metric
+from polaris.evaluate._metric import Metric
 
 
 def test_absolute_average_fold_error():
@@ -14,30 +14,30 @@ def test_absolute_average_fold_error():
     y_pred_3 = y_true - 10
     y_zero = np.zeros(shape=200)
 
-    metric = Metric(metric="absolute_average_fold_error")
+    metric = Metric(label="absolute_average_fold_error")
     # Optimal value
-    aafe_0 = metric.fn(y_true=y_true, y_pred=y_true)
+    aafe_0 = metric.info.fn(y_true=y_true, y_pred=y_true)
     assert aafe_0 == 1
 
     # small fold change
-    aafe_1 = metric.fn(y_true=y_true, y_pred=y_pred_1)
+    aafe_1 = metric.info.fn(y_true=y_true, y_pred=y_pred_1)
     assert aafe_1 > 1
 
     # larger fold change
-    aafe_2 = metric.fn(y_true=y_true, y_pred=y_pred_2)
+    aafe_2 = metric.info.fn(y_true=y_true, y_pred=y_pred_2)
     assert aafe_2 > aafe_1
 
     # undershoot
-    aafe_3 = metric.fn(y_true=y_true, y_pred=y_pred_3)
+    aafe_3 = metric.info.fn(y_true=y_true, y_pred=y_pred_3)
     assert aafe_3 < 1
 
     # y_true contains zeros
     with pytest.raises(ValueError):
-        metric.fn(y_true=y_zero, y_pred=y_pred_3)
+        metric.info.fn(y_true=y_zero, y_pred=y_pred_3)
 
 
 def test_grouped_metric():
-    metric = GroupedMetric(metric="accuracy", config={"group_by": "group"})
+    metric = Metric(label="accuracy", config={"group_by": "group"})
 
     table = pd.DataFrame({"group": ["a", "b", "b"], "y_true": [1, 1, 1]})
     dataset = Dataset(table=table)
@@ -54,3 +54,20 @@ def test_grouped_metric():
 
     # The global accuracy is only 33%, but because we compute it per group and then average, it's 50%.
     result.results.Score.values[0] == 0.5
+
+
+def test_metric_hash():
+    metric_1 = Metric(label="accuracy")
+    metric_2 = Metric(label="accuracy")
+    metric_3 = Metric(label="mean_absolute_error")
+    assert hash(metric_1) == hash(metric_2)
+    assert hash(metric_1) != hash(metric_3)
+
+    metric_4 = Metric(label="accuracy", config={"group_by": "group1"})
+    assert hash(metric_4) != hash(metric_1)
+
+    metric_5 = Metric(label="accuracy", config={"group_by": "group2"})
+    assert hash(metric_4) != hash(metric_5)
+
+    metric_6 = Metric(label="accuracy", config={"group_by": "group1"})
+    assert hash(metric_4) == hash(metric_6)

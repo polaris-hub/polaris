@@ -1,8 +1,7 @@
 import pandas as pd
 
 from polaris.dataset._subset import Subset
-from polaris.evaluate import BenchmarkPredictions, BenchmarkResults
-from polaris.evaluate._metric import MetricType
+from polaris.evaluate import BenchmarkPredictions, BenchmarkResults, Metric
 from polaris.utils.types import IncomingPredictionsType
 
 
@@ -34,7 +33,7 @@ def evaluate_benchmark(
     target_cols: list[str],
     test_set_labels: list[str],
     test_set_sizes: dict[str, int],
-    metrics: set[MetricType],
+    metrics: set[Metric],
     y_true: dict[str, Subset],
     y_pred: IncomingPredictionsType | None = None,
     y_prob: IncomingPredictionsType | None = None,
@@ -68,7 +67,7 @@ def evaluate_benchmark(
     for test_label in test_set_labels:
         # For every metric...
         for metric in metrics:
-            if metric.is_multitask:
+            if metric.info.is_multitask:
                 # Multi-task but with a metric across targets
                 score = metric(
                     y_true=y_true[test_label],
