@@ -83,7 +83,7 @@ def test_pop_deepest() -> None:
     node = tree.pop_deepest()
 
     # Assert popped node is a/b/c, not a/b
-    assert str(node.path) == "a/b"
+    assert node.path == Path("a/b")
     assert len(node.checksums.files) == 1
     assert len(node.checksums.directories) == 0
     assert node.checksums.files[0].name == "c"

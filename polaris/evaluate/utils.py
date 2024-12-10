@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 
-from polaris.evaluate import BenchmarkPredictions, BenchmarkResults, Metric, ResultsType
+from polaris.evaluate import BenchmarkPredictions, BenchmarkResults, Metric
 from polaris.utils.types import IncomingPredictionsType
 
 
@@ -91,7 +91,7 @@ def evaluate_benchmark(
 
     # Compute the results
     # Results are saved in a tabular format. For more info, see the BenchmarkResults docs.
-    scores: ResultsType = pd.DataFrame(columns=BenchmarkResults.RESULTS_COLUMNS)
+    scores = pd.DataFrame(columns=BenchmarkResults.RESULTS_COLUMNS)
 
     # For every test set...
     for test_label, y_true_test in y_true.predictions.items():

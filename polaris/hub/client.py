@@ -150,9 +150,10 @@ class PolarisHubClient(OAuth2Client):
             # As of now, this latest version is not available on Conda though.
             token = self.token
 
-        is_active = super().ensure_active_token(token)
-        if is_active:
-            return True
+        if token:
+            is_active = super().ensure_active_token(token)
+            if is_active:
+                return True
 
         # Check if external token is still valid, or we're using password auth
         if not (self.has_user_password or self.external_client.ensure_active_token()):
@@ -180,13 +181,12 @@ class PolarisHubClient(OAuth2Client):
                 message=f"Could not obtain a token to access the Hub. Error was: {error.error} - {error.description}"
             ) from error
 
-    def _base_request_to_hub(self, url: str, method: str, **kwargs):
+    def _base_request_to_hub(self, url: str, method: str, **kwargs) -> Response:
         """Utility function since most API methods follow the same pattern"""
         response = self.request(url=url, method=method, **kwargs)
-
         try:
             response.raise_for_status()
-
+            return response
         except HTTPStatusError as error:
             response_status_code = response.status_code
 
@@ -219,13 +219,6 @@ class PolarisHubClient(OAuth2Client):
                 raise PolarisRetrieveArtifactError(response=response) from error
 
             raise PolarisHubError(response=response) from error
-        # Convert the response to json format if the response contains a 'text' body
-        try:
-            response = response.json()
-        except json.JSONDecodeError:
-            pass
-
-        return response
 
     def get_metadata_from_response(self, response: Response, key: str) -> str | None:
         """Get custom metadata saved to the R2 object from the headers."""
@@ -301,7 +294,8 @@ class PolarisHubClient(OAuth2Client):
             response = self._base_request_to_hub(
                 url="/v1/dataset", method="GET", params={"limit": limit, "offset": offset}
             )
-            dataset_list = [bm["artifactId"] for bm in response["data"]]
+            response_data = response.json()
+            dataset_list = [bm["artifactId"] for bm in response_data["data"]]
 
             return dataset_list
 
@@ -351,9 +345,10 @@ class PolarisHubClient(OAuth2Client):
         """
         url = f"/v1/dataset/{owner}/{name}"
         response = self._base_request_to_hub(url=url, method="GET")
+        response_data = response.json()
 
         # Disregard the Zarr root in the response. We'll get it from the storage token instead.
-        response.pop("zarrRootPath", None)
+        response_data.pop("zarrRootPath", None)
 
         # Load the dataset table and optional Zarr archive
         with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
@@ -365,8 +360,8 @@ class PolarisHubClient(OAuth2Client):
                 # It should be None if the dataset does not use pointer columns
                 zarr_root_path = str(zarr_root_path)
 
-        dataset = DatasetV1(table=table, zarr_root_path=zarr_root_path, **response)
-        md5sum = response["md5Sum"]
+        dataset = DatasetV1(table=table, zarr_root_path=zarr_root_path, **response_data)
+        md5sum = response_data["md5Sum"]
 
         if dataset.should_verify_checksum(verify_checksum):
             dataset.verify_checksum(md5sum)
@@ -379,15 +374,16 @@ class PolarisHubClient(OAuth2Client):
         """"""
         url = f"/v2/dataset/{owner}/{name}"
         response = self._base_request_to_hub(url=url, method="GET")
+        response_data = response.json()
 
         # Disregard the Zarr root in the response. We'll get it from the storage token instead.
-        response.pop("zarrRootPath", None)
+        response_data.pop("zarrRootPath", None)
 
         # Load the Zarr archive
         with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
             zarr_root_path = str(storage.paths.root)
 
-        dataset = DatasetV2(zarr_root_path=zarr_root_path, **response)
+        dataset = DatasetV2(zarr_root_path=zarr_root_path, **response_data)
         return dataset
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
@@ -409,7 +405,8 @@ class PolarisHubClient(OAuth2Client):
             response = self._base_request_to_hub(
                 url="/v1/benchmark", method="GET", params={"limit": limit, "offset": offset}
             )
-            benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response["data"]]
+            response_data = response.json()
+            benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response_data["data"]]
 
             return benchmarks_list
 
@@ -435,12 +432,13 @@ class PolarisHubClient(OAuth2Client):
             error_msg="Failed to fetch benchmark.",
         ):
             response = self._base_request_to_hub(url=f"/v1/benchmark/{owner}/{name}", method="GET")
+            response_data = response.json()
 
             # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
             #  but we'd need to change the signature of get_dataset to use it
-            response["dataset"] = self.get_dataset(
-                response["dataset"]["owner"]["slug"],
-                response["dataset"]["name"],
+            response_data["dataset"] = self.get_dataset(
+                response_data["dataset"]["owner"]["slug"],
+                response_data["dataset"]["name"],
                 verify_checksum=verify_checksum,
             )
 
@@ -448,16 +446,16 @@ class PolarisHubClient(OAuth2Client):
             #  Maybe through structural pattern matching, introduced in Py3.10, or Pydantic's discriminated unions?
             benchmark_cls = (
                 SingleTaskBenchmarkSpecification
-                if len(response["targetCols"]) == 1
+                if len(response_data["targetCols"]) == 1
                 else MultiTaskBenchmarkSpecification
             )
 
-            benchmark = benchmark_cls(**response)
+            benchmark = benchmark_cls(**response_data)
 
             if benchmark.dataset.should_verify_checksum(verify_checksum):
                 benchmark.verify_checksum()
             else:
-                benchmark.md5sum = response["md5Sum"]
+                benchmark.md5sum = response_data["md5Sum"]
 
             return benchmark
 
@@ -466,7 +464,7 @@ class PolarisHubClient(OAuth2Client):
         results: BenchmarkResults,
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
-    ):
+    ) -> BenchmarkResults:
         """Upload the results to the Polaris Hub.
 
         Info: Owner
@@ -479,11 +477,6 @@ class PolarisHubClient(OAuth2Client):
             The requirements by the hub are stricter, so when uploading to the hub you might
             get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
             before uploading.
-
-        Note: Benchmark name and owner
-            Importantly, `results.benchmark_name` and `results.benchmark_owner` must be specified
-            and match an existing benchmark on the Polaris Hub. If these results were generated by
-            `benchmark.evaluate(...)`, this is done automatically.
 
         Args:
             results: The results to upload.
@@ -501,20 +494,16 @@ class PolarisHubClient(OAuth2Client):
 
             # Make a request to the hub
             response = self._base_request_to_hub(
-                url="/v1/result", method="POST", json={"access": access, **result_json}
+                url="/v2/result", method="POST", json={"access": access, **result_json}
             )
 
             # Inform the user about where to find their newly created artifact.
-            result_url = urljoin(
-                self.settings.hub_url,
-                f"/v1/benchmarks/{results.benchmark_owner}/{results.benchmark_name}/{response['id']}",
-            )
+            result_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
 
             progress_indicator.update_success_msg(
                 f"Your result has been successfully uploaded to the Hub. View it here: {result_url}"
             )
-
-            return response
+            return results
 
     def upload_dataset(
         self,
@@ -619,6 +608,7 @@ class PolarisHubClient(OAuth2Client):
                 },
                 timeout=timeout,
             )
+            response_data = response.json()
 
             with StorageSession(self, "write", dataset.urn) as storage:
                 # Step 2: Upload the parquet file
@@ -639,11 +629,8 @@ class PolarisHubClient(OAuth2Client):
                     destination[".zmetadata"] = zmetadata_content
 
                     # Copy the Zarr archive to the hub
-                    zarr.copy_store(
-                        source=dataset.zarr_root.store.store,
-                        dest=destination,
-                        log=logger.debug,
-                        if_exists=if_exists,
+                    destination.copy_from_source(
+                        dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
                     )
 
             progress_indicator.update_success_msg(
@@ -651,7 +638,7 @@ class PolarisHubClient(OAuth2Client):
                 f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
             )
 
-            return response
+            return response_data
 
     def _upload_v2_dataset(
         self,
@@ -688,6 +675,7 @@ class PolarisHubClient(OAuth2Client):
                 },
                 timeout=timeout,
             )
+            response_data = response.json()
 
             with StorageSession(self, "write", dataset.urn) as storage:
                 # Step 2: Upload the manifest file
@@ -708,11 +696,8 @@ class PolarisHubClient(OAuth2Client):
                 destination[".zmetadata"] = zmetadata_content
 
                 # Copy the Zarr archive to the hub
-                zarr.copy_store(
-                    source=dataset.zarr_root.store.store,
-                    dest=destination,
-                    log=logger.debug,
-                    if_exists=if_exists,
+                destination.copy_from_source(
+                    dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
                 )
 
         progress_indicator.update_success_msg(
@@ -720,7 +705,7 @@ class PolarisHubClient(OAuth2Client):
             f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
         )
 
-        return response
+        return response_data
 
     def upload_benchmark(
         self,
@@ -793,12 +778,13 @@ class PolarisHubClient(OAuth2Client):
             path_params = "/v1/benchmark"
             url = f"{path_params}/{benchmark.owner}/{benchmark.name}"
             response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
+            response_data = response.json()
 
             progress_indicator.update_success_msg(
                 f"Your benchmark has been successfully uploaded to the Hub. "
                 f"View it here: {urljoin(self.settings.hub_url, url)}"
             )
-            return response
+            return response_data
 
     def get_competition(
         self, owner: str | HubOwner, name: str, zarr_root_path: Path | None = None

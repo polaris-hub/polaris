@@ -107,8 +107,10 @@ class SDFConverter(Converter):
 
         if append:
             if self.mol_column not in factory.zarr_root:
-                raise RuntimeError(f"Array {self.mol_column} doesn't exist in {factory.zarr_root}. \
-                    Please make sure the Array is created. Or set `append` to `False`.")
+                raise RuntimeError(
+                    f"Array {self.mol_column} doesn't exist in {factory.zarr_root}. \
+                    Please make sure the Array is created. Or set `append` to `False`."
+                )
             else:
                 # append existing array
                 pointer_start = factory.zarr_root[self.mol_column].shape[0]

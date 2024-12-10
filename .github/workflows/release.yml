@@ -27,25 +27,24 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v4
 
-      - name: Setup mamba
-        uses: mamba-org/setup-micromamba@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          environment-file: env.yml
-          environment-name: my_env
-          cache-environment: true
-          cache-downloads: true
-          create-args: >-
-            pip
-            semver
-            python-build
-            setuptools_scm
+          enable-cache: true
+          cache-dependency-glob: ./pyproject.toml
+      
+      - name: Install the project
+        run: uv sync --all-groups --python 3.12
+
+      - name: Install build dependencies
+        run: uv pip install build semver setuptools_scm
 
       - name: Check the version is valid semver
         run: |
           RELEASE_VERSION="${{ inputs.release-version }}"
 
           {
-            pysemver check $RELEASE_VERSION
+            uv run pysemver check $RELEASE_VERSION
           } || {
             echo "The version '$RELEASE_VERSION' is not a valid Semver version string."
             echo "Please use a valid semver version string. More details at https://semver.org/"
@@ -61,7 +60,7 @@ jobs:
           RELEASE_VERSION="${{ inputs.release-version }}"
           LATEST_VERSION=$(git describe --abbrev=0 --tags)
 
-          IS_HIGHER_VERSION=$(pysemver compare $RELEASE_VERSION $LATEST_VERSION)
+          IS_HIGHER_VERSION=$(uv run pysemver compare $RELEASE_VERSION $LATEST_VERSION)
 
           if [ "$IS_HIGHER_VERSION" != "1" ]; then
             echo "The version '$RELEASE_VERSION' is not higher than the latest version '$LATEST_VERSION'."
@@ -99,11 +98,8 @@ jobs:
           # Push the tags
           git push origin "${{ inputs.release-version }}"
 
-      - name: Install library
-        run: python -m pip install --no-deps .
-
       - name: Build the wheel and sdist
-        run: python -m build --no-isolation
+        run: uv run python -m build --no-isolation
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -123,5 +119,5 @@ jobs:
           git fetch origin gh-pages
 
           echo "Build and deploy the doc on ${{ inputs.release-version }}"
-          mike deploy --push stable
-          mike deploy --push ${{ inputs.release-version }}
+          uv run mike deploy --push stable
+          uv run mike deploy --push ${{ inputs.release-version }}

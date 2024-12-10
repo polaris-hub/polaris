@@ -39,8 +39,10 @@ class ZarrConverter(Converter):
         pointer_start_dict = {col: 0 for col, _ in src.arrays()}
         if append:
             if not os.path.exists(factory.zarr_root.store.path):
-                raise RuntimeError(f"Zarr store {factory.zarr_root.store.path} doesn't exist. \
-                    Please make sure the zarr store {factory.zarr_root.store.path} is created. Or set `append` to `False`.")
+                raise RuntimeError(
+                    f"Zarr store {factory.zarr_root.store.path} doesn't exist. \
+                    Please make sure the zarr store {factory.zarr_root.store.path} is created. Or set `append` to `False`."
+                )
             else:
                 for col, arr in src.arrays():
                     pointer_start_dict[col] += factory.zarr_root[col].shape[0]

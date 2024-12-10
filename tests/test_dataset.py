@@ -100,7 +100,7 @@ def test_dataset_from_json(test_dataset, tmp_path):
     """Test whether the dataset can be saved and loaded from json."""
     test_dataset.to_json(str(tmp_path))
 
-    path = fs.join(str(tmp_path), "dataset.json")
+    path = fs.join(str(tmp_path), f"{test_dataset.slug}.json")
 
     new_dataset = DatasetV1.from_json(path)
     assert test_dataset == new_dataset

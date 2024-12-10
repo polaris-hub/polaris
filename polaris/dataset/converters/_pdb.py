@@ -10,6 +10,7 @@ from fastpdb import struc
 from polaris.dataset import ColumnAnnotation, Modality
 from polaris.dataset._adapters import Adapter
 from polaris.dataset.converters._base import Converter, FactoryProduct
+from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 
 if TYPE_CHECKING:
     from polaris.dataset import DatasetFactory
@@ -48,6 +49,10 @@ def zarr_to_pdb(atom_dict: zarr.Group):
 
     atom_array = []
 
+    # Load to memory once to drastically speed up the conversion
+    # Otherwise you keep decompressing and copying entire chunks of data to just use a single row
+    atom_dict = load_zarr_group_to_memory(atom_dict)
+
     # convert dictionary to array list of Atom object
     array_length = atom_dict["X"].shape[0]
     for ind in range(array_length):
@@ -66,6 +71,8 @@ def zarr_to_pdb(atom_dict: zarr.Group):
             atom_id=atom_dict["atom_id"][ind],
         )
         atom_array.append(atom)
+
+    # Note that this is a `fastpdb` AtomArray, not a NumPy array.
     return struc.array(atom_array)
 
 
@@ -159,8 +166,10 @@ class PDBConverter(Converter):
         # Create group and add
         if append:
             if self.pdb_column not in factory.zarr_root:
-                raise RuntimeError(f"Group {self.pdb_column} doesn't exist in {factory.zarr_root}. \
-                    Please make sure the Group {self.pdb_column} is created. Or set `append` to `False`.")
+                raise RuntimeError(
+                    f"Group {self.pdb_column} doesn't exist in {factory.zarr_root}. \
+                    Please make sure the Group {self.pdb_column} is created. Or set `append` to `False`."
+                )
             else:
                 pdb_group = factory.zarr_root[self.pdb_column]
         else:
