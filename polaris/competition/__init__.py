@@ -1,3 +1,3 @@
-from polaris.competition._competition import CompetitionSpecification
+from polaris.competition._base import CompetitionSpecification
 
 __all__ = ["CompetitionSpecification"]
