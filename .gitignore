@@ -139,3 +139,6 @@ rever/
 # Generated requirements.txt and uv lock file
 requirements.txt
 uv.lock
+
+# OS-specific files
+.DS_store
