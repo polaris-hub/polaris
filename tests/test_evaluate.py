@@ -1,4 +1,3 @@
-import json
 import os
 
 import datamol as dm
@@ -44,9 +43,6 @@ def test_result_to_json(tmp_path: str, test_user_owner: HubOwner):
 
     path = os.path.join(tmp_path, "result.json")
     result.to_json(path)
-
-    with open(path) as f:
-        print(json.load(f))
 
     BenchmarkResults.from_json(path)
     assert po.__version__ == result.polaris_version

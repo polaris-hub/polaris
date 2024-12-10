@@ -227,7 +227,8 @@ class GroupedMetricConfig(BaseModel):
 
         # NOTE (cwognum): We rely on pandas to due the grouping.
         # This does imply a memory bottleneck.
-        df = y_true.as_dataframe()
+
+        df = y_true.extend_inputs(self.group_by).as_dataframe()
         df[info.y_type] = pred.flatten()
 
         # Compute the metric for each group

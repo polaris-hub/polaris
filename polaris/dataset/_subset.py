@@ -220,22 +220,37 @@ class Subset:
 
         return df
 
-    def filter_by_target(self, target_cols: List[str] | str) -> Self:
+    def copy(self) -> Self:
+        """Returns a copy of the subset."""
+        return deepcopy(self)
+
+    def extend_inputs(self, input_cols: List[str] | str) -> Self:
+        """
+        Extend the subset to include additional input columns.
+
+        Args:
+            input_cols: The input columns to add.
+        """
+        input_cols = input_cols if isinstance(input_cols, list) else [input_cols]
+        copy = self.copy()
+        copy.input_cols = list(set(self.input_cols + input_cols))
+        return copy
+
+    def filter_targets(self, target_cols: List[str] | str) -> Self:
         """
         Filter the subset to only include the specified target columns.
 
         Args:
             target_cols: The target columns to keep.
         """
+        target_cols_subset = target_cols if isinstance(target_cols, list) else [target_cols]
 
         # Verify all target columns are in the original subset
-        target_cols_subset = target_cols if isinstance(target_cols, list) else [target_cols]
         if not all(col in self.target_cols for col in target_cols_subset):
             raise ValueError("All new target columns need to be in the original subset.")
+        target_cols_subset = [c for c in self.target_cols if c in target_cols_subset]
 
-        # Create a new subset with the filtered target columns
-        # This is as easy as setting the target_cols attribute to the new list of columns
-        copy = deepcopy(self)
+        copy = self.copy()
         copy.target_cols = target_cols_subset
 
         return copy

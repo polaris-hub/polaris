@@ -15,7 +15,7 @@ from pydantic import (
 from pydantic.alias_generators import to_camel
 
 from polaris._artifact import BaseArtifactModel
-from polaris.evaluate import BenchmarkPredictions, Metric
+from polaris.evaluate import BenchmarkPredictions
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import slugify
@@ -40,21 +40,10 @@ class ResultRecords(BaseModel):
 
     test_set: TestLabelType
     target_label: TargetLabelType
-    scores: list[tuple[Metric, float]]
+    scores: dict[str, float]
 
     # Model config
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-
-    @field_validator("scores", mode="before")
-    @classmethod
-    def validate_scores(cls, v):
-        validated = []
-        for metric, score in v:
-            if isinstance(metric, str):
-                metric = {"label": metric}
-            metric = Metric(**metric)
-            validated.append((metric, score))
-        return validated
 
 
 class ResultsMetadata(BaseArtifactModel):
@@ -128,7 +117,7 @@ class EvaluationResult(ResultsMetadata):
                 if isinstance(record, dict):
                     record = ResultRecords(**record)
 
-                for metric, score in record.scores:
+                for metric, score in record.scores.items():
                     df.loc[len(df)] = {
                         "Test set": record.test_set,
                         "Target label": record.target_label,
@@ -170,7 +159,7 @@ class EvaluationResult(ResultsMetadata):
         serialized = []
         grouped = value.groupby(["Test set", "Target label"])
         for (test_set, target_label), group in grouped:
-            metrics = [(row["Metric"], row["Score"]) for _, row in group.iterrows()]
+            metrics = {row["Metric"]: row["Score"] for _, row in group.iterrows()}
             record = ResultRecords(test_set=test_set, target_label=target_label, scores=metrics)
             serialized.append(record)
 

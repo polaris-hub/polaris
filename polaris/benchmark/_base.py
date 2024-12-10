@@ -106,7 +106,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     input_cols: ColumnsType
     split: SplitType
     metrics: set[Metric] = Field(min_length=1)
-    main_metric: Metric
+    main_metric: Metric | str
 
     # Additional meta-data
     readme: str = ""
@@ -176,16 +176,13 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         return unique_metrics
 
-    @field_validator("main_metric", mode="before")
-    @classmethod
-    def _validate_main_metric(cls, v):
-        """Converts the main metric to a Metric object if it is a string."""
-        if v and isinstance(v, str):
-            v = Metric(label=v)
-        return v
-
     @model_validator(mode="after")
     def _validate_main_metric_is_in_metrics(self) -> Self:
+        if isinstance(self.main_metric, str):
+            for m in self.metrics:
+                if m.name == self.main_metric:
+                    self.main_metric = m
+                    break
         if self.main_metric not in self.metrics:
             raise InvalidBenchmarkError("The main metric should be one of the specified metrics")
         return self
@@ -295,6 +292,11 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """Convert the set to a list"""
         return handler(list(value))
 
+    @field_serializer("main_metric")
+    def _serialize_main_metric(value: Metric) -> str:
+        """Convert the set to a list"""
+        return value.name
+
     @field_serializer("split")
     def _serialize_split(self, v: SplitType):
         """Convert any tuple to list to make sure it's serializable"""
@@ -355,10 +357,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     @property
     def n_test_datapoints(self) -> dict[str, int]:
         """The size of (each of) the test set(s)."""
-        if self.n_test_sets == 1:
-            return {"test": len(self.split[1])}
-        else:
-            return {k: len(v) for k, v in self.split[1].items()}
+        return {k: len(v) for k, v in self.split[1].items()}
 
     @computed_field
     @property

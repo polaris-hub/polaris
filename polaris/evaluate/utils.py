@@ -81,11 +81,11 @@ def evaluate_benchmark(
             # Otherwise, for every target...
             for target_label in target_cols:
                 score = metric(
-                    y_true=y_true[test_label].filter_by_target(target_label),
+                    y_true=y_true[test_label].filter_targets(target_label),
                     y_pred=_optionally_subset(y_pred, test_set_labels=test_label, target_labels=target_label),
                     y_prob=_optionally_subset(y_prob, test_set_labels=test_label, target_labels=target_label),
                 )
 
-                scores.loc[len(scores)] = (test_label, target_label, metric, score)
+                scores.loc[len(scores)] = (test_label, target_label, metric.name, score)
 
     return scores
