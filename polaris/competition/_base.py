@@ -53,7 +53,7 @@ class CompetitionSpecification(DatasetV2):
             predictions=prediction_values,
         )
 
-        # Evaluate your predictions
+        # Submit your predictions
         competition.submit_predictions(predictions)
         ```
 
