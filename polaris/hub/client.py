@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 import ssl
 from hashlib import md5
 from io import BytesIO
