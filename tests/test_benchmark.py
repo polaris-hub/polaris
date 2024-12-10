@@ -233,7 +233,11 @@ def test_benchmark_duplicate_metrics(test_single_task_benchmark):
         m["main_metric"] = m["metrics"][0]
         SingleTaskBenchmarkSpecification(**m)
 
-    m["metrics"][0].config.group_by = "MULTICLASS_calc"
+    with pytest.raises(ValidationError, match="The benchmark has similarly named metrics"):
+        m["metrics"][0].config.group_by = "MULTICLASS_calc"
+        SingleTaskBenchmarkSpecification(**m)
+
+    m["metrics"][0].custom_name = "custom_name"
     SingleTaskBenchmarkSpecification(**m)
 
 

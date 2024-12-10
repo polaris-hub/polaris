@@ -71,3 +71,14 @@ def test_metric_hash():
 
     metric_6 = Metric(label="accuracy", config={"group_by": "group1"})
     assert hash(metric_4) == hash(metric_6)
+
+
+def test_metric_name():
+    metric = Metric(label="accuracy")
+    assert metric.name == "accuracy"
+
+    metric = Metric(label="accuracy", config={"group_by": "group"})
+    assert metric.name == "accuracy_grouped"
+
+    metric.custom_name = "custom_name"
+    assert metric.name == "custom_name"

@@ -167,6 +167,13 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         if len(unique_metrics) != len(v):
             raise InvalidBenchmarkError("The benchmark specifies duplicate metrics.")
+
+        unique_names = {m.name for m in unique_metrics}
+        if len(unique_names) != len(unique_metrics):
+            raise InvalidBenchmarkError(
+                "The benchmark has similarly named metrics. Specify a custom name with Metric(custom_name=...)"
+            )
+
         return unique_metrics
 
     @field_validator("main_metric", mode="before")

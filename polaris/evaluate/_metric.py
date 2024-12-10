@@ -273,6 +273,7 @@ class Metric(BaseModel):
 
     Attributes:
         label: The actual callable that is at the core of the metric implementation.
+        custom_name: A optional, custom name of the metric. Names should be unique within the context of a benchmark.
         config: For more complex metrics, this object should hold all parameters for the metric.
         fn: The callable that actually computes the metric, automatically set based on the label.
         is_multitask: Whether the metric expects a single set of predictions or a dict of predictions, automatically set based on the label.
@@ -283,6 +284,7 @@ class Metric(BaseModel):
 
     label: MetricLabel
     config: GroupedMetricConfig | None = None
+    custom_name: str | None = Field(None, exclude=True)
 
     # Frozen metadata
     fn: Callable = Field(frozen=True, exclude=True)
@@ -314,6 +316,17 @@ class Metric(BaseModel):
     @property
     def kind(self) -> MetricKind:
         return "default" if self.config is None else self.config._kind
+
+    @computed_field
+    @property
+    def name(self) -> str:
+        if self.custom_name is not None:
+            return self.custom_name
+
+        name = self.label
+        if self.kind != "default":
+            name += "_" + self.kind
+        return name
 
     def _default_score(
         self,
