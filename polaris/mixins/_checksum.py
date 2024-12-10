@@ -16,7 +16,7 @@ class ChecksumMixin(BaseModel, abc.ABC):
 
     @abc.abstractmethod
     def _compute_checksum(self) -> str:
-        """Compute the checksum of the dataset. This must be implemented by the class inheriting this mixin."""
+        """Compute the checksum of the dataset."""
         raise NotImplementedError
 
     @computed_field
