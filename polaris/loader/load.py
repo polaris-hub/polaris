@@ -104,7 +104,7 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
     return benchmark
 
 
-def load_competition(slug: SlugStringType, zarr_root_path: Path | None = None):
+def load_competition(slug: SlugStringType, zarr_root_path: str | None = None):
     """
     Loads a Polaris competition.
 

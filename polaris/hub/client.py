@@ -358,7 +358,7 @@ class PolarisHubClient(OAuth2Client):
         name: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> DatasetV1:
-        """Loads either a V1 dataset from Polaris Hub
+        """Loads a V1 dataset from Polaris Hub
 
         Args:
             owner: The owner of the dataset. Can be either a user or organization from the Polaris Hub.
@@ -894,7 +894,7 @@ class PolarisHubClient(OAuth2Client):
             )
 
     def get_competition(
-        self, owner: str | HubOwner, name: str, zarr_root_path: Path | None = None
+        self, owner: str | HubOwner, name: str, zarr_root_path: str | None = None
     ) -> CompetitionSpecification:
         """Load a competition from the Polaris Hub.
 
