@@ -9,6 +9,8 @@ from datamol.utils import fs
 from loguru import logger
 from pydantic import (
     Field,
+    FieldSerializationInfo,
+    SerializerFunctionWrapHandler,
     ValidationInfo,
     computed_field,
     field_serializer,
@@ -278,10 +280,13 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                 v[target] = TargetType(v[target])
         return v
 
-    @field_serializer("metrics")
-    def _serialize_metrics(self, v: set[Metric]) -> list[dict]:
+    @field_serializer("metrics", mode="wrap")
+    @staticmethod
+    def _serialize_metrics(
+        value: set[Metric], handler: SerializerFunctionWrapHandler, info: FieldSerializationInfo
+    ) -> list[dict]:
         """Convert the set to a list"""
-        return list(v)
+        return handler(list(value))
 
     @field_serializer("split")
     def _serialize_split(self, v: SplitType):
@@ -306,11 +311,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             hash_fn.update(c.encode("utf-8"))
         for c in sorted(self.input_cols):
             hash_fn.update(c.encode("utf-8"))
-        # We distinguish between default and non-default metrics for the sake of backwards compatibility.
-        for label in sorted([m.label for m in self.metrics if m.kind == "default"]):
-            hash_fn.update(label.encode("utf-8"))
-        for hash in sorted(hash(m) for m in self.metrics if m.kind != "default"):
-            hash_fn.update(str(hash).encode("utf-8"))
+        for m in sorted(str(m) for m in self.metrics):
+            hash_fn.update(m.encode("utf-8"))
 
         # Train set
         s = json.dumps(sorted(self.split[0]))

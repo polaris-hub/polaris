@@ -16,24 +16,24 @@ def test_absolute_average_fold_error():
 
     metric = Metric(label="absolute_average_fold_error")
     # Optimal value
-    aafe_0 = metric.info.fn(y_true=y_true, y_pred=y_true)
+    aafe_0 = metric.fn(y_true=y_true, y_pred=y_true)
     assert aafe_0 == 1
 
     # small fold change
-    aafe_1 = metric.info.fn(y_true=y_true, y_pred=y_pred_1)
+    aafe_1 = metric.fn(y_true=y_true, y_pred=y_pred_1)
     assert aafe_1 > 1
 
     # larger fold change
-    aafe_2 = metric.info.fn(y_true=y_true, y_pred=y_pred_2)
+    aafe_2 = metric.fn(y_true=y_true, y_pred=y_pred_2)
     assert aafe_2 > aafe_1
 
     # undershoot
-    aafe_3 = metric.info.fn(y_true=y_true, y_pred=y_pred_3)
+    aafe_3 = metric.fn(y_true=y_true, y_pred=y_pred_3)
     assert aafe_3 < 1
 
     # y_true contains zeros
     with pytest.raises(ValueError):
-        metric.info.fn(y_true=y_zero, y_pred=y_pred_3)
+        metric.fn(y_true=y_zero, y_pred=y_pred_3)
 
 
 def test_grouped_metric():

@@ -64,7 +64,7 @@ class PolarisHubSettings(BaseSettings):
             v = urljoin(str(info.data["hub_url"]), "/api")
         return v
 
-    @field_validator("api_url", mode="before")
+    @field_validator("callback_url", mode="before")
     def validate_callback_url(cls, v, info: ValidationInfo):
         if v is None:
             v = urljoin(str(info.data["hub_url"]), "/oauth2/callback")

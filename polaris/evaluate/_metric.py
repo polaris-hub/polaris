@@ -1,11 +1,12 @@
-from typing import Callable, Literal, TypeAlias
-from zlib import adler32
+import json
+from typing import Any, Callable, Literal, TypeAlias
 
 import numpy as np
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    PrivateAttr,
     computed_field,
     field_validator,
     model_validator,
@@ -106,6 +107,8 @@ def prepare_metric_kwargs(
     return {"y_true": y_true[mask], y_type: y_pred[mask]}
 
 
+MetricKind: TypeAlias = Literal["default", "grouped"]
+
 MetricLabel: TypeAlias = Literal[
     "mean_absolute_error",
     "mean_squared_error",
@@ -149,13 +152,6 @@ class MetricInfo(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    @field_validator("is_multitask")
-    @classmethod
-    def disable_multitask_metrics(cls, value):
-        raise NotImplementedError(
-            "Multitask metrics are not yet supported and will require non-obvious changes to the Metric interface."
-        )
-
 
 DEFAULT_METRICS: dict[MetricLabel, MetricInfo] = {
     "mean_absolute_error": MetricInfo(fn=mean_absolute_error, direction="min"),
@@ -194,6 +190,8 @@ class GroupedMetricConfig(BaseModel):
         default: The default value to use when an error occurs.
         aggregation: The aggregation method to use when combining the metric scores.
     """
+
+    _kind: MetricKind = PrivateAttr("grouped")
 
     group_by: str
     on_error: Literal["ignore", "raise", "default"] = "raise"
@@ -278,18 +276,36 @@ class Metric(BaseModel):
     label: MetricLabel
     config: GroupedMetricConfig | None = None
 
-    @property
-    def info(self) -> MetricInfo:
-        """The metadata for the metric."""
-        metric_info = DEFAULT_METRICS.get(self.label)
-        if metric_info is None:
-            raise ValueError(f"Metric {self.label} not found in the available metrics.")
-        return metric_info
+    # Frozen metadata
+    fn: Callable = Field(frozen=True, exclude=True)
+    is_multitask: bool = Field(False, frozen=True, exclude=True)
+    kwargs: dict = Field(default_factory=dict, frozen=True, exclude=True)
+    direction: DirectionType = Field(frozen=True, exclude=True)
+    y_type: PredictionKwargs = Field("y_pred", frozen=True, exclude=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def populate_metric_info(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            label = data.get("label")
+            metric_info = DEFAULT_METRICS.get(label)
+            if metric_info is None:
+                raise ValueError(f"Unknown metric label: {label}")
+            data.update(metric_info)
+        return data
+
+    @field_validator("is_multitask")
+    @classmethod
+    def disable_multitask_metrics(cls, value):
+        if value:
+            raise NotImplementedError(
+                "Multitask metrics are not yet supported and will require non-obvious changes to the Metric interface."
+            )
 
     @computed_field
     @property
-    def kind(self) -> str:
-        return "default" if self.config is None else "grouped"
+    def kind(self) -> MetricKind:
+        return "default" if self.config is None else self.config._kind
 
     def _default_score(
         self,
@@ -304,13 +320,13 @@ class Metric(BaseModel):
             y_pred: The predicted target values, if any.
             y_prob: The predicted target probabilities, if any.
         """
-        pred = prepare_predictions(y_pred, y_prob, self.info.y_type)
+        pred = prepare_predictions(y_pred, y_prob, self.y_type)
         kwargs = prepare_metric_kwargs(
             y_true.as_array("y"),
             pred.flatten(),
-            self.info.y_type,
+            self.y_type,
         )
-        return self.info.fn(**kwargs, **self.info.kwargs)
+        return self.fn(**kwargs, **self.kwargs)
 
     def score(
         self,
@@ -327,7 +343,7 @@ class Metric(BaseModel):
         """
         if self.kind == "default":
             return self._default_score(y_true, y_pred, y_prob)
-        return self.config.score(y_true, y_pred, y_prob, self.info)
+        return self.config.score(y_true, y_pred, y_prob, DEFAULT_METRICS[self.label])
 
     def __call__(
         self,
@@ -345,17 +361,8 @@ class Metric(BaseModel):
         """
         return self.score(y_true, y_pred, y_prob)
 
-    def __hash__(self) -> str:
-        # This is needed to maintain backwards compatibility
-        if self.kind == "default":
-            return adler32(self.label.encode())
-
-        # In case there is a config, we need to hash the config as well
-        config_dict = self.config.model_dump()
-        config_keys = sorted(config_dict.keys())
-        config_str = ",".join(f"{key}={config_dict[key]}" for key in config_keys)
-        hash_str = f"{self.label}({config_str})"
-        return adler32(hash_str.encode())
+    def __hash__(self) -> int:
+        return hash(str(self))
 
     def __eq__(self, other) -> bool:
         match other:
@@ -363,3 +370,8 @@ class Metric(BaseModel):
                 return hash(other) == hash(self)
             case _:
                 return False
+
+    def __str__(self) -> str:
+        return self.label + (
+            json.dumps(self.config.model_dump(mode="json"), sort_keys=True) if self.config else ""
+        )

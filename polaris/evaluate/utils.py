@@ -67,7 +67,7 @@ def evaluate_benchmark(
     for test_label in test_set_labels:
         # For every metric...
         for metric in metrics:
-            if metric.info.is_multitask:
+            if metric.is_multitask:
                 # Multi-task but with a metric across targets
                 score = metric(
                     y_true=y_true[test_label],
