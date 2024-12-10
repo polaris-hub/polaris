@@ -268,9 +268,17 @@ class Metric(BaseModel):
     """
     A Metric in Polaris.
 
+    A metric consists of a default metric, which is a callable labeled with additional metadata, as well as a config.
+    The config can change how the metric is computed, for example by grouping the data before computing the metric.
+
     Attributes:
         label: The actual callable that is at the core of the metric implementation.
         config: For more complex metrics, this object should hold all parameters for the metric.
+        fn: The callable that actually computes the metric, automatically set based on the label.
+        is_multitask: Whether the metric expects a single set of predictions or a dict of predictions, automatically set based on the label.
+        kwargs: Additional parameters required for the metric, automatically set based on the label.
+        direction: The direction for ranking of the metric,  "max" for maximization and "min" for minimization, automatically set based on the label.
+        y_type: The type of predictions expected by the metric interface, automatically set based on the label.
     """
 
     label: MetricLabel
