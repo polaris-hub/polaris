@@ -60,7 +60,7 @@ def test_metrics_singletask_reg(test_single_task_benchmark: SingleTaskBenchmarkS
         "Score",
     }
     for metric in test_single_task_benchmark.metrics:
-        assert metric in result.results.Metric.tolist()
+        assert metric.name in result.results.Metric.tolist()
 
 
 def test_metrics_multitask_reg(test_multi_task_benchmark: MultiTaskBenchmarkSpecification):
@@ -70,7 +70,7 @@ def test_metrics_multitask_reg(test_multi_task_benchmark: MultiTaskBenchmarkSpec
     }
     result = test_multi_task_benchmark.evaluate(predictions)
     for metric in test_multi_task_benchmark.metrics:
-        assert metric in result.results.Metric.tolist()
+        assert metric.name in result.results.Metric.tolist()
 
 
 def test_metrics_singletask_clf(test_single_task_benchmark_clf: SingleTaskBenchmarkSpecification):
@@ -79,7 +79,7 @@ def test_metrics_singletask_clf(test_single_task_benchmark_clf: SingleTaskBenchm
     probabilities = np.random.uniform(size=test.inputs.shape[0])
     result = test_single_task_benchmark_clf.evaluate(y_pred=predictions, y_prob=probabilities)
     for metric in test_single_task_benchmark_clf.metrics:
-        assert metric in result.results.Metric.tolist()
+        assert metric.name in result.results.Metric.tolist()
 
 
 def test_metrics_singletask_multicls_clf(
@@ -91,7 +91,7 @@ def test_metrics_singletask_multicls_clf(
     probablities = probablities / probablities.sum(axis=1, keepdims=True)
     result = test_single_task_benchmark_multi_clf.evaluate(y_pred=predictions, y_prob=probablities)
     for metric in test_single_task_benchmark_multi_clf.metrics:
-        assert metric in result.results.Metric.tolist()
+        assert metric.name in result.results.Metric.tolist()
 
 
 def test_metrics_multitask_clf(test_multi_task_benchmark_clf: MultiTaskBenchmarkSpecification):
@@ -115,7 +115,7 @@ def test_metrics_multitask_clf(test_multi_task_benchmark_clf: MultiTaskBenchmark
         test_multi_task_benchmark_clf.metrics
     )
     for metric in test_multi_task_benchmark_clf.metrics:
-        assert metric in result.results.Metric.tolist()
+        assert metric.name in result.results.Metric.tolist()
 
 
 def test_metric_direction():
@@ -169,7 +169,7 @@ def test_metrics_docking(test_docking_benchmark: SingleTaskBenchmarkSpecificatio
     result = test_docking_benchmark.evaluate(y_pred=predictions)
 
     for metric in test_docking_benchmark.metrics:
-        assert metric in result.results.Metric.tolist()
+        assert metric.name in result.results.Metric.tolist()
 
     # sanity check
     assert result.results.Score.values[0] == 1
