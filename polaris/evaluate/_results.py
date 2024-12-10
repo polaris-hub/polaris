@@ -87,7 +87,7 @@ class EvaluationResult(ResultsMetadata):
 
     question: Categorizing methods
         An open question is how to best categorize a methodology (e.g. a model).
-        This is needed since we would like to be able to aggregate results across benchmarks/competitions too,
+        This is needed since we would like to be able to aggregate results across benchmarks too,
         to say something about which (type of) methods performs best _in general_.
 
     Attributes:

@@ -199,10 +199,3 @@ class TaskType(Enum):
 
     MULTI_TASK = "multi_task"
     SINGLE_TASK = "single_task"
-
-
-class ArtifactSubtype(Enum):
-    """The major artifact types which Polaris supports"""
-
-    STANDARD = "standard"
-    COMPETITION = "competition"

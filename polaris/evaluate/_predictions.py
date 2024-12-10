@@ -1,9 +1,11 @@
+import json
 from collections import defaultdict
 
 import numpy as np
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Field,
     TypeAdapter,
     field_serializer,
     field_validator,
@@ -11,8 +13,16 @@ from pydantic import (
 )
 from typing_extensions import Self
 
+from polaris._artifact import BaseArtifactModel
 from polaris.utils.misc import convert_lists_to_arrays
-from polaris.utils.types import IncomingPredictionsType, PredictionsType
+from polaris.utils.types import (
+    HttpUrlString,
+    HubOwner,
+    HubUser,
+    IncomingPredictionsType,
+    PredictionsType,
+    SlugCompatibleStringType,
+)
 
 
 class BenchmarkPredictions(BaseModel):
@@ -26,6 +36,7 @@ class BenchmarkPredictions(BaseModel):
         predictions: The predictions for the benchmark.
         target_labels: The target columns for the associated benchmark.
         test_set_labels: The names of the test sets for the associated benchmark.
+        test_set_sizes: The number of rows in each test set for the associated benchmark.
     """
 
     predictions: PredictionsType
@@ -82,12 +93,18 @@ class BenchmarkPredictions(BaseModel):
         predictions = convert_lists_to_arrays(predictions)
         predictions = cls._normalize_predictions(predictions, target_labels, test_set_labels)
 
-        return {
-            "predictions": predictions,
-            "target_labels": target_labels,
-            "test_set_labels": test_set_labels,
-            "test_set_sizes": test_set_sizes,
-        }
+        # Update class data with the normalized fields. Use of the `update()` method
+        # is required to prevent overwriting class data when this class is inherited.
+        data.update(
+            {
+                "predictions": predictions,
+                "target_labels": target_labels,
+                "test_set_labels": test_set_labels,
+                "test_set_sizes": test_set_sizes,
+            }
+        )
+
+        return data
 
     @model_validator(mode="after")
     def check_test_set_size(self) -> Self:
@@ -127,6 +144,7 @@ class BenchmarkPredictions(BaseModel):
                 raise ValueError(
                     "The predictions for single-task, single test set benchmarks should be a numpy array."
                 )
+
             predictions = {test_set_labels[0]: {target_labels[0]: predictions}}
 
         # (3) Single-task, multiple test sets: We expect a dictionary with the test set labels as keys.
@@ -231,3 +249,35 @@ class BenchmarkPredictions(BaseModel):
     def __len__(self) -> int:
         """Return the total number of predictions"""
         return self.get_size()
+
+
+class CompetitionPredictions(BenchmarkPredictions, BaseArtifactModel):
+    """
+    Predictions for competition benchmarks.
+
+    This object is to be used as input to
+    [`PolarisHubClient.submit_competition_predictions`][polaris.hub.client.PolarisHubClient.submit_competition_predictions].
+    It is used to ensure that the structure of the predictions are compatible with evaluation methods on the Polaris Hub.
+    In addition to the predictions, it contains meta-data that describes a predictions object.
+
+    Attributes:
+        name: A slug-compatible name for the artifact. It is redeclared here to be required.
+        owner: A slug-compatible name for the owner of the artifact. It is redeclared here to be required.
+        report_url: A URL to a report/paper/write-up which describes the methods used to generate the predictions.
+        github_url: A URL to a code repository which contains the code used to generate the predictions.
+        contributors: A list of Polaris usernames representing those who contributed to producing the predictions.
+    """
+
+    _artifact_type = "competition-prediction"
+
+    name: SlugCompatibleStringType
+    owner: HubOwner
+    report_url: HttpUrlString
+    github_url: HttpUrlString | None = None
+    contributors: list[HubUser] = Field(default_factory=list)
+
+    def __repr__(self):
+        return json.dumps(self.model_dump(), indent=2)
+
+    def __str__(self):
+        return self.__repr__()

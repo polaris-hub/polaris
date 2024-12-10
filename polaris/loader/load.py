@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import fsspec
 from datamol.utils import fs
@@ -10,7 +11,7 @@ from polaris.benchmark._definitions import (
 from polaris.dataset import DatasetV1, create_dataset_from_file
 from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.client import PolarisHubClient
-from polaris.utils.types import ChecksumStrategy
+from polaris.utils.types import ChecksumStrategy, SlugStringType
 
 
 def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr") -> DatasetV1:
@@ -101,3 +102,22 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
         benchmark.verify_checksum()
 
     return benchmark
+
+
+def load_competition(slug: SlugStringType, zarr_root_path: Path | None = None):
+    """
+    Loads a Polaris competition.
+
+    On Polaris, a competition represents a secure and fair benchmark. The target labels never exist
+    on the client and all results are evaluated through Polaris' servers.
+
+    Note: Dataset is automatically loaded
+        If no argument is passed for `zarr_root_path`, the underlying competition dataset will be automatically
+        fetched from the Polaris Hub. If it is passed, the dataset will be retrieved locally from the location
+        specified in the passed value.
+
+    """
+
+    # Load from the Hub
+    client = PolarisHubClient()
+    return client.get_competition(*slug.split("/"), zarr_root_path=zarr_root_path)
