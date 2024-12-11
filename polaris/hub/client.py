@@ -363,7 +363,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Load the dataset table and optional Zarr archive
         with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
-            table = pd.read_parquet(storage.get_root())
+            table = pd.read_parquet(storage.get_file("root"))
             zarr_root_path = storage.paths.extension
 
             if zarr_root_path is not None:
@@ -523,7 +523,7 @@ class PolarisHubClient(OAuth2Client):
         results: BenchmarkResults,
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
-    ) -> BenchmarkResults:
+    ):
         """Upload the results to the Polaris Hub.
 
         Info: Owner
@@ -562,7 +562,6 @@ class PolarisHubClient(OAuth2Client):
             progress_indicator.update_success_msg(
                 f"Your result has been successfully uploaded to the Hub. View it here: {result_url}"
             )
-            return results
 
     def upload_dataset(
         self,
@@ -607,11 +606,11 @@ class PolarisHubClient(OAuth2Client):
             )
 
         if isinstance(dataset, DatasetV1):
-            return self._upload_v1_dataset(
+            self._upload_v1_dataset(
                 dataset, ArtifactSubtype.STANDARD.value, timeout, access, owner, if_exists
             )
         elif isinstance(dataset, DatasetV2):
-            return self._upload_v2_dataset(dataset, timeout, access, owner, if_exists)
+            self._upload_v2_dataset(dataset, timeout, access, owner, if_exists)
 
     def _upload_v1_dataset(
         self,
@@ -641,9 +640,9 @@ class PolarisHubClient(OAuth2Client):
                 dataset_json["zarrRootPath"] = f"{StorageSession.polaris_protocol}://data.zarr"
 
             # Uploading a dataset is a three-step process.
-            # 1. Upload the dataset meta data to the hub and prepare the hub to receive the data
-            # 2. Upload the parquet file to the hub
-            # 3. Upload the associated Zarr archive
+            # 1. Upload the dataset meta-data to the hub and prepare the hub to receive the data
+            # 2. Upload the parquet file to Hub storage
+            # 3. Upload the associated Zarr archive to Hub storage
 
             # Prepare the parquet file
             in_memory_parquet = BytesIO()
@@ -659,7 +658,7 @@ class PolarisHubClient(OAuth2Client):
                 if artifact_type == ArtifactSubtype.STANDARD.value
                 else f"/v2/competition/dataset/{dataset.owner}/{dataset.name}"
             )
-            response = self._base_request_to_hub(
+            self._base_request_to_hub(
                 url=url,
                 method="PUT",
                 json={
@@ -674,18 +673,17 @@ class PolarisHubClient(OAuth2Client):
                 },
                 timeout=timeout,
             )
-            response_data = response.json()
 
             with StorageSession(self, "write", dataset.urn) as storage:
                 # Step 2: Upload the parquet file
                 logger.info("Copying Parquet file to the Hub. This may take a while.")
-                storage.set_root(in_memory_parquet.getvalue())
+                storage.set_file("root", in_memory_parquet.getvalue())
 
                 # Step 3: Upload any associated Zarr archive
                 if dataset.uses_zarr:
                     logger.info("Copying Zarr archive to the Hub. This may take a while.")
 
-                    destination = storage.extension_store
+                    destination = storage.store("extension")
 
                     # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
                     # metadata based on Zarr developers' recommendations can be tracked at:
@@ -706,8 +704,6 @@ class PolarisHubClient(OAuth2Client):
                 f"Your {artifact_type} dataset has been successfully uploaded to the Hub. "
                 f"View it here: {urljoin(self.settings.hub_url, f'{base_artifact_url}/{dataset.owner}/{dataset.name}')}"
             )
-
-            return response_data
 
     def _upload_v2_dataset(
         self,
@@ -744,18 +740,17 @@ class PolarisHubClient(OAuth2Client):
                 },
                 timeout=timeout,
             )
-            response_data = response.json()
 
             with StorageSession(self, "write", dataset.urn) as storage:
                 # Step 2: Upload the manifest file
                 logger.info("Copying the dataset manifest file to the Hub.")
                 with open(dataset.zarr_manifest_path, "rb") as manifest_file:
-                    storage.set_manifest(manifest_file.read())
+                    storage.set_file("manifest", manifest_file.read())
 
                 # Step 3: Upload the Zarr archive
                 logger.info("Copying Zarr archive to the Hub. This may take a while.")
 
-                destination = storage.root_store
+                destination = storage.store("root")
 
                 # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
                 # metadata based on Zarr developers' recommendations can be tracked at:
@@ -769,12 +764,10 @@ class PolarisHubClient(OAuth2Client):
                     dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
                 )
 
+        benchmark_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
         progress_indicator.update_success_msg(
-            f"Your V2 dataset has been successfully uploaded to the Hub. "
-            f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
+            f"Your V2 dataset has been successfully uploaded to the Hub. " f"View it here: {benchmark_url}"
         )
-
-        return response_data
 
     def upload_benchmark(
         self,
@@ -806,9 +799,9 @@ class PolarisHubClient(OAuth2Client):
         # (mercuryseries): check ArtifactSubtype here and call competition v2 endpoint if necessary
         # to avoid having to check the type of the benchmark in the upload methods
         if isinstance(benchmark, BenchmarkV1Specification):
-            return self._upload_v1_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
+            self._upload_v1_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
         elif isinstance(benchmark, BenchmarkV2Specification):
-            return self._upload_v2_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
+            self._upload_v2_benchmark(benchmark, access, owner)
 
     def _upload_v1_benchmark(
         self,
@@ -855,19 +848,16 @@ class PolarisHubClient(OAuth2Client):
                 "/v1/benchmark" if artifact_type == ArtifactSubtype.STANDARD.value else "/v2/competition"
             )
             url = f"{path_params}/{benchmark.owner}/{benchmark.name}"
-            response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
-            response_data = response.json()
+            self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
             progress_indicator.update_success_msg(
                 f"Your {artifact_type} benchmark has been successfully uploaded to the Hub. "
                 f"View it here: {urljoin(self.settings.hub_url, url)}"
             )
-            return response_data
 
     def _upload_v2_benchmark(
         self,
-        benchmark: BenchmarkV1Specification,
-        artifact_type: ArtifactSubtype,
+        benchmark: BenchmarkV2Specification,
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
     ):
@@ -880,20 +870,31 @@ class PolarisHubClient(OAuth2Client):
             # We exclude the dataset as we expect it to exist on the hub already.
             benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
             benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
-            benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
-            benchmark_json["access"] = access
 
-            path_params = (
-                "/v2/benchmark" if artifact_type == ArtifactSubtype.STANDARD.value else "/v2/competition"
+            # Uploading a V2 benchmark is a multistep process.
+            # 1. Upload the benchmark meta-data to the hub and prepare the hub to receive the data
+            # 2. Upload each index set bitmap to the Hub storage
+
+            # Step 1: Upload meta-data
+            url = f"/v2/benchmark/{benchmark.owner}/{benchmark.name}"
+            response = self._base_request_to_hub(
+                url=url,
+                method="PUT",
+                json={"access": access, "datasetArtifactId": benchmark.dataset.artifact_id, **benchmark_json},
             )
-            url = f"{path_params}/{benchmark.owner}/{benchmark.name}"
-            response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
+            with StorageSession(self, "write", benchmark.urn) as storage:
+                logger.info("Copying the benchmark split to the Hub. This may take a while.")
+
+                # 2. Upload each index set bitmap
+                for label, index_set in benchmark.split:
+                    logger.info(f"Copying index set {label} to the Hub.")
+                    storage.set_file(label, index_set)
+
+            benchmark_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
             progress_indicator.update_success_msg(
-                f"Your {artifact_type} benchmark has been successfully uploaded to the Hub. "
-                f"View it here: {urljoin(self.settings.hub_url, url)}"
+                f"Your benchmark has been successfully uploaded to the Hub. View it here: {benchmark_url}"
             )
-            return response
 
     def get_competition(
         self,

@@ -1,12 +1,11 @@
 import json
-import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from time import time
 from typing import Any, Literal
 
 from authlib.integrations.httpx_client import OAuth2Auth
-from pydantic import BaseModel, Field, PositiveInt, computed_field, model_validator
+from pydantic import BaseModel, Field, PositiveInt, model_validator
 from typing_extensions import Self
 
 from polaris.utils.constants import DEFAULT_CACHE_DIR
@@ -59,65 +58,43 @@ class ExternalCachedTokenAuth(CachedTokenAuth):
         super().__init__(token, token_placement, client, cache_dir, filename)
 
 
-class DatasetV1Paths(BaseModel):
-    root: AnyUrlString
-    extension: AnyUrlString | None = None
+class ArtifactPaths(BaseModel):
+    """
+    Base model class for artifact paths.
+    Offer convenience properties to access with paths are files or stores.
+    """
 
-    @computed_field
     @property
-    def relative_root(self) -> str:
-        return re.sub(r"^\w+://", "", self.root)
+    def files(self) -> list[str]:
+        return [
+            field
+            for field, field_info in self.model_fields.items()
+            if (field_info.json_schema_extra or {}).get("file")
+        ]
 
-    @computed_field
     @property
-    def relative_extension(self) -> str | None:
-        if self.extension:
-            return re.sub(r"^\w+://", "", self.extension)
-        return None
+    def stores(self) -> list[str]:
+        return [
+            field
+            for field, field_info in self.model_fields.items()
+            if (field_info.json_schema_extra or {}).get("store")
+        ]
 
 
-class DatasetV2Paths(BaseModel):
-    root: AnyUrlString
-    manifest: AnyUrlString
-
-    @computed_field
-    @property
-    def relative_root(self) -> str:
-        return re.sub(r"^\w+://", "", self.root)
-
-    @computed_field
-    @property
-    def relative_manifest(self) -> str:
-        return re.sub(r"^\w+://", "", self.manifest)
+class DatasetV1Paths(ArtifactPaths):
+    root: AnyUrlString = Field(json_schema_extra={"file": True})
+    extension: AnyUrlString | None = Field(None, json_schema_extra={"store": True})
 
 
-class BenchmarkV2Paths(BaseModel):
-    training: AnyUrlString
-    test: dict[str, AnyUrlString] = Field(default_factory=dict)
+class DatasetV2Paths(ArtifactPaths):
+    root: AnyUrlString = Field(json_schema_extra={"store": True})
+    manifest: AnyUrlString = Field(json_schema_extra={"file": True})
 
-    @computed_field
-    @property
-    def training_test_paths(self) -> dict[str, str]:
-        """
-        Combine 'training' and test paths into a single dictionary with relative paths.
-        """
-        training_test_paths = {"training": self.relative_training}
-        training_test_paths.update({key: self._get_relative_path(url) for key, url in self.test.items()})
-        return training_test_paths
 
-    @computed_field
-    @property
-    def relative_training(self) -> str:
-        """
-        Get the relative path of the 'training' URL.
-        """
-        return self._get_relative_path(self.training)
-
-    def _get_relative_path(self, url: str) -> str:
-        """
-        Strip protocol from the given URL to get a relative path.
-        """
-        return re.sub(r"^\w+://", "", url)
+class BenchmarkV2Paths(ArtifactPaths):
+    training: AnyUrlString = Field(json_schema_extra={"file": True})
+    test: AnyUrlString = Field(json_schema_extra={"file": True})
+    test_2: int = 0
 
 
 class StorageTokenData(BaseModel):

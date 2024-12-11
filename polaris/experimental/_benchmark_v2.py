@@ -1,7 +1,10 @@
+from functools import cached_property
+from hashlib import md5
 from typing import Any, Callable, ClassVar, Generator, Literal, Sequence
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
+from pydantic.alias_generators import to_camel
 from pyroaring import BitMap
 from typing_extensions import Self
 
@@ -14,24 +17,39 @@ from polaris.utils.errors import InvalidBenchmarkError
 
 
 class IndexSet(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    """
+    A set of indices for a split, either training or test.
 
-    indices: BitMap = Field(default_factory=BitMap, exclude=True)
+    It wraps a Roaring Bitmap object to store the indices, and provides
+    useful properties when serializing for upload to the Hub.
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True, alias_generator=to_camel)
+
+    indices: BitMap = Field(default_factory=BitMap, frozen=True, exclude=True)
 
     @field_validator("indices", mode="before")
     @classmethod
     def _validate_indices(cls, v: BitMap | Sequence[int]) -> BitMap:
         """
-        Accept an initial sequence iof ints, and turn it into a BitMap
+        Accepts an initial sequence of ints, and turn it into a BitMap
         """
         if isinstance(v, BitMap):
             return v
         return BitMap(v)
 
     @computed_field
-    @property
+    @cached_property
     def datapoints(self) -> int:
         return len(self.indices)
+
+    @computed_field
+    @cached_property
+    def md5_checksum(self) -> str:
+        return md5(self.indices.serialize()).hexdigest()
+
+    def intersect(self, other: "IndexSet") -> bool:
+        return self.indices.intersect(other.indices)
 
 
 class SplitV2(BaseModel):
@@ -40,7 +58,7 @@ class SplitV2(BaseModel):
 
     @field_validator("training")
     @classmethod
-    def _validate_training_set(cls, v: IndexSet):
+    def _validate_training_set(cls, v: IndexSet) -> IndexSet:
         """
         Training index set can be empty (zero-shot)
         """
@@ -48,15 +66,17 @@ class SplitV2(BaseModel):
             logger.info(
                 "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
             )
+        return v
 
     @field_validator("test")
     @classmethod
-    def _validate_test_set(cls, v: IndexSet):
+    def _validate_test_set(cls, v: IndexSet) -> IndexSet:
         """
         Test index set cannot be empty
         """
         if v.datapoints == 0:
             raise InvalidBenchmarkError("The predefined split contains empty test partitions")
+        return v
 
     @model_validator(mode="after")
     def validate_set_overlap(self) -> Self:
@@ -106,7 +126,7 @@ class BenchmarkV2Specification(BenchmarkSpecification):
     _version: ClassVar[Literal[2]] = 2
 
     dataset: DatasetV2
-    split: SplitV2 = Field(..., exclude=True)
+    split: SplitV2
     n_classes: dict[ColumnName, int]
 
     @field_validator("dataset", mode="before")
