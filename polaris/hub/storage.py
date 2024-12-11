@@ -1,3 +1,4 @@
+import re
 from base64 import b64encode
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
@@ -18,7 +19,7 @@ from zarr.context import Context
 from zarr.storage import Store
 from zarr.util import buffer_size
 
-from polaris.hub.oauth import DatasetV1Paths, DatasetV2Paths, BenchmarkV2Paths, HubStorageOAuth2Token
+from polaris.hub.oauth import BenchmarkV2Paths, DatasetV1Paths, DatasetV2Paths, HubStorageOAuth2Token
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import ArtifactUrn, ZarrConflictResolution
 
@@ -66,7 +67,7 @@ class S3Store(Store):
 
     def __init__(
         self,
-        path: str,
+        path: str | PurePath,
         access_key: str,
         secret_key: str,
         token: str,
@@ -74,7 +75,7 @@ class S3Store(Store):
         part_size: int = 10 * 1024 * 1024,  # 10MB
         content_type: str = "application/octet-stream",
     ) -> None:
-        bucket_name, prefix = path.split("/", 1)
+        bucket_name, *prefix = PurePath(path).parts
 
         self.s3_client = boto3.client(
             "s3",
@@ -84,7 +85,7 @@ class S3Store(Store):
             endpoint_url=endpoint_url,
         )
         self.bucket_name = bucket_name
-        self.prefix = prefix
+        self.prefix = "/".join(prefix)
         self.part_size = part_size
         self.content_type = content_type
 
@@ -523,117 +524,71 @@ class StorageSession(OAuth2Client):
     def paths(self) -> DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths:
         return self.token.extra_data.paths
 
-    def _set_file(self, path: PurePath, value: bytes | bytearray) -> None:
-        """
-        Internal method to upload non-zarr file to the storage backend.
-        """
-        storage_data = self.token.extra_data
+    def _relative_path(self, path: str) -> PurePath:
+        return PurePath(re.sub(r"^\w+://", "", path))
 
-        match path.suffix:
+    def set_file(self, path: str, value: bytes | bytearray):
+        """
+        Set a value at the given path.
+        """
+        if path not in self.paths.files:
+            raise NotImplementedError(f"{type(self.paths).__name__} only supports files {self.paths.files}.")
+
+        relative_path = self._relative_path(path)
+
+        match relative_path.suffix:
             case ".parquet":
                 content_type = "application/vnd.apache.parquet"
+            case ".roaring":
+                content_type = "application/vnd.roaringbitmap"
             case _:
                 content_type = "application/octet-stream"
 
+        storage_data = self.token.extra_data
         store = S3Store(
-            path=path.parent.as_posix(),
+            path=relative_path.parent,
             access_key=storage_data.key,
             secret_key=storage_data.secret,
             token=f"jwt/{self.token.access_token}",
             endpoint_url=storage_data.endpoint,
             content_type=content_type,
         )
-        store[path.name] = value
+        store[relative_path.name] = value
 
-    def _get_file(self, path: PurePath) -> BytesIO:
+    def get_file(self, path: str) -> BytesIO:
         """
-        Internal method to download non-zarr file from the storage backend.
+        Get the value at the given path.
         """
+        if path not in self.paths.files:
+            raise NotImplementedError(
+                f"{type(self.paths).__name__} only supports these files: {self.paths.files}."
+            )
+
+        relative_path = self._relative_path(path)
+
         storage_data = self.token.extra_data
-
         store = S3Store(
-            path=path.parent.as_posix(),
+            path=relative_path.parent,
             access_key=storage_data.key,
             secret_key=storage_data.secret,
             token=f"jwt/{self.token.access_token}",
             endpoint_url=storage_data.endpoint,
         )
+        return BytesIO(store[relative_path.name])
 
-        return BytesIO(store[path.name])
+    def store(self, path: str) -> S3Store:
+        if path not in self.paths.stores:
+            raise NotImplementedError(
+                f"{type(self.paths).__name__} only supports these stores: {self.paths.stores}."
+            )
 
-    def set_root(self, value: bytes | bytearray) -> None:
-        """
-        Set a value at the root path.
-        """
-        if not isinstance(self.paths, DatasetV1Paths):
-            raise NotImplementedError("Only DatasetV1Paths are supported for setting the root path")
+        relative_path = self._relative_path(path)
 
-        path = PurePath(self.paths.relative_root)
-        self._set_file(path, value)
-
-    def get_root(self) -> BytesIO:
-        """
-        Get the value at the root path.
-        """
-        if not isinstance(self.paths, DatasetV1Paths):
-            raise NotImplementedError("Only DatasetV1Paths are supported for getting the root path")
-
-        path = PurePath(self.paths.relative_root)
-        return self._get_file(path)
-
-    def set_manifest(self, value: bytes | bytearray) -> None:
-        """
-        Set a value at the manifest path.
-        """
-        if not isinstance(self.paths, DatasetV2Paths):
-            raise NotImplementedError("Only DatasetV2Paths are supported for setting the manifest path")
-
-        path = PurePath(self.paths.relative_manifest)
-        self._set_file(path, value)
-
-    def get_manifest(self) -> BytesIO:
-        """
-        Get the value at the manifest path.
-        """
-        if not isinstance(self.paths, DatasetV2Paths):
-            raise NotImplementedError("Only DatasetV2Paths are supported for getting the manifest path")
-
-        path = PurePath(self.paths.relative_manifest)
-        return self._get_file(path)
-
-    @property
-    def extension_store(self) -> S3Store | None:
-        """
-        Returns a Zarr store for the extension path, if available, backed by a S3 compatible bucket.
-        """
         storage_data = self.token.extra_data
-        match storage_data.paths:
-            case DatasetV1Paths() if storage_data.paths.relative_extension:
-                return S3Store(
-                    path=storage_data.paths.relative_extension,
-                    access_key=storage_data.key,
-                    secret_key=storage_data.secret,
-                    token=f"jwt/{self.token.access_token}",
-                    endpoint_url=storage_data.endpoint,
-                )
-            case _:
-                return None
-
-    @property
-    def root_store(self) -> S3Store | None:
-        """
-        Returns a Zarr store for the root path, backed by a S3 compatible bucket.
-        """
-        storage_data = self.token.extra_data
-
-        match storage_data.paths:
-            case DatasetV2Paths():
-                return S3Store(
-                    path=storage_data.paths.relative_root,
-                    access_key=storage_data.key,
-                    secret_key=storage_data.secret,
-                    token=f"jwt/{self.token.access_token}",
-                    endpoint_url=storage_data.endpoint,
-                )
-            case _:
-                return None
+        return S3Store(
+            path=relative_path,
+            access_key=storage_data.key,
+            secret_key=storage_data.secret,
+            token=f"jwt/{self.token.access_token}",
+            endpoint_url=storage_data.endpoint,
+        )
