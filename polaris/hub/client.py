@@ -459,12 +459,13 @@ class PolarisHubClient(OAuth2Client):
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> BenchmarkV1Specification:
         response = self._base_request_to_hub(url=f"/v1/benchmark/{owner}/{name}", method="GET")
+        response_data = response.json()
 
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
         #  but we'd need to change the signature of get_dataset to use it
-        response["dataset"] = self.get_dataset(
-            response["dataset"]["owner"]["slug"],
-            response["dataset"]["name"],
+        response_data["dataset"] = self.get_dataset(
+            response_data["dataset"]["owner"]["slug"],
+            response_data["dataset"]["name"],
             verify_checksum=verify_checksum,
         )
 
@@ -476,45 +477,39 @@ class PolarisHubClient(OAuth2Client):
             else MultiTaskBenchmarkSpecification
         )
 
-        benchmark = benchmark_cls(**response)
+        benchmark = benchmark_cls(**response_data)
 
         if benchmark.dataset.should_verify_checksum(verify_checksum):
             benchmark.verify_checksum()
         else:
-            benchmark.md5sum = response["md5Sum"]
+            benchmark.md5sum = response_data["md5Sum"]
 
         return benchmark
 
     def _get_v2_benchmark(
         self,
         owner: str | HubOwner,
-        name: str,
-        verify_checksum: ChecksumStrategy = "verify_unless_zarr",
+        name: str
     ) -> BenchmarkV2Specification:
         response = self._base_request_to_hub(url=f"/v2/benchmark/{owner}/{name}", method="GET")
+        response_data = response.json()
 
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
         #  but we'd need to change the signature of get_dataset to use it
-        response["dataset"] = self.get_dataset(
-            response["dataset"]["owner"]["slug"],
-            response["dataset"]["name"],
-            verify_checksum=verify_checksum,
+        response_data["dataset"] = self.get_dataset(
+            response_data["dataset"]["owner"]["slug"],
+            response_data["dataset"]["name"]
         )
 
         # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
         #  Maybe through structural pattern matching, introduced in Py3.10, or Pydantic's discriminated unions?
         benchmark_cls = (
             SingleTaskBenchmarkV2Specification
-            if len(response["targetCols"]) == 1
+            if len(response_data["targetCols"]) == 1
             else MultiTaskBenchmarkV2Specification
         )
 
-        benchmark = benchmark_cls(**response)
-
-        if benchmark.dataset.should_verify_checksum(verify_checksum):
-            benchmark.verify_checksum()
-        else:
-            benchmark.md5sum = response["md5Sum"]
+        benchmark = benchmark_cls(**response_data)
 
         return benchmark
 

@@ -12,6 +12,7 @@ class SingleTaskMixin:
     """
 
     @field_validator("target_cols", check_fields=False)
+    @classmethod
     def validate_target_cols(cls, v: Collection[str]) -> Collection[str]:
         if len(v) != 1:
             raise ValueError("A single-task benchmark should specify exactly one target column.")
@@ -30,6 +31,7 @@ class MultiTaskMixin:
     """
 
     @field_validator("target_cols", check_fields=False)
+    @classmethod
     def validate_target_cols(cls, v: Collection[str]) -> Collection[str]:
         if len(v) <= 1:
             raise ValueError("A multi-task benchmark should specify at least two target columns.")
