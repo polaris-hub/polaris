@@ -277,7 +277,8 @@ class PolarisHubClient(OAuth2Client):
     # =========================
 
     def list_datasets(self, limit: int = 100, offset: int = 0) -> list[str]:
-        """List all available datasets on the Polaris Hub.
+        """List all available datasets (v1 and v2) on the Polaris Hub.
+        We prioritize v2 datasets over v1 datasets.
 
         Args:
             limit: The maximum number of datasets to return.
@@ -287,17 +288,42 @@ class PolarisHubClient(OAuth2Client):
             A list of dataset names in the format `owner/dataset_name`.
         """
         with ProgressIndicator(
-            start_msg="Fetching artifacts...",
-            success_msg="Fetched artifacts.",
+            start_msg="Fetching datasets...",
+            success_msg="Fetched datasets.",
             error_msg="Failed to fetch datasets.",
         ):
-            response = self._base_request_to_hub(
-                url="/v1/dataset", method="GET", params={"limit": limit, "offset": offset}
+            # Step 1: Fetch enough v2 datasets to cover the offset and limit
+            v2_response = self._base_request_to_hub(
+                url="/v2/dataset", method="GET", params={"limit": limit + offset, "offset": 0}
             )
-            response_data = response.json()
-            dataset_list = [bm["artifactId"] for bm in response_data["data"]]
+            v2_data = v2_response.json().get("data", [])
+            v2_datasets = [dataset["artifactId"] for dataset in v2_data]
 
-            return dataset_list
+            # Apply offset and limit to v2 datasets
+            v2_datasets_offset = v2_datasets[offset : offset + limit]
+
+            # If v2 datasets satisfy the limit, return them
+            if len(v2_datasets_offset) >= limit:
+                return v2_datasets_offset
+
+            # Step 2: Calculate the remaining limit and fetch v1 datasets
+            remaining_limit = max(0, limit - len(v2_datasets_offset))
+
+            v1_datasets = []
+            if remaining_limit > 0:
+                v1_response = self._base_request_to_hub(
+                    url="/v1/dataset",
+                    method="GET",
+                    params={"limit": remaining_limit, "offset": max(0, offset - len(v2_datasets))},
+                )
+                v1_data = v1_response.json().get("data", [])
+                v1_datasets = [dataset["artifactId"] for dataset in v1_data]
+
+            # Combine the v2 and v1 datasets
+            combined_datasets = v2_datasets_offset + v1_datasets
+
+            # Ensure the final combined list respects the limit
+            return combined_datasets[:limit]
 
     def get_dataset(
         self,
@@ -322,7 +348,7 @@ class PolarisHubClient(OAuth2Client):
             error_msg="Failed to fetch dataset.",
         ):
             try:
-                return self._get_v1_dataset(owner, name, ArtifactSubtype.STANDARD.value, verify_checksum)
+                return self._get_v1_dataset(owner, name, ArtifactSubtype.STANDARD, verify_checksum)
             except PolarisRetrieveArtifactError:
                 # If the v1 dataset is not found, try to load a v2 dataset
                 return self._get_v2_dataset(owner, name)
@@ -347,7 +373,7 @@ class PolarisHubClient(OAuth2Client):
         """
         url = (
             f"/v1/dataset/{owner}/{name}"
-            if artifact_type == ArtifactSubtype.STANDARD.value
+            if artifact_type == ArtifactSubtype.STANDARD
             else f"/v2/competition/dataset/{owner}/{name}"
         )
         response = self._base_request_to_hub(url=url, method="GET")
@@ -407,18 +433,44 @@ class PolarisHubClient(OAuth2Client):
             A list of benchmark names in the format `owner/benchmark_name`.
         """
         with ProgressIndicator(
-            start_msg="Fetching artifacts...",
-            success_msg="Fetched artifacts.",
+            start_msg="Fetching benchmarks...",
+            success_msg="Fetched benchmarks.",
             error_msg="Failed to fetch benchmarks.",
         ):
-            # TODO (cwognum): What to do with pagination, i.e. limit and offset?
-            response = self._base_request_to_hub(
-                url="/v1/benchmark", method="GET", params={"limit": limit, "offset": offset}
+            # Step 1: Fetch enough v2 benchmarks to cover the offset and limit
+            v2_response = self._base_request_to_hub(
+                url="/v2/benchmark", method="GET", params={"limit": limit + offset, "offset": 0}
             )
-            response_data = response.json()
-            benchmarks_list = [f"{HubOwner(**bm['owner'])}/{bm['name']}" for bm in response_data["data"]]
+            v2_data = v2_response.json().get("data", [])
+            v2_benchmarks = [f"{HubOwner(**benchmark['owner'])}/{benchmark['name']}" for benchmark in v2_data]
 
-            return benchmarks_list
+            # Apply offset and limit to v2 benchmarks
+            v2_benchmarks_offset = v2_benchmarks[offset : offset + limit]
+
+            # If v2 benchmarks satisfy the limit, return them
+            if len(v2_benchmarks_offset) >= limit:
+                return v2_benchmarks_offset
+
+            # Step 2: Calculate the remaining limit and fetch v1 benchmarks
+            remaining_limit = max(0, limit - len(v2_benchmarks_offset))
+
+            v1_benchmarks = []
+            if remaining_limit > 0:
+                v1_response = self._base_request_to_hub(
+                    url="/v1/benchmark",
+                    method="GET",
+                    params={"limit": remaining_limit, "offset": max(0, offset - len(v2_benchmarks))},
+                )
+                v1_data = v1_response.json().get("data", [])
+                v1_benchmarks = [
+                    f"{HubOwner(**benchmark['owner'])}/{benchmark['name']}" for benchmark in v1_data
+                ]
+
+            # Combine the v2 and v1 benchmarks
+            combined_benchmarks = v2_benchmarks_offset + v1_benchmarks
+
+            # Ensure the final combined list respects the limit
+            return combined_benchmarks[:limit]
 
     def get_benchmark(
         self,
@@ -559,7 +611,7 @@ class PolarisHubClient(OAuth2Client):
 
         if isinstance(dataset, DatasetV1):
             return self._upload_v1_dataset(
-                dataset, ArtifactSubtype.STANDARD.value, timeout, access, owner, if_exists
+                dataset, ArtifactSubtype.STANDARD, timeout, access, owner, if_exists
             )
         elif isinstance(dataset, DatasetV2):
             return self._upload_v2_dataset(dataset, timeout, access, owner, if_exists)
@@ -607,7 +659,7 @@ class PolarisHubClient(OAuth2Client):
             # We do so separately for the Zarr archive and Parquet file.
             url = (
                 f"/v1/dataset/{dataset.artifact_id}"
-                if artifact_type == ArtifactSubtype.STANDARD.value
+                if artifact_type == ArtifactSubtype.STANDARD
                 else f"/v2/competition/dataset/{dataset.owner}/{dataset.name}"
             )
             response = self._base_request_to_hub(
@@ -651,7 +703,7 @@ class PolarisHubClient(OAuth2Client):
                     )
 
             base_artifact_url = (
-                "datasets" if artifact_type == ArtifactSubtype.STANDARD.value else "/competition/datasets"
+                "datasets" if artifact_type == ArtifactSubtype.STANDARD else "/competition/datasets"
             )
             progress_indicator.update_success_msg(
                 f"Your {artifact_type} dataset has been successfully uploaded to the Hub. "
@@ -754,7 +806,7 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
         """
-        return self._upload_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
+        return self._upload_benchmark(benchmark, ArtifactSubtype.STANDARD, access, owner)
 
     def _upload_benchmark(
         self,
@@ -797,9 +849,7 @@ class PolarisHubClient(OAuth2Client):
             benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
             benchmark_json["access"] = access
 
-            path_params = (
-                "/v1/benchmark" if artifact_type == ArtifactSubtype.STANDARD.value else "/v2/competition"
-            )
+            path_params = "/v1/benchmark" if artifact_type == ArtifactSubtype.STANDARD else "/v2/competition"
             url = f"{path_params}/{benchmark.owner}/{benchmark.name}"
             response = self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
             response_data = response.json()
