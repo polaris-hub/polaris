@@ -15,7 +15,7 @@ from pydantic import (
 from pydantic.alias_generators import to_camel
 
 from polaris._artifact import BaseArtifactModel
-from polaris.evaluate import BenchmarkPredictions, Metric
+from polaris.evaluate import BenchmarkPredictions
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import slugify
@@ -40,28 +40,10 @@ class ResultRecords(BaseModel):
 
     test_set: TestLabelType
     target_label: TargetLabelType
-    scores: dict[Metric, float]
+    scores: dict[str, float]
 
     # Model config
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-
-    @field_validator("scores", mode="before")
-    @classmethod
-    def validate_scores(cls, v):
-        validated = {}
-        for metric, score in v.items():
-            if not isinstance(metric, Metric):
-                try:
-                    metric = Metric[metric]
-                except KeyError as error:
-                    raise ValueError("Invalid metric name") from error
-            validated[metric] = score
-        return validated
-
-    @field_serializer("scores")
-    def serialize_scores(self, value: dict[Metric, float]) -> dict[str, float]:
-        """Change from the Metric enum to a string representation"""
-        return {metric.name: score for metric, score in value.items()}
 
 
 class ResultsMetadata(BaseArtifactModel):

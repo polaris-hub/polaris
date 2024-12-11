@@ -6,6 +6,7 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
+from polaris.evaluate import Metric
 
 
 @pytest.mark.parametrize("is_single_task", [True, False])
@@ -21,6 +22,7 @@ def test_split_verification(is_single_task, test_single_task_benchmark, test_mul
         "target_cols": obj.target_cols,
         "input_cols": obj.input_cols,
         "metrics": obj.metrics,
+        "main_metric": obj.main_metric,
         "name": obj.name,
     }
 
@@ -116,13 +118,14 @@ def test_benchmark_metrics_verification(test_single_task_benchmark, test_multi_t
     }
 
     # Invalid metric
-    with pytest.raises(KeyError):
+    with pytest.raises(ValidationError):
         cls(metrics=["invalid"], **default_kwargs)
-    with pytest.raises(KeyError):
+    with pytest.raises(ValidationError):
         cls(metrics="invalid", **default_kwargs)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValidationError):
+        metrics_list = list(base.metrics)
         cls(
-            metrics=base.metrics + [base.metrics[0]],
+            metrics=metrics_list + [metrics_list[0]],
             **default_kwargs,
         )
 
@@ -143,6 +146,7 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
 
     obj = test_single_task_benchmark if is_single_task else test_multi_task_benchmark
     cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
+    metrics_list = list(obj.metrics)
 
     # Make sure the `md5sum` is part of the model dump even if not initiated yet.
     # This is important for uploads to the Hub.
@@ -162,7 +166,7 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
     assert cls(**kwargs).md5sum == original
 
     # With a different ordering of the metrics
-    kwargs["metrics"] = kwargs["metrics"][::-1]
+    kwargs["metrics"] = metrics_list[::-1]
     assert cls(**kwargs).md5sum == original
 
     # With a different ordering of the split
@@ -184,7 +188,8 @@ def test_benchmark_checksum(is_single_task, test_single_task_benchmark, test_mul
 
     # Metrics
     kwargs = obj.model_dump()
-    kwargs["metrics"] = kwargs["metrics"][1:] + ["accuracy"]
+    kwargs["metrics"] = metrics_list[1:] + ["accuracy"]
+    kwargs["main_metric"] = kwargs["metrics"][0]
     _check_for_failure(kwargs)
 
     # Target columns
@@ -215,3 +220,40 @@ def test_checksum_verification(test_single_task_benchmark):
     test_single_task_benchmark.md5sum = "0" * 32
     with pytest.raises(ValueError):
         test_single_task_benchmark.verify_checksum()
+
+
+def test_benchmark_duplicate_metrics(test_single_task_benchmark):
+    """Test whether setting an invalid checksum raises an error."""
+    m = test_single_task_benchmark.model_dump()
+
+    with pytest.raises(ValidationError, match="The benchmark specifies duplicate metric"):
+        m["metrics"] = [
+            Metric(label="roc_auc", config={"group_by": "CLASS_expt"}),
+            Metric(label="roc_auc", config={"group_by": "CLASS_expt"}),
+        ]
+        m["main_metric"] = m["metrics"][0]
+        SingleTaskBenchmarkSpecification(**m)
+
+    with pytest.raises(ValidationError, match="The benchmark has similarly named metrics"):
+        m["metrics"][0].config.group_by = "MULTICLASS_calc"
+        SingleTaskBenchmarkSpecification(**m)
+
+    m["metrics"][0].custom_name = "custom_name"
+    SingleTaskBenchmarkSpecification(**m)
+
+
+def test_benchmark_metric_deserialization(test_single_task_benchmark):
+    """Test whether setting an invalid checksum raises an error."""
+    m = test_single_task_benchmark.model_dump()
+
+    # Should work with strings
+    m["metrics"] = ["mean_absolute_error", "accuracy"]
+    m["main_metric"] = "accuracy"
+    SingleTaskBenchmarkSpecification(**m)
+
+    # Should work with dictionaries
+    m["metrics"] = [
+        {"label": "mean_absolute_error", "config": {"group_by": "CLASS_expt"}},
+        {"label": "accuracy"},
+    ]
+    SingleTaskBenchmarkSpecification(**m)

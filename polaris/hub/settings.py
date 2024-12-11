@@ -48,7 +48,7 @@ class PolarisHubSettings(BaseSettings):
 
     # External authentication settings
     authorize_url: HttpUrlString = "https://clerk.polarishub.io/oauth/authorize"
-    callback_url: HttpUrlString = "https://polarishub.io/oauth2/callback"
+    callback_url: HttpUrlString | None = None
     token_fetch_url: HttpUrlString = "https://clerk.polarishub.io/oauth/token"
     user_info_url: HttpUrlString = "https://clerk.polarishub.io/oauth/userinfo"
     scopes: str = "profile email"
@@ -62,6 +62,12 @@ class PolarisHubSettings(BaseSettings):
     def validate_api_url(cls, v, info: ValidationInfo):
         if v is None:
             v = urljoin(str(info.data["hub_url"]), "/api")
+        return v
+
+    @field_validator("callback_url", mode="before")
+    def validate_callback_url(cls, v, info: ValidationInfo):
+        if v is None:
+            v = urljoin(str(info.data["hub_url"]), "/oauth2/callback")
         return v
 
     @field_validator("hub_token_url", mode="before")

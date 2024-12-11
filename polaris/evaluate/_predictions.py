@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import numpy as np
 from pydantic import (
     BaseModel,
@@ -177,3 +179,55 @@ class BenchmarkPredictions(BaseModel):
                 return False
 
         return True
+
+    def get_subset(
+        self, test_set_subset: list[str] | None = None, target_subset: list[str] | None = None
+    ) -> "BenchmarkPredictions":
+        """Return a subset of the original predictions"""
+
+        if test_set_subset is None and target_subset is None:
+            return self
+
+        if test_set_subset is None:
+            test_set_subset = self.test_set_labels
+        if target_subset is None:
+            target_subset = self.target_labels
+
+        predictions = defaultdict(dict)
+        for test_set_name in self.predictions.keys():
+            if test_set_name not in test_set_subset:
+                continue
+
+            for target_name, target in self.predictions[test_set_name].items():
+                if target_name not in target_subset:
+                    continue
+
+                predictions[test_set_name][target_name] = target
+
+        test_set_sizes = {k: v for k, v in self.test_set_sizes.items() if k in predictions.keys()}
+        return BenchmarkPredictions(
+            predictions=predictions,
+            target_labels=target_subset,
+            test_set_labels=test_set_subset,
+            test_set_sizes=test_set_sizes,
+        )
+
+    def get_size(
+        self, test_set_subset: list[str] | None = None, target_subset: list[str] | None = None
+    ) -> int:
+        """Return the total number of predictions, allowing for filtering by test set and target"""
+        if test_set_subset is None and target_subset is None:
+            return sum(self.test_set_sizes.values()) * len(self.target_labels)
+        return len(self.get_subset(test_set_subset, target_subset))
+
+    def flatten(self) -> np.ndarray:
+        """Return the predictions as a single, flat numpy array"""
+        if len(self.test_set_labels) != 1 and len(self.target_labels) != 1:
+            raise ValueError(
+                "Can only flatten predictions for benchmarks with a single test set and a single target"
+            )
+        return self.predictions[self.test_set_labels[0]][self.target_labels[0]]
+
+    def __len__(self) -> int:
+        """Return the total number of predictions"""
+        return self.get_size()
