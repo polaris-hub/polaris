@@ -171,22 +171,40 @@ def zarr_archive(tmp_path):
     return tmp_path
 
 
+@pytest.fixture()
+def regression_metrics():
+    return [
+        "mean_absolute_error",
+        "mean_squared_error",
+        "r2",
+        "spearmanr",
+        "pearsonr",
+        "explained_var",
+        "absolute_average_fold_error",
+    ]
+
+
+@pytest.fixture()
+def classification_metrics():
+    return [
+        "accuracy",
+        "f1",
+        "roc_auc",
+        "pr_auc",
+        "mcc",
+        "cohen_kappa",
+        "balanced_accuracy",
+    ]
+
+
 @pytest.fixture(scope="function")
-def test_single_task_benchmark(test_dataset):
+def test_single_task_benchmark(test_dataset, regression_metrics):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     benchmark = SingleTaskBenchmarkSpecification(
         name="single-task-single-set-benchmark",
         dataset=test_dataset,
-        metrics=[
-            "mean_absolute_error",
-            "mean_squared_error",
-            "r2",
-            "spearmanr",
-            "pearsonr",
-            "explained_var",
-            "absolute_average_fold_error",
-        ],
+        metrics=regression_metrics,
         main_metric="mean_absolute_error",
         split=(train_indices, test_indices),
         target_cols="expt",
@@ -197,14 +215,14 @@ def test_single_task_benchmark(test_dataset):
 
 
 @pytest.fixture(scope="function")
-def test_single_task_benchmark_clf(test_dataset):
+def test_single_task_benchmark_clf(test_dataset, classification_metrics):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     benchmark = SingleTaskBenchmarkSpecification(
         name="single-task-single-set-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
-        metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa", "balanced_accuracy"],
+        metrics=classification_metrics,
         split=(train_indices, test_indices),
         target_cols="CLASS_expt",
         input_cols="smiles",
@@ -214,7 +232,7 @@ def test_single_task_benchmark_clf(test_dataset):
 
 
 @pytest.fixture(scope="function")
-def test_single_task_benchmark_multi_clf(test_dataset):
+def test_single_task_benchmark_multi_clf(test_dataset, classification_metrics):
     np.random.seed(111)
     indices = np.arange(100)
     np.random.shuffle(indices)
@@ -245,21 +263,13 @@ def test_single_task_benchmark_multi_clf(test_dataset):
 
 
 @pytest.fixture(scope="function")
-def test_single_task_benchmark_multiple_test_sets(test_dataset):
+def test_single_task_benchmark_multiple_test_sets(test_dataset, regression_metrics):
     train_indices = list(range(90))
     test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
     benchmark = SingleTaskBenchmarkSpecification(
         name="single-task-multi-set-benchmark",
         dataset=test_dataset,
-        metrics=[
-            "mean_absolute_error",
-            "mean_squared_error",
-            "r2",
-            "spearmanr",
-            "pearsonr",
-            "explained_var",
-            "absolute_average_fold_error",
-        ],
+        metrics=regression_metrics,
         main_metric="r2",
         split=(train_indices, test_indices),
         target_cols="expt",
@@ -270,7 +280,7 @@ def test_single_task_benchmark_multiple_test_sets(test_dataset):
 
 
 @pytest.fixture(scope="function")
-def test_single_task_benchmark_clf_multiple_test_sets(test_dataset):
+def test_single_task_benchmark_clf_multiple_test_sets(test_dataset, classification_metrics):
     np.random.seed(111)  # make sure two classes in `y_true`
     indices = np.arange(100)
     np.random.shuffle(indices)
@@ -279,7 +289,7 @@ def test_single_task_benchmark_clf_multiple_test_sets(test_dataset):
     benchmark = SingleTaskBenchmarkSpecification(
         name="single-task-multi-set-benchmark-clf",
         dataset=test_dataset,
-        metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
+        metrics=classification_metrics,
         main_metric="pr_auc",
         split=(train_indices, test_indices),
         target_cols="CLASS_calc",
@@ -290,7 +300,7 @@ def test_single_task_benchmark_clf_multiple_test_sets(test_dataset):
 
 
 @pytest.fixture(scope="function")
-def test_multi_task_benchmark(test_dataset):
+def test_multi_task_benchmark(test_dataset, regression_metrics):
     # For the sake of simplicity, just use a small set of indices
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
@@ -298,15 +308,7 @@ def test_multi_task_benchmark(test_dataset):
         name="multi-task-benchmark",
         dataset=test_dataset,
         main_metric="mean_absolute_error",
-        metrics=[
-            "mean_absolute_error",
-            "mean_squared_error",
-            "r2",
-            "spearmanr",
-            "pearsonr",
-            "explained_var",
-            "absolute_average_fold_error",
-        ],
+        metrics=regression_metrics,
         split=(train_indices, test_indices),
         target_cols=["expt", "calc"],
         input_cols="smiles",
@@ -317,7 +319,7 @@ def test_multi_task_benchmark(test_dataset):
 
 
 @pytest.fixture(scope="function")
-def test_multi_task_benchmark_clf(test_dataset):
+def test_multi_task_benchmark_clf(test_dataset, classification_metrics):
     # For the sake of simplicity, just use a small set of indices
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
@@ -325,7 +327,7 @@ def test_multi_task_benchmark_clf(test_dataset):
         name="multi-task-benchmark",
         dataset=test_dataset,
         main_metric="accuracy",
-        metrics=["accuracy", "f1", "roc_auc", "pr_auc", "mcc", "cohen_kappa"],
+        metrics=classification_metrics,
         split=(train_indices, test_indices),
         target_cols=["CLASS_expt", "CLASS_calc"],
         input_cols="smiles",
@@ -335,21 +337,14 @@ def test_multi_task_benchmark_clf(test_dataset):
 
 
 @pytest.fixture(scope="function")
-def test_competition(test_competition_dataset, test_org_owner):
+def test_competition(test_competition_dataset, test_org_owner, regression_metrics):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     competition = CompetitionSpecification(
         name="test-competition",
         dataset=test_competition_dataset,
         owner=test_org_owner,
-        metrics=[
-            "mean_absolute_error",
-            "mean_squared_error",
-            "r2",
-            "spearmanr",
-            "pearsonr",
-            "explained_var",
-        ],
+        metrics=regression_metrics,
         main_metric="mean_absolute_error",
         split=(train_indices, test_indices),
         target_cols="expt",
@@ -360,21 +355,13 @@ def test_competition(test_competition_dataset, test_org_owner):
 
 
 @pytest.fixture(scope="function")
-def test_multi_task_benchmark_multiple_test_sets(test_dataset):
+def test_multi_task_benchmark_multiple_test_sets(test_dataset, regression_metrics):
     train_indices = list(range(90))
     test_indices = {"test_1": list(range(90, 95)), "test_2": list(range(95, 100))}
     benchmark = MultiTaskBenchmarkSpecification(
         name="multi-task-multi-set-benchmark",
         dataset=test_dataset,
-        metrics=[
-            "mean_absolute_error",
-            "mean_squared_error",
-            "r2",
-            "spearmanr",
-            "pearsonr",
-            "explained_var",
-            "absolute_average_fold_error",
-        ],
+        metrics=regression_metrics,
         main_metric="r2",
         split=(train_indices, test_indices),
         target_cols=["expt", "calc"],
@@ -403,6 +390,7 @@ def test_docking_benchmark(test_docking_dataset):
         name="single-task-single-set-benchmark",
         dataset=test_docking_dataset,
         metrics=["rmsd_coverage"],
+        main_metric="rmsd_coverage",
         split=([], [0, 1]),
         target_cols=["molecule"],
         input_cols=["smiles"],
