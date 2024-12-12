@@ -35,7 +35,7 @@ ColumnsType: TypeAlias = str | list[str]
 
 class CompetitionSpecification(DatasetV2):
     """An instance of this class represents a Polaris competition. It defines fields and functionality
-    that in combination with the [`DatasetV2`][polaris.experimental._dataset_v2.DatasetV2] class, allow
+    that in combination with the `polaris.experimental._dataset_v2.DatasetV2` class, allow
     users to participate in competitions hosted on Polaris Hub.
 
     Examples:
@@ -80,7 +80,8 @@ class CompetitionSpecification(DatasetV2):
         n_test_sets: The number of test sets defined in the test split.
         n_test_datapoints: The number of datapoints in each test set.
         n_classes: The number of classes within target columns that define a classification task.
-    For additional meta-data attributes, see the [`DatasetV2`][polaris.experimental._dataset_v2.DatasetV2] class.
+
+    For additional meta-data attributes, see the `polaris.experimental._dataset_v2.DatasetV2` class.
     """
 
     _artifact_type = "competition"
