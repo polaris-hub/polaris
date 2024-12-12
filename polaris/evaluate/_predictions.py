@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 import json
-=======
 from collections import defaultdict
 
->>>>>>> main
 import numpy as np
 from pydantic import (
     BaseModel,
@@ -246,6 +243,7 @@ class BenchmarkPredictions(BaseModel):
     def __len__(self) -> int:
         """Return the total number of predictions"""
         return self.get_size()
+
 
 class CompetitionPredictions(BenchmarkPredictions, ResultsMetadata):
     """
