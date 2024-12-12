@@ -46,6 +46,7 @@ from polaris.utils.types import (
     SupportedLicenseType,
     TimeoutTypes,
     ZarrConflictResolution,
+    SlugCompatibleStringType,
 )
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
@@ -894,28 +895,25 @@ class PolarisHubClient(OAuth2Client):
             )
 
     def get_competition(
-        self, owner: str | HubOwner, name: str, zarr_root_path: str | None = None
+        self, owner: str | HubOwner, name: SlugCompatibleStringType
     ) -> CompetitionSpecification:
         """Load a competition from the Polaris Hub.
 
         Args:
             owner: The owner of the competition. Can be either a user or organization from the Polaris Hub.
             name: The name of the competition.
-            zarr_root_path: An optional path that specifies the cache location of the competition's dataset
-                on your local filesystem.
 
         Returns:
             A `CompetitionSpecification` instance, if it exists.
         """
         url = f"/v1/competition/{owner}/{name}"
-        competition = self._base_request_to_hub(url=url, method="GET")
+        response = self._base_request_to_hub(url=url, method="GET")
+        response_data = response.json()
 
-        # Load the Zarr archive from the Hub, if a local cache path is not provided
-        if not zarr_root_path:
-            with StorageSession(self, "read", CompetitionSpecification.urn_for(owner, name)) as storage:
-                zarr_root_path = str(storage.paths.root)
+        with StorageSession(self, "read", CompetitionSpecification.urn_for(owner, name)) as storage:
+            zarr_root_path = str(storage.paths.root)
 
-        return CompetitionSpecification(zarr_root_path=zarr_root_path, **competition)
+        return CompetitionSpecification(zarr_root_path=zarr_root_path, **response_data)
 
     def submit_competition_predictions(
         self,

@@ -1,17 +1,13 @@
 import json
-from pathlib import Path
 
 import fsspec
 from datamol.utils import fs
 
-from polaris.benchmark._definitions import (
-    MultiTaskBenchmarkSpecification,
-    SingleTaskBenchmarkSpecification,
-)
+from polaris.benchmark._definitions import MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
 from polaris.dataset import DatasetV1, create_dataset_from_file
 from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.client import PolarisHubClient
-from polaris.utils.types import ChecksumStrategy, SlugStringType
+from polaris.utils.types import ChecksumStrategy, SlugCompatibleStringType
 
 
 def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr") -> DatasetV1:
@@ -104,7 +100,7 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
     return benchmark
 
 
-def load_competition(slug: SlugStringType, zarr_root_path: str | None = None):
+def load_competition(slug: SlugCompatibleStringType):
     """
     Loads a Polaris competition.
 
@@ -112,12 +108,12 @@ def load_competition(slug: SlugStringType, zarr_root_path: str | None = None):
     on the client and all results are evaluated through Polaris' servers.
 
     Note: Dataset is automatically loaded
-        If no argument is passed for `zarr_root_path`, the underlying competition dataset will be automatically
-        fetched from the Polaris Hub. If it is passed, the dataset will be retrieved locally from the location
-        specified in the passed value.
+        The dataset underlying the competition is automatically loaded when loading the competition.
 
     """
 
     # Load from the Hub
     client = PolarisHubClient()
-    return client.get_competition(*slug.split("/"), zarr_root_path=zarr_root_path)
+    return client.get_competition(
+        *slug.split("/"),
+    )
