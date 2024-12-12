@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.47">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.48">
     
     
       
@@ -886,6 +886,42 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.BenchmarkPredictions.get_subset" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_subset
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.BenchmarkPredictions.get_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_size
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.BenchmarkPredictions.flatten" class="md-nav__link">
+    <span class="md-ellipsis">
+      flatten
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.BenchmarkPredictions.__len__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __len__
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1007,6 +1043,15 @@
   <a href="#polaris.evaluate.metrics.generic_metrics.cohen_kappa_score" class="md-nav__link">
     <span class="md-ellipsis">
       cohen_kappa_score
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.metrics.generic_metrics.average_precision_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      average_precision_score
     </span>
   </a>
   
@@ -1418,6 +1463,42 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.BenchmarkPredictions.get_subset" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_subset
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.BenchmarkPredictions.get_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_size
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.BenchmarkPredictions.flatten" class="md-nav__link">
+    <span class="md-ellipsis">
+      flatten
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.BenchmarkPredictions.__len__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __len__
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1539,6 +1620,15 @@
   <a href="#polaris.evaluate.metrics.generic_metrics.cohen_kappa_score" class="md-nav__link">
     <span class="md-ellipsis">
       cohen_kappa_score
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.evaluate.metrics.generic_metrics.average_precision_score" class="md-nav__link">
+    <span class="md-ellipsis">
+      average_precision_score
     </span>
   </a>
   
@@ -1692,6 +1782,82 @@ this class normalizes different formats to a single, internal representation.</p
     <div class="doc doc-contents ">
 
         <p>Verify that the size of all predictions</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.evaluate.BenchmarkPredictions.get_subset" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_subset</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_subset</span><span class="p">(</span><span class="n">test_set_subset</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">target_subset</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BenchmarkPredictions</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a subset of the original predictions</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.evaluate.BenchmarkPredictions.get_size" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_size</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_size</span><span class="p">(</span><span class="n">test_set_subset</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">target_subset</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the total number of predictions, allowing for filtering by test set and target</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.evaluate.BenchmarkPredictions.flatten" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">flatten</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">flatten</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the predictions as a single, flat numpy array</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.evaluate.BenchmarkPredictions.__len__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__len__</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="fm">__len__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the total number of predictions</p>
 
     </div>
 
@@ -2074,6 +2240,17 @@ the results with the Polaris Hub.</p>
               </div>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.evaluate.MetricInfo.y_type">y_type</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.PredictionKwargs" href="utils.types.html#polaris.utils.types.PredictionKwargs">PredictionKwargs</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The type of predictions expected by the metric interface.</p>
+              </div>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -2117,12 +2294,114 @@ the results with the Polaris Hub.</p>
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="enum.Enum">Enum</span></code></p>
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
 
 
-        <p>A metric within the Polaris ecosystem is uniquely identified by its name
-and is associated with additional metadata in a <code>MetricInfo</code> instance.</p>
-<p>Implemented as an enum.</p>
+        <p>A Metric in Polaris.</p>
+<p>A metric consists of a default metric, which is a callable labeled with additional metadata, as well as a config.
+The config can change how the metric is computed, for example by grouping the data before computing the metric.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.evaluate.Metric.label">label</span></code></td>
+            <td>
+                  <code><span title="polaris.evaluate._metric.MetricLabel">MetricLabel</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The actual callable that is at the core of the metric implementation.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.evaluate.Metric.custom_name">custom_name</span></code></td>
+            <td>
+                  <code>str | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A optional, custom name of the metric. Names should be unique within the context of a benchmark.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.evaluate.Metric.config">config</span></code></td>
+            <td>
+                  <code><span title="polaris.evaluate._metric.GroupedMetricConfig">GroupedMetricConfig</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>For more complex metrics, this object should hold all parameters for the metric.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.evaluate.Metric.fn">fn</span></code></td>
+            <td>
+                  <code><span title="typing.Callable">Callable</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The callable that actually computes the metric, automatically set based on the label.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.evaluate.Metric.is_multitask">is_multitask</span></code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether the metric expects a single set of predictions or a dict of predictions, automatically set based on the label.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.evaluate.Metric.kwargs">kwargs</span></code></td>
+            <td>
+                  <code>dict</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional parameters required for the metric, automatically set based on the label.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.evaluate.Metric.direction">direction</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.DirectionType" href="utils.types.html#polaris.utils.types.DirectionType">DirectionType</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The direction for ranking of the metric,  "max" for maximization and "min" for minimization, automatically set based on the label.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.evaluate.Metric.y_type">y_type</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.PredictionKwargs" href="utils.types.html#polaris.utils.types.PredictionKwargs">PredictionKwargs</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The type of predictions expected by the metric interface, automatically set based on the label.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 
@@ -2150,16 +2429,75 @@ and is associated with additional metadata in a <code>MetricInfo</code> instance
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">score</span><span class="p">(</span><span class="n">y_true</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y_prob</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">score</span><span class="p">(</span><span class="n">y_true</span><span class="p">:</span> <span class="n">GroundTruth</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">BenchmarkPredictions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y_prob</span><span class="p">:</span> <span class="n">BenchmarkPredictions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Endpoint for computing the metric.</p>
-<p>For convenience, calling a <code>Metric</code> will result in this method being called.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">metric</span> <span class="o">=</span> <span class="n">Metric</span><span class="o">.</span><span class="n">mean_absolute_error</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">assert</span> <span class="n">metric</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">first</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">second</span><span class="p">)</span> <span class="o">==</span> <span class="n">metric</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">first</span><span class="p">,</span> <span class="n">y_pred</span><span class="o">=</span><span class="n">second</span><span class="p">)</span>
-</span></code></pre></div>
+        <p>Compute the metric.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>y_true</code>
+            </td>
+            <td>
+                  <code><span title="polaris.evaluate._metric.GroundTruth">GroundTruth</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The true target values.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>y_pred</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.evaluate._predictions.BenchmarkPredictions" href="#polaris.evaluate.BenchmarkPredictions">BenchmarkPredictions</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The predicted target values, if any.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>y_prob</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.evaluate._predictions.BenchmarkPredictions" href="#polaris.evaluate.BenchmarkPredictions">BenchmarkPredictions</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The predicted target probabilities, if any.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
     </div>
 
@@ -2346,6 +2684,25 @@ The implementation is based on <a href="https://pubs.acs.org/doi/10.1021/acs.che
     <div class="doc doc-contents ">
 
         <p>Scikit learn cohen_kappa_score wraper with renamed arguments</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.evaluate.metrics.generic_metrics.average_precision_score" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">average_precision_score</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">average_precision_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_score</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Scikit learn average_precision_score wrapper that throws an error if y_true has no positive class</p>
 
     </div>
 
