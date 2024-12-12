@@ -3,6 +3,7 @@ import numpy as np
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Field,
     TypeAdapter,
     field_serializer,
     field_validator,
@@ -10,10 +11,10 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-from polaris._artifact import BaseArtifactModel
+from polaris.evaluate._results import ResultsMetadata
 from polaris.utils.misc import convert_lists_to_arrays
 from polaris.utils.types import HubOwner, IncomingPredictionsType, PredictionsType
-from polaris.utils.types import HttpUrlString, SlugCompatibleStringType, HubUser
+from polaris.utils.types import HttpUrlString, SlugCompatibleStringType
 
 
 class BenchmarkPredictions(BaseModel):
@@ -190,7 +191,7 @@ class BenchmarkPredictions(BaseModel):
         return True
 
 
-class CompetitionPredictions(BenchmarkPredictions, BaseArtifactModel):
+class CompetitionPredictions(BenchmarkPredictions, ResultsMetadata):
     """
     Predictions for competition benchmarks.
 
@@ -203,20 +204,16 @@ class CompetitionPredictions(BenchmarkPredictions, BaseArtifactModel):
         name: A slug-compatible name for the artifact. It is redeclared here to be required.
         owner: A slug-compatible name for the owner of the artifact. It is redeclared here to be required.
         report_url: A URL to a report/paper/write-up which describes the methods used to generate the predictions.
-        github_url: A URL to a code repository which contains the code used to generate the predictions.
-        contributors: A list of Polaris usernames representing those who contributed to producing the predictions.
     """
 
     _artifact_type = "competition-prediction"
 
     name: SlugCompatibleStringType
     owner: HubOwner
-    report_url: HttpUrlString
-    github_url: HttpUrlString | None = None
-    contributors: list[HubUser] = []
+    paper_url: HttpUrlString = Field(alias="report_url", serialization_alias="reportUrl")
 
     def __repr__(self):
-        return json.dumps(self.model_dump(), indent=2)
+        return json.dumps(self.model_dump(by_alias=True), indent=2)
 
     def __str__(self):
         return self.__repr__()

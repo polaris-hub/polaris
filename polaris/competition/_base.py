@@ -1,20 +1,32 @@
 from datetime import datetime
-import json
+from itertools import chain
 from typing import Callable, TypeAlias, Union
-
+from typing_extensions import Self
+from loguru import logger
 from pydantic import (
     Field,
     computed_field,
     field_serializer,
     field_validator,
+    model_validator,
 )
-
 from polaris.dataset._subset import Subset
 from polaris.evaluate import Metric
 from polaris.evaluate._predictions import CompetitionPredictions
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.utils.dict2html import dict2html
-from polaris.utils.types import TargetType, TaskType, SplitType
+from polaris.utils.errors import InvalidCompetitionError
+from polaris.utils.misc import listit
+from polaris.utils.types import (
+    HubOwner,
+    TargetType,
+    TaskType,
+    SplitType,
+    HttpUrlString,
+    SlugCompatibleStringType,
+    PredictionsType,
+    HubUser,
+)
 
 ColumnsType: TypeAlias = str | list[str]
 
@@ -30,7 +42,7 @@ class CompetitionSpecification(DatasetV2):
         import polaris as po
 
         # Load the benchmark from the Hub
-        competition = po.load_competition("polaris/hello-world-competition")
+        competition = po.load_competition("dummy-user/dummy-name")
 
         # Get the train and test data-loaders
         train, test = competition.get_train_test_split()
@@ -43,18 +55,14 @@ class CompetitionSpecification(DatasetV2):
 
         # Work your magic to accurately predict the test set
         prediction_values = np.array([0.0 for x in test])
-        predictions = CompetitionPredictions(
-            name="first-prediction",
-            owner=HubOwner(slug="dummy-user"),
-            report_url="REPORT_URL",
-            target_labels=competition.target_cols,
-            test_set_labels=competition.test_set_labels,
-            test_set_sizes=competition.test_set_sizes,
-            predictions=prediction_values,
-        )
 
         # Submit your predictions
-        competition.submit_predictions(predictions)
+        competition.submit_predictions(
+            prediction_name="first-prediction",
+            prediction_owner="dummy-user",
+            report_url="REPORT_URL",
+            predictions=prediction_values,
+        )
         ```
 
     Attributes:
@@ -81,7 +89,7 @@ class CompetitionSpecification(DatasetV2):
     metrics: Union[str, Metric, list[str | Metric]]
     main_metric: str | Metric
     readme: str
-    target_types: dict[str, Union[TargetType, str]] = Field(default_factory=dict, validate_default=True)
+    target_types: dict[str, TargetType] = Field(default_factory=dict, validate_default=True)
     start_time: datetime
     end_time: datetime
     n_test_sets: int
@@ -110,6 +118,62 @@ class CompetitionSpecification(DatasetV2):
             v = Metric[v]
         return v
 
+    @model_validator(mode="after")
+    def _validate_split(self) -> Self:
+        """
+        Verifies that:
+          1) There are no empty test partitions
+          2) All indices are valid given the dataset
+          3) There is no duplicate indices in any of the sets
+          4) There is no overlap between the train and test set
+          5) No row exists in the test set where all labels are missing/empty
+        """
+
+        if not isinstance(self.split[1], dict):
+            self.split = self.split[0], {"test": self.split[1]}
+        split = self.split
+
+        # Train partition can be empty (zero-shot)
+        # Test partitions cannot be empty
+        if any(len(v) == 0 for v in split[1].values()):
+            raise InvalidCompetitionError("The predefined split contains empty test partitions")
+
+        train_idx_list = split[0]
+        full_test_idx_list = list(chain.from_iterable(split[1].values()))
+
+        if len(train_idx_list) == 0:
+            logger.info(
+                "This competitioon only specifies a test set. It will return an empty train set in `get_train_test_split()`"
+            )
+
+        train_idx_set = set(train_idx_list)
+        full_test_idx_set = set(full_test_idx_list)
+
+        # The train and test indices do not overlap
+        if len(train_idx_set & full_test_idx_set) > 0:
+            raise InvalidCompetitionError("The predefined split specifies overlapping train and test sets")
+
+        # Check for duplicate indices within the train set
+        if len(train_idx_set) != len(train_idx_list):
+            raise InvalidCompetitionError("The training set contains duplicate indices")
+
+        # Check for duplicate indices within a given test set. Because a user can specify
+        # multiple test sets for a given benchmark and it is acceptable for indices to be shared
+        # across test sets, we check for duplicates in each test set independently.
+        for test_set_name, test_set_idx_list in split[1].items():
+            if len(test_set_idx_list) != len(set(test_set_idx_list)):
+                raise InvalidCompetitionError(
+                    f'Test set with name "{test_set_name}" contains duplicate indices'
+                )
+
+        # All indices are valid given the dataset. We check the len of `self` here because a
+        # competition entity includes both the dataset and benchmark in one artifact.
+        max_i = len(self)
+        if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
+            raise InvalidCompetitionError("The predefined split contains invalid indices")
+
+        return self
+
     @field_serializer("metrics", "main_metric")
     def _serialize_metrics(self, v) -> list[str] | str:
         """Return the string identifier so we can serialize the object"""
@@ -120,12 +184,12 @@ class CompetitionSpecification(DatasetV2):
     @field_serializer("target_types")
     def _serialize_target_types(self, v) -> dict[str, str]:
         """Convert from enum to string to make sure it's serializable"""
-        return {k: v for k, v in self.target_types.items()}
+        return {k: v.value for k, v in self.target_types.items()}
 
-    @field_serializer("start_time", "end_time")
-    def _serialize_times(self, v: datetime) -> str:
-        """Convert from datetime to string to make sure it's serializable"""
-        return v.isoformat()
+    @field_serializer("split")
+    def _serialize_split(self, v: SplitType):
+        """Convert any tuple to list to make sure it's serializable"""
+        return listit(v)
 
     @computed_field
     @property
@@ -138,13 +202,13 @@ class CompetitionSpecification(DatasetV2):
     @property
     def test_set_labels(self) -> list[str]:
         """The labels of the test sets."""
-        return sorted(list(self.n_test_datapoints.keys()))
+        return sorted(list(self.split[1].keys()))
 
     @computed_field
     @property
     def test_set_sizes(self) -> dict[str, int]:
         """The sizes of the test sets."""
-        return {k: v for k, v in self.n_test_datapoints.items()}
+        return {k: len(v) for k, v in self.split[1].items()}
 
     def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
         """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
@@ -201,29 +265,60 @@ class CompetitionSpecification(DatasetV2):
 
     def submit_predictions(
         self,
-        predictions: CompetitionPredictions,
+        prediction_name: SlugCompatibleStringType,
+        prediction_owner: str,
+        predictions: PredictionsType,
+        report_url: HttpUrlString,
+        contributors: list[HubUser] = [],
+        github_url: HttpUrlString | None = None,
+        description: str = "",
+        tags: list[str] = [],
+        user_attributes: dict[str, str] = {},
     ) -> None:
         """
-        Very light, convenient wrapper around the
+        Convenient wrapper around the
         [`PolarisHubClient.submit_competition_predictions`][polaris.hub.client.PolarisHubClient.submit_competition_predictions] method.
+        It handles the creation of a standardized predictions object, which is expected by the Hub, automatically.
+
+        Args:
+            prediction_name: The name of the prediction.
+            prediction_owner: The slug of the user/organization which owns the prediction.
+            predictions: The predictions for each test set defined in the competition.
+            report_url: A URL to a report/paper/write-up which describes the methods used to generate the predictions.
+            contributors: The users credited with generating these predictions.
+            github_url: An optional URL to a code repository containing the code used to generated these predictions.
+            description: An optional and short description of the predictions.
+            tags: An optional list of tags to categorize the prediction by.
+            user_attributes: An optional dict with additional, textual user attributes.
         """
         from polaris.hub.client import PolarisHubClient
 
-        with PolarisHubClient() as client:
-            client.submit_competition_predictions(competition=self, competition_predictions=predictions)
+        standardized_predictions = CompetitionPredictions(
+            name=prediction_name,
+            owner=HubOwner(slug=prediction_owner),
+            predictions=predictions,
+            report_url=report_url,
+            contributors=contributors,
+            github_url=github_url,
+            description=description,
+            tags=tags,
+            user_attributes=user_attributes,
+            target_labels=self.target_cols,
+            test_set_labels=self.test_set_labels,
+            test_set_sizes=self.test_set_sizes,
+        )
 
-    def _repr_dict_(self) -> dict:
-        """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude=["zarr_manifest_md5sum"])
-        repr_dict.pop("split")
-        return repr_dict
+        with PolarisHubClient() as client:
+            client.submit_competition_predictions(
+                competition=self, competition_predictions=standardized_predictions
+            )
 
     def _repr_html_(self):
         """For pretty printing in Jupyter."""
-        return dict2html(self._repr_dict_())
+        return dict2html(self.model_dump(exclude=["zarr_manifest_md5sum", "split"]))
 
     def __repr__(self):
-        return json.dumps(self._repr_dict_(), indent=2)
+        return self.model_dump_json(exclude=["zarr_manifest_md5sum", "split"], indent=2)
 
     def __str__(self):
         return self.__repr__()

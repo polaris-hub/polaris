@@ -1,7 +1,7 @@
 import json
 from hashlib import md5
 from itertools import chain
-from typing import Any, Callable, Optional, TypeAlias, Union
+from typing import Callable, Optional, TypeAlias, Union
 
 import fsspec
 import numpy as np
@@ -99,7 +99,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     # Public attributes
     # Data
-    dataset: Union[DatasetV1, str, dict[str, Any]]
+    dataset: DatasetV1
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
@@ -110,14 +110,12 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     readme: str = ""
     target_types: dict[str, Union[TargetType, str, None]] = Field(default_factory=dict, validate_default=True)
 
-    @field_validator("dataset")
+    @field_validator("dataset", mode="before")
     def _validate_dataset(cls, v):
         """
-        Allows either passing a Dataset object or the kwargs to create one
+        Allows passing a path to a JSON file containing the serialized representation of a DatasetV1 instance.
         """
-        if isinstance(v, dict):
-            v = DatasetV1(**v)
-        elif isinstance(v, str):
+        if isinstance(v, str):
             v = DatasetV1.from_json(v)
         return v
 
