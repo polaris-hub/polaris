@@ -5,6 +5,8 @@ from typing_extensions import Self
 from loguru import logger
 from pydantic import (
     Field,
+    FieldSerializationInfo,
+    SerializerFunctionWrapHandler,
     computed_field,
     field_serializer,
     field_validator,
@@ -86,8 +88,8 @@ class CompetitionSpecification(DatasetV2):
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
-    metrics: Union[str, Metric, list[str | Metric]]
-    main_metric: str | Metric
+    metrics: set[Metric] = Field(min_length=1)
+    main_metric: Metric | str
     readme: str
     target_types: dict[str, TargetType] = Field(default_factory=dict, validate_default=True)
     start_time: datetime
@@ -96,27 +98,54 @@ class CompetitionSpecification(DatasetV2):
     n_test_datapoints: dict[str, int]
     n_classes: dict[str, int]
 
-    @field_validator("metrics")
-    def _validate_metrics(cls, v) -> list[Metric]:
+    @field_validator("metrics", mode="before")
+    @classmethod
+    def _validate_metrics(cls, v) -> set[Metric]:
         """
         Verifies all specified metrics are either a Metric object or a valid metric name.
+        Also verifies there are no duplicate metrics.
 
         If there are multiple test sets, it is assumed the same metrics are used across test sets.
         """
+        if isinstance(v, str):
+            v = {"label": v}
+        if isinstance(v, set):
+            v = list(v)
         if not isinstance(v, list):
             v = [v]
 
-        v = [m if isinstance(m, Metric) else Metric[m] for m in v]
+        def _convert(m: str | dict | Metric) -> Metric:
+            if isinstance(m, str):
+                return Metric(label=m)
+            if isinstance(m, dict):
+                return Metric(**m)
+            return m
 
-        return v
+        v = [_convert(m) for m in v]
 
-    @field_validator("main_metric")
-    def _validate_main_metric(cls, v) -> Metric:
-        """Converts the main metric to a Metric object if it is a string."""
-        # lu: v can be None.
-        if v and not isinstance(v, Metric):
-            v = Metric[v]
-        return v
+        unique_metrics = set(v)
+
+        if len(unique_metrics) != len(v):
+            raise InvalidCompetitionError("The competition specifies duplicate metrics.")
+
+        unique_names = {m.name for m in unique_metrics}
+        if len(unique_names) != len(unique_metrics):
+            raise InvalidCompetitionError(
+                "The metrics of a competition need to have unique names. Specify a custom name with Metric(custom_name=...)"
+            )
+
+        return unique_metrics
+
+    @model_validator(mode="after")
+    def _validate_main_metric_is_in_metrics(self) -> Self:
+        if isinstance(self.main_metric, str):
+            for m in self.metrics:
+                if m.name == self.main_metric:
+                    self.main_metric = m
+                    break
+        if self.main_metric not in self.metrics:
+            raise InvalidCompetitionError("The main metric should be one of the specified metrics")
+        return self
 
     @model_validator(mode="after")
     def _validate_split(self) -> Self:
@@ -174,12 +203,18 @@ class CompetitionSpecification(DatasetV2):
 
         return self
 
-    @field_serializer("metrics", "main_metric")
-    def _serialize_metrics(self, v) -> list[str] | str:
-        """Return the string identifier so we can serialize the object"""
-        if isinstance(v, Metric):
-            return v.name
-        return [m.name for m in v]
+    @field_serializer("metrics", mode="wrap")
+    @staticmethod
+    def _serialize_metrics(
+        value: set[Metric], handler: SerializerFunctionWrapHandler, info: FieldSerializationInfo
+    ) -> list[dict]:
+        """Convert the set to a list"""
+        return handler(list(value))
+
+    @field_serializer("main_metric")
+    def _serialize_main_metric(value: Metric) -> str:
+        """Convert the set to a list"""
+        return value.name
 
     @field_serializer("target_types")
     def _serialize_target_types(self, v) -> dict[str, str]:
