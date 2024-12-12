@@ -1,9 +1,7 @@
 from polaris.evaluate._metric import Metric, MetricInfo
-from polaris.evaluate._predictions import BenchmarkPredictions
+from polaris.evaluate._predictions import BenchmarkPredictions, CompetitionPredictions
 from polaris.evaluate._results import (
     BenchmarkResults,
-    CompetitionPredictions,
-    CompetitionResults,
     EvaluationResult,
     ResultsMetadata,
 )
@@ -15,7 +13,6 @@ __all__ = [
     "ResultsMetadata",
     "EvaluationResult",
     "BenchmarkResults",
-    "CompetitionResults",
     "evaluate_benchmark",
     "CompetitionPredictions",
     "BenchmarkPredictions",

@@ -1,7 +1,7 @@
 import json
 from hashlib import md5
 from itertools import chain
-from typing import Any, Callable, Optional, TypeAlias, Union
+from typing import Callable, Optional, TypeAlias, Union
 
 import fsspec
 import numpy as np
@@ -21,7 +21,7 @@ from sklearn.utils.multiclass import type_of_target
 from typing_extensions import Self
 
 from polaris._artifact import BaseArtifactModel
-from polaris.dataset import CompetitionDataset, DatasetV1, Subset
+from polaris.dataset import DatasetV1, Subset
 from polaris.evaluate import BenchmarkResults, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
@@ -101,7 +101,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
     # Public attributes
     # Data
-    dataset: Union[DatasetV1, CompetitionDataset, str, dict[str, Any]]
+    dataset: DatasetV1
     target_cols: ColumnsType
     input_cols: ColumnsType
     split: SplitType
@@ -112,14 +112,12 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     readme: str = ""
     target_types: dict[str, Union[TargetType, str, None]] = Field(default_factory=dict, validate_default=True)
 
-    @field_validator("dataset")
+    @field_validator("dataset", mode="before")
     def _validate_dataset(cls, v):
         """
-        Allows either passing a Dataset object or the kwargs to create one
+        Allows passing a path to a JSON file containing the serialized representation of a DatasetV1 instance.
         """
-        if isinstance(v, dict):
-            v = DatasetV1(**v)
-        elif isinstance(v, str):
+        if isinstance(v, str):
             v = DatasetV1.from_json(v)
         return v
 

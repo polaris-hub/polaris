@@ -10,6 +10,7 @@ from polaris.benchmark._definitions import (
 from polaris.dataset import DatasetV1, create_dataset_from_file
 from polaris.hub.client import PolarisHubClient
 from polaris.utils.types import ChecksumStrategy
+from polaris.utils.types import SlugCompatibleStringType
 
 
 def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr") -> DatasetV1:
@@ -94,3 +95,22 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
         benchmark.verify_checksum()
 
     return benchmark
+
+
+def load_competition(slug: SlugCompatibleStringType):
+    """
+    Loads a Polaris competition.
+
+    On Polaris, a competition represents a secure and fair benchmark. The target labels never exist
+    on the client and all results are evaluated through Polaris' servers.
+
+    Note: Dataset is automatically loaded
+        The dataset underlying the competition is automatically loaded when loading the competition.
+
+    """
+
+    # Load from the Hub
+    client = PolarisHubClient()
+    return client.get_competition(
+        *slug.split("/"),
+    )

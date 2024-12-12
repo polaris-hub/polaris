@@ -7,7 +7,6 @@ from pydantic import (
     ConfigDict,
     Field,
     PrivateAttr,
-    computed_field,
     field_serializer,
     field_validator,
     model_validator,
@@ -15,7 +14,6 @@ from pydantic import (
 from pydantic.alias_generators import to_camel
 
 from polaris._artifact import BaseArtifactModel
-from polaris.evaluate import BenchmarkPredictions
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import slugify
@@ -87,7 +85,7 @@ class EvaluationResult(ResultsMetadata):
 
     question: Categorizing methods
         An open question is how to best categorize a methodology (e.g. a model).
-        This is needed since we would like to be able to aggregate results across benchmarks/competitions too,
+        This is needed since we would like to be able to aggregate results across benchmarks too,
         to say something about which (type of) methods performs best _in general_.
 
     Attributes:
@@ -205,43 +203,3 @@ class BenchmarkResults(EvaluationResult):
 
         with PolarisHubClient(**kwargs) as client:
             return client.upload_results(self, access=access, owner=owner)
-
-
-class CompetitionResults(EvaluationResult):
-    """Class specific to results for competition benchmarks.
-
-    This object is returned by [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
-    In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
-    the results with the Polaris Hub.
-
-    Attributes:
-        competition_name: The name of the competition for which these results were generated.
-            Together with the competition owner, this uniquely identifies the competition on the Hub.
-        competition_owner: The owner of the competition for which these results were generated.
-            Together with the competition name, this uniquely identifies the competition on the Hub.
-    """
-
-    _artifact_type = "competitionResult"
-
-    competition_name: SlugCompatibleStringType = Field(..., frozen=True)
-    competition_owner: HubOwner | None = Field(None, frozen=True)
-
-    @computed_field
-    @property
-    def competition_artifact_id(self) -> str:
-        return f"{self.competition_owner}/{slugify(self.competition_name)}"
-
-
-class CompetitionPredictions(ResultsMetadata, BenchmarkPredictions):
-    """
-    Predictions for competition benchmarks.
-
-    This object is to be used as input to [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
-    It is used to ensure that the structure of the predictions are compatible with evaluation methods on the Polaris Hub.
-    In addition to the predictions, it contains additional meta-data to create a results object.
-
-    Attributes:
-        access: The access the returned results should have
-    """
-
-    access: AccessType = "private"
