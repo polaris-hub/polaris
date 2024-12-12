@@ -171,7 +171,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         unique_names = {m.name for m in unique_metrics}
         if len(unique_names) != len(unique_metrics):
             raise InvalidBenchmarkError(
-                "The benchmark has similarly named metrics. Specify a custom name with Metric(custom_name=...)"
+                "The metrics of a benchmark need to have unique names. Specify a custom name with Metric(custom_name=...)"
             )
 
         return unique_metrics
