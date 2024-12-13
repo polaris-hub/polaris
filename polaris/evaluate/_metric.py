@@ -285,7 +285,7 @@ class Metric(BaseModel):
 
     label: MetricLabel
     config: GroupedMetricConfig | None = None
-    custom_name: str | None = Field(None, exclude=True)
+    custom_name: str | None = Field(None, exclude=True, alias="name")
 
     # Frozen metadata
     fn: Callable = Field(frozen=True, exclude=True)
