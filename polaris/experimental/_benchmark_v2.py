@@ -10,7 +10,6 @@ from typing_extensions import Self
 
 from polaris.benchmark import BenchmarkSpecification
 from polaris.benchmark._base import ColumnName
-from polaris.benchmark._definitions import MultiTaskMixin, SingleTaskMixin
 from polaris.dataset import Subset
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.utils.errors import InvalidBenchmarkError
@@ -46,15 +45,32 @@ class IndexSet(BaseModel):
     @computed_field
     @cached_property
     def md5_checksum(self) -> str:
-        return md5(self.indices.serialize()).hexdigest()
+        return md5(self.serialize()).hexdigest()
 
     def intersect(self, other: "IndexSet") -> bool:
         return self.indices.intersect(other.indices)
+
+    def serialize(self) -> bytes:
+        return self.indices.serialize()
+
+    @staticmethod
+    def deserialize(index_set: bytes) -> "IndexSet":
+        return IndexSet(indices=BitMap.deserialize(index_set))
 
 
 class SplitV2(BaseModel):
     training: IndexSet
     test: IndexSet
+
+    @field_validator("training", "test", mode="before")
+    @classmethod
+    def _parse_index_sets(cls, v: bytes | IndexSet) -> bytes | IndexSet:
+        """
+        Accepted a binary serialized IndexSet
+        """
+        if isinstance(v, bytes):
+            return IndexSet.deserialize(v)
+        return v
 
     @field_validator("training")
     @classmethod
@@ -87,7 +103,6 @@ class SplitV2(BaseModel):
             raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
         return self
 
-    @computed_field
     @property
     def n_train_datapoints(self) -> int:
         """
@@ -95,7 +110,6 @@ class SplitV2(BaseModel):
         """
         return self.training.datapoints
 
-    @computed_field
     @property
     def n_test_sets(self) -> int:
         """
@@ -104,7 +118,6 @@ class SplitV2(BaseModel):
         # TODO: Until we support multi-test benchmarks
         return 1
 
-    @computed_field
     @property
     def n_test_datapoints(self) -> dict[str, int]:
         """
@@ -112,7 +125,6 @@ class SplitV2(BaseModel):
         """
         return {"test": self.test.datapoints}
 
-    @computed_field
     @property
     def max_index(self) -> int:
         return max(self.training.indices.max(), self.test.indices.max())
@@ -125,7 +137,7 @@ class SplitV2(BaseModel):
 class BenchmarkV2Specification(BenchmarkSpecification):
     _version: ClassVar[Literal[2]] = 2
 
-    dataset: DatasetV2
+    dataset: DatasetV2 = Field(exclude=True)
     split: SplitV2
     n_classes: dict[ColumnName, int]
 
@@ -233,15 +245,3 @@ class BenchmarkV2Specification(BenchmarkSpecification):
         )
         test = self._get_test_sets(hide_targets=True, featurization_fn=featurization_fn)
         return train, test
-
-
-class SingleTaskBenchmarkV2Specification(SingleTaskMixin, BenchmarkV2Specification):
-    """Single-task benchmark for version 2."""
-
-    pass
-
-
-class MultiTaskBenchmarkV2Specification(MultiTaskMixin, BenchmarkV2Specification):
-    """Multi-task benchmark for version 2."""
-
-    pass

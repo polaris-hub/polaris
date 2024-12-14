@@ -225,7 +225,7 @@ class GroupedMetricConfig(BaseModel):
 
         pred = prepare_predictions(y_pred, y_prob, info.y_type)
 
-        # NOTE (cwognum): We rely on pandas to due the grouping.
+        # NOTE (cwognum): We rely on pandas to do the grouping.
         # This does imply a memory bottleneck.
 
         df = y_true.extend_inputs(self.group_by).as_dataframe()

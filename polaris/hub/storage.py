@@ -3,7 +3,6 @@ from base64 import b64encode
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from hashlib import md5
-from io import BytesIO
 from itertools import islice
 from pathlib import PurePath
 from typing import Any, Callable, Generator, Literal, Mapping, Sequence, TypeAlias
@@ -534,7 +533,7 @@ class StorageSession(OAuth2Client):
         if path not in self.paths.files:
             raise NotImplementedError(f"{type(self.paths).__name__} only supports files {self.paths.files}.")
 
-        relative_path = self._relative_path(path)
+        relative_path = self._relative_path(getattr(self.paths, path))
 
         match relative_path.suffix:
             case ".parquet":
@@ -555,7 +554,7 @@ class StorageSession(OAuth2Client):
         )
         store[relative_path.name] = value
 
-    def get_file(self, path: str) -> BytesIO:
+    def get_file(self, path: str) -> bytes:
         """
         Get the value at the given path.
         """
@@ -564,7 +563,7 @@ class StorageSession(OAuth2Client):
                 f"{type(self.paths).__name__} only supports these files: {self.paths.files}."
             )
 
-        relative_path = self._relative_path(path)
+        relative_path = self._relative_path(getattr(self.paths, path))
 
         storage_data = self.token.extra_data
         store = S3Store(
@@ -574,7 +573,7 @@ class StorageSession(OAuth2Client):
             token=f"jwt/{self.token.access_token}",
             endpoint_url=storage_data.endpoint,
         )
-        return BytesIO(store[relative_path.name])
+        return store[relative_path.name]
 
     def store(self, path: str) -> S3Store:
         if path not in self.paths.stores:
@@ -582,7 +581,7 @@ class StorageSession(OAuth2Client):
                 f"{type(self.paths).__name__} only supports these stores: {self.paths.stores}."
             )
 
-        relative_path = self._relative_path(path)
+        relative_path = self._relative_path(getattr(self.paths, path))
 
         storage_data = self.token.extra_data
         return S3Store(

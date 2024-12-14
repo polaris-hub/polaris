@@ -24,11 +24,7 @@ from polaris.benchmark import (
 from polaris.competition import CompetitionSpecification
 from polaris.dataset import CompetitionDataset, Dataset, DatasetV1
 from polaris.evaluate import BenchmarkResults, CompetitionPredictions, CompetitionResults
-from polaris.experimental._benchmark_v2 import (
-    BenchmarkV2Specification,
-    MultiTaskBenchmarkV2Specification,
-    SingleTaskBenchmarkV2Specification,
-)
+from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
@@ -363,7 +359,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Load the dataset table and optional Zarr archive
         with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
-            table = pd.read_parquet(storage.get_file("root"))
+            table = pd.read_parquet(BytesIO(storage.get_file("root")))
             zarr_root_path = storage.paths.extension
 
             if zarr_root_path is not None:
@@ -395,7 +391,7 @@ class PolarisHubClient(OAuth2Client):
         response_data.pop("zarrRootPath", None)
 
         # Load the Zarr archive
-        with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
+        with StorageSession(self, "read", DatasetV2.urn_for(owner, name)) as storage:
             zarr_root_path = str(storage.paths.root)
 
         dataset = DatasetV2(zarr_root_path=zarr_root_path, **response_data)
@@ -473,7 +469,7 @@ class PolarisHubClient(OAuth2Client):
         #  Maybe through structural pattern matching, introduced in Py3.10, or Pydantic's discriminated unions?
         benchmark_cls = (
             SingleTaskBenchmarkSpecification
-            if len(response["targetCols"]) == 1
+            if len(response_data["targetCols"]) == 1
             else MultiTaskBenchmarkSpecification
         )
 
@@ -486,32 +482,17 @@ class PolarisHubClient(OAuth2Client):
 
         return benchmark
 
-    def _get_v2_benchmark(
-        self,
-        owner: str | HubOwner,
-        name: str
-    ) -> BenchmarkV2Specification:
+    def _get_v2_benchmark(self, owner: str | HubOwner, name: str) -> BenchmarkV2Specification:
         response = self._base_request_to_hub(url=f"/v2/benchmark/{owner}/{name}", method="GET")
         response_data = response.json()
 
-        # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
-        #  but we'd need to change the signature of get_dataset to use it
-        response_data["dataset"] = self.get_dataset(
-            response_data["dataset"]["owner"]["slug"],
-            response_data["dataset"]["name"]
-        )
+        response_data["dataset"] = self.get_dataset(*response_data["dataset"]["artifactId"].split("/"))
 
-        # TODO (cwognum): As we get more complicated benchmarks, how do we still find the right subclass?
-        #  Maybe through structural pattern matching, introduced in Py3.10, or Pydantic's discriminated unions?
-        benchmark_cls = (
-            SingleTaskBenchmarkV2Specification
-            if len(response_data["targetCols"]) == 1
-            else MultiTaskBenchmarkV2Specification
-        )
+        # Load the split index sets
+        with StorageSession(self, "read", BenchmarkV2Specification.urn_for(owner, name)) as storage:
+            split = {label: storage.get_file(label) for label in response_data.get("split", {}).keys()}
 
-        benchmark = benchmark_cls(**response_data)
-
-        return benchmark
+        return BenchmarkV2Specification(**response_data, split=split)
 
     def upload_results(
         self,
@@ -791,12 +772,11 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
         """
-        # (mercuryseries): check ArtifactSubtype here and call competition v2 endpoint if necessary
-        # to avoid having to check the type of the benchmark in the upload methods
-        if isinstance(benchmark, BenchmarkV1Specification):
-            self._upload_v1_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
-        elif isinstance(benchmark, BenchmarkV2Specification):
-            self._upload_v2_benchmark(benchmark, access, owner)
+        match benchmark:
+            case BenchmarkV1Specification():
+                self._upload_v1_benchmark(benchmark, ArtifactSubtype.STANDARD.value, access, owner)
+            case BenchmarkV2Specification():
+                self._upload_v2_benchmark(benchmark, access, owner)
 
     def _upload_v1_benchmark(
         self,
@@ -884,7 +864,7 @@ class PolarisHubClient(OAuth2Client):
                 # 2. Upload each index set bitmap
                 for label, index_set in benchmark.split:
                     logger.info(f"Copying index set {label} to the Hub.")
-                    storage.set_file(label, index_set)
+                    storage.set_file(label, index_set.serialize())
 
             benchmark_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
             progress_indicator.update_success_msg(

@@ -3,15 +3,13 @@ import json
 from hashlib import md5
 from itertools import chain
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Literal, Sequence, TypeAlias
+from typing import Any, Callable, ClassVar, Collection, Literal, Sequence, TypeAlias
 
 import fsspec
 import numpy as np
 from loguru import logger
 from pydantic import (
     Field,
-    FieldSerializationInfo,
-    SerializerFunctionWrapHandler,
     computed_field,
     field_serializer,
     field_validator,
@@ -100,7 +98,7 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
     _artifact_type = "benchmark"
 
     # Public attributes
-    dataset: BaseArtifactModel
+    dataset: BaseArtifactModel = Field(exclude=True)
     target_cols: set[ColumnName] = Field(min_length=1)
     input_cols: set[ColumnName] = Field(min_length=1)
     metrics: set[Metric] = Field(min_length=1)
@@ -111,7 +109,9 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
     @field_validator("target_cols", "input_cols", mode="before")
     @classmethod
     def _parse_cols(cls, v: str | Sequence[str], info: ValidationInfo) -> set[str]:
-        """Verifies all columns are present in the dataset."""
+        """
+        Normalize columns input values to a set.
+        """
         if isinstance(v, str):
             v = {v}
         else:
@@ -132,9 +132,9 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
             if val is not None
         }
 
-    @field_validator("metrics")
+    @field_validator("metrics", mode="before")
     @classmethod
-    def _validate_metrics(cls, v: str | Metric | list[str | Metric]) -> set[Metric]:
+    def _validate_metrics(cls, v: str | Metric | Collection[str | Metric]) -> set[Metric]:
         """
         Verifies all specified metrics are either a Metric object or a valid metric name.
         Also verifies there are no duplicate metrics.
@@ -143,9 +143,7 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
         """
         if isinstance(v, str):
             v = {"label": v}
-        if isinstance(v, set):
-            v = list(v)
-        if not isinstance(v, list):
+        if not isinstance(v, Collection):
             v = [v]
 
         def _convert(m: str | dict | Metric) -> Metric:
@@ -193,13 +191,13 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
 
         return self
 
-    @field_serializer("metrics", mode="wrap")
-    @staticmethod
-    def _serialize_metrics(
-        value: set[Metric], handler: SerializerFunctionWrapHandler, info: FieldSerializationInfo
-    ) -> list[dict]:
-        """Convert the set to a list"""
-        return handler(list(value))
+    @field_serializer("metrics")
+    def _serialize_metrics(self, value: set[Metric]) -> list[Metric]:
+        """
+        Convert the set to a list. Since metrics are models and will be converted to dict,
+        they will not be hashable members of a set.
+        """
+        return list(value)
 
     @model_validator(mode="after")
     def _validate_target_types(self) -> Self:
@@ -215,12 +213,16 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
 
     @field_serializer("main_metric")
     def _serialize_main_metric(value: Metric) -> str:
-        """Convert the set to a list"""
+        """
+        Convert the Metric to it's name
+        """
         return value.name
 
     @field_serializer("target_types")
     def _serialize_target_types(self, target_types):
-        """Convert from enum to string to make sure it's serializable"""
+        """
+        Convert from enum to string to make sure it's serializable
+        """
         return {k: v.value for k, v in target_types.items()}
 
     @field_serializer("target_cols", "input_cols")
@@ -341,10 +343,10 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
         """
 
         # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
-        y_true = self._get_test_set(hide_targets=False)
+        y_true = self._get_test_sets(hide_targets=False)
 
         scores = evaluate_benchmark(
-            target_cols=self.target_cols,
+            target_cols=list(self.target_cols),
             test_set_labels=self.test_set_labels,
             test_set_sizes=self.test_set_sizes,
             metrics=self.metrics,
@@ -404,16 +406,16 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
 
     def _repr_dict_(self) -> dict:
         """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump(exclude={"dataset"})
+        repr_dict = self.model_dump()
         repr_dict["dataset_name"] = self.dataset.name
         return repr_dict
 
     def _repr_html_(self):
         """For pretty printing in Jupyter."""
-        return dict2html(self.model_dump(exclude={"dataset"}))
+        return dict2html(self.model_dump())
 
     def __repr__(self):
-        return self.model_dump_json(exclude={"dataset"}, indent=2)
+        return self.model_dump_json(indent=2)
 
     def __str__(self):
         return self.__repr__()
@@ -422,7 +424,7 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
 class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
     _version: ClassVar[Literal[1]] = 1
 
-    dataset: DatasetV1
+    dataset: DatasetV1 = Field(exclude=True)
     split: SplitType
 
     @field_validator("dataset", mode="before")

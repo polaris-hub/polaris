@@ -144,14 +144,9 @@ def test_benchmark_from_json(test_single_task_benchmark, tmp_path):
 def test_benchmark_checksum(fixture, request):
     """Test whether the checksum captures our notion of equality."""
 
-<<<<<<< HEAD
-    obj = test_single_task_benchmark if is_single_task else test_multi_task_benchmark
-    cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
-    metrics_list = list(obj.metrics)
-=======
     benchmark = request.getfixturevalue(fixture)
     cls = type(benchmark)
->>>>>>> 2d4a9d0 (Further split V1 and V2 into two classes. Tighten model validation so everything stays coherent. Serialize the artifact version when dumping a model. Various fixes.)
+    metrics_list = list(benchmark.metrics)
 
     # Make sure the `md5sum` is part of the model dump even if not initiated yet.
     # This is important for uploads to the Hub.
@@ -164,23 +159,23 @@ def test_benchmark_checksum(fixture, request):
 
     # Without any changes, same hash
     kwargs = benchmark.model_dump()
-    assert cls(**kwargs).md5sum == original
+    assert cls(dataset=benchmark.dataset, **kwargs).md5sum == original
 
     # With a different ordering of the target columns
     kwargs["target_cols"] = kwargs["target_cols"][::-1]
-    assert cls(**kwargs).md5sum == original
+    assert cls(dataset=benchmark.dataset, **kwargs).md5sum == original
 
     # With a different ordering of the metrics
     kwargs["metrics"] = metrics_list[::-1]
-    assert cls(**kwargs).md5sum == original
+    assert cls(dataset=benchmark.dataset, **kwargs).md5sum == original
 
     # With a different ordering of the split
     kwargs["split"] = kwargs["split"][0][::-1], kwargs["split"][1]
-    assert cls(**kwargs).md5sum == original
+    assert cls(dataset=benchmark.dataset, **kwargs).md5sum == original
 
     # --- Test that the checksum is NOT the same ---
     def _check_for_failure(_kwargs):
-        assert cls(**_kwargs).md5sum != _kwargs["md5sum"]
+        assert cls(dataset=benchmark.dataset, **_kwargs).md5sum != _kwargs["md5sum"]
 
     # Split
     kwargs = benchmark.model_dump()
@@ -192,14 +187,9 @@ def test_benchmark_checksum(fixture, request):
     _check_for_failure(kwargs)
 
     # Metrics
-<<<<<<< HEAD
-    kwargs = obj.model_dump()
-    kwargs["metrics"] = metrics_list[1:] + ["accuracy"]
-    kwargs["main_metric"] = kwargs["metrics"][0]
-=======
     kwargs = benchmark.model_dump()
     kwargs["metrics"] = kwargs["metrics"][1:] + ["accuracy"]
->>>>>>> 2d4a9d0 (Further split V1 and V2 into two classes. Tighten model validation so everything stays coherent. Serialize the artifact version when dumping a model. Various fixes.)
+    kwargs["main_metric"] = kwargs["metrics"][0]
     _check_for_failure(kwargs)
 
     # Target columns
@@ -214,7 +204,7 @@ def test_benchmark_checksum(fixture, request):
 
     # --- Don't fail if not checksum is provided ---
     kwargs["md5sum"] = None
-    dataset = cls(**kwargs)
+    dataset = cls(dataset=benchmark.dataset, **kwargs)
     assert dataset.md5sum is not None
 
 
@@ -249,7 +239,7 @@ def test_benchmark_duplicate_metrics(test_single_task_benchmark):
         SingleTaskBenchmarkSpecification(**m)
 
     m["metrics"][0].custom_name = "custom_name"
-    SingleTaskBenchmarkSpecification(**m)
+    SingleTaskBenchmarkSpecification(dataset=test_single_task_benchmark.dataset, **m)
 
 
 def test_benchmark_metric_deserialization(test_single_task_benchmark):
@@ -259,11 +249,11 @@ def test_benchmark_metric_deserialization(test_single_task_benchmark):
     # Should work with strings
     m["metrics"] = ["mean_absolute_error", "accuracy"]
     m["main_metric"] = "accuracy"
-    SingleTaskBenchmarkSpecification(**m)
+    SingleTaskBenchmarkSpecification(dataset=test_single_task_benchmark.dataset, **m)
 
     # Should work with dictionaries
     m["metrics"] = [
         {"label": "mean_absolute_error", "config": {"group_by": "CLASS_expt"}},
         {"label": "accuracy"},
     ]
-    SingleTaskBenchmarkSpecification(**m)
+    SingleTaskBenchmarkSpecification(dataset=test_single_task_benchmark.dataset, **m)

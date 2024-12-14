@@ -8,10 +8,7 @@ from polaris.benchmark._definitions import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.dataset import DatasetV1, create_dataset_from_file
-from polaris.experimental._benchmark_v2 import (
-    MultiTaskBenchmarkV2Specification,
-    SingleTaskBenchmarkV2Specification,
-)
+from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.client import PolarisHubClient
 from polaris.utils.types import ChecksumStrategy
 
@@ -92,10 +89,8 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
             cls = SingleTaskBenchmarkSpecification
         case 1:
             cls = MultiTaskBenchmarkSpecification
-        case 2 if is_single_task:
-            cls = SingleTaskBenchmarkV2Specification
         case 2:
-            cls = MultiTaskBenchmarkV2Specification
+            cls = BenchmarkV2Specification
         case _:
             raise ValueError(f"Unsupported benchmark version: {data['version']}")
 

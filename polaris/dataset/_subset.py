@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Callable, Collection, List, Literal, Sequence
+from typing import Callable, Iterable, List, Literal, Sequence
 
 import numpy as np
 import pandas as pd
@@ -66,16 +66,16 @@ class Subset:
         self,
         dataset: DatasetV1,
         indices: list[int | Sequence[int]],
-        input_cols: Collection[str] | str,
-        target_cols: Collection[str] | str,
+        input_cols: Iterable[str] | str,
+        target_cols: Iterable[str] | str,
         adapters: dict[str, Adapter] | None = None,
         featurization_fn: Callable | None = None,
         hide_targets: bool = False,
     ):
         self.dataset = dataset
         self.indices = indices
-        self.target_cols = [target_cols] if isinstance(target_cols, str) else target_cols
-        self.input_cols = [input_cols] if isinstance(input_cols, str) else input_cols
+        self.target_cols = [target_cols] if isinstance(target_cols, str) else list(target_cols)
+        self.input_cols = [input_cols] if isinstance(input_cols, str) else list(input_cols)
 
         self._adapters = adapters
         self._featurization_fn = featurization_fn
@@ -125,7 +125,7 @@ class Subset:
     def _get_single(
         self,
         row: str | int,
-        cols: Collection[str],
+        cols: list[str],
         featurization_fn: Callable | None,
     ):
         """
@@ -142,8 +142,7 @@ class Subset:
         if len(cols) > 1:
             ret = {col: self.dataset.get_data(row, col, adapters=self._adapters) for col in cols}
         else:
-            col, *_ = cols
-            ret = self.dataset.get_data(row, col, adapters=self._adapters)
+            ret = self.dataset.get_data(row, cols[0], adapters=self._adapters)
 
         # Featurize
         if featurization_fn is not None:
@@ -225,14 +224,14 @@ class Subset:
         """Returns a copy of the subset."""
         return deepcopy(self)
 
-    def extend_inputs(self, input_cols: List[str] | str) -> Self:
+    def extend_inputs(self, input_cols: Iterable[str] | str) -> Self:
         """
         Extend the subset to include additional input columns.
 
         Args:
             input_cols: The input columns to add.
         """
-        input_cols = input_cols if isinstance(input_cols, list) else [input_cols]
+        input_cols = [input_cols] if isinstance(input_cols, str) else list(input_cols)
         copy = self.copy()
         copy.input_cols = list(set(self.input_cols + input_cols))
         return copy
