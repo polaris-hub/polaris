@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.48">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
     
     
       
@@ -1208,6 +1208,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#polaris.utils.types.Md5StringType" class="md-nav__link">
+    <span class="md-ellipsis">
+      Md5StringType
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#polaris.utils.types.HubUser" class="md-nav__link">
     <span class="md-ellipsis">
       HubUser
@@ -1530,6 +1539,15 @@
   <a href="#polaris.utils.types.SlugCompatibleStringType" class="md-nav__link">
     <span class="md-ellipsis">
       SlugCompatibleStringType
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#polaris.utils.types.Md5StringType" class="md-nav__link">
+    <span class="md-ellipsis">
+      Md5StringType
     </span>
   </a>
   
@@ -1940,6 +1958,29 @@ that looks like {"test_set_name": {"target_name": np.ndarray}}.</p>
         <p>A URL-compatible string that can be turned into a slug by the hub.</p>
 <p>Can only use alpha-numeric characters, underscores and dashes.
 The string must be at least 4 and at most 64 characters long.</p>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="polaris.utils.types.Md5StringType" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">Md5StringType</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">Md5StringType</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">StringConstraints</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;^[a-f0-9]</span><span class="si">{32}</span><span class="s1">$&#39;</span><span class="p">)]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>A string that represents an MD5 hash.</p>
     </div>
 
 </div>
@@ -2662,7 +2703,7 @@ The externalId and type are added to be consistent with the model returned by th
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
+      <script src="../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
