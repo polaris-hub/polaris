@@ -844,7 +844,7 @@ class PolarisHubClient(OAuth2Client):
             # Get the serialized data-model
             # We exclude the dataset as we expect it to exist on the hub already.
             benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
-            benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
+            benchmark_json = benchmark.model_dump(exclude_none=True, by_alias=True)
 
             # Uploading a V2 benchmark is a multistep process.
             # 1. Upload the benchmark meta-data to the hub and prepare the hub to receive the data

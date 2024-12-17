@@ -127,7 +127,7 @@ def test_benchmark_v2_invalid_indices(valid_split, test_dataset_v2):
         "input_cols": ["A"],
         "metrics": ["accuracy", "r2"],
         "main_metric": "accuracy",
-        "n_classes": {"target1": 2},
+        "n_classes": {"B": 2},
         "name": "test_benchmark",
     }
 

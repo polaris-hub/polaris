@@ -21,6 +21,7 @@ from typing_extensions import Self
 
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset import DatasetV1, Subset
+from polaris.dataset._base import BaseDataset
 from polaris.evaluate import BenchmarkResults, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
@@ -98,7 +99,7 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
     _artifact_type = "benchmark"
 
     # Public attributes
-    dataset: BaseArtifactModel = Field(exclude=True)
+    dataset: BaseDataset = Field(exclude=True)
     target_cols: set[ColumnName] = Field(min_length=1)
     input_cols: set[ColumnName] = Field(min_length=1)
     metrics: set[Metric] = Field(min_length=1)

@@ -47,7 +47,7 @@ class IndexSet(BaseModel):
     def md5_checksum(self) -> str:
         return md5(self.serialize()).hexdigest()
 
-    def intersect(self, other: "IndexSet") -> bool:
+    def intersect(self, other: Self) -> bool:
         return self.indices.intersect(other.indices)
 
     def serialize(self) -> bytes:

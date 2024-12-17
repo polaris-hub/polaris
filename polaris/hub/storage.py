@@ -554,7 +554,7 @@ class StorageSession(OAuth2Client):
         )
         store[relative_path.name] = value
 
-    def get_file(self, path: str) -> bytes:
+    def get_file(self, path: str) -> bytes | bytearray:
         """
         Get the value at the given path.
         """
