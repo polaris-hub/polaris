@@ -43,7 +43,7 @@ class DatasetV2(BaseDataset):
 
     _artifact_type = "dataset"
 
-    version: ClassVar[Literal[2]] = 2
+    _version: ClassVar[Literal[2]] = 2
     _zarr_manifest_path: str | None = PrivateAttr(None)
     _zarr_manifest_md5sum: str | None = PrivateAttr(None)
 
@@ -123,7 +123,7 @@ class DatasetV2(BaseDataset):
 
         with PolarisHubClient() as client:
             with StorageSession(client, "read", self.urn) as storage:
-                return zarr.open_consolidated(store=storage.root_store)
+                return zarr.open_consolidated(store=storage.store("root"))
 
     @property
     def zarr_manifest_path(self) -> str:

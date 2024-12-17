@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from polaris.benchmark import BenchmarkSpecification
+from polaris.benchmark import BenchmarkV1Specification
 from polaris.dataset import Dataset
 from polaris.evaluate._metric import Metric
 
@@ -41,7 +41,7 @@ def test_grouped_metric():
 
     table = pd.DataFrame({"group": ["a", "b", "b"], "y_true": [1, 1, 1]})
     dataset = Dataset(table=table)
-    benchmark = BenchmarkSpecification(
+    benchmark = BenchmarkV1Specification(
         dataset=dataset,
         metrics=[metric],
         main_metric=metric,
@@ -53,7 +53,7 @@ def test_grouped_metric():
     result = benchmark.evaluate([1, 0, 0])
 
     # The global accuracy is only 33%, but because we compute it per group and then average, it's 50%.
-    result.results.Score.values[0] == 0.5
+    assert result.results.Score.values[0] == 0.5
 
 
 def test_metric_hash():

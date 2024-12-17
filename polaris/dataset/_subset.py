@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Callable, List, Literal, Optional, Sequence, Union
+from typing import Callable, Iterable, List, Literal, Sequence
 
 import numpy as np
 import pandas as pd
@@ -65,17 +65,17 @@ class Subset:
     def __init__(
         self,
         dataset: DatasetV1,
-        indices: List[int | Sequence[int]],
-        input_cols: List[str] | str,
-        target_cols: List[str] | str,
+        indices: list[int | Sequence[int]],
+        input_cols: Iterable[str] | str,
+        target_cols: Iterable[str] | str,
         adapters: dict[str, Adapter] | None = None,
         featurization_fn: Callable | None = None,
         hide_targets: bool = False,
     ):
         self.dataset = dataset
         self.indices = indices
-        self.target_cols = target_cols if isinstance(target_cols, list) else [target_cols]
-        self.input_cols = input_cols if isinstance(input_cols, list) else [input_cols]
+        self.target_cols = [target_cols] if isinstance(target_cols, str) else list(target_cols)
+        self.input_cols = [input_cols] if isinstance(input_cols, str) else list(input_cols)
 
         self._adapters = adapters
         self._featurization_fn = featurization_fn
@@ -125,8 +125,8 @@ class Subset:
     def _get_single(
         self,
         row: str | int,
-        cols: List[str],
-        featurization_fn: Optional[Callable],
+        cols: list[str],
+        featurization_fn: Callable | None,
     ):
         """
         Loads a subset of the variables for a single data-point from the datasets.
@@ -158,7 +158,7 @@ class Subset:
         """Get a single output for a specific data-point and given the benchmark specification."""
         return self._get_single(row, self.target_cols, None)
 
-    def as_array(self, data_type: Union[Literal["x"], Literal["y"], Literal["xy"]]):
+    def as_array(self, data_type: Literal["x", "y", "xy"]):
         """
         Scikit-learn style access to the targets and inputs.
         If the dataset is multi-target, this will return a dict of arrays.
@@ -224,14 +224,14 @@ class Subset:
         """Returns a copy of the subset."""
         return deepcopy(self)
 
-    def extend_inputs(self, input_cols: List[str] | str) -> Self:
+    def extend_inputs(self, input_cols: Iterable[str] | str) -> Self:
         """
         Extend the subset to include additional input columns.
 
         Args:
             input_cols: The input columns to add.
         """
-        input_cols = input_cols if isinstance(input_cols, list) else [input_cols]
+        input_cols = [input_cols] if isinstance(input_cols, str) else list(input_cols)
         copy = self.copy()
         copy.input_cols = list(set(self.input_cols + input_cols))
         return copy

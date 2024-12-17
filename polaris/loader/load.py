@@ -8,6 +8,7 @@ from polaris.benchmark._definitions import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.dataset import DatasetV1, create_dataset_from_file
+from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.client import PolarisHubClient
 from polaris.utils.types import ChecksumStrategy
 
@@ -70,7 +71,6 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
         as returned by [`BenchmarkSpecification.to_json`][polaris.benchmark._base.BenchmarkSpecification.to_json].
         The path can be local or remote.
     """
-
     is_file = fs.is_file(path) or fs.get_extension(path) == "zarr"
 
     if not is_file:
@@ -82,10 +82,17 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
     with fsspec.open(path, "r") as fd:
         data = json.load(fd)
 
-    # TODO (cwognum): As this gets more complex, how do we effectivly choose which class we should use?
-    #  e.g. we might end up with a single class per benchmark.
     is_single_task = isinstance(data["target_cols"], str) or len(data["target_cols"]) == 1
-    cls = SingleTaskBenchmarkSpecification if is_single_task else MultiTaskBenchmarkSpecification
+
+    match data["version"]:
+        case 1 if is_single_task:
+            cls = SingleTaskBenchmarkSpecification
+        case 1:
+            cls = MultiTaskBenchmarkSpecification
+        case 2:
+            cls = BenchmarkV2Specification
+        case _:
+            raise ValueError(f"Unsupported benchmark version: {data['version']}")
 
     benchmark = cls.from_json(path)
 
