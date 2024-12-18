@@ -295,36 +295,33 @@ class PolarisHubClient(OAuth2Client):
         ):
             # Step 1: Fetch enough v2 datasets to cover the offset and limit
             v2_response = self._base_request_to_hub(
-                url="/v2/dataset", method="GET", params={"limit": limit + offset, "offset": 0}
+                url="/v2/dataset", method="GET", params={"limit": limit, "offset": 0}
             )
             v2_data = v2_response.json().get("data", [])
             v2_datasets = [dataset["artifactId"] for dataset in v2_data]
 
-            # Apply offset and limit to v2 datasets
-            v2_datasets_offset = v2_datasets[offset : offset + limit]
-
             # If v2 datasets satisfy the limit, return them
-            if len(v2_datasets_offset) >= limit:
-                return v2_datasets_offset
+            if len(v2_datasets) == limit:
+                return v2_datasets
 
             # Step 2: Calculate the remaining limit and fetch v1 datasets
-            remaining_limit = max(0, limit - len(v2_datasets_offset))
+            remaining_limit = max(0, limit - len(v2_datasets))
 
             v1_datasets = []
             if remaining_limit > 0:
                 v1_response = self._base_request_to_hub(
                     url="/v1/dataset",
                     method="GET",
-                    params={"limit": remaining_limit, "offset": max(0, offset - len(v2_datasets))},
+                    params={"limit": limit, "offset": 0},
                 )
                 v1_data = v1_response.json().get("data", [])
                 v1_datasets = [dataset["artifactId"] for dataset in v1_data]
 
             # Combine the v2 and v1 datasets
-            combined_datasets = v2_datasets_offset + v1_datasets
+            combined_datasets = v2_datasets + v1_datasets
 
             # Ensure the final combined list respects the limit
-            return combined_datasets[:limit]
+            return combined_datasets[offset : offset + limit]
 
     def get_dataset(
         self,
@@ -440,27 +437,24 @@ class PolarisHubClient(OAuth2Client):
         ):
             # Step 1: Fetch enough v2 benchmarks to cover the offset and limit
             v2_response = self._base_request_to_hub(
-                url="/v2/benchmark", method="GET", params={"limit": limit + offset, "offset": 0}
+                url="/v2/benchmark", method="GET", params={"limit": limit, "offset": 0}
             )
             v2_data = v2_response.json().get("data", [])
             v2_benchmarks = [f"{HubOwner(**benchmark['owner'])}/{benchmark['name']}" for benchmark in v2_data]
 
-            # Apply offset and limit to v2 benchmarks
-            v2_benchmarks_offset = v2_benchmarks[offset : offset + limit]
-
             # If v2 benchmarks satisfy the limit, return them
-            if len(v2_benchmarks_offset) >= limit:
-                return v2_benchmarks_offset
+            if len(v2_benchmarks) == limit:
+                return v2_benchmarks
 
             # Step 2: Calculate the remaining limit and fetch v1 benchmarks
-            remaining_limit = max(0, limit - len(v2_benchmarks_offset))
+            remaining_limit = max(0, limit - len(v2_benchmarks))
 
             v1_benchmarks = []
             if remaining_limit > 0:
                 v1_response = self._base_request_to_hub(
                     url="/v1/benchmark",
                     method="GET",
-                    params={"limit": remaining_limit, "offset": max(0, offset - len(v2_benchmarks))},
+                    params={"limit": limit, "offset": 0},
                 )
                 v1_data = v1_response.json().get("data", [])
                 v1_benchmarks = [
@@ -468,10 +462,10 @@ class PolarisHubClient(OAuth2Client):
                 ]
 
             # Combine the v2 and v1 benchmarks
-            combined_benchmarks = v2_benchmarks_offset + v1_benchmarks
+            combined_benchmarks = v2_benchmarks + v1_benchmarks
 
             # Ensure the final combined list respects the limit
-            return combined_benchmarks[:limit]
+            return combined_benchmarks[offset : offset + limit]
 
     def get_benchmark(
         self,
