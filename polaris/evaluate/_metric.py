@@ -287,6 +287,8 @@ class Metric(BaseModel):
     config: GroupedMetricConfig | None = None
     custom_name: str | None = Field(None, exclude=True, alias="name")
 
+    model_config = ConfigDict(populate_by_name=True)
+
     # Frozen metadata
     fn: Callable = Field(frozen=True, exclude=True)
     is_multitask: bool = Field(False, frozen=True, exclude=True)

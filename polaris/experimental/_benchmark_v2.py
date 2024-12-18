@@ -139,7 +139,7 @@ class BenchmarkV2Specification(BenchmarkSpecification):
 
     dataset: DatasetV2 = Field(exclude=True)
     split: SplitV2
-    n_classes: dict[ColumnName, int]
+    n_classes: dict[ColumnName, int] = Field(default_factory=dict)
 
     @field_validator("dataset", mode="before")
     @classmethod
@@ -244,4 +244,9 @@ class BenchmarkV2Specification(BenchmarkSpecification):
             self.split.training.indices, hide_targets=False, featurization_fn=featurization_fn
         )
         test = self._get_test_sets(hide_targets=True, featurization_fn=featurization_fn)
+
+        # For improved UX, we return the object instead of the dictionary if there is only one test set.
+        # Internally, however, assume that the test set is always a dictionary simplifies the code.
+        if len(test) == 1:
+            test = test["test"]
         return train, test
