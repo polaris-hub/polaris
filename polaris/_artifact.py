@@ -1,5 +1,5 @@
 import json
-from typing import ClassVar
+from typing import ClassVar, Literal
 
 import fsspec
 from loguru import logger
@@ -41,6 +41,7 @@ class BaseArtifactModel(BaseModel):
         polaris_version: The version of the Polaris library that was used to create the artifact.
     """
 
+    _version: ClassVar[Literal[1]] = 1
     _artifact_type: ClassVar[str]
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, arbitrary_types_allowed=True)
@@ -71,6 +72,11 @@ class BaseArtifactModel(BaseModel):
         if self.owner and self.slug:
             return self.urn_for(self.owner, self.slug)
         return None
+
+    @computed_field
+    @property
+    def version(self) -> int:
+        return self._version
 
     @field_validator("polaris_version")
     @classmethod

@@ -1,27 +1,27 @@
+import abc
 import json
 from hashlib import md5
 from itertools import chain
-from typing import Any, Callable, Optional, TypeAlias, Union
+from pathlib import Path
+from typing import Any, Callable, ClassVar, Collection, Literal, Sequence, TypeAlias
 
 import fsspec
 import numpy as np
-from datamol.utils import fs
 from loguru import logger
 from pydantic import (
     Field,
-    FieldSerializationInfo,
-    SerializerFunctionWrapHandler,
-    ValidationInfo,
     computed_field,
     field_serializer,
     field_validator,
     model_validator,
 )
+from pydantic_core.core_schema import ValidationInfo
 from sklearn.utils.multiclass import type_of_target
 from typing_extensions import Self
 
 from polaris._artifact import BaseArtifactModel
-from polaris.dataset import CompetitionDataset, DatasetV1, Subset
+from polaris.dataset import DatasetV1, Subset
+from polaris.dataset._base import BaseDataset
 from polaris.evaluate import BenchmarkResults, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
@@ -38,10 +38,10 @@ from polaris.utils.types import (
     TaskType,
 )
 
-ColumnsType: TypeAlias = str | list[str]
+ColumnName: TypeAlias = str
 
 
-class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
+class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
     """This class wraps a [`Dataset`][polaris.dataset.Dataset] with additional data
      to specify the evaluation logic.
 
@@ -87,7 +87,6 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         dataset: The dataset the benchmark specification is based on.
         target_cols: The column(s) of the original dataset that should be used as target.
         input_cols: The column(s) of the original dataset that should be used as input.
-        split: The predefined train-test split to use for evaluation.
         metrics: The metrics to use for evaluating performance
         main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
@@ -100,47 +99,43 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
     _artifact_type = "benchmark"
 
     # Public attributes
-    # Data
-    dataset: Union[DatasetV1, CompetitionDataset, str, dict[str, Any]]
-    target_cols: ColumnsType
-    input_cols: ColumnsType
-    split: SplitType
+    dataset: BaseDataset = Field(exclude=True)
+    target_cols: set[ColumnName] = Field(min_length=1)
+    input_cols: set[ColumnName] = Field(min_length=1)
     metrics: set[Metric] = Field(min_length=1)
     main_metric: Metric | str
-
-    # Additional meta-data
     readme: str = ""
-    target_types: dict[str, Union[TargetType, str, None]] = Field(default_factory=dict, validate_default=True)
+    target_types: dict[ColumnName, TargetType] = Field(default_factory=dict, validate_default=True)
 
-    @field_validator("dataset")
-    def _validate_dataset(cls, v):
+    @field_validator("target_cols", "input_cols", mode="before")
+    @classmethod
+    def _parse_cols(cls, v: str | Sequence[str], info: ValidationInfo) -> set[str]:
         """
-        Allows either passing a Dataset object or the kwargs to create one
+        Normalize columns input values to a set.
         """
-        if isinstance(v, dict):
-            v = DatasetV1(**v)
-        elif isinstance(v, str):
-            v = DatasetV1.from_json(v)
+        if isinstance(v, str):
+            v = {v}
+        else:
+            v = set(v)
         return v
 
-    @field_validator("target_cols", "input_cols")
-    def _validate_cols(cls, v, info: ValidationInfo):
-        """Verifies all columns are present in the dataset."""
-        if not isinstance(v, list):
-            v = [v]
-        if len(v) == 0:
-            raise InvalidBenchmarkError("Specify at least a single column")
-        if info.data.get("dataset") is not None and not all(
-            c in info.data["dataset"].table.columns for c in v
-        ):
-            raise InvalidBenchmarkError("Not all specified columns were found in the dataset.")
-        if len(set(v)) != len(v):
-            raise InvalidBenchmarkError("The task specifies duplicate columns")
-        return v
+    @field_validator("target_types", mode="before")
+    @classmethod
+    def _parse_target_types(
+        cls, v: dict[ColumnName, TargetType | str | None]
+    ) -> dict[ColumnName, TargetType]:
+        """
+        Converts the target types to TargetType enums if they are strings.
+        """
+        return {
+            target: TargetType(val) if isinstance(val, str) else val
+            for target, val in v.items()
+            if val is not None
+        }
 
     @field_validator("metrics", mode="before")
     @classmethod
-    def _validate_metrics(cls, v) -> set[Metric]:
+    def _validate_metrics(cls, v: str | Metric | Collection[str | Metric]) -> set[Metric]:
         """
         Verifies all specified metrics are either a Metric object or a valid metric name.
         Also verifies there are no duplicate metrics.
@@ -149,9 +144,7 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         """
         if isinstance(v, str):
             v = {"label": v}
-        if isinstance(v, set):
-            v = list(v)
-        if not isinstance(v, list):
+        if not isinstance(v, Collection):
             v = [v]
 
         def _convert(m: str | dict | Metric) -> Metric:
@@ -185,6 +178,297 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                     break
         if self.main_metric not in self.metrics:
             raise InvalidBenchmarkError("The main metric should be one of the specified metrics")
+        return self
+
+    @model_validator(mode="after")
+    def _validate_cols(self) -> Self:
+        """
+        Verifies that all specified columns are present in the dataset.
+        """
+        columns = self.target_cols | self.input_cols
+        dataset_columns = set(self.dataset.columns)
+        if not columns.issubset(dataset_columns):
+            raise InvalidBenchmarkError("Not all specified columns were found in the dataset.")
+
+        return self
+
+    @field_serializer("metrics")
+    def _serialize_metrics(self, value: set[Metric]) -> list[Metric]:
+        """
+        Convert the set to a list. Since metrics are models and will be converted to dict,
+        they will not be hashable members of a set.
+        """
+        return list(value)
+
+    @model_validator(mode="after")
+    def _validate_target_types(self) -> Self:
+        """
+        Verifies that all target types are for benchmark targets.
+        """
+        columns = set(self.target_types.keys())
+        if not columns.issubset(self.target_cols):
+            raise InvalidBenchmarkError(
+                f"Not all specified target types were found in the target columns. {columns} - {self.target_cols}"
+            )
+        return self
+
+    @field_serializer("main_metric")
+    def _serialize_main_metric(value: Metric) -> str:
+        """
+        Convert the Metric to it's name
+        """
+        return value.name
+
+    @field_serializer("target_types")
+    def _serialize_target_types(self, target_types):
+        """
+        Convert from enum to string to make sure it's serializable
+        """
+        return {k: v.value for k, v in target_types.items()}
+
+    @field_serializer("target_cols", "input_cols")
+    def _serialize_columns(self, v: set[str]) -> list[str]:
+        return list(v)
+
+    @computed_field
+    @property
+    def dataset_artifact_id(self) -> str:
+        return self.dataset.artifact_id
+
+    @computed_field
+    @property
+    def task_type(self) -> str:
+        """The high-level task type of the benchmark."""
+        v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
+        return v.value
+
+    @abc.abstractmethod
+    def _get_test_sets(
+        self, hide_targets=True, featurization_fn: Callable | None = None
+    ) -> dict[str, Subset]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def n_test_datapoints(self) -> dict[str, int]:
+        """
+        The size of (each of) the test set(s).
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def test_set_labels(self) -> list[str]:
+        """
+        The labels of the test sets.
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def n_train_datapoints(self) -> int:
+        """
+        The size of the train set.
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def n_test_sets(self) -> int:
+        """
+        The number of test sets
+        """
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def test_set_sizes(self) -> dict[str, int]:
+        """
+        The sizes of the test sets.
+        """
+        raise NotImplementedError
+
+    def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
+        """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
+        internally to construct the train and test sets."""
+        return Subset(
+            dataset=self.dataset,
+            indices=indices,
+            input_cols=self.input_cols,
+            target_cols=self.target_cols,
+            hide_targets=hide_targets,
+            featurization_fn=featurization_fn,
+        )
+
+    def evaluate(
+        self,
+        y_pred: IncomingPredictionsType | None = None,
+        y_prob: IncomingPredictionsType | None = None,
+    ) -> BenchmarkResults:
+        """Execute the evaluation protocol for the benchmark, given a set of predictions.
+
+        info: What about `y_true`?
+            Contrary to other frameworks that you might be familiar with, we opted for a signature that includes just
+            the predictions. This reduces the chance of accidentally using the test targets during training.
+
+        For this method, we make the following assumptions:
+
+        1. There can be one or multiple test set(s);
+        2. There can be one or multiple target(s);
+        3. The metrics are _constant_ across test sets;
+        4. The metrics are _constant_ across targets;
+        5. There can be metrics which measure across tasks.
+
+        Args:
+            y_pred: The predictions for the test set, as NumPy arrays.
+                If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
+                If there are multiple test sets, the predictions should be further wrapped in a dictionary
+                    with the test subset labels as keys.
+            y_prob: The predicted probabilities for the test set, formatted similarly to predictions, based on the
+                number of tasks and test sets.
+
+        Returns:
+            A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
+
+        Examples:
+            1. For regression benchmarks:
+                pred_scores = your_model.predict_score(molecules) # predict continuous score values
+                benchmark.evaluate(y_pred=pred_scores)
+            2. For classification benchmarks:
+                - If `roc_auc` and `pr_auc` are in the metric list, both class probabilities and label predictions are required:
+                    pred_probs = your_model.predict_proba(molecules) # predict probablities
+                    pred_labels = your_model.predict_labels(molecules) # predict class labels
+                    benchmark.evaluate(y_pred=pred_labels, y_prob=pred_probs)
+                - Otherwise:
+                    benchmark.evaluate(y_pred=pred_labels)
+        """
+
+        # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
+        y_true = self._get_test_sets(hide_targets=False)
+
+        scores = evaluate_benchmark(
+            target_cols=list(self.target_cols),
+            test_set_labels=self.test_set_labels,
+            test_set_sizes=self.test_set_sizes,
+            metrics=self.metrics,
+            y_true=y_true,
+            y_pred=y_pred,
+            y_prob=y_prob,
+        )
+
+        return BenchmarkResults(results=scores, benchmark_artifact_id=self.artifact_id)
+
+    def upload_to_hub(
+        self,
+        settings: PolarisHubSettings | None = None,
+        cache_auth_token: bool = True,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
+        **kwargs: dict,
+    ):
+        """
+        Very light, convenient wrapper around the
+        [`PolarisHubClient.upload_benchmark`][polaris.hub.client.PolarisHubClient.upload_benchmark] method.
+        """
+        from polaris.hub.client import PolarisHubClient
+
+        with PolarisHubClient(
+            settings=settings,
+            cache_auth_token=cache_auth_token,
+            **kwargs,
+        ) as client:
+            return client.upload_benchmark(self, access=access, owner=owner)
+
+    def to_json(self, destination: str) -> str:
+        """Save the benchmark to a destination directory as a JSON file.
+
+        Warning: Multiple files
+            Perhaps unintuitive, this method creates multiple files in the destination directory as it also saves
+            the dataset it is based on to the specified destination.
+            See the docstring of [`Dataset.to_json`][polaris.dataset.Dataset.to_json] for more information.
+
+        Args:
+            destination: The _directory_ to save the associated data to.
+
+        Returns:
+            The path to the JSON file.
+        """
+        dest = Path(destination)
+        dest.mkdir(parents=True, exist_ok=True)
+
+        data = self.model_dump()
+        data["dataset"] = self.dataset.to_json(destination)
+
+        path = dest / "benchmark.json"
+        with fsspec.open(str(path), "w") as f:
+            json.dump(data, f)
+
+        return str(path)
+
+    def _repr_dict_(self) -> dict:
+        """Utility function for pretty-printing to the command line and jupyter notebooks"""
+        repr_dict = self.model_dump()
+        repr_dict["dataset_name"] = self.dataset.name
+        return repr_dict
+
+    def _repr_html_(self):
+        """For pretty printing in Jupyter."""
+        return dict2html(self.model_dump())
+
+    def __repr__(self):
+        return self.model_dump_json(indent=2)
+
+    def __str__(self):
+        return self.__repr__()
+
+
+class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
+    _version: ClassVar[Literal[1]] = 1
+
+    dataset: DatasetV1 = Field(exclude=True)
+    split: SplitType
+
+    @field_validator("dataset", mode="before")
+    @classmethod
+    def _parse_dataset(cls, v: DatasetV1 | str | dict[str, Any]) -> DatasetV1:
+        """
+        Allows either passing a Dataset object or the kwargs to create one
+        """
+        match v:
+            case dict():
+                return DatasetV1(**v)
+            case str():
+                return DatasetV1.from_json(v)
+            case DatasetV1():
+                return v
+
+    @model_validator(mode="after")
+    def _infer_target_types(self) -> Self:
+        """Try to automatically infer the target types if not already set"""
+
+        for target in filter(lambda target: target not in self.target_types, self.target_cols):
+            # Skip inferring the target type for pointer columns.
+            # This would be complex to implement properly.
+            # For these columns, dataset creators can still manually specify the target type.
+            column_annotation = self.dataset.annotations.get(target)
+            if column_annotation is not None and column_annotation.is_pointer:
+                continue
+
+            val = self.dataset.table.loc[:, target]
+
+            # Non-numeric columns can be targets (e.g. prediction molecular reactions),
+            # but in that case we currently don't infer the target type.
+            if not np.issubdtype(val.dtype, np.number):
+                continue
+
+            # Remove the nans for multiple task dataset when the table is sparse
+            target_type = type_of_target(val[~np.isnan(val)])
+            match target_type:
+                case "continuous":
+                    self.target_types[target] = TargetType.REGRESSION
+                case "binary" | "multiclass":
+                    self.target_types[target] = TargetType.CLASSIFICATION
+
         return self
 
     @model_validator(mode="after")
@@ -244,70 +528,12 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
 
         return self
 
-    @field_validator("target_types")
-    def _validate_target_types(cls, v, info: ValidationInfo):
-        """Try to automatically infer the target types if not already set"""
-
-        dataset = info.data.get("dataset")
-        target_cols = info.data.get("target_cols")
-
-        if dataset is None or target_cols is None:
-            return v
-
-        for target in target_cols:
-            if target not in v:
-                # Skip inferring the target type for pointer columns.
-                # This would be complex to implement properly.
-                # For these columns, dataset creators can still manually specify the target type.
-                anno = dataset.annotations.get(target)
-                if anno is not None and anno.is_pointer:
-                    v[target] = None
-                    continue
-
-                val = dataset.table.loc[:, target]
-
-                # Non numeric columns can be targets (e.g. prediction molecular reactions),
-                # but in that case we currently don't infer the target type.
-                if not np.issubdtype(val.dtype, np.number):
-                    v[target] = None
-                    continue
-
-                # remove the nans for mutiple task dataset when the table is sparse
-                target_type = type_of_target(val[~np.isnan(val)])
-                if target_type == "continuous":
-                    v[target] = TargetType.REGRESSION
-                elif target_type in ["binary", "multiclass"]:
-                    v[target] = TargetType.CLASSIFICATION
-                else:
-                    v[target] = None
-            elif not isinstance(v, TargetType):
-                v[target] = TargetType(v[target])
-        return v
-
-    @field_serializer("metrics", mode="wrap")
-    @staticmethod
-    def _serialize_metrics(
-        value: set[Metric], handler: SerializerFunctionWrapHandler, info: FieldSerializationInfo
-    ) -> list[dict]:
-        """Convert the set to a list"""
-        return handler(list(value))
-
-    @field_serializer("main_metric")
-    def _serialize_main_metric(value: Metric) -> str:
-        """Convert the set to a list"""
-        return value.name
-
     @field_serializer("split")
     def _serialize_split(self, v: SplitType):
         """Convert any tuple to list to make sure it's serializable"""
         return listit(v)
 
-    @field_serializer("target_types")
-    def _serialize_target_types(self, target_types):
-        """Convert from enum to string to make sure it's serializable"""
-        return {k: v.value for k, v in target_types.items()}
-
-    def _compute_checksum(self):
+    def _compute_checksum(self) -> str:
         """
         Computes a hash of the benchmark.
 
@@ -336,95 +562,21 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
         checksum = hash_fn.hexdigest()
         return checksum
 
-    @computed_field
-    @property
-    def dataset_artifact_id(self) -> str:
-        return self.dataset.artifact_id
-
-    @computed_field
-    @property
-    def n_train_datapoints(self) -> int:
-        """The size of the train set."""
-        return len(self.split[0])
-
-    @computed_field
-    @property
-    def n_test_sets(self) -> int:
-        """The number of test sets"""
-        return len(self.split[1])
-
-    @computed_field
-    @property
-    def n_test_datapoints(self) -> dict[str, int]:
-        """The size of (each of) the test set(s)."""
-        return {k: len(v) for k, v in self.split[1].items()}
-
-    @computed_field
-    @property
-    def n_classes(self) -> dict[str, int]:
-        """The number of classes for each of the target columns."""
-        n_classes = {}
-        for target in self.target_cols:
-            target_type = self.target_types.get(target)
-            if (
-                target_type is None
-                or target_type == TargetType.REGRESSION
-                or target_type == TargetType.DOCKING
-            ):
-                continue
-            # TODO: Don't use table attribute
-            n_classes[target] = self.dataset.table.loc[:, target].nunique()
-        return n_classes
-
-    @computed_field
-    @property
-    def task_type(self) -> str:
-        """The high-level task type of the benchmark."""
-        v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
-        return v.value
-
-    @computed_field
-    @property
-    def test_set_labels(self) -> list[str]:
-        """The labels of the test sets."""
-        return sorted(list(self.split[1].keys()))
-
-    @computed_field
-    @property
-    def test_set_sizes(self) -> dict[str, int]:
-        """The sizes of the test sets."""
-        return {k: len(v) for k, v in self.split[1].items()}
-
-    def _get_subset(self, indices, hide_targets=True, featurization_fn=None):
-        """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
-        internally to construct the train and test sets."""
-        return Subset(
-            dataset=self.dataset,
-            indices=indices,
-            input_cols=self.input_cols,
-            target_cols=self.target_cols,
-            hide_targets=hide_targets,
-            featurization_fn=featurization_fn,
-        )
-
-    def _get_test_set(
-        self, hide_targets=True, featurization_fn: Optional[Callable] = None
-    ) -> Union["Subset", dict[str, Subset]]:
+    def _get_test_sets(
+        self, hide_targets=True, featurization_fn: Callable | None = None
+    ) -> dict[str, Subset]:
         """Construct the test set(s), given the split in the benchmark specification. Used
         internally to construct the test set for client use and evaluation.
         """
-
-        def make_test_subset(vals):
-            return self._get_subset(vals, hide_targets=hide_targets, featurization_fn=featurization_fn)
-
         test_split = self.split[1]
-        test = {k: make_test_subset(v) for k, v in test_split.items()}
-
-        return test
+        return {
+            k: self._get_subset(v, hide_targets=hide_targets, featurization_fn=featurization_fn)
+            for k, v in test_split.items()
+        }
 
     def get_train_test_split(
-        self, featurization_fn: Optional[Callable] = None
-    ) -> tuple[Subset, Union["Subset", dict[str, Subset]]]:
+        self, featurization_fn: Callable | None = None
+    ) -> tuple[Subset, Subset | dict[str, Subset]]:
         """Construct the train and test sets, given the split in the benchmark specification.
 
         Returns [`Subset`][polaris.dataset.Subset] objects, which offer several ways of accessing the data
@@ -440,9 +592,8 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
                 If there are multiple test sets, these are returned in a dictionary and each test set has
                 an associated name. The targets of the test set can not be accessed.
         """
-
         train = self._get_subset(self.split[0], hide_targets=False, featurization_fn=featurization_fn)
-        test = self._get_test_set(hide_targets=True, featurization_fn=featurization_fn)
+        test = self._get_test_sets(hide_targets=True, featurization_fn=featurization_fn)
 
         # For improved UX, we return the object instead of the dictionary if there is only one test set.
         # Internally, however, assume that the test set is always a dictionary simplifies the code.
@@ -450,122 +601,52 @@ class BenchmarkSpecification(BaseArtifactModel, ChecksumMixin):
             test = test["test"]
         return train, test
 
-    def evaluate(
-        self,
-        y_pred: IncomingPredictionsType | None = None,
-        y_prob: IncomingPredictionsType | None = None,
-    ) -> BenchmarkResults:
-        """Execute the evaluation protocol for the benchmark, given a set of predictions.
+    @computed_field
+    @property
+    def test_set_sizes(self) -> dict[str, int]:
+        """The sizes of the test sets."""
+        return {k: len(v) for k, v in self.split[1].items()}
 
-        info: What about `y_true`?
-            Contrary to other frameworks that you might be familiar with, we opted for a signature that includes just
-            the predictions. This reduces the chance of accidentally using the test targets during training.
+    @computed_field
+    @property
+    def n_test_sets(self) -> int:
+        """The number of test sets"""
+        return len(self.split[1])
 
-        For this method, we make the following assumptions:
+    @computed_field
+    @property
+    def n_train_datapoints(self) -> int:
+        """The size of the train set."""
+        return len(self.split[0])
 
-        1. There can be one or multiple test set(s);
-        2. There can be one or multiple target(s);
-        3. The metrics are _constant_ across test sets;
-        4. The metrics are _constant_ across targets;
-        5. There can be metrics which measure across tasks.
+    @computed_field
+    @property
+    def test_set_labels(self) -> list[str]:
+        """The labels of the test sets."""
+        return sorted(list(self.split[1].keys()))
 
-        Args:
-            y_pred: The predictions for the test set, as NumPy arrays.
-                If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
-                If there are multiple test sets, the predictions should be further wrapped in a dictionary
-                    with the test subset labels as keys.
-            y_prob: The predicted probabilities for the test set, formatted similarly to predictions, based on the
-                number of tasks and test sets.
+    @computed_field
+    @property
+    def n_test_datapoints(self) -> dict[str, int]:
+        """The size of (each of) the test set(s)."""
+        if self.n_test_sets == 1:
+            return {"test": len(self.split[1])}
+        else:
+            return {k: len(v) for k, v in self.split[1].items()}
 
-        Returns:
-            A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
-
-        Examples:
-            1. For regression benchmarks:
-                pred_scores = your_model.predict_score(molecules) # predict continuous score values
-                benchmark.evaluate(y_pred=pred_scores)
-            2. For classification benchmarks:
-                - If `roc_auc` and `pr_auc` are in the metric list, both class probabilities and label predictions are required:
-                    pred_probs = your_model.predict_proba(molecules) # predict probablities
-                    pred_labels = your_model.predict_labels(molecules) # predict class labels
-                    benchmark.evaluate(y_pred=pred_labels, y_prob=pred_probs)
-                - Otherwise:
-                    benchmark.evaluate(y_pred=pred_labels)
+    @computed_field
+    @property
+    def n_classes(self) -> dict[str, int]:
         """
-
-        # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
-        y_true = self._get_test_set(hide_targets=False)
-
-        scores = evaluate_benchmark(
-            target_cols=self.target_cols,
-            test_set_labels=self.test_set_labels,
-            test_set_sizes=self.test_set_sizes,
-            metrics=self.metrics,
-            y_true=y_true,
-            y_pred=y_pred,
-            y_prob=y_prob,
-        )
-
-        return BenchmarkResults(results=scores, benchmark_artifact_id=self.artifact_id)
-
-    def upload_to_hub(
-        self,
-        settings: Optional[PolarisHubSettings] = None,
-        cache_auth_token: bool = True,
-        access: Optional[AccessType] = "private",
-        owner: Union[HubOwner, str, None] = None,
-        **kwargs: dict,
-    ):
+        The number of classes for each of the target columns.
         """
-        Very light, convenient wrapper around the
-        [`PolarisHubClient.upload_benchmark`][polaris.hub.client.PolarisHubClient.upload_benchmark] method.
-        """
-        from polaris.hub.client import PolarisHubClient
+        return {
+            target: self.dataset.table.loc[:, target].nunique()
+            for target in self.target_cols
+            if self.target_types.get(target) == TargetType.CLASSIFICATION
+        }
 
-        with PolarisHubClient(
-            settings=settings,
-            cache_auth_token=cache_auth_token,
-            **kwargs,
-        ) as client:
-            return client.upload_benchmark(self, access=access, owner=owner)
-
-    def to_json(self, destination: str) -> str:
-        """Save the benchmark to a destination directory as a JSON file.
-
-        Warning: Multiple files
-            Perhaps unintuitive, this method creates multiple files in the destination directory as it also saves
-            the dataset it is based on to the specified destination.
-            See the docstring of [`Dataset.to_json`][polaris.dataset.Dataset.to_json] for more information.
-
-        Args:
-            destination: The _directory_ to save the associated data to.
-
-        Returns:
-            The path to the JSON file.
-        """
-
-        fs.mkdir(destination, exist_ok=True)
-
-        data = self.model_dump()
-        data["dataset"] = self.dataset.to_json(destination=destination)
-
-        path = fs.join(destination, "benchmark.json")
-        with fsspec.open(path, "w") as f:
-            json.dump(data, f)
-
-        return path
-
-    def _repr_html_(self) -> str:
-        """For pretty printing in Jupyter."""
-        return dict2html(self.model_dump(exclude={"dataset", "split"}))
-
-    def __repr__(self):
-        return self.model_dump_json(exclude={"dataset", "split"}, indent=2)
-
-    def __str__(self):
-        return self.__repr__()
-
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, BenchmarkSpecification):
             return False
         return self.md5sum == other.md5sum

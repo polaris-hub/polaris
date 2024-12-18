@@ -1,12 +1,11 @@
 import json
-import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from time import time
 from typing import Any, Literal
 
 from authlib.integrations.httpx_client import OAuth2Auth
-from pydantic import BaseModel, Field, PositiveInt, computed_field, model_validator
+from pydantic import BaseModel, Field, PositiveInt, model_validator
 from typing_extensions import Self
 
 from polaris.utils.constants import DEFAULT_CACHE_DIR
@@ -59,43 +58,50 @@ class ExternalCachedTokenAuth(CachedTokenAuth):
         super().__init__(token, token_placement, client, cache_dir, filename)
 
 
-class DatasetV1Paths(BaseModel):
-    root: AnyUrlString
-    extension: AnyUrlString | None = None
+class ArtifactPaths(BaseModel):
+    """
+    Base model class for artifact paths.
+    Offer convenience properties to access with paths are files or stores.
+    """
 
-    @computed_field
     @property
-    def relative_root(self) -> str:
-        return re.sub(r"^\w+://", "", self.root)
+    def files(self) -> list[str]:
+        return [
+            field
+            for field, field_info in self.model_fields.items()
+            if (field_info.json_schema_extra or {}).get("file")
+        ]
 
-    @computed_field
     @property
-    def relative_extension(self) -> str | None:
-        if self.extension:
-            return re.sub(r"^\w+://", "", self.extension)
-        return None
+    def stores(self) -> list[str]:
+        return [
+            field
+            for field, field_info in self.model_fields.items()
+            if (field_info.json_schema_extra or {}).get("store")
+        ]
 
 
-class DatasetV2Paths(BaseModel):
-    root: AnyUrlString
-    manifest: AnyUrlString
+class DatasetV1Paths(ArtifactPaths):
+    root: AnyUrlString = Field(json_schema_extra={"file": True})
+    extension: AnyUrlString | None = Field(None, json_schema_extra={"store": True})
 
-    @computed_field
-    @property
-    def relative_root(self) -> str:
-        return re.sub(r"^\w+://", "", self.root)
 
-    @computed_field
-    @property
-    def relative_manifest(self) -> str:
-        return re.sub(r"^\w+://", "", self.manifest)
+class DatasetV2Paths(ArtifactPaths):
+    root: AnyUrlString = Field(json_schema_extra={"store": True})
+    manifest: AnyUrlString = Field(json_schema_extra={"file": True})
+
+
+class BenchmarkV2Paths(ArtifactPaths):
+    training: AnyUrlString = Field(json_schema_extra={"file": True})
+    test: AnyUrlString = Field(json_schema_extra={"file": True})
+    test_2: int = 0
 
 
 class StorageTokenData(BaseModel):
     key: str
     secret: str
     endpoint: HttpUrlString
-    paths: DatasetV1Paths | DatasetV2Paths = Field(union_mode="smart")
+    paths: DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths = Field(union_mode="smart")
 
 
 class HubOAuth2Token(BaseModel):

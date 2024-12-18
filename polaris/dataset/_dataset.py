@@ -50,7 +50,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
     """
 
     _artifact_type = "dataset"
-    version: ClassVar[Literal[1]] = 1
+    _version: ClassVar[Literal[1]] = 1
 
     # Public attributes
     # Data
@@ -141,7 +141,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         with PolarisHubClient() as client:
             with StorageSession(client, "read", self.urn) as storage:
-                return zarr.open_consolidated(store=storage.extension_store)
+                return zarr.open_consolidated(store=storage.store("extension"))
 
     @computed_field
     @property
