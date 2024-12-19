@@ -294,10 +294,10 @@ class PolarisHubClient(OAuth2Client):
             error_msg="Failed to fetch datasets.",
         ):
             # Step 1: Fetch enough v2 datasets to cover the offset and limit
-            v2_response = self._base_request_to_hub(
-                url="/v2/dataset", method="GET", params={"limit": limit, "offset": 0}
-            )
-            v2_data = v2_response.json().get("data", [])
+            v2_json_response = self._base_request_to_hub(
+                url="/v2/dataset", method="GET", params={"limit": limit, "offset": offset}
+            ).json()
+            v2_data = v2_json_response["data"]
             v2_datasets = [dataset["artifactId"] for dataset in v2_data]
 
             # If v2 datasets satisfy the limit, return them
@@ -309,19 +309,19 @@ class PolarisHubClient(OAuth2Client):
 
             v1_datasets = []
             if remaining_limit > 0:
-                v1_response = self._base_request_to_hub(
+                v1_json_response = self._base_request_to_hub(
                     url="/v1/dataset",
                     method="GET",
-                    params={"limit": limit, "offset": 0},
-                )
-                v1_data = v1_response.json().get("data", [])
+                    params={"limit": limit, "offset": max(0, offset - v2_json_response["metadata"]["total"])},
+                ).json()
+                v1_data = v1_json_response["data"]
                 v1_datasets = [dataset["artifactId"] for dataset in v1_data]
 
             # Combine the v2 and v1 datasets
             combined_datasets = v2_datasets + v1_datasets
 
             # Ensure the final combined list respects the limit
-            return combined_datasets[offset : offset + limit]
+            return combined_datasets[:limit]
 
     def get_dataset(
         self,
@@ -436,10 +436,10 @@ class PolarisHubClient(OAuth2Client):
             error_msg="Failed to fetch benchmarks.",
         ):
             # Step 1: Fetch enough v2 benchmarks to cover the offset and limit
-            v2_response = self._base_request_to_hub(
-                url="/v2/benchmark", method="GET", params={"limit": limit, "offset": 0}
-            )
-            v2_data = v2_response.json().get("data", [])
+            v2_json_response = self._base_request_to_hub(
+                url="/v2/benchmark", method="GET", params={"limit": limit, "offset": offset}
+            ).json()
+            v2_data = v2_json_response["data"]
             v2_benchmarks = [f"{HubOwner(**benchmark['owner'])}/{benchmark['name']}" for benchmark in v2_data]
 
             # If v2 benchmarks satisfy the limit, return them
@@ -451,12 +451,12 @@ class PolarisHubClient(OAuth2Client):
 
             v1_benchmarks = []
             if remaining_limit > 0:
-                v1_response = self._base_request_to_hub(
+                v1_json_response = self._base_request_to_hub(
                     url="/v1/benchmark",
                     method="GET",
-                    params={"limit": limit, "offset": 0},
-                )
-                v1_data = v1_response.json().get("data", [])
+                    params={"limit": limit, "offset": max(0, offset - v2_json_response["metadata"]["total"])},
+                ).json()
+                v1_data = v1_json_response["data"]
                 v1_benchmarks = [
                     f"{HubOwner(**benchmark['owner'])}/{benchmark['name']}" for benchmark in v1_data
                 ]
@@ -465,7 +465,7 @@ class PolarisHubClient(OAuth2Client):
             combined_benchmarks = v2_benchmarks + v1_benchmarks
 
             # Ensure the final combined list respects the limit
-            return combined_benchmarks[offset : offset + limit]
+            return combined_benchmarks[:limit]
 
     def get_benchmark(
         self,
