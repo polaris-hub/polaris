@@ -66,7 +66,7 @@ def test_dataset_v2_load_to_memory(test_dataset_v2):
 
 
 def test_dataset_v2_serialization(test_dataset_v2, tmp_path):
-    save_dir = tmp_path / "save_dir"
+    save_dir = str(tmp_path / "save_dir")
     path = test_dataset_v2.to_json(save_dir)
     new_dataset = DatasetV2.from_json(path)
     for i in range(5):
@@ -86,7 +86,7 @@ def test_dataset_v1_v2_compatibility(test_dataset, tmp_path):
     # We can thus also saved these same arrays to a Zarr archive
     df = test_dataset.table
 
-    path = tmp_path / "data/v1v2.zarr"
+    path = str(tmp_path / "data" / "v1v2.zarr")
 
     root = zarr.open(path, "w")
     root.array("smiles", data=df["smiles"].values, dtype=object, object_codec=numcodecs.VLenUTF8())
@@ -96,7 +96,7 @@ def test_dataset_v1_v2_compatibility(test_dataset, tmp_path):
     zarr.consolidate_metadata(path)
 
     kwargs = test_dataset.model_dump(exclude=["table", "zarr_root_path"])
-    dataset = DatasetV2(**kwargs, zarr_root_path=str(path))
+    dataset = DatasetV2(**kwargs, zarr_root_path=path)
 
     subset_1 = Subset(dataset=test_dataset, indices=range(5), input_cols=["smiles"], target_cols=["calc"])
     subset_2 = Subset(dataset=dataset, indices=range(5), input_cols=["smiles"], target_cols=["calc"])
