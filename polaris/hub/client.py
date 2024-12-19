@@ -307,21 +307,22 @@ class PolarisHubClient(OAuth2Client):
             # Step 2: Calculate the remaining limit and fetch v1 datasets
             remaining_limit = max(0, limit - len(v2_datasets))
 
-            v1_datasets = []
-            if remaining_limit > 0:
-                v1_json_response = self._base_request_to_hub(
-                    url="/v1/dataset",
-                    method="GET",
-                    params={"limit": limit, "offset": max(0, offset - v2_json_response["metadata"]["total"])},
-                ).json()
-                v1_data = v1_json_response["data"]
-                v1_datasets = [dataset["artifactId"] for dataset in v1_data]
+            v1_json_response = self._base_request_to_hub(
+                url="/v1/dataset",
+                method="GET",
+                params={
+                    "limit": remaining_limit,
+                    "offset": max(0, offset - v2_json_response["metadata"]["total"]),
+                },
+            ).json()
+            v1_data = v1_json_response["data"]
+            v1_datasets = [dataset["artifactId"] for dataset in v1_data]
 
             # Combine the v2 and v1 datasets
             combined_datasets = v2_datasets + v1_datasets
 
             # Ensure the final combined list respects the limit
-            return combined_datasets[:limit]
+            return combined_datasets
 
     def get_dataset(
         self,
@@ -449,23 +450,22 @@ class PolarisHubClient(OAuth2Client):
             # Step 2: Calculate the remaining limit and fetch v1 benchmarks
             remaining_limit = max(0, limit - len(v2_benchmarks))
 
-            v1_benchmarks = []
-            if remaining_limit > 0:
-                v1_json_response = self._base_request_to_hub(
-                    url="/v1/benchmark",
-                    method="GET",
-                    params={"limit": limit, "offset": max(0, offset - v2_json_response["metadata"]["total"])},
-                ).json()
-                v1_data = v1_json_response["data"]
-                v1_benchmarks = [
-                    f"{HubOwner(**benchmark['owner'])}/{benchmark['name']}" for benchmark in v1_data
-                ]
+            v1_json_response = self._base_request_to_hub(
+                url="/v1/benchmark",
+                method="GET",
+                params={
+                    "limit": remaining_limit,
+                    "offset": max(0, offset - v2_json_response["metadata"]["total"]),
+                },
+            ).json()
+            v1_data = v1_json_response["data"]
+            v1_benchmarks = [f"{HubOwner(**benchmark['owner'])}/{benchmark['name']}" for benchmark in v1_data]
 
             # Combine the v2 and v1 benchmarks
             combined_benchmarks = v2_benchmarks + v1_benchmarks
 
             # Ensure the final combined list respects the limit
-            return combined_benchmarks[:limit]
+            return combined_benchmarks
 
     def get_benchmark(
         self,
