@@ -39,7 +39,7 @@ def _check_dataset(dataset, ground_truth, mol_props_as_col):
 
 def test_sdf_zarr_conversion(sdf_file, caffeine, tmp_path):
     """Test conversion between SDF and Zarr with utility function"""
-    dataset = create_dataset_from_file(sdf_file, tmp_path / "archive.zarr")
+    dataset = create_dataset_from_file(sdf_file, str(tmp_path / "archive.zarr"))
     _check_dataset(dataset, [caffeine], True)
 
 
@@ -47,7 +47,7 @@ def test_sdf_zarr_conversion(sdf_file, caffeine, tmp_path):
 def test_factory_sdf_with_prop_as_col(sdf_file, caffeine, tmp_path, mol_props_as_col):
     """Test conversion between SDF and Zarr with factory pattern"""
 
-    factory = DatasetFactory(tmp_path / "archive.zarr")
+    factory = DatasetFactory(str(tmp_path / "archive.zarr"))
 
     converter = SDFConverter(mol_prop_as_cols=mol_props_as_col)
     factory.register_converter("sdf", converter)
@@ -60,7 +60,7 @@ def test_factory_sdf_with_prop_as_col(sdf_file, caffeine, tmp_path, mol_props_as
 
 def test_zarr_to_zarr_conversion(zarr_archive, tmp_path):
     """Test conversion between Zarr and Zarr with utility function"""
-    dataset = create_dataset_from_file(zarr_archive, tmp_path / "archive.zarr")
+    dataset = create_dataset_from_file(zarr_archive, str(tmp_path / "archive.zarr"))
     assert len(dataset) == 100
     assert len(dataset.columns) == 2
     assert all(c in dataset.columns for c in ["A", "B"])
@@ -71,7 +71,7 @@ def test_zarr_to_zarr_conversion(zarr_archive, tmp_path):
 def test_zarr_with_factory_pattern(zarr_archive, tmp_path):
     """Test conversion between Zarr and Zarr with factory pattern"""
 
-    factory = DatasetFactory(tmp_path / "archive.zarr")
+    factory = DatasetFactory(str(tmp_path / "archive.zarr"))
     converter = ZarrConverter()
     factory.register_converter("zarr", converter)
     factory.add_from_file(zarr_archive)
@@ -90,7 +90,7 @@ def test_zarr_with_factory_pattern(zarr_archive, tmp_path):
 
 def test_factory_pdb(pdbs_structs, pdb_paths, tmp_path):
     """Test conversion between PDB file and Zarr with factory pattern"""
-    factory = DatasetFactory(tmp_path / "pdb.zarr")
+    factory = DatasetFactory(str(tmp_path / "pdb.zarr"))
 
     converter = PDBConverter()
     factory.register_converter("pdb", converter)
@@ -104,7 +104,7 @@ def test_factory_pdb(pdbs_structs, pdb_paths, tmp_path):
 def test_factory_pdbs(pdbs_structs, pdb_paths, tmp_path):
     """Test conversion between PDB files and Zarr with factory pattern"""
 
-    factory = DatasetFactory(tmp_path / "pdbs.zarr")
+    factory = DatasetFactory(str(tmp_path / "pdbs.zarr"))
 
     converter = PDBConverter()
     factory.register_converter("pdb", converter)
@@ -119,7 +119,7 @@ def test_factory_pdbs(pdbs_structs, pdb_paths, tmp_path):
 def test_pdbs_zarr_conversion(pdbs_structs, pdb_paths, tmp_path):
     """Test conversion between PDBs and Zarr with utility function"""
 
-    dataset = create_dataset_from_files(pdb_paths, tmp_path / "pdbs_2.zarr", axis=0)
+    dataset = create_dataset_from_files(pdb_paths, str(tmp_path / "pdbs_2.zarr"), axis=0)
 
     assert dataset.table.shape[0] == len(pdb_paths)
     _check_pdb_dataset(dataset, pdbs_structs)
@@ -128,7 +128,7 @@ def test_pdbs_zarr_conversion(pdbs_structs, pdb_paths, tmp_path):
 def test_factory_sdfs(sdf_files, caffeine, ibuprofen, tmp_path):
     """Test conversion between SDF and Zarr with factory pattern"""
 
-    factory = DatasetFactory(tmp_path / "sdfs.zarr")
+    factory = DatasetFactory(str(tmp_path / "sdfs.zarr"))
 
     converter = SDFConverter(mol_prop_as_cols=True)
     factory.register_converter("sdf", converter)
@@ -142,7 +142,7 @@ def test_factory_sdfs(sdf_files, caffeine, ibuprofen, tmp_path):
 def test_factory_sdf_pdb(sdf_file, pdb_paths, caffeine, pdbs_structs, tmp_path):
     """Test conversion between SDF and PDB from files to Zarr with factory pattern"""
 
-    factory = DatasetFactory(tmp_path / "sdf_pdb.zarr")
+    factory = DatasetFactory(str(tmp_path / "sdf_pdb.zarr"))
 
     sdf_converter = SDFConverter(mol_prop_as_cols=False)
     factory.register_converter("sdf", sdf_converter)
@@ -158,7 +158,7 @@ def test_factory_sdf_pdb(sdf_file, pdb_paths, caffeine, pdbs_structs, tmp_path):
 
 
 def test_factory_from_files_same_column(sdf_files, pdb_paths, tmp_path):
-    factory = DatasetFactory(tmp_path / "files.zarr")
+    factory = DatasetFactory(str(tmp_path / "files.zarr"))
 
     sdf_converter = SDFConverter(mol_prop_as_cols=False)
     factory.register_converter("sdf", sdf_converter)

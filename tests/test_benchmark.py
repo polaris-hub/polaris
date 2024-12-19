@@ -198,11 +198,12 @@ def test_benchmark_checksum(fixture, request):
     kwargs.pop("target_types", None)  # Reset target types that matches deleted target column
     _check_for_failure(kwargs)
 
+    # Input columns
     kwargs = benchmark.model_dump()
     kwargs["input_cols"] = kwargs["input_cols"][1:] + ["iupac"]
     _check_for_failure(kwargs)
 
-    # --- Don't fail if not checksum is provided ---
+    # --- Don't fail if no checksum is provided ---
     kwargs["md5sum"] = None
     dataset = cls(dataset=benchmark.dataset, **kwargs)
     assert dataset.md5sum is not None

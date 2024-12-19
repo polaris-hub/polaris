@@ -374,7 +374,7 @@ def test_multi_task_benchmark_multiple_test_sets(test_dataset, regression_metric
 @pytest.fixture(scope="function")
 def test_docking_dataset(tmp_path, sdf_files, test_org_owner):
     # toy docking dataset
-    factory = DatasetFactory(tmp_path / "ligands.zarr")
+    factory = DatasetFactory(str(tmp_path / "ligands.zarr"))
 
     converter = SDFConverter(mol_prop_as_cols=True)
     factory.register_converter("sdf", converter)

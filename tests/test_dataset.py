@@ -88,7 +88,7 @@ def test_dataset_checksum(test_dataset):
 def test_dataset_from_zarr(zarr_archive, tmp_path):
     """Test whether loading works when the zarr archive contains a single array or multiple arrays."""
     archive = zarr_archive
-    dataset = create_dataset_from_file(archive, tmp_path / "data")
+    dataset = create_dataset_from_file(archive, str(tmp_path / "data"))
 
     assert len(dataset.table) == 100
     for i in range(100):
@@ -115,8 +115,8 @@ def test_dataset_from_zarr_to_json_and_back(zarr_archive, tmp_path):
     can be saved to and loaded from json.
     """
 
-    json_dir = tmp_path / "json"
-    zarr_dir = tmp_path / "zarr"
+    json_dir = str(tmp_path / "json")
+    zarr_dir = str(tmp_path / "zarr")
 
     archive = zarr_archive
     dataset = create_dataset_from_file(archive, zarr_dir)
@@ -132,8 +132,8 @@ def test_dataset_from_zarr_to_json_and_back(zarr_archive, tmp_path):
 def test_dataset_caching(zarr_archive, tmp_path):
     """Test whether the dataset remains the same after caching."""
 
-    original_dataset = create_dataset_from_file(zarr_archive, tmp_path / "original1")
-    cached_dataset = create_dataset_from_file(zarr_archive, tmp_path / "original2")
+    original_dataset = create_dataset_from_file(zarr_archive, str(tmp_path / "original1"))
+    cached_dataset = create_dataset_from_file(zarr_archive, str(tmp_path / "original2"))
     assert original_dataset == cached_dataset
 
     cached_dataset._cache_dir = str(tmp_path / "cached")
@@ -153,7 +153,7 @@ def test_dataset_index():
 
 def test_dataset_in_memory_optimization(zarr_archive, tmp_path):
     """Check if optimization makes a default Zarr archive faster."""
-    dataset = create_dataset_from_file(zarr_archive, tmp_path / "dataset")
+    dataset = create_dataset_from_file(zarr_archive, str(tmp_path / "dataset"))
     subset = Subset(dataset=dataset, indices=range(100), input_cols=["A"], target_cols=["B"])
 
     t1 = perf_counter()
@@ -208,7 +208,7 @@ def test_dataset__get_item__():
 def test_dataset__get_item__with_pointer_columns(zarr_archive, tmp_path):
     """Test the __getitem__() interface for a dataset with pointer columns (i.e. part of the data stored in Zarr)."""
 
-    dataset = create_dataset_from_file(zarr_archive, tmp_path / "data")
+    dataset = create_dataset_from_file(zarr_archive, str(tmp_path / "data"))
     root = zarr.open(zarr_archive)
 
     # Get a specific cell
