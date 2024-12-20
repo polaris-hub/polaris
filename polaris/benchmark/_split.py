@@ -10,7 +10,20 @@ from polaris.utils.types import SplitType
 
 
 class SplitSpecificationV1Mixin(BaseModel):
-    """ """
+    """
+    Mixin class to add a split field to a benchmark. This is the V1 implementation.
+
+    The split is defined as a (train, test) tuple, w train is a list of indices and
+    test is a dictionary that maps test set names to lists of indices.
+
+    Warning: Scalability
+        The simple list-based representation we use for the split in this first implementation doesn't scale well.
+        We therefore worked on a V2 implementation that uses roaring bitmaps.
+        See [`SplitSpecificationV2Mixin`][`polaris.experimental._split_v2.SplitSpecificationV2Mixin`] for more details.
+
+    Attributes:
+        split: The predefined train-test split to use for evaluation.
+    """
 
     split: SplitType
 

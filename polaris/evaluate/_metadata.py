@@ -15,7 +15,7 @@ class ResultsMetadata(BaseArtifactModel):
         paper_url: The URL to the paper describing the methodology used to generate these results.
         contributors: The users that are credited for these results.
         _created_at: The time-stamp at which the results were created. Automatically set.
-    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
+    For additional meta-data attributes, see the base classes.
     """
 
     # Additional meta-data

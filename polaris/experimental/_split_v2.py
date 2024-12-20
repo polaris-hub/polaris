@@ -131,7 +131,15 @@ class SplitV2(BaseModel):
 
 
 class SplitSpecificationV2Mixin(BaseModel):
-    """ """
+    """
+    Mixin class to add a split field to a benchmark. This is the V2 implementation.
+
+    The internal representation for the split is a roaring bitmap,
+    which drastically improves scalability over the V1 implementation.
+
+    Attributes:
+        split: The predefined train-test split to use for evaluation.
+    """
 
     split: SplitV2
 

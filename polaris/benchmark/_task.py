@@ -17,7 +17,15 @@ from polaris.utils.types import ColumnName, TargetType, TaskType
 
 
 class PredictiveTaskSpecificationMixin(BaseModel):
-    """ """
+    """A mixin for predictive task benchmarks.
+
+    Attributes:
+        target_cols: The column(s) of the original dataset that should be used as target.
+        input_cols: The column(s) of the original dataset that should be used as input.
+        metrics: The metrics to use for evaluating performance
+        main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
+        target_types: A dictionary that maps target columns to their type. If not specified, this is automatically inferred.
+    """
 
     target_cols: set[ColumnName] = Field(min_length=1)
     input_cols: set[ColumnName] = Field(min_length=1)

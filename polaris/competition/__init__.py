@@ -16,7 +16,7 @@ from polaris.utils.types import (
     HttpUrlString,
     HubOwner,
     HubUser,
-    PredictionsType,
+    IncomingPredictionsType,
     SlugCompatibleStringType,
 )
 
@@ -56,18 +56,11 @@ class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, Spli
         ```
 
     Attributes:
-        target_cols: The column(s) of the original dataset that should be used as target.
-        input_cols: The column(s) of the original dataset that should be used as input.
-        split: The predefined train-test split to use for evaluation.
-        metrics: The metrics to use for evaluating performance
-        main_metric: The main metric used to rank methods.
-        readme: Markdown text that contains a formatted description of the competition.
-        target_types: A dictionary that maps target columns to their type.
         start_time: The time at which the competition starts accepting prediction submissions.
         end_time: The time at which the competition stops accepting prediction submissions.
         n_classes: The number of classes within target columns that define a classification task.
 
-    For additional meta-data attributes, see the `polaris.dataset.DatasetV2` class.
+    For additional meta-data attributes, see the base classes.
     """
 
     _artifact_type = "competition"
@@ -173,7 +166,7 @@ class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, Spli
         self,
         prediction_name: SlugCompatibleStringType,
         prediction_owner: str,
-        predictions: PredictionsType,
+        predictions: IncomingPredictionsType,
         report_url: HttpUrlString,
         contributors: list[HubUser] | None = None,
         github_url: HttpUrlString | None = None,

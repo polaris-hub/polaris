@@ -61,7 +61,7 @@ class EvaluationResult(ResultsMetadata):
     Attributes:
         results: Evaluation results are stored directly in a dataframe or in a serialized, JSON compatible dict
             that can be decoded into the associated tabular format.
-    For additional meta-data attributes, see the [`ResultsMetadata`][polaris.evaluate._results.ResultsMetadata] class.
+    For additional meta-data attributes, see the base classes.
     """
 
     # Define the columns of the results table

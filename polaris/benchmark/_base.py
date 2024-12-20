@@ -37,6 +37,8 @@ from polaris.utils.types import (
 
 
 class BaseSplitSpecificationMixin(BaseModel):
+    """Base mixin class to add a split field to a benchmark."""
+
     split: Any
 
     @property
@@ -79,9 +81,8 @@ class BenchmarkSpecification(
     Specifically, it specifies:
 
     1. Which dataset to use (see [`Dataset`][polaris.dataset.Dataset]);
-    2. Which columns are used as input and which columns are used as target;
-    3. Which metrics should be used to evaluate performance on this task;
-    4. A predefined, static train-test split to use during evaluation.
+    2. A task definition (we currently only support predictive tasks);
+    3. A predefined, static train-test split to use during evaluation.
 
     info: Subclasses
         Polaris includes various subclasses of the `BenchmarkSpecification` that provide a more precise data-model or
@@ -116,15 +117,10 @@ class BenchmarkSpecification(
 
     Attributes:
         dataset: The dataset the benchmark specification is based on.
-        target_cols: The column(s) of the original dataset that should be used as target.
-        input_cols: The column(s) of the original dataset that should be used as input.
-        metrics: The metrics to use for evaluating performance
-        main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
-        target_types: A dictionary that maps target columns to their type. If not specified, this is automatically inferred.
-    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
+    For additional meta-data attributes, see the base classes.
     """
 
     _artifact_type = "benchmark"

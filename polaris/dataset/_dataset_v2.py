@@ -35,7 +35,7 @@ class DatasetV2(BaseDataset):
     Attributes:
         zarr_root_path: The path to the Zarr archive. Different from V1, this is now required.
 
-    For additional meta-data attributes, see the [`BaseDataset`][polaris.dataset._base.BaseDataset] class.
+    For additional meta-data attributes, see the base classes.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
