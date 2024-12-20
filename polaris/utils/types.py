@@ -160,6 +160,9 @@ PredictionKwargs: TypeAlias = Literal["y_pred", "y_prob", "y_score"]
 The type of predictions expected by the metric interface.
 """
 
+ColumnName: TypeAlias = str
+"""A column name in a dataset."""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub

@@ -163,3 +163,9 @@ def test_competition_computed_fields(test_competition):
     assert test_competition.task_type == TaskType.SINGLE_TASK.value
     assert test_competition.test_set_labels == [default_test_set_name]
     assert test_competition.test_set_sizes == {default_test_set_name: 10}
+
+
+def test_competition_interface(test_competition):
+    """Tests that the CompetitionSpecification class doesn't accidentally inherit the evaluate method from the benchmark class"""
+    with pytest.raises(AttributeError):
+        test_competition.evaluate()

@@ -36,9 +36,7 @@ nav:
           - Evaluation: api/evaluation.md
       # NOTE (cwognum): Competitions are currently gated.
       # - Competitions:
-      #     - Competition Dataset: api/competition.dataset.md
       #     - Competition: api/competition.md
-      #     - Competiton Evaluation: api/competition.evaluation.md
       - Hub:
           - Client: api/hub.client.md
           - External Auth Client: api/hub.external_client.md

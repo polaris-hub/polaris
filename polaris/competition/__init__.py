@@ -2,28 +2,26 @@ from datetime import datetime
 from itertools import chain
 from typing import Callable
 
-from loguru import logger
-from pydantic import computed_field, field_serializer, model_validator
+from pydantic import computed_field, model_validator
 from typing_extensions import Self
 
-from polaris.benchmark import BenchmarkSpecification
-from polaris.benchmark._base import ColumnName
+from polaris.benchmark._split import SplitSpecificationV1Mixin
+from polaris.benchmark._task import PredictiveTaskSpecificationMixin
 from polaris.dataset import DatasetV2, Subset
 from polaris.evaluate import CompetitionPredictions
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidCompetitionError
-from polaris.utils.misc import listit
 from polaris.utils.types import (
+    ColumnName,
     HttpUrlString,
     HubOwner,
     HubUser,
     PredictionsType,
     SlugCompatibleStringType,
-    SplitType,
 )
 
 
-class CompetitionSpecification(DatasetV2, BenchmarkSpecification):
+class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, SplitSpecificationV1Mixin):
     """An instance of this class represents a Polaris competition. It defines fields and functionality
     that in combination with the `polaris.dataset.DatasetV2` class, allow
     users to participate in competitions hosted on Polaris Hub.
@@ -75,65 +73,30 @@ class CompetitionSpecification(DatasetV2, BenchmarkSpecification):
     _artifact_type = "competition"
 
     dataset: None = None
-    split: SplitType
 
     start_time: datetime
     end_time: datetime
     n_classes: dict[ColumnName, int]
 
     @model_validator(mode="after")
-    def _validate_split(self) -> Self:
-        """
-        Verifies that:
-          1) There are no empty test partitions
-          2) All indices are valid given the dataset
-          3) There is no duplicate indices in any of the sets
-          4) There is no overlap between the train and test set
-          5) No row exists in the test set where all labels are missing/empty
-        """
-
-        if not isinstance(self.split[1], dict):
-            self.split = self.split[0], {"test": self.split[1]}
-        split = self.split
-
-        # Train partition can be empty (zero-shot)
-        # Test partitions cannot be empty
-        if any(len(v) == 0 for v in split[1].values()):
-            raise InvalidCompetitionError("The predefined split contains empty test partitions")
-
-        train_idx_list = split[0]
-        full_test_idx_list = list(chain.from_iterable(split[1].values()))
-
-        if len(train_idx_list) == 0:
-            logger.info(
-                "This competition only specifies a test set. It will return an empty train set in `get_train_test_split()`"
-            )
-
-        train_idx_set = set(train_idx_list)
-        full_test_idx_set = set(full_test_idx_list)
-
-        # The train and test indices do not overlap
-        if len(train_idx_set & full_test_idx_set) > 0:
-            raise InvalidCompetitionError("The predefined split specifies overlapping train and test sets")
-
-        # Check for duplicate indices within the train set
-        if len(train_idx_set) != len(train_idx_list):
-            raise InvalidCompetitionError("The training set contains duplicate indices")
-
-        # Check for duplicate indices within a given test set. Because a user can specify
-        # multiple test sets for a given benchmark and it is acceptable for indices to be shared
-        # across test sets, we check for duplicates in each test set independently.
-        for test_set_name, test_set_idx_list in split[1].items():
-            if len(test_set_idx_list) != len(set(test_set_idx_list)):
-                raise InvalidCompetitionError(
-                    f'Test set with name "{test_set_name}" contains duplicate indices'
-                )
-
+    def _validate_split_in_dataset(self) -> Self:
         # All indices are valid given the dataset. We check the len of `self` here because a
         # competition entity includes both the dataset and benchmark in one artifact.
         max_i = len(self)
-        if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
+        if any(i < 0 or i >= max_i for i in chain(self.split[0], *self.split[1].values())):
             raise InvalidCompetitionError("The predefined split contains invalid indices")
+
+        return self
+
+    @model_validator(mode="after")
+    def _validate_cols_in_dataset(self) -> Self:
+        """
+        Verifies that all specified columns are present in the dataset.
+        """
+        columns = self.target_cols | self.input_cols
+        dataset_columns = set(self.columns)
+        if not columns.issubset(dataset_columns):
+            raise InvalidCompetitionError("Not all target or input columns were found in the dataset.")
 
         return self
 
@@ -148,60 +111,10 @@ class CompetitionSpecification(DatasetV2, BenchmarkSpecification):
 
         return self
 
-    @model_validator(mode="after")
-    def _validate_cols(self) -> Self:
-        """
-        Verifies that all specified columns are present in the dataset.
-        """
-        columns = self.target_cols | self.input_cols
-        dataset_columns = set(self.columns)
-        if not columns.issubset(dataset_columns):
-            raise InvalidCompetitionError("Not all target or input columns were found in the dataset.")
-
-        return self
-
-    @field_serializer("split")
-    def _serialize_split(self, v: SplitType):
-        """Convert any tuple to list to make sure it's serializable"""
-        return listit(v)
-
     @computed_field
     @property
     def dataset_artifact_id(self) -> str:
         return self.artifact_id
-
-    @computed_field
-    @property
-    def test_set_sizes(self) -> dict[str, int]:
-        """The sizes of the test sets."""
-        return {k: len(v) for k, v in self.split[1].items()}
-
-    @computed_field
-    @property
-    def n_test_sets(self) -> int:
-        """The number of test sets"""
-        return len(self.split[1])
-
-    @computed_field
-    @property
-    def n_train_datapoints(self) -> int:
-        """The size of the train set."""
-        return len(self.split[0])
-
-    @computed_field
-    @property
-    def test_set_labels(self) -> list[str]:
-        """The labels of the test sets."""
-        return sorted(list(self.split[1].keys()))
-
-    @computed_field
-    @property
-    def n_test_datapoints(self) -> dict[str, int]:
-        """The size of (each of) the test set(s)."""
-        if self.n_test_sets == 1:
-            return {"test": len(self.split[1])}
-        else:
-            return {k: len(v) for k, v in self.split[1].items()}
 
     def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
         """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
