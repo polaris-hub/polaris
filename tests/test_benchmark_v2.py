@@ -2,7 +2,8 @@ import pytest
 from pydantic import ValidationError
 from pyroaring import BitMap
 
-from polaris.experimental._benchmark_v2 import BenchmarkV2Specification, IndexSet, SplitV2
+from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
+from polaris.experimental._split_v2 import IndexSet, SplitV2
 
 
 @pytest.fixture

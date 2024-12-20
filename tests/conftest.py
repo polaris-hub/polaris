@@ -12,9 +12,8 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.competition import CompetitionSpecification
-from polaris.dataset import ColumnAnnotation, CompetitionDataset, DatasetFactory, DatasetV1
+from polaris.dataset import ColumnAnnotation, DatasetFactory, DatasetV1, DatasetV2
 from polaris.dataset.converters import SDFConverter
-from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.utils.types import HubOwner
 
 
@@ -139,24 +138,6 @@ def test_dataset_v2(zarr_archive, test_org_owner) -> DatasetV2:
         curation_reference="https://www.example.com",
         zarr_root_path=zarr_archive,
     )
-    check_version(dataset)
-    return dataset
-
-
-@pytest.fixture(scope="function")
-def test_competition_dataset(test_data, test_org_owner):
-    dataset = CompetitionDataset(
-        table=test_data,
-        name="test-competition-dataset",
-        source="https://www.example.com",
-        annotations={"expt": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
-        tags=["tagA", "tagB"],
-        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
-        owner=test_org_owner,
-        license="CC-BY-4.0",
-        curation_reference="https://www.example.com",
-    )
-
     check_version(dataset)
     return dataset
 
@@ -337,18 +318,32 @@ def test_multi_task_benchmark_clf(test_dataset, classification_metrics):
 
 
 @pytest.fixture(scope="function")
-def test_competition(test_competition_dataset, test_org_owner, regression_metrics):
+def test_competition(zarr_archive, test_org_owner, regression_metrics, test_dataset_v2):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     competition = CompetitionSpecification(
+        # Base attributes
         name="test-competition",
-        dataset=test_competition_dataset,
         owner=test_org_owner,
+        tags=["tagA", "tagB"],
+        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        # Benchmark attributes
         metrics=regression_metrics,
         main_metric="mean_absolute_error",
         split=(train_indices, test_indices),
-        target_cols="expt",
-        input_cols="smiles",
+        input_cols=["A"],
+        target_cols=["B"],
+        readme="Testing specification",
+        # Dataset attributes
+        source="https://www.example.com",
+        annotations={"A": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
+        license="CC-BY-4.0",
+        curation_reference="https://www.example.com",
+        zarr_root_path=zarr_archive,
+        # Competition attributes
+        start_time="2025-01-13T21:59:38Z",
+        end_time="2025-01-20T21:59:38Z",
+        n_classes={"B": 0},
     )
     check_version(competition)
     return competition

@@ -224,7 +224,7 @@ def test_checksum_verification(test_single_task_benchmark):
 
 
 def test_benchmark_duplicate_metrics(test_single_task_benchmark):
-    """Test whether setting an invalid checksum raises an error."""
+    """Tests that passing duplicate metrics will raise a validation error"""
     m = test_single_task_benchmark.model_dump()
 
     with pytest.raises(ValidationError, match="The benchmark specifies duplicate metric"):
@@ -244,7 +244,7 @@ def test_benchmark_duplicate_metrics(test_single_task_benchmark):
 
 
 def test_benchmark_metric_deserialization(test_single_task_benchmark):
-    """Test whether setting an invalid checksum raises an error."""
+    """Tests that passing metrics as a list of strings or dictionaries works as expected"""
     m = test_single_task_benchmark.model_dump()
 
     # Should work with strings

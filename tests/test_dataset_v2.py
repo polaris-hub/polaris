@@ -9,11 +9,11 @@ import pytest
 import zarr
 from pydantic import ValidationError
 
-from polaris.dataset import Subset
+from polaris.dataset import DatasetV2, Subset
+from polaris.dataset._dataset_v2 import _INDEX_ARRAY_KEY
 from polaris.dataset._factory import DatasetFactory
 from polaris.dataset.converters._pdb import PDBConverter
 from polaris.dataset.zarr._manifest import generate_zarr_manifest
-from polaris.experimental._dataset_v2 import _INDEX_ARRAY_KEY, DatasetV2
 
 
 def test_dataset_v2_get_columns(test_dataset_v2):

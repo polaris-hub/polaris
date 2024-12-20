@@ -3,54 +3,86 @@ import json
 from hashlib import md5
 from itertools import chain
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Collection, Literal, Sequence, TypeAlias
+from typing import Any, Callable, ClassVar, Literal
 
 import fsspec
 import numpy as np
-from loguru import logger
 from pydantic import (
+    BaseModel,
     Field,
     computed_field,
-    field_serializer,
     field_validator,
     model_validator,
 )
-from pydantic_core.core_schema import ValidationInfo
 from sklearn.utils.multiclass import type_of_target
 from typing_extensions import Self
 
 from polaris._artifact import BaseArtifactModel
+from polaris.benchmark._split import SplitSpecificationV1Mixin
+from polaris.benchmark._task import PredictiveTaskSpecificationMixin
 from polaris.dataset import DatasetV1, Subset
 from polaris.dataset._base import BaseDataset
-from polaris.evaluate import BenchmarkResults, Metric
+from polaris.evaluate import BenchmarkResults
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.mixins import ChecksumMixin
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError
-from polaris.utils.misc import listit
 from polaris.utils.types import (
     AccessType,
     HubOwner,
     IncomingPredictionsType,
-    SplitType,
     TargetType,
-    TaskType,
 )
 
-ColumnName: TypeAlias = str
+
+class BaseSplitSpecificationMixin(BaseModel):
+    """Base mixin class to add a split field to a benchmark."""
+
+    split: Any
+
+    @property
+    @abc.abstractmethod
+    def test_set_sizes(self) -> dict[str, int]:
+        """The sizes of the test sets."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def n_test_sets(self) -> int:
+        """The number of test sets"""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def n_train_datapoints(self) -> int:
+        """The size of the train set."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def test_set_labels(self) -> list[str]:
+        """The labels of the test sets."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def n_test_datapoints(self) -> dict[str, int]:
+        """The size of (each of) the test set(s)."""
+        raise NotImplementedError
 
 
-class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
+class BenchmarkSpecification(
+    PredictiveTaskSpecificationMixin, BaseArtifactModel, BaseSplitSpecificationMixin, abc.ABC
+):
     """This class wraps a [`Dataset`][polaris.dataset.Dataset] with additional data
      to specify the evaluation logic.
 
     Specifically, it specifies:
 
     1. Which dataset to use (see [`Dataset`][polaris.dataset.Dataset]);
-    2. Which columns are used as input and which columns are used as target;
-    3. Which metrics should be used to evaluate performance on this task;
-    4. A predefined, static train-test split to use during evaluation.
+    2. A task definition (we currently only support predictive tasks);
+    3. A predefined, static train-test split to use during evaluation.
 
     info: Subclasses
         Polaris includes various subclasses of the `BenchmarkSpecification` that provide a more precise data-model or
@@ -85,207 +117,26 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
 
     Attributes:
         dataset: The dataset the benchmark specification is based on.
-        target_cols: The column(s) of the original dataset that should be used as target.
-        input_cols: The column(s) of the original dataset that should be used as input.
-        metrics: The metrics to use for evaluating performance
-        main_metric: The main metric used to rank methods. If `None`, the first of the `metrics` field.
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
-        target_types: A dictionary that maps target columns to their type. If not specified, this is automatically inferred.
-    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
+    For additional meta-data attributes, see the base classes.
     """
 
     _artifact_type = "benchmark"
 
-    # Public attributes
     dataset: BaseDataset = Field(exclude=True)
-    target_cols: set[ColumnName] = Field(min_length=1)
-    input_cols: set[ColumnName] = Field(min_length=1)
-    metrics: set[Metric] = Field(min_length=1)
-    main_metric: Metric | str
     readme: str = ""
-    target_types: dict[ColumnName, TargetType] = Field(default_factory=dict, validate_default=True)
-
-    @field_validator("target_cols", "input_cols", mode="before")
-    @classmethod
-    def _parse_cols(cls, v: str | Sequence[str], info: ValidationInfo) -> set[str]:
-        """
-        Normalize columns input values to a set.
-        """
-        if isinstance(v, str):
-            v = {v}
-        else:
-            v = set(v)
-        return v
-
-    @field_validator("target_types", mode="before")
-    @classmethod
-    def _parse_target_types(
-        cls, v: dict[ColumnName, TargetType | str | None]
-    ) -> dict[ColumnName, TargetType]:
-        """
-        Converts the target types to TargetType enums if they are strings.
-        """
-        return {
-            target: TargetType(val) if isinstance(val, str) else val
-            for target, val in v.items()
-            if val is not None
-        }
-
-    @field_validator("metrics", mode="before")
-    @classmethod
-    def _validate_metrics(cls, v: str | Metric | Collection[str | Metric]) -> set[Metric]:
-        """
-        Verifies all specified metrics are either a Metric object or a valid metric name.
-        Also verifies there are no duplicate metrics.
-
-        If there are multiple test sets, it is assumed the same metrics are used across test sets.
-        """
-        if isinstance(v, str):
-            v = {"label": v}
-        if not isinstance(v, Collection):
-            v = [v]
-
-        def _convert(m: str | dict | Metric) -> Metric:
-            if isinstance(m, str):
-                return Metric(label=m)
-            if isinstance(m, dict):
-                return Metric(**m)
-            return m
-
-        v = [_convert(m) for m in v]
-
-        unique_metrics = set(v)
-
-        if len(unique_metrics) != len(v):
-            raise InvalidBenchmarkError("The benchmark specifies duplicate metrics.")
-
-        unique_names = {m.name for m in unique_metrics}
-        if len(unique_names) != len(unique_metrics):
-            raise InvalidBenchmarkError(
-                "The metrics of a benchmark need to have unique names. Specify a custom name with Metric(custom_name=...)"
-            )
-
-        return unique_metrics
-
-    @model_validator(mode="after")
-    def _validate_main_metric_is_in_metrics(self) -> Self:
-        if isinstance(self.main_metric, str):
-            for m in self.metrics:
-                if m.name == self.main_metric:
-                    self.main_metric = m
-                    break
-        if self.main_metric not in self.metrics:
-            raise InvalidBenchmarkError("The main metric should be one of the specified metrics")
-        return self
-
-    @model_validator(mode="after")
-    def _validate_cols(self) -> Self:
-        """
-        Verifies that all specified columns are present in the dataset.
-        """
-        columns = self.target_cols | self.input_cols
-        dataset_columns = set(self.dataset.columns)
-        if not columns.issubset(dataset_columns):
-            raise InvalidBenchmarkError("Not all specified columns were found in the dataset.")
-
-        return self
-
-    @field_serializer("metrics")
-    def _serialize_metrics(self, value: set[Metric]) -> list[Metric]:
-        """
-        Convert the set to a list. Since metrics are models and will be converted to dict,
-        they will not be hashable members of a set.
-        """
-        return list(value)
-
-    @model_validator(mode="after")
-    def _validate_target_types(self) -> Self:
-        """
-        Verifies that all target types are for benchmark targets.
-        """
-        columns = set(self.target_types.keys())
-        if not columns.issubset(self.target_cols):
-            raise InvalidBenchmarkError(
-                f"Not all specified target types were found in the target columns. {columns} - {self.target_cols}"
-            )
-        return self
-
-    @field_serializer("main_metric")
-    def _serialize_main_metric(value: Metric) -> str:
-        """
-        Convert the Metric to it's name
-        """
-        return value.name
-
-    @field_serializer("target_types")
-    def _serialize_target_types(self, target_types):
-        """
-        Convert from enum to string to make sure it's serializable
-        """
-        return {k: v.value for k, v in target_types.items()}
-
-    @field_serializer("target_cols", "input_cols")
-    def _serialize_columns(self, v: set[str]) -> list[str]:
-        return list(v)
 
     @computed_field
     @property
     def dataset_artifact_id(self) -> str:
         return self.dataset.artifact_id
 
-    @computed_field
-    @property
-    def task_type(self) -> str:
-        """The high-level task type of the benchmark."""
-        v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
-        return v.value
-
     @abc.abstractmethod
     def _get_test_sets(
         self, hide_targets=True, featurization_fn: Callable | None = None
     ) -> dict[str, Subset]:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def n_test_datapoints(self) -> dict[str, int]:
-        """
-        The size of (each of) the test set(s).
-        """
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def test_set_labels(self) -> list[str]:
-        """
-        The labels of the test sets.
-        """
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def n_train_datapoints(self) -> int:
-        """
-        The size of the train set.
-        """
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def n_test_sets(self) -> int:
-        """
-        The number of test sets
-        """
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def test_set_sizes(self) -> dict[str, int]:
-        """
-        The sizes of the test sets.
-        """
         raise NotImplementedError
 
     def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
@@ -422,11 +273,10 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
         return self.__repr__()
 
 
-class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
+class BenchmarkV1Specification(SplitSpecificationV1Mixin, ChecksumMixin, BenchmarkSpecification):
     _version: ClassVar[Literal[1]] = 1
 
     dataset: DatasetV1 = Field(exclude=True)
-    split: SplitType
 
     @field_validator("dataset", mode="before")
     @classmethod
@@ -472,66 +322,26 @@ class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
         return self
 
     @model_validator(mode="after")
-    def _validate_split(self) -> Self:
-        """
-        Verifies that:
-          1) There are no empty test partitions
-          2) All indices are valid given the dataset
-          3) There is no duplicate indices in any of the sets
-          4) There is no overlap between the train and test set
-          5) No row exists in the test set where all labels are missing/empty
-        """
-
-        if not isinstance(self.split[1], dict):
-            self.split = self.split[0], {"test": self.split[1]}
-        split = self.split
-
-        # Train partition can be empty (zero-shot)
-        # Test partitions cannot be empty
-        if any(len(v) == 0 for v in split[1].values()):
-            raise InvalidBenchmarkError("The predefined split contains empty test partitions")
-
-        train_idx_list = split[0]
-        full_test_idx_list = list(chain.from_iterable(split[1].values()))
-
-        if len(train_idx_list) == 0:
-            logger.info(
-                "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
-            )
-
-        train_idx_set = set(train_idx_list)
-        full_test_idx_set = set(full_test_idx_list)
-
-        # The train and test indices do not overlap
-        if len(train_idx_set & full_test_idx_set) > 0:
-            raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
-
-        # Check for duplicate indices within the train set
-        if len(train_idx_set) != len(train_idx_list):
-            raise InvalidBenchmarkError("The training set contains duplicate indices")
-
-        # Check for duplicate indices within a given test set. Because a user can specify
-        # multiple test sets for a given benchmark and it is acceptable for indices to be shared
-        # across test sets, we check for duplicates in each test set independently.
-        for test_set_name, test_set_idx_list in split[1].items():
-            if len(test_set_idx_list) != len(set(test_set_idx_list)):
-                raise InvalidBenchmarkError(
-                    f'Test set with name "{test_set_name}" contains duplicate indices'
-                )
-
-        # All indices are valid given the dataset
-        dataset = self.dataset
-        if dataset is not None:
-            max_i = len(dataset)
-            if any(i < 0 or i >= max_i for i in chain(train_idx_list, full_test_idx_set)):
-                raise InvalidBenchmarkError("The predefined split contains invalid indices")
+    def _validate_split_in_dataset(self) -> Self:
+        # All indices are valid given the dataset. We check the len of `self` here because a
+        # competition entity includes both the dataset and benchmark in one artifact.
+        max_i = len(self.dataset)
+        if any(i < 0 or i >= max_i for i in chain(self.split[0], *self.split[1].values())):
+            raise InvalidBenchmarkError("The predefined split contains invalid indices")
 
         return self
 
-    @field_serializer("split")
-    def _serialize_split(self, v: SplitType):
-        """Convert any tuple to list to make sure it's serializable"""
-        return listit(v)
+    @model_validator(mode="after")
+    def _validate_cols_in_dataset(self) -> Self:
+        """
+        Verifies that all specified columns are present in the dataset.
+        """
+        columns = self.target_cols | self.input_cols
+        dataset_columns = set(self.dataset.columns)
+        if not columns.issubset(dataset_columns):
+            raise InvalidBenchmarkError("Not all target or input columns were found in the dataset.")
+
+        return self
 
     def _compute_checksum(self) -> str:
         """
@@ -539,7 +349,6 @@ class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
 
         This is meant to uniquely identify the benchmark and can be used to verify the version.
         """
-
         hash_fn = md5()
         hash_fn.update(self.dataset.md5sum.encode("utf-8"))
         for c in sorted(self.target_cols):
@@ -565,7 +374,8 @@ class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
     def _get_test_sets(
         self, hide_targets=True, featurization_fn: Callable | None = None
     ) -> dict[str, Subset]:
-        """Construct the test set(s), given the split in the benchmark specification. Used
+        """
+        Construct the test set(s), given the split in the benchmark specification. Used
         internally to construct the test set for client use and evaluation.
         """
         test_split = self.split[1]
@@ -600,39 +410,6 @@ class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
         if len(test) == 1:
             test = test["test"]
         return train, test
-
-    @computed_field
-    @property
-    def test_set_sizes(self) -> dict[str, int]:
-        """The sizes of the test sets."""
-        return {k: len(v) for k, v in self.split[1].items()}
-
-    @computed_field
-    @property
-    def n_test_sets(self) -> int:
-        """The number of test sets"""
-        return len(self.split[1])
-
-    @computed_field
-    @property
-    def n_train_datapoints(self) -> int:
-        """The size of the train set."""
-        return len(self.split[0])
-
-    @computed_field
-    @property
-    def test_set_labels(self) -> list[str]:
-        """The labels of the test sets."""
-        return sorted(list(self.split[1].keys()))
-
-    @computed_field
-    @property
-    def n_test_datapoints(self) -> dict[str, int]:
-        """The size of (each of) the test set(s)."""
-        if self.n_test_sets == 1:
-            return {"test": len(self.split[1])}
-        else:
-            return {k: len(v) for k, v in self.split[1].items()}
 
     @computed_field
     @property

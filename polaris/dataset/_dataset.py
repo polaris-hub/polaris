@@ -43,7 +43,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         table: The core data-structure, storing data-points in a row-wise manner. Can be specified as either a
             path to a `.parquet` file or a `pandas.DataFrame`.
 
-    For additional meta-data attributes, see the [`BaseDataset`][polaris.dataset._base.BaseDataset] class.
+    For additional meta-data attributes, see the base classes.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.

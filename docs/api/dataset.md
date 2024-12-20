@@ -4,6 +4,12 @@
 
 --- 
 
+::: polaris.dataset.DatasetV2
+    options:
+        filters: ["!^_"]
+
+--- 
+
 ::: polaris.dataset._base.BaseDataset
     options:
         filters: ["!^_"]
