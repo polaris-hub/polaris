@@ -383,8 +383,8 @@ class PolarisHubClient(OAuth2Client):
                 # It should be None if the dataset does not use pointer columns
                 zarr_root_path = str(zarr_root_path)
 
-        dataset = DatasetV1(table=table, zarr_root_path=zarr_root_path, **response)
-        md5sum = response["md5Sum"]
+        dataset = DatasetV1(table=table, zarr_root_path=zarr_root_path, **response_data)
+        md5sum = response_data["md5Sum"]
 
         if dataset.should_verify_checksum(verify_checksum):
             dataset.verify_checksum(md5sum)
