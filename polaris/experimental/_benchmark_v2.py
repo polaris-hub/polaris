@@ -10,8 +10,7 @@ from typing_extensions import Self
 
 from polaris.benchmark import BenchmarkSpecification
 from polaris.benchmark._base import ColumnName
-from polaris.dataset import Subset
-from polaris.experimental._dataset_v2 import DatasetV2
+from polaris.dataset import DatasetV2, Subset
 from polaris.utils.errors import InvalidBenchmarkError
 
 

@@ -22,10 +22,9 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.competition import CompetitionSpecification
-from polaris.dataset import Dataset, DatasetV1
+from polaris.dataset import Dataset, DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResults, CompetitionPredictions
 from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
-from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
@@ -662,7 +661,7 @@ class PolarisHubClient(OAuth2Client):
             # Instead of directly uploading the data, we announce to the hub that we intend to upload it.
             # We do so separately for the Zarr archive and Parquet file.
             url = f"/v1/dataset/{dataset.artifact_id}"
-            response = self._base_request_to_hub(
+            self._base_request_to_hub(
                 url=url,
                 method="PUT",
                 json={
@@ -896,8 +895,7 @@ class PolarisHubClient(OAuth2Client):
         """Load a competition from the Polaris Hub.
 
         Args:
-            owner: The owner of the competition. Can be either a user or organization from the Polaris Hub.
-            name: The name of the competition.
+            artifact_id: The artifact identifier for the competition
 
         Returns:
             A `CompetitionSpecification` instance, if it exists.
@@ -944,7 +942,6 @@ class PolarisHubClient(OAuth2Client):
                 method="POST",
                 json=prediction_payload,
             )
-            response_data = response.json()
 
             # Log success and return submission response
             progress_indicator.update_success_msg(

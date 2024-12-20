@@ -12,9 +12,8 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.competition import CompetitionSpecification
-from polaris.dataset import ColumnAnnotation, DatasetFactory, DatasetV1
+from polaris.dataset import ColumnAnnotation, DatasetFactory, DatasetV1, DatasetV2
 from polaris.dataset.converters import SDFConverter
-from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.utils.types import HubOwner
 
 

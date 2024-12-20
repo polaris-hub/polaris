@@ -8,9 +8,8 @@ from typing_extensions import Self
 
 from polaris.benchmark import BenchmarkSpecification
 from polaris.benchmark._base import ColumnName
-from polaris.dataset import Subset
+from polaris.dataset import DatasetV2, Subset
 from polaris.evaluate import CompetitionPredictions
-from polaris.experimental._dataset_v2 import DatasetV2
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidCompetitionError
 from polaris.utils.misc import listit
@@ -26,7 +25,7 @@ from polaris.utils.types import (
 
 class CompetitionSpecification(DatasetV2, BenchmarkSpecification):
     """An instance of this class represents a Polaris competition. It defines fields and functionality
-    that in combination with the `polaris.experimental._dataset_v2.DatasetV2` class, allow
+    that in combination with the `polaris.dataset.DatasetV2` class, allow
     users to participate in competitions hosted on Polaris Hub.
 
     Examples:
@@ -70,7 +69,7 @@ class CompetitionSpecification(DatasetV2, BenchmarkSpecification):
         end_time: The time at which the competition stops accepting prediction submissions.
         n_classes: The number of classes within target columns that define a classification task.
 
-    For additional meta-data attributes, see the `polaris.experimental._dataset_v2.DatasetV2` class.
+    For additional meta-data attributes, see the `polaris.dataset.DatasetV2` class.
     """
 
     _artifact_type = "competition"
@@ -166,7 +165,6 @@ class CompetitionSpecification(DatasetV2, BenchmarkSpecification):
         """Convert any tuple to list to make sure it's serializable"""
         return listit(v)
 
-
     @computed_field
     @property
     def dataset_artifact_id(self) -> str:
@@ -201,9 +199,7 @@ class CompetitionSpecification(DatasetV2, BenchmarkSpecification):
     def n_test_datapoints(self) -> dict[str, int]:
         """The size of (each of) the test set(s)."""
         if self.n_test_sets == 1:
-            return {
-                "test": len(self.split[1])
-            }
+            return {"test": len(self.split[1])}
         else:
             return {k: len(v) for k, v in self.split[1].items()}
 
