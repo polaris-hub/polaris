@@ -2,7 +2,6 @@ import json
 import ssl
 from hashlib import md5
 from io import BytesIO
-from pathlib import Path
 from typing import get_args
 from urllib.parse import urljoin
 
@@ -46,7 +45,6 @@ from polaris.utils.types import (
     SupportedLicenseType,
     TimeoutTypes,
     ZarrConflictResolution,
-    SlugCompatibleStringType,
 )
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
@@ -894,9 +892,7 @@ class PolarisHubClient(OAuth2Client):
                 f"Your benchmark has been successfully uploaded to the Hub. View it here: {benchmark_url}"
             )
 
-    def get_competition(
-        self, owner: str | HubOwner, name: SlugCompatibleStringType
-    ) -> CompetitionSpecification:
+    def get_competition(self, artifact_id: str) -> CompetitionSpecification:
         """Load a competition from the Polaris Hub.
 
         Args:
@@ -906,11 +902,13 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `CompetitionSpecification` instance, if it exists.
         """
-        url = f"/v1/competition/{owner}/{name}"
+        url = f"/v1/competition/{artifact_id}"
         response = self._base_request_to_hub(url=url, method="GET")
         response_data = response.json()
 
-        with StorageSession(self, "read", CompetitionSpecification.urn_for(owner, name)) as storage:
+        with StorageSession(
+            self, "read", CompetitionSpecification.urn_for(*artifact_id.split("/"))
+        ) as storage:
             zarr_root_path = str(storage.paths.root)
 
         return CompetitionSpecification(zarr_root_path=zarr_root_path, **response_data)

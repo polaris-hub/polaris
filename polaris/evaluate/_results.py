@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import ClassVar
 
 import pandas as pd
@@ -6,7 +5,6 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    PrivateAttr,
     computed_field,
     field_serializer,
     field_validator,
@@ -14,16 +12,13 @@ from pydantic import (
 )
 from pydantic.alias_generators import to_camel
 
-from polaris._artifact import BaseArtifactModel
-from polaris.evaluate import BenchmarkPredictions
-from polaris.utils.dict2html import dict2html
+from polaris.evaluate import ResultsMetadata
+from polaris.evaluate._predictions import BenchmarkPredictions
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import slugify
 from polaris.utils.types import (
     AccessType,
-    HttpUrlString,
     HubOwner,
-    HubUser,
     SlugCompatibleStringType,
 )
 
@@ -44,33 +39,6 @@ class ResultRecords(BaseModel):
 
     # Model config
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
-
-
-class ResultsMetadata(BaseArtifactModel):
-    """Base class for evaluation results
-
-    Attributes:
-        github_url: The URL to the GitHub repository of the code used to generate these results.
-        paper_url: The URL to the paper describing the methodology used to generate these results.
-        contributors: The users that are credited for these results.
-        _created_at: The time-stamp at which the results were created. Automatically set.
-    For additional meta-data attributes, see the [`BaseArtifactModel`][polaris._artifact.BaseArtifactModel] class.
-    """
-
-    # Additional meta-data
-    github_url: HttpUrlString | None = None
-    paper_url: HttpUrlString | None = None
-    contributors: list[HubUser] = Field(default_factory=list)
-
-    # Private attributes
-    _created_at: datetime = PrivateAttr(default_factory=datetime.now)
-
-    def _repr_html_(self) -> str:
-        """For pretty-printing in Jupyter Notebooks"""
-        return dict2html(self.model_dump())
-
-    def __repr__(self):
-        return self.model_dump_json(indent=2)
 
 
 class EvaluationResult(ResultsMetadata):

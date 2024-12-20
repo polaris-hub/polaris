@@ -1,4 +1,5 @@
 from itertools import chain
+
 import pytest
 from pydantic import ValidationError
 
@@ -111,7 +112,7 @@ def test_competition_duplicate_metrics(test_competition):
     """Tests that passing duplicate metrics will raise a validation error"""
     m = test_competition.model_dump()
 
-    with pytest.raises(ValidationError, match="The competition specifies duplicate metric"):
+    with pytest.raises(ValidationError, match="The benchmark specifies duplicate metric"):
         m["metrics"] = [
             Metric(label="roc_auc", config={"group_by": "CLASS_expt"}),
             Metric(label="roc_auc", config={"group_by": "CLASS_expt"}),
@@ -119,7 +120,7 @@ def test_competition_duplicate_metrics(test_competition):
         m["main_metric"] = m["metrics"][0]
         CompetitionSpecification(**m)
 
-    with pytest.raises(ValidationError, match="The metrics of a competition need to have unique names."):
+    with pytest.raises(ValidationError, match="The metrics of a benchmark need to have unique names."):
         m["metrics"][0].config.group_by = "MULTICLASS_calc"
         CompetitionSpecification(**m)
 

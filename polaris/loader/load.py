@@ -7,7 +7,7 @@ from polaris.benchmark._definitions import MultiTaskBenchmarkSpecification, Sing
 from polaris.dataset import DatasetV1, create_dataset_from_file
 from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.client import PolarisHubClient
-from polaris.utils.types import ChecksumStrategy, SlugCompatibleStringType
+from polaris.utils.types import ChecksumStrategy
 
 
 def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr") -> DatasetV1:
@@ -100,7 +100,7 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
     return benchmark
 
 
-def load_competition(slug: SlugCompatibleStringType):
+def load_competition(artifact_id: str):
     """
     Loads a Polaris competition.
 
@@ -111,9 +111,5 @@ def load_competition(slug: SlugCompatibleStringType):
         The dataset underlying the competition is automatically loaded when loading the competition.
 
     """
-
-    # Load from the Hub
-    client = PolarisHubClient()
-    return client.get_competition(
-        *slug.split("/"),
-    )
+    with PolarisHubClient() as client:
+        return client.get_competition(artifact_id)

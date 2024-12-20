@@ -98,7 +98,6 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
 
     _artifact_type = "benchmark"
 
-    # Public attributes
     dataset: BaseDataset = Field(exclude=True)
     target_cols: set[ColumnName] = Field(min_length=1)
     input_cols: set[ColumnName] = Field(min_length=1)
@@ -188,7 +187,7 @@ class BenchmarkSpecification(BaseArtifactModel, abc.ABC):
         columns = self.target_cols | self.input_cols
         dataset_columns = set(self.dataset.columns)
         if not columns.issubset(dataset_columns):
-            raise InvalidBenchmarkError("Not all specified columns were found in the dataset.")
+            raise InvalidBenchmarkError("Not all target or input columns were found in the dataset.")
 
         return self
 
@@ -565,7 +564,8 @@ class BenchmarkV1Specification(BenchmarkSpecification, ChecksumMixin):
     def _get_test_sets(
         self, hide_targets=True, featurization_fn: Callable | None = None
     ) -> dict[str, Subset]:
-        """Construct the test set(s), given the split in the benchmark specification. Used
+        """
+        Construct the test set(s), given the split in the benchmark specification. Used
         internally to construct the test set for client use and evaluation.
         """
         test_split = self.split[1]
