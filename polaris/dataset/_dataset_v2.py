@@ -13,6 +13,7 @@ from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
+from polaris.dataset._iterator import CachedChunkIterator
 from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import AccessType, ChecksumStrategy, HubOwner, ZarrConflictResolution
@@ -280,3 +281,6 @@ class DatasetV2(BaseDataset):
         Determines whether to verify the checksum of the dataset based on the strategy.
         """
         return False
+
+    def __iter__(self):
+        return zip(*[CachedChunkIterator(self, c) for c in self.columns])
