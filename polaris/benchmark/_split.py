@@ -34,7 +34,6 @@ class SplitSpecificationV1Mixin(BaseModel):
           1) There are no empty test partitions
           2) There is no duplicate indices in any of the sets
           3) There is no overlap between the train and test set
-          4) No row exists in the test set where all labels are missing/empty
         """
 
         if not isinstance(self.split[1], dict):
