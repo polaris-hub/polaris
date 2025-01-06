@@ -3,8 +3,8 @@ import datamol as dm
 import fastpdb
 import numpy as np
 import pytest
-import zarr
 from datamol.utils import fs
+from zarr import consolidate_metadata, open as zarr_open
 
 import polaris as po
 from polaris.benchmark import (
@@ -164,10 +164,10 @@ def test_competition_dataset(test_data, test_org_owner):
 @pytest.fixture(scope="function")
 def zarr_archive(tmp_path):
     tmp_path = fs.join(tmp_path, "data.zarr")
-    root = zarr.open(tmp_path, mode="w")
+    root = zarr_open(tmp_path, mode="w")
     root.array("A", data=np.random.random((100, 2048)), chunks=(1, None))
     root.array("B", data=np.random.random((100, 2048)), chunks=(1, None))
-    zarr.consolidate_metadata(root.store)
+    consolidate_metadata(root.store)
     return tmp_path
 
 

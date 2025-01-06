@@ -3,8 +3,8 @@ from typing import Literal
 
 import datamol as dm
 import pandas as pd
-import zarr
 from loguru import logger
+from zarr import DirectoryStore, Group, consolidate_metadata, open as zarr_open
 
 from polaris.dataset import ColumnAnnotation, DatasetV1
 from polaris.dataset._adapters import Adapter
@@ -97,7 +97,7 @@ class DatasetFactory:
         self.reset(zarr_root_path=zarr_root_path)
 
     @property
-    def zarr_root_path(self) -> zarr.Group:
+    def zarr_root_path(self) -> Group:
         """
         The root of the zarr archive for the Dataset that is being built.
         All data for a single dataset is expected to be stored in the same Zarr archive.
@@ -107,7 +107,7 @@ class DatasetFactory:
         return self._zarr_root_path
 
     @property
-    def zarr_root(self) -> zarr.Group:
+    def zarr_root(self) -> Group:
         """
         The root of the zarr archive for the Dataset that is being built.
         All data for a single dataset is expected to be stored in the same Zarr archive.
@@ -116,9 +116,9 @@ class DatasetFactory:
             # NOTE (cwognum): The DirectoryStore is the default store when calling zarr.open
             #   I nevertheless explicitly set it here to make it clear that this is a design decision.
             #   We could consider using different stores, such as the NestedDirectoryStore.
-            store = zarr.DirectoryStore(self.zarr_root_path)
-            self._zarr_root = zarr.open(store, "w")
-            if not isinstance(self._zarr_root, zarr.Group):
+            store = DirectoryStore(self.zarr_root_path)
+            self._zarr_root = zarr_open(store, "w")
+            if not isinstance(self._zarr_root, Group):
                 raise ValueError("The root of the zarr hierarchy should be a group")
         return self._zarr_root
 
@@ -267,7 +267,7 @@ class DatasetFactory:
 
     def build(self) -> DatasetV1:
         """Returns a Dataset based on the current state of the factory."""
-        zarr.consolidate_metadata(self.zarr_root.store)
+        consolidate_metadata(self.zarr_root.store)
         return DatasetV1(
             table=self._table,
             annotations=self._annotations,

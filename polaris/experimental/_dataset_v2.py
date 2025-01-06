@@ -6,10 +6,10 @@ from typing import Any, ClassVar, Literal
 
 import fsspec
 import numpy as np
-import zarr
 from loguru import logger
 from pydantic import PrivateAttr, computed_field, model_validator
 from typing_extensions import Self
+from zarr import Group, open_consolidated
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
@@ -85,7 +85,7 @@ class DatasetV2(BaseDataset):
     def n_rows(self) -> int:
         """Return all row indices for the dataset"""
         example = self.zarr_root[self.columns[0]]
-        if isinstance(example, zarr.Group):
+        if isinstance(example, Group):
             return len(example[_INDEX_ARRAY_KEY])
         return len(example)
 
@@ -123,7 +123,7 @@ class DatasetV2(BaseDataset):
 
         with PolarisHubClient() as client:
             with StorageSession(client, "read", self.urn) as storage:
-                return zarr.open_consolidated(store=storage.store("root"))
+                return open_consolidated(store=storage.store("root"))
 
     @property
     def zarr_manifest_path(self) -> str:
@@ -182,7 +182,7 @@ class DatasetV2(BaseDataset):
         # If it is a group, there is no deterministic order for the child keys.
         # We therefore use a special array that defines the index.
         # If loaded to memory, the group is represented by a dictionary.
-        if isinstance(group_or_array, zarr.Group) or isinstance(group_or_array, dict):
+        if isinstance(group_or_array, Group) or isinstance(group_or_array, dict):
             # Indices in a group should always be strings
             row = str(group_or_array[_INDEX_ARRAY_KEY][row])
         arr = group_or_array[row]

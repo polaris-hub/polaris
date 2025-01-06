@@ -8,13 +8,13 @@ from urllib.parse import urljoin
 import certifi
 import httpx
 import pandas as pd
-import zarr
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2 import OAuth2Error, TokenAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
 from httpx import HTTPStatusError, Response
 from loguru import logger
+from zarr import consolidate_metadata
 
 from polaris.benchmark import (
     BenchmarkV1Specification,
@@ -708,7 +708,7 @@ class PolarisHubClient(OAuth2Client):
                     # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
                     # metadata based on Zarr developers' recommendations can be tracked at:
                     # https://github.com/zarr-developers/zarr-python/issues/1731
-                    zarr.consolidate_metadata(dataset.zarr_root.store.store)
+                    consolidate_metadata(dataset.zarr_root.store.store)
                     zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
                     destination[".zmetadata"] = zmetadata_content
 
@@ -775,7 +775,7 @@ class PolarisHubClient(OAuth2Client):
                 # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
                 # metadata based on Zarr developers' recommendations can be tracked at:
                 # https://github.com/zarr-developers/zarr-python/issues/1731
-                zarr.consolidate_metadata(dataset.zarr_root.store.store)
+                consolidate_metadata(dataset.zarr_root.store.store)
                 zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
                 destination[".zmetadata"] = zmetadata_content
 

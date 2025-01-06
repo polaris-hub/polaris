@@ -52,7 +52,7 @@ dependencies = [
     "seaborn",
     "datamol >=0.12.1",
     "fastpdb",
-    "zarr",
+    "zarr >=2,<3",
     "pyarrow < 18",
     "fsspec[http]",
     "yaspin",

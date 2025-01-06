@@ -1,9 +1,9 @@
+import os
 from collections import defaultdict
 from typing import TYPE_CHECKING
-import os
 
 import pandas as pd
-import zarr
+from zarr import copy_store, open as zarr_open
 
 from polaris.dataset import ColumnAnnotation
 from polaris.dataset.converters._base import Converter, FactoryProduct
@@ -29,7 +29,7 @@ class ZarrConverter(Converter):
     """
 
     def convert(self, path: str, factory: "DatasetFactory", append: bool = False) -> FactoryProduct:
-        src = zarr.open(path, "r")
+        src = zarr_open(path, "r")
 
         v = next(src.group_keys(), None)
         if v is not None:
@@ -48,7 +48,7 @@ class ZarrConverter(Converter):
                     pointer_start_dict[col] += factory.zarr_root[col].shape[0]
                     factory.zarr_root[col].append(arr)
         else:
-            zarr.copy_store(source=src.store, dest=factory.zarr_root.store, if_exists="skip")
+            copy_store(source=src.store, dest=factory.zarr_root.store, if_exists="skip")
 
         # Construct the table
         # Parse any group into a column

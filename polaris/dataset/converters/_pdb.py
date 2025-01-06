@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Sequence, Union
+from typing import Optional, Sequence, TYPE_CHECKING, Union
 
 import fastpdb
 import numpy as np
 import pandas as pd
-import zarr
 from fastpdb import struc
+from zarr import Group
 
 from polaris.dataset import ColumnAnnotation, Modality
 from polaris.dataset._adapters import Adapter
@@ -44,7 +44,7 @@ KEYS = [
 ]
 
 
-def zarr_to_pdb(atom_dict: zarr.Group):
+def zarr_to_pdb(atom_dict: Group):
     """Load a dictionary of arrays to fastpdb AtomArray"""
 
     atom_array = []

@@ -3,10 +3,10 @@ from time import perf_counter
 import numpy as np
 import pandas as pd
 import pytest
-import zarr
 from datamol.utils import fs
 from numcodecs.abc import Codec
 from numcodecs.registry import codec_registry, register_codec
+from zarr import consolidate_metadata, open as zarr_open
 
 from polaris.dataset import DatasetV1, Subset, create_dataset_from_file
 from polaris.dataset.zarr._utils import check_zarr_codecs
@@ -25,9 +25,9 @@ def test_load_data(tmp_path, with_slice, with_caching):
     tmp_path = str(tmp_path)
     zarr_path = fs.join(tmp_path, "data.zarr")
 
-    root = zarr.open(zarr_path, "w")
+    root = zarr_open(zarr_path, "w")
     root.array("A", data=arr)
-    zarr.consolidate_metadata(root.store)
+    consolidate_metadata(root.store)
 
     path = "A#0:5" if with_slice else "A#0"
     table = pd.DataFrame({"A": [path]}, index=[0])
@@ -209,7 +209,7 @@ def test_dataset__get_item__with_pointer_columns(zarr_archive, tmp_path):
     """Test the __getitem__() interface for a dataset with pointer columns (i.e. part of the data stored in Zarr)."""
 
     dataset = create_dataset_from_file(zarr_archive, str(tmp_path / "data"))
-    root = zarr.open(zarr_archive)
+    root = zarr_open(zarr_archive)
 
     # Get a specific cell
     assert np.array_equal(dataset[0, "A"], root["A"][0, :])
@@ -240,12 +240,12 @@ def test_missing_codec_error(tmp_path):
 
     # Write
     register_codec(CustomCodec)
-    root = zarr.open(path, mode="w")
+    root = zarr_open(path, mode="w")
     root.array("A", data=np.random.random(100), compressor=CustomCodec())
 
     # Read without codec
     codec_registry.pop(CustomCodec.codec_id)
-    root = zarr.open(path, mode="r")
+    root = zarr_open(path, mode="r")
 
     with pytest.raises(InvalidZarrCodec) as err_info:
         check_zarr_codecs(root)
@@ -253,5 +253,5 @@ def test_missing_codec_error(tmp_path):
 
     # Read with codec
     register_codec(CustomCodec)
-    root = zarr.open(path, mode="r")
+    root = zarr_open(path, mode="r")
     check_zarr_codecs(root)

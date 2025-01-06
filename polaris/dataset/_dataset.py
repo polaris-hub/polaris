@@ -7,10 +7,10 @@ from typing import Any, ClassVar, List, Literal
 import fsspec
 import numpy as np
 import pandas as pd
-import zarr
 from datamol.utils import fs as dmfs
 from pydantic import PrivateAttr, computed_field, field_validator, model_validator
 from typing_extensions import Self
+from zarr import open_consolidated
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
@@ -141,7 +141,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         with PolarisHubClient() as client:
             with StorageSession(client, "read", self.urn) as storage:
-                return zarr.open_consolidated(store=storage.store("extension"))
+                return open_consolidated(store=storage.store("extension"))
 
     @computed_field
     @property

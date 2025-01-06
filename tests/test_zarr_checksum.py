@@ -36,7 +36,7 @@ from pathlib import Path
 from shutil import copytree, rmtree
 
 import pytest
-import zarr
+from zarr import open as zarr_open
 
 from polaris.dataset.zarr._checksum import (
     EMPTY_CHECKSUM,
@@ -114,7 +114,7 @@ def test_checksum_for_zarr_archive(zarr_archive, tmp_path):
     copytree(zarr_archive, path)
     assert checksum == compute_zarr_checksum(path)[0]
 
-    root = zarr.open(path)
+    root = zarr_open(path)
     root["A"][0:10] = 0
     assert checksum != compute_zarr_checksum(path)[0]
 
@@ -122,7 +122,7 @@ def test_checksum_for_zarr_archive(zarr_archive, tmp_path):
 def test_zarr_leaf_to_checksum(zarr_archive):
     # NOTE: This test was not in the original code base of the zarr-checksum package.
     _, leaf_to_checksum = compute_zarr_checksum(zarr_archive)
-    root = zarr.open(zarr_archive)
+    root = zarr_open(zarr_archive)
 
     # Check the basic structure - Each key corresponds to a file in the zarr archive
     assert len(leaf_to_checksum) == len(root.store)

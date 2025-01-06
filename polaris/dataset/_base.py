@@ -7,7 +7,6 @@ from uuid import uuid4
 
 import fsspec
 import numpy as np
-import zarr
 from loguru import logger
 from pydantic import (
     Field,
@@ -18,6 +17,7 @@ from pydantic import (
     model_validator,
 )
 from typing_extensions import Self
+from zarr import Group, copy_store, open as zarr_open, open_consolidated
 
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
@@ -82,7 +82,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     curation_reference: HttpUrlString | None = None
 
     # Private attributes
-    _zarr_root: zarr.Group | None = PrivateAttr(None)
+    _zarr_root: Group | None = PrivateAttr(None)
     _zarr_data: MutableMapping[str, np.ndarray] | None = PrivateAttr(None)
     _warn_about_remote_zarr: bool = PrivateAttr(True)
     _cache_dir: str | None = PrivateAttr(None)  # Where to cache the data to if cache() is called.
@@ -154,7 +154,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         return self.zarr_root
 
     @property
-    def zarr_root(self) -> zarr.Group | None:
+    def zarr_root(self) -> Group | None:
         """Get the zarr Group object corresponding to the root.
 
         Opens the zarr archive in read-write mode if it is not already open.
@@ -216,7 +216,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
                 "If the data is not stored on the Polaris Hub, it needs to be stored locally."
             )
         store = MemoryMappedDirectoryStore(self.zarr_root_path)
-        return zarr.open_consolidated(store, mode="r+")
+        return open_consolidated(store, mode="r+")
 
     @computed_field
     @property
@@ -262,7 +262,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         """
         data = self.zarr_data
 
-        if not isinstance(data, zarr.Group):
+        if not isinstance(data, Group):
             raise TypeError(
                 "The dataset zarr_root is not a valid Zarr archive. "
                 "Did you call Dataset.load_to_memory() twice?"
@@ -372,13 +372,13 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         self._warn_about_remote_zarr = False
 
         logger.info(f"Copying Zarr archive to {destination_zarr_root}. This may take a while.")
-        destination_store = zarr.open(str(destination_zarr_root), "w").store
+        destination_store = zarr_open(str(destination_zarr_root), "w").store
         source_store = self.zarr_root.store.store
 
         if isinstance(source_store, S3Store):
             source_store.copy_to_destination(destination_store, if_exists, logger.info)
         else:
-            zarr.copy_store(
+            copy_store(
                 source=source_store,
                 dest=destination_store,
                 log=logger.info,

@@ -1,5 +1,4 @@
-import zarr
-import zarr.storage
+from zarr import Array, Group
 
 from polaris.utils.errors import InvalidZarrCodec
 
@@ -12,7 +11,7 @@ except ImportError:
     pass
 
 
-def load_zarr_group_to_memory(group: zarr.Group) -> dict:
+def load_zarr_group_to_memory(group: Group) -> dict:
     """Loads an entire Zarr group into memory."""
 
     if isinstance(group, dict):
@@ -22,18 +21,18 @@ def load_zarr_group_to_memory(group: zarr.Group) -> dict:
 
     data = {}
     for key, item in group.items():
-        if isinstance(item, zarr.Array):
+        if isinstance(item, Array):
             data[key] = item[:]
-        elif isinstance(item, zarr.Group):
+        elif isinstance(item, Group):
             data[key] = load_zarr_group_to_memory(item)
     return data
 
 
-def check_zarr_codecs(group: zarr.Group):
+def check_zarr_codecs(group: Group):
     """Check if all codecs in the Zarr group are registered."""
     try:
         for key, item in group.items():
-            if isinstance(item, zarr.Group):
+            if isinstance(item, Group):
                 check_zarr_codecs(item)
 
     except ValueError as error:

@@ -1,7 +1,7 @@
 """
 The code in this file is based on the zarr-checksum package
 
-Mainted by Jacob Nesbitt, released under the DANDI org on Github
+Maintained by Jacob Nesbitt, released under the DANDI org on Github
 and with Kitware, Inc. credited as the author. This code is released
 with the Apache 2.0 license.
 
@@ -21,7 +21,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,11 +41,10 @@ from pathlib import Path
 from typing import List, Tuple
 
 import fsspec
-import zarr
-import zarr.errors
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 from tqdm import tqdm
+from zarr import open_group
 
 from polaris.utils.errors import InvalidZarrChecksum
 
@@ -56,8 +55,8 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple["_ZarrDirectoryDigest", 
     r"""
     Implements an algorithm to compute the Zarr checksum.
 
-    Warning: This checksum is sensitive to Zarr configuration. 
-        This checksum is sensitive to change in the Zarr structure. For example, if you change the chunk size, 
+    Warning: This checksum is sensitive to Zarr configuration.
+        This checksum is sensitive to change in the Zarr structure. For example, if you change the chunk size,
         the checksum will also change.
 
     To understand how this works, consider the following directory structure:
@@ -67,17 +66,17 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple["_ZarrDirectoryDigest", 
              a   c
             /
            b
-    
+
     Within zarr, this would for example be:
 
     - `root`: A Zarr Group with a single Array.
     - `a`: A Zarr Array
     - `b`: A single chunk of the Zarr Array
-    - `c`: A metadata file (i.e. .zarray, .zattrs or .zgroup) 
+    - `c`: A metadata file (i.e. .zarray, .zattrs or .zgroup)
 
-    To compute the checksum, we first find all the trees in the node, in this case b and c. 
+    To compute the checksum, we first find all the trees in the node, in this case b and c.
     We compute the hash of the content (the raw bytes) for each of these files.
-    
+
     We then work our way up the tree. For any node (directory), we find all children of that node.
     In an sorted order, we then serialize a list with - for each of the children - the checksum, size, and number of children.
     The hash of the directory is then equal to the hash of the serialized JSON.
@@ -107,7 +106,7 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple["_ZarrDirectoryDigest", 
     fs, zarr_root_path = fsspec.url_to_fs(zarr_root_path)
 
     # Make sure the path exists and is a Zarr archive
-    zarr.open_group(zarr_root_path, mode="r")
+    open_group(zarr_root_path, mode="r")
 
     # Generate the checksum
     tree = _ZarrChecksumTree()
