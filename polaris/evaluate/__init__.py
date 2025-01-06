@@ -9,6 +9,7 @@ from polaris.evaluate._results import (
 from polaris.evaluate.utils import evaluate_benchmark
 
 __all__ = [
+    "ResultsMetadata",
     "Metric",
     "MetricInfo",
     "EvaluationResult",

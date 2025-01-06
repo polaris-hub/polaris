@@ -119,10 +119,12 @@ class SplitV2(BaseModel):
         """
         The size of (each of) the test set(s).
         """
+        # TODO: Until we support multi-test benchmarks
         return {"test": self.test.datapoints}
 
     @property
     def max_index(self) -> int:
+        # TODO: Until we support multi-test benchmarks (need)
         return max(self.training.indices.max(), self.test.indices.max())
 
     def test_items(self) -> Generator[tuple[str, IndexSet], None, None]:

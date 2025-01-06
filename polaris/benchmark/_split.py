@@ -13,7 +13,7 @@ class SplitSpecificationV1Mixin(BaseModel):
     """
     Mixin class to add a split field to a benchmark. This is the V1 implementation.
 
-    The split is defined as a (train, test) tuple, w train is a list of indices and
+    The split is defined as a (train, test) tuple, where train is a list of indices and
     test is a dictionary that maps test set names to lists of indices.
 
     Warning: Scalability

@@ -11,10 +11,10 @@ class ResultsMetadata(BaseArtifactModel):
     """Base class for evaluation results
 
     Attributes:
-        github_url: The URL to the GitHub repository of the code used to generate these results.
+        github_url: The URL to the code repository that was used to generate these results.
         paper_url: The URL to the paper describing the methodology used to generate these results.
         contributors: The users that are credited for these results.
-        _created_at: The time-stamp at which the results were created. Automatically set.
+
     For additional meta-data attributes, see the base classes.
     """
 

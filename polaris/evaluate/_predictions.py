@@ -12,7 +12,7 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-from polaris.evaluate._metadata import ResultsMetadata
+from polaris.evaluate import ResultsMetadata
 from polaris.utils.misc import convert_lists_to_arrays
 from polaris.utils.types import (
     HttpUrlString,

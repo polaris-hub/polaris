@@ -12,8 +12,7 @@ from pydantic import (
 )
 from pydantic.alias_generators import to_camel
 
-from polaris.evaluate import ResultsMetadata
-from polaris.evaluate._predictions import BenchmarkPredictions
+from polaris.evaluate import ResultsMetadata, BenchmarkPredictions
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import slugify
 from polaris.utils.types import (

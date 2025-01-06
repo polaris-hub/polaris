@@ -23,7 +23,7 @@ from polaris.utils.types import (
 
 class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, SplitSpecificationV1Mixin):
     """An instance of this class represents a Polaris competition. It defines fields and functionality
-    that in combination with the `polaris.dataset.DatasetV2` class, allow
+    that in combination with the [`DatasetV2`][polaris.dataset.DatasetV2] class, allow
     users to participate in competitions hosted on Polaris Hub.
 
     Examples:
@@ -58,7 +58,7 @@ class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, Spli
     Attributes:
         start_time: The time at which the competition starts accepting prediction submissions.
         end_time: The time at which the competition stops accepting prediction submissions.
-        n_classes: The number of classes within target columns that define a classification task.
+        n_classes: The number of classes within each target column that defines a classification task.
 
     For additional meta-data attributes, see the base classes.
     """
@@ -73,8 +73,10 @@ class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, Spli
 
     @model_validator(mode="after")
     def _validate_split_in_dataset(self) -> Self:
-        # All indices are valid given the dataset. We check the len of `self` here because a
-        # competition entity includes both the dataset and benchmark in one artifact.
+        """
+        All indices are valid given the dataset. We check the len of `self` here because a
+        competition entity includes both the dataset and benchmark in one artifact.
+        """
         max_i = len(self)
         if any(i < 0 or i >= max_i for i in chain(self.split[0], *self.split[1].values())):
             raise InvalidCompetitionError("The predefined split contains invalid indices")
@@ -100,7 +102,7 @@ class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, Spli
         """
         columns = set(self.n_classes.keys())
         if not columns.issubset(self.target_cols):
-            raise InvalidCompetitionError("Not all target class numbers were found in the target columns.")
+            raise InvalidCompetitionError("Not all target class members were found in the target columns.")
 
         return self
 
@@ -125,7 +127,7 @@ class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, Spli
         self, hide_targets=True, featurization_fn: Callable | None = None
     ) -> dict[str, Subset]:
         """
-        Construct the test set(s), given the split in the benchmark specification. Used
+        Construct the test set(s), given the split in the competition specification. Used
         internally to construct the test set for client use and evaluation.
         """
         test_split = self.split[1]

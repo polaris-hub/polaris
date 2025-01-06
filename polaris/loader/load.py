@@ -3,7 +3,7 @@ import json
 import fsspec
 from datamol.utils import fs
 
-from polaris.benchmark._definitions import MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
+from polaris.benchmark import MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
 from polaris.dataset import DatasetV1, create_dataset_from_file
 from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.client import PolarisHubClient
