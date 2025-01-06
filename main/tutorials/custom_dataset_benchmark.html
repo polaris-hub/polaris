@@ -1547,6 +1547,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
                     processEnvironments: true
                 },
                 displayAlign: 'center',
+                messageStyle: 'none',
                 CommonHTML: {
                     linebreaks: {
                     automatic: true
@@ -1792,7 +1793,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="n">PATH</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">"https://raw.githubusercontent.com/molecularinformatics/Computational-ADME/main/ADME_public_set_3521.csv"</span>
@@ -1952,7 +1953,7 @@ table.head(5)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">ColumnAnnotation</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColumnAnnotation</span>
 
 <span class="c1"># Additional meta-data on the column level</span>
 <span class="c1"># Of course, for a real dataset we should annotate all columns.</span>
@@ -1999,8 +2000,8 @@ annotations = {
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span>
-<span class="kn">from</span> <span class="nn">polaris.utils.types</span> <span class="kn">import</span> <span class="n">HubOwner</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">polaris.utils.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">HubOwner</span>
 
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span>
     <span class="c1"># The table is the core data-structure required to construct a dataset</span>
@@ -2067,7 +2068,7 @@ dataset = Dataset(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">tempfile</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 
 <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span><span class="o">.</span><span class="n">name</span>
 </pre></div>
@@ -2098,7 +2099,7 @@ temp_dir = tempfile.TemporaryDirectory().name</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datamol</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dm</span>
 
 <span class="n">save_dir</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="s2">"dataset"</span><span class="p">)</span>
 </pre></div>
@@ -2220,7 +2221,7 @@ fs.ls(save_dir)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">polaris</span> <span class="k">as</span> <span class="nn">po</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">polaris</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">po</span>
 
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 </pre></div>
@@ -2315,8 +2316,8 @@ dataset = po.load_dataset(path)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">polaris.benchmark</span> <span class="kn">import</span> <span class="n">SingleTaskBenchmarkSpecification</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">polaris.benchmark</span><span class="w"> </span><span class="kn">import</span> <span class="n">SingleTaskBenchmarkSpecification</span>
 
 <span class="c1"># For the sake of simplicity, we use a very simple, ordered split</span>
 <span class="n">split</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">521</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3000</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>  <span class="c1"># train  # test</span>
@@ -2379,7 +2380,7 @@ benchmark = SingleTaskBenchmarkSpecification(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.benchmark</span> <span class="kn">import</span> <span class="n">MultiTaskBenchmarkSpecification</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.benchmark</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiTaskBenchmarkSpecification</span>
 
 <span class="n">benchmark</span> <span class="o">=</span> <span class="n">MultiTaskBenchmarkSpecification</span><span class="p">(</span>
     <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
@@ -2762,7 +2763,7 @@ fs.ls(save_dir)</div>
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright 2023 - 2024 Polaris
+      Copyright 2023 - 2025 Polaris
     </div>
   
   

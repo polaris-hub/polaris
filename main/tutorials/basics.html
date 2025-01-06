@@ -1551,6 +1551,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
                     processEnvironments: true
                 },
                 displayAlign: 'center',
+                messageStyle: 'none',
                 CommonHTML: {
                     linebreaks: {
                     automatic: true
@@ -1782,8 +1783,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">polaris</span> <span class="k">as</span> <span class="nn">po</span>
-<span class="kn">from</span> <span class="nn">polaris.hub.client</span> <span class="kn">import</span> <span class="n">PolarisHubClient</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">polaris</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">po</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">polaris.hub.client</span><span class="w"> </span><span class="kn">import</span> <span class="n">PolarisHubClient</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">import polaris as po
 from polaris.hub.client import PolarisHubClient</div>
@@ -2177,8 +2178,8 @@ y = train.targets</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
-<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datamol</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span>
 
 <span class="c1"># Load the benchmark (automatically loads the underlying dataset as well)</span>
 <span class="n">benchmark</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_benchmark</span><span class="p">(</span><span class="s2">"polaris/hello-world-benchmark"</span><span class="p">)</span>
@@ -2934,7 +2935,7 @@ client.close()</div>
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright 2023 - 2024 Polaris
+      Copyright 2023 - 2025 Polaris
     </div>
   
   

@@ -1561,6 +1561,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
                     processEnvironments: true
                 },
                 displayAlign: 'center',
+                messageStyle: 'none',
                 CommonHTML: {
                     linebreaks: {
                     automatic: true
@@ -1794,8 +1795,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">platformdirs</span>
-<span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">platformdirs</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datamol</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dm</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">import platformdirs
 import datamol as dm</div>
@@ -1970,8 +1971,8 @@ dm.to_sdf(mol, path)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">DatasetFactory</span>
-<span class="kn">from</span> <span class="nn">polaris.dataset.converters</span> <span class="kn">import</span> <span class="n">SDFConverter</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetFactory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">polaris.dataset.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">SDFConverter</span>
 
 <span class="c1"># Create a new factory object</span>
 <span class="n">save_dst</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"data.zarr"</span><span class="p">)</span>
@@ -2144,7 +2145,7 @@ dataset = factory.build()</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">create_dataset_from_file</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_dataset_from_file</span>
 
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">create_dataset_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">save_dst</span><span class="p">)</span>
 <span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s2">"molecule"</span><span class="p">)</span>
@@ -2652,7 +2653,7 @@ dataset = factory.build()</div>
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright 2023 - 2024 Polaris
+      Copyright 2023 - 2025 Polaris
     </div>
   
   

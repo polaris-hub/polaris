@@ -1639,6 +1639,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
                     processEnvironments: true
                 },
                 displayAlign: 'center',
+                messageStyle: 'none',
                 CommonHTML: {
                     linebreaks: {
                     automatic: true
@@ -1881,12 +1882,12 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">zarr</span>
-<span class="kn">import</span> <span class="nn">platformdirs</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">zarr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">platformdirs</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">datamol</span> <span class="k">as</span> <span class="nn">dm</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datamol</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="n">SAVE_DIR</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">platformdirs</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span><span class="n">appname</span><span class="o">=</span><span class="s2">"polaris-tutorials"</span><span class="p">),</span> <span class="s2">"dataset_zarr"</span><span class="p">)</span>
 </pre></div>
@@ -2102,7 +2103,7 @@ table = pd.DataFrame(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">ColumnAnnotation</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">ColumnAnnotation</span>
 
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span>
     <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span>
@@ -2258,7 +2259,7 @@ dataset = Dataset(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.benchmark</span> <span class="kn">import</span> <span class="n">SingleTaskBenchmarkSpecification</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.benchmark</span><span class="w"> </span><span class="kn">import</span> <span class="n">SingleTaskBenchmarkSpecification</span>
 
 <span class="n">benchmark</span> <span class="o">=</span> <span class="n">SingleTaskBenchmarkSpecification</span><span class="p">(</span>
     <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
@@ -2474,7 +2475,7 @@ with zarr.open(path, "w") as root:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span> <span class="nn">polaris.dataset</span> <span class="kn">import</span> <span class="n">create_dataset_from_file</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_dataset_from_file</span>
 
 <span class="c1"># Because Polaris might restructure the Zarr archive,</span>
 <span class="c1"># we need to specify a location to save the Zarr file to.</span>
@@ -2974,7 +2975,7 @@ dataset.source = "https://github.com/polaris-hub/polaris"</div>
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright 2023 - 2024 Polaris
+      Copyright 2023 - 2025 Polaris
     </div>
   
   
