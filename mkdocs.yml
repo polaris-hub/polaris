@@ -3,7 +3,7 @@ site_description: "Polaris establishes a novel, industry‑certified standard to
 site_url: "https://github.com/polaris-hub/polaris"
 repo_url: "https://github.com/polaris-hub/polaris"
 repo_name: "polaris-hub/polaris"
-copyright: Copyright 2023 - 2024 Polaris
+copyright: Copyright 2023 - 2025 Polaris
 
 remote_branch: "gh-pages"
 use_directory_urls: false
