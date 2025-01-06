@@ -32,8 +32,8 @@ class SplitSpecificationV1Mixin(BaseModel):
         """
         Verifies that:
           1) There are no empty test partitions
-          2) There is no duplicate indices in any of the sets
-          3) There is no overlap between the train and test set
+          2) There is no overlap between the train and test set
+          3) There is no duplicate indices in any of the sets
         """
 
         if not isinstance(self.split[1], dict):
