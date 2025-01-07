@@ -109,6 +109,6 @@ class SplitSpecificationV1Mixin(BaseModel):
     def n_test_datapoints(self) -> dict[str, int]:
         """The size of (each of) the test set(s)."""
         if self.n_test_sets == 1:
-            return {"test": len(self.split[1])}
+            return {"test": len(self.split[1]["test"])}
         else:
             return {k: len(v) for k, v in self.split[1].items()}

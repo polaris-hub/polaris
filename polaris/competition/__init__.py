@@ -1,8 +1,9 @@
+from collections import defaultdict
 from datetime import datetime
 from itertools import chain
 from typing import Callable
 
-from pydantic import computed_field, model_validator
+from pydantic import Field, computed_field, model_validator
 from typing_extensions import Self
 
 from polaris.benchmark._split import SplitSpecificationV1Mixin
@@ -69,7 +70,7 @@ class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, Spli
 
     start_time: datetime
     end_time: datetime
-    n_classes: dict[ColumnName, int]
+    n_classes: dict[ColumnName, int | None] = Field(..., default_factory=lambda: defaultdict(None))
 
     @model_validator(mode="after")
     def _validate_split_in_dataset(self) -> Self:
@@ -166,9 +167,9 @@ class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, Spli
 
     def submit_predictions(
         self,
+        predictions: IncomingPredictionsType,
         prediction_name: SlugCompatibleStringType,
         prediction_owner: str,
-        predictions: IncomingPredictionsType,
         report_url: HttpUrlString,
         contributors: list[HubUser] | None = None,
         github_url: HttpUrlString | None = None,
@@ -199,11 +200,11 @@ class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, Spli
             owner=HubOwner(slug=prediction_owner),
             predictions=predictions,
             report_url=report_url,
-            contributors=contributors,
+            contributors=contributors or [],
             github_url=github_url,
             description=description,
-            tags=tags,
-            user_attributes=user_attributes,
+            tags=tags or [],
+            user_attributes=user_attributes or {},
             target_labels=self.target_cols,
             test_set_labels=self.test_set_labels,
             test_set_sizes=self.test_set_sizes,

@@ -764,9 +764,9 @@ class PolarisHubClient(OAuth2Client):
                     dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
                 )
 
-        benchmark_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
+        dataset_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
         progress_indicator.update_success_msg(
-            f"Your V2 dataset has been successfully uploaded to the Hub. " f"View it here: {benchmark_url}"
+            f"Your V2 dataset has been successfully uploaded to the Hub. " f"View it here: {dataset_url}"
         )
 
     def upload_benchmark(
