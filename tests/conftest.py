@@ -13,6 +13,7 @@ from polaris.benchmark import (
 )
 from polaris.competition import CompetitionSpecification
 from polaris.dataset import ColumnAnnotation, DatasetFactory, DatasetV1, DatasetV2
+from polaris.dataset._dataset_v2 import _GROUP_FORMAT_METADATA_KEY, _INDEX_ARRAY_KEY
 from polaris.dataset.converters import SDFConverter
 from polaris.utils.types import HubOwner
 
@@ -126,7 +127,7 @@ def test_dataset(test_data, test_org_owner) -> DatasetV1:
 
 
 @pytest.fixture(scope="function")
-def test_dataset_v2(zarr_archive, test_org_owner) -> DatasetV2:
+def test_dataset_v2(zarr_archive_v2, test_org_owner) -> DatasetV2:
     dataset = DatasetV2(
         name="test-dataset-v2",
         source="https://www.example.com",
@@ -136,7 +137,7 @@ def test_dataset_v2(zarr_archive, test_org_owner) -> DatasetV2:
         owner=test_org_owner,
         license="CC-BY-4.0",
         curation_reference="https://www.example.com",
-        zarr_root_path=zarr_archive,
+        zarr_root_path=zarr_archive_v2,
     )
     check_version(dataset)
     return dataset
@@ -148,6 +149,40 @@ def zarr_archive(tmp_path):
     root = zarr.open(tmp_path, mode="w")
     root.array("A", data=np.random.random((100, 2048)), chunks=(1, None))
     root.array("B", data=np.random.random((100, 2048)), chunks=(1, None))
+    zarr.consolidate_metadata(root.store)
+    return tmp_path
+
+
+@pytest.fixture(scope="function")
+def zarr_archive_v2(tmp_path):
+    tmp_path = fs.join(tmp_path, "data.zarr")
+    root = zarr.open(tmp_path, mode="w")
+
+    # The root can have 3 types of children, each corresponding to a column:
+    # 1. An array: Each index in the array corresponds to a data point in the dataset.
+    data = np.arange(256 * 100).reshape((100, 256))
+    root.array("A", data=data, chunks=(1, None))
+
+    # 2. A group with subgroups: Each subgroup corresponds to a data point in the dataset.
+    #    The special __index__ array specifies the ordering of the subgroups.
+    group = root.create_group("B")
+    group.attrs[_GROUP_FORMAT_METADATA_KEY] = "subgroups"
+    for idx in range(100):
+        subgroup = group.create_group(str(idx))
+        subgroup.array("x", data=np.arange(32) + (idx * 32), chunks=None)
+        subgroup.array("y", data=np.arange(32) + (idx * 32), chunks=None)
+        subgroup.array("z", data=np.arange(32) + (idx * 32), chunks=None)
+    group.array(_INDEX_ARRAY_KEY, data=np.arange(100), chunks=None)
+
+    # 3. A group with arrays: The nth datapoint is constructed from indexing the nth element in each array.
+    group = root.create_group("C")
+    group.attrs[_GROUP_FORMAT_METADATA_KEY] = "arrays"
+
+    data = np.arange(32 * 100).reshape((100, 32))
+    group.array("x", data=data, chunks=(1, None))
+    group.array("y", data=data, chunks=(1, None))
+    group.array("z", data=data, chunks=(1, None))
+
     zarr.consolidate_metadata(root.store)
     return tmp_path
 

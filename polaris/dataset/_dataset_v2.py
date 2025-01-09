@@ -14,10 +14,91 @@ from typing_extensions import Self
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
 from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
+from polaris.dataset.zarr._utils import load_zarr_group_to_memory
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import AccessType, ChecksumStrategy, HubOwner, ZarrConflictResolution
 
 _INDEX_ARRAY_KEY = "__index__"
+_GROUP_FORMAT_METADATA_KEY = "polaris:group_format"
+
+
+def _get_group_format(group: zarr.Group) -> Literal["subgroups", "arrays"]:
+    """
+    Returns the format of the group.
+
+    A group can either be a collection of subgroups or a collection of arrays, but not both.
+    """
+    group_format = group.attrs.get(_GROUP_FORMAT_METADATA_KEY, "subgroups")
+    if group_format not in ["subgroups", "arrays"]:
+        raise ValueError(f"Invalid group format: {group_format}. Should be 'subgroups' or 'arrays'.")
+    return group_format
+
+
+def _verify_group_with_subgroups(group: zarr.Group):
+    """
+    Verifies the structure of a group with subgroups
+
+    Since the keys for subgroups can not be assumed to be ordered, we have no easy way to index these groups.
+    Any subgroup should therefore have a special array that defines the index for that group.
+
+    NOTE: We're not checking the length since that's already done in the Dataset model validator.
+    """
+
+    if _INDEX_ARRAY_KEY not in group.array_keys():
+        raise InvalidDatasetError(f"Group {group.basename} does not have an index array.")
+
+    index_arr = group[_INDEX_ARRAY_KEY]
+    if len(index_arr) != len(group) - 1:
+        raise InvalidDatasetError(
+            f"Length of index array for group {group.basename} does not match the size of the group. Expected {len(group) - 1}, found {len(index_arr)}. {set(group.group_keys())}, {set(group.array_keys())}"
+        )
+    if any(x not in group for x in index_arr):
+        raise InvalidDatasetError(
+            f"Keys of index array for group {group.basename} does not match the group members."
+        )
+
+    array_keys = list(group.array_keys())
+    if len(array_keys) > 1:
+        raise InvalidDatasetError(
+            f"Group {group.basename} should only have the special '{_INDEX_ARRAY_KEY}' array, found the following arrays: {array_keys}"
+        )
+
+
+def _verify_group_with_arrays(group: zarr.Group):
+    """
+    Verifies the structure of a group with arrays.
+
+    In this case, the nth datapoint can be constructed by taking the nth element from each array.
+
+    NOTE: We're not checking the length since that's already done in the Dataset model validator.
+    """
+    subgroup_keys = list(group.group_keys())
+    if len(subgroup_keys) > 0:
+        raise InvalidDatasetError(f"Group {group.basename} should have no subgroups, found: {subgroup_keys}")
+
+
+def _verify_group(group: zarr.Group):
+    """
+    Verifies the structure of a group in a Zarr archive.
+    """
+    match _get_group_format(group):
+        case "subgroups":
+            _verify_group_with_subgroups(group)
+        case "arrays":
+            _verify_group_with_arrays(group)
+
+
+def _get_group_length(group: zarr.Group):
+    match _get_group_format(group):
+        case "subgroups":
+            lengths = {len(list(group.group_keys())), len(group[_INDEX_ARRAY_KEY])}
+        case "arrays":
+            lengths = {len(group[k]) for k in group.array_keys()}
+    if len(lengths) > 1:
+        raise InvalidDatasetError(
+            f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
+        )
+    return lengths
 
 
 class DatasetV2(BaseDataset):
@@ -51,26 +132,15 @@ class DatasetV2(BaseDataset):
     def _validate_v2_dataset_model(self) -> Self:
         """Verifies some dependencies between properties"""
 
-        # Since the keys for subgroups are not ordered, we have no easy way to index these groups.
-        # Any subgroup should therefore have a special array that defines the index for that group.
-        for group in self.zarr_root.group_keys():
-            if _INDEX_ARRAY_KEY not in self.zarr_root[group].array_keys():
-                raise InvalidDatasetError(f"Group {group} does not have an index array.")
-
-            index_arr = self.zarr_root[group][_INDEX_ARRAY_KEY]
-            if len(index_arr) != len(self.zarr_root[group]) - 1:
-                raise InvalidDatasetError(
-                    f"Length of index array for group {group} does not match the size of the group."
-                )
-            if any(x not in self.zarr_root[group] for x in index_arr):
-                raise InvalidDatasetError(
-                    f"Keys of index array for group {group} does not match the group members."
-                )
+        for _, group in self.zarr_root.groups():
+            _verify_group(group)
 
         # Check the structure of the Zarr archive
         # All arrays or groups in the root should have the same length.
         lengths = {len(self.zarr_root[k]) for k in self.zarr_root.array_keys()}
-        lengths.update({len(self.zarr_root[k][_INDEX_ARRAY_KEY]) for k in self.zarr_root.group_keys()})
+        for _, group in self.zarr_root.groups():
+            lengths.update(_get_group_length(group))
+
         if len(lengths) > 1:
             raise InvalidDatasetError(
                 f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
@@ -176,19 +246,29 @@ class DatasetV2(BaseDataset):
         # Get the data
         group_or_array = self.zarr_data[col]
 
-        # If it is a group, there is no deterministic order for the child keys.
-        # We therefore use a special array that defines the index.
-        # If loaded to memory, the group is represented by a dictionary.
-        if isinstance(group_or_array, zarr.Group) or isinstance(group_or_array, dict):
-            # Indices in a group should always be strings
+        # For each column, the Zarr archive can take three formats:
+        # 1. An array: Each index in the array corresponds to a data point in the dataset.
+        # 2. A group with subgroups: Each subgroup corresponds to a data point in the dataset.
+        #    The special __index__ array specifies the ordering of the subgroups.
+        # 3. A group with arrays: The nth datapoint is constructed from indexing the nth element in each array.
+
+        if isinstance(group_or_array, zarr.Array) or isinstance(group_or_array, np.ndarray):
+            # Option 1: An array
+            data = group_or_array[row]
+        elif _get_group_format(self._zarr_root[col]) == "subgroups":
+            # Option 2: A group with subgroups
+            # The __index__ array specifies the ordering. An index is always a string.
             row = str(group_or_array[_INDEX_ARRAY_KEY][row])
-        arr = group_or_array[row]
+            data = load_zarr_group_to_memory(group_or_array[row])
+        else:
+            # Option 3: A group with arrays
+            data = {k: group_or_array[k][row] for k in group_or_array.keys()}
 
         # Adapt the input to the specified format
         if adapter is not None:
-            arr = adapter(arr)
+            data = adapter(data)
 
-        return arr
+        return data
 
     def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
         """

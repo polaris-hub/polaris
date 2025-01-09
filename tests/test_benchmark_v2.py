@@ -113,7 +113,7 @@ def test_benchmark_v2_specification(valid_split, test_dataset_v2, tmp_path):
     BenchmarkV2Specification(**config)
 
 
-def test_benchmark_v2_invalid_indices(valid_split, test_dataset_v2):
+def test_benchmark_v2_invalid_indices(test_dataset_v2):
     """
     Test validation of indices against dataset length
     """
