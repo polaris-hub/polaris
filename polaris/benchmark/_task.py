@@ -73,14 +73,7 @@ class PredictiveTaskSpecificationMixin(BaseModel):
         if not isinstance(v, Collection):
             v = [v]
 
-        def _convert(m: str | dict | Metric) -> Metric:
-            if isinstance(m, str):
-                return Metric(label=m)
-            if isinstance(m, dict):
-                return Metric(**m)
-            return m
-
-        v = [_convert(m) for m in v]
+        v = [Metric(**m) if isinstance(m, dict) else m for m in v]
 
         unique_metrics = set(v)
 
