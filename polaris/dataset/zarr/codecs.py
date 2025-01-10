@@ -16,10 +16,11 @@ class RDKitMolCodec(VLenBytes):
 
     """
 
+    codec_id = "rdkit_mol"
+
     def encode(self, buf: np.ndarray):
         """
-        Encode the RDKitMol to a byte string
-        For more information, see
+        Encode a chunk of RDKit Mols to byte strings
         """
         to_encode = np.empty(shape=len(buf), dtype=object)
         for idx, mol in enumerate(buf):
@@ -67,12 +68,11 @@ class AtomArrayCodec(MsgPack):
     This codec is a subclass of the `MsgPack` codec from the `numcodecs`
     """
 
+    codec_id = "atom_array"
+
     def encode(self, buf: np.ndarray):
         """
-        Encode the AtomArray to a plain Python structure that MsgPack can encode
-
-        Args:
-            buf: The chunk with all AtomArray to encode
+        Encode a chunk of AtomArrays to a plain Python structure that MsgPack can encode
         """
 
         to_pack = np.empty_like(buf)
