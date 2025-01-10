@@ -4,7 +4,7 @@ import sys
 from loguru import logger
 
 from ._version import __version__
-from .loader import load_benchmark, load_dataset, load_competition
+from .loader import load_benchmark, load_competition, load_dataset
 
 __all__ = ["load_dataset", "load_benchmark", "load_competition", "__version__"]
 
