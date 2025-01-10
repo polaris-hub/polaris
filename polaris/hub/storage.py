@@ -175,7 +175,7 @@ class S3Store(Store):
             total_skipped += skipped
 
             log(
-                f"Copied {total_copied} ({total_bytes_copied / (1024 ** 2):.2f} MiB), skipped {total_skipped}, of {number_source_keys} keys. {(total_copied + total_skipped) / number_source_keys * 100:.2f}% completed."
+                f"Copied {total_copied} ({total_bytes_copied / (1024**2):.2f} MiB), skipped {total_skipped}, of {number_source_keys} keys. {(total_copied + total_skipped) / number_source_keys * 100:.2f}% completed."
             )
 
         return total_copied, total_skipped, total_bytes_copied

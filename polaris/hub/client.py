@@ -766,7 +766,7 @@ class PolarisHubClient(OAuth2Client):
 
         dataset_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
         progress_indicator.update_success_msg(
-            f"Your V2 dataset has been successfully uploaded to the Hub. " f"View it here: {dataset_url}"
+            f"Your V2 dataset has been successfully uploaded to the Hub. View it here: {dataset_url}"
         )
 
     def upload_benchmark(
