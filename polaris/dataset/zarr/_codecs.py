@@ -34,7 +34,7 @@ class RDKitMolCodec(VLenBytes):
         return super().encode(to_encode)
 
     def decode(self, buf, out=None):
-        """Decode the MsgPack decoded data into a RDKit Mol."""
+        """Decode the variable length bytes encoded data into a RDKit Mol."""
         dec = super().decode(buf, out)
         for idx, mol in enumerate(dec):
             if len(mol) == 0:
