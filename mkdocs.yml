@@ -24,21 +24,16 @@ nav:
           - PDB Datasets: tutorials/dataset_pdb.ipynb
           - SDF Datasets: tutorials/dataset_sdf.ipynb
           - Optimization: tutorials/optimization.ipynb
-      # NOTE (cwognum): Competitions are currently gated.
-      # - Competitions:
-      #     - tutorials/competition.participate.ipynb
+      - Competitions:
+          - tutorials/competition.participate.ipynb
   - API Reference:
       - Load: api/load.md
       - Core:
           - Dataset: api/dataset.md
           - Benchmark: api/benchmark.md
+          - Competition: api/competition.md
           - Subset: api/subset.md
           - Evaluation: api/evaluation.md
-      # NOTE (cwognum): Competitions are currently gated.
-      # - Competitions:
-      #     - Competition Dataset: api/competition.dataset.md
-      #     - Competition: api/competition.md
-      #     - Competiton Evaluation: api/competition.evaluation.md
       - Hub:
           - Client: api/hub.client.md
           - External Auth Client: api/hub.external_client.md

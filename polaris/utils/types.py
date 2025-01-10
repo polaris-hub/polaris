@@ -160,6 +160,9 @@ PredictionKwargs: TypeAlias = Literal["y_pred", "y_prob", "y_score"]
 The type of predictions expected by the metric interface.
 """
 
+ColumnName: TypeAlias = str
+"""A column name in a dataset."""
+
 
 class HubOwner(BaseModel):
     """An owner of an artifact on the Polaris Hub
@@ -199,10 +202,3 @@ class TaskType(Enum):
 
     MULTI_TASK = "multi_task"
     SINGLE_TASK = "single_task"
-
-
-class ArtifactSubtype(Enum):
-    """The major artifact types which Polaris supports"""
-
-    STANDARD = "standard"
-    COMPETITION = "competition"

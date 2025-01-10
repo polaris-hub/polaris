@@ -3,10 +3,7 @@ import json
 import fsspec
 from datamol.utils import fs
 
-from polaris.benchmark._definitions import (
-    MultiTaskBenchmarkSpecification,
-    SingleTaskBenchmarkSpecification,
-)
+from polaris.benchmark import MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
 from polaris.dataset import DatasetV1, create_dataset_from_file
 from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.client import PolarisHubClient
@@ -101,3 +98,18 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
         benchmark.verify_checksum()
 
     return benchmark
+
+
+def load_competition(artifact_id: str):
+    """
+    Loads a Polaris competition.
+
+    On Polaris, a competition represents a secure and fair benchmark. The target labels never exist
+    on the client and all results are evaluated through Polaris' servers.
+
+    Note: Dataset is automatically loaded
+        The dataset underlying the competition is automatically loaded when loading the competition.
+
+    """
+    with PolarisHubClient() as client:
+        return client.get_competition(artifact_id)

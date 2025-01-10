@@ -29,13 +29,10 @@ class DatasetV2(BaseDataset):
     this was a bottleneck when the number of data points grew large. Even with the pointer columns, you still
     need to load all pointers into memory. V2 therefore switches to a Zarr-only format.
 
-    Info: This feature is still experimental
-        The DatasetV2 is in active development and will likely undergo breaking changes before release.
-
     Attributes:
-        zarr_root_path: The path to the Zarr archive. Different from V1, this is now required.
+        zarr_root_path: Required path to a Zarr archive.
 
-    For additional meta-data attributes, see the [`BaseDataset`][polaris._dataset.BaseDataset] class.
+    For additional meta-data attributes, see the base classes.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
