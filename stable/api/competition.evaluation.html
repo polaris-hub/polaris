@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.48">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
     
     
       
@@ -632,6 +632,75 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Competitions
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            Competitions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorials/competition.participate.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Participating in a Competition
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -773,6 +842,27 @@
   
   <span class="md-ellipsis">
     Benchmark
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="competition.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Competition
   </span>
   
 
@@ -1176,15 +1266,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#polaris.evaluate.CompetitionResults" class="md-nav__link">
-    <span class="md-ellipsis">
-      CompetitionResults
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1218,13 +1299,14 @@
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="polaris.evaluate._results.ResultsMetadata" href="evaluation.html#polaris.evaluate.ResultsMetadata">ResultsMetadata</a></code>, <code><a class="autorefs autorefs-internal" title="polaris.evaluate.BenchmarkPredictions" href="evaluation.html#polaris.evaluate.BenchmarkPredictions">BenchmarkPredictions</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris.evaluate._predictions.BenchmarkPredictions" href="evaluation.html#polaris.evaluate.BenchmarkPredictions">BenchmarkPredictions</a></code>, <code><a class="autorefs autorefs-internal" title="polaris.evaluate.ResultsMetadata" href="evaluation.html#polaris.evaluate.ResultsMetadata">ResultsMetadata</a></code></p>
 
 
         <p>Predictions for competition benchmarks.</p>
-<p>This object is to be used as input to <a class="autorefs autorefs-internal" href="competition.html#polaris.competition.CompetitionSpecification.evaluate"><code>CompetitionSpecification.evaluate</code></a>.
+<p>This object is to be used as input to
+<a class="autorefs autorefs-internal" href="hub.client.html#polaris.hub.client.PolarisHubClient.submit_competition_predictions"><code>PolarisHubClient.submit_competition_predictions</code></a>.
 It is used to ensure that the structure of the predictions are compatible with evaluation methods on the Polaris Hub.
-In addition to the predictions, it contains additional meta-data to create a results object.</p>
+In addition to the predictions, it contains meta-data that describes a predictions object.</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -1238,99 +1320,35 @@ In addition to the predictions, it contains additional meta-data to create a res
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code><span title="polaris.evaluate.CompetitionPredictions.access">access</span></code></td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.AccessType" href="utils.types.html#polaris.utils.types.AccessType">AccessType</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The access the returned results should have</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-
-
-
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-</div><hr />
-
-
-<div class="doc doc-object doc-class">
-
-
-
-<h3 id="polaris.evaluate.CompetitionResults" class="doc doc-heading">
-            <span class="doc doc-object-name doc-class-name">polaris.evaluate.CompetitionResults</span>
-
-
-</h3>
-
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="polaris.evaluate._results.EvaluationResult" href="evaluation.html#polaris.evaluate.EvaluationResult">EvaluationResult</a></code></p>
-
-
-        <p>Class specific to results for competition benchmarks.</p>
-<p>This object is returned by <a class="autorefs autorefs-internal" href="competition.html#polaris.competition.CompetitionSpecification.evaluate"><code>CompetitionSpecification.evaluate</code></a>.
-In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
-the results with the Polaris Hub.</p>
-
-
-<p><span class="doc-section-title">Attributes:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td><code><span title="polaris.evaluate.CompetitionResults.competition_name">competition_name</span></code></td>
+            <td><code><span title="polaris.evaluate.CompetitionPredictions.name">name</span></code></td>
             <td>
                   <code><a class="autorefs autorefs-internal" title="polaris.utils.types.SlugCompatibleStringType" href="utils.types.html#polaris.utils.types.SlugCompatibleStringType">SlugCompatibleStringType</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The name of the competition for which these results were generated.
-Together with the competition owner, this uniquely identifies the competition on the Hub.</p>
+                <p>A slug-compatible name for the artifact. It is redeclared here to be required.</p>
               </div>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code><span title="polaris.evaluate.CompetitionResults.competition_owner">competition_owner</span></code></td>
+            <td><code><span title="polaris.evaluate.CompetitionPredictions.owner">owner</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a> | None</code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The owner of the competition for which these results were generated.
-Together with the competition name, this uniquely identifies the competition on the Hub.</p>
+                <p>A slug-compatible name for the owner of the artifact. It is redeclared here to be required.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="polaris.evaluate.CompetitionPredictions.report_url">report_url</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.utils.types.HubOwner" href="utils.types.html#polaris.utils.types.HubOwner">HubOwner</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A URL to a report/paper/write-up which describes the methods used to generate the predictions.</p>
               </div>
             </td>
           </tr>
@@ -1361,7 +1379,7 @@ Together with the competition name, this uniquely identifies the competition on 
 
     </div>
 
-</div><hr />
+</div>
 
 
 
@@ -1441,7 +1459,7 @@ Together with the competition name, this uniquely identifies the competition on 
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright 2023 - 2024 Polaris
+      Copyright 2023 - 2025 Polaris
     </div>
   
   
@@ -1539,7 +1557,7 @@ Together with the competition name, this uniquely identifies the competition on 
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
+      <script src="../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

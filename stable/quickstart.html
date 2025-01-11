@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="images/logo-black.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.48">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
     
     
       
@@ -728,6 +728,75 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Competitions
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            Competitions
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tutorials/competition.participate.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Participating in a Competition
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -869,6 +938,27 @@
   
   <span class="md-ellipsis">
     Benchmark
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/competition.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Competition
   </span>
   
 
@@ -1352,7 +1442,7 @@ back into your terminal when prompted by the client.</p>
 independently, it is built to easily integrate with the Polaris Hub. The hub hosts
 a variety of high-quality datasets, benchmarks and associated results.</p>
 <p>If all you care about is to partake in a benchmark that is hosted on the hub, it is as simple as:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span> <span class="nn">polaris</span> <span class="k">as</span> <span class="nn">po</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">polaris</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">po</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Load the benchmark from the Hub</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">benchmark</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_benchmark</span><span class="p">(</span><span class="s2">&quot;polaris/hello-world-benchmark&quot;</span><span class="p">)</span>
@@ -1377,7 +1467,7 @@ a variety of high-quality datasets, benchmarks and associated results.</p>
 </span></code></pre></div>
 <p>That's all there is to it to partake in a benchmark. No complicated, custom data-loaders or evaluation protocol. With just a few lines of code, you can feel confident that you are properly evaluating your model and focus on what you do best: Solving the hard problems in our domain!</p>
 <p>Similarly, you can easily access a dataset.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span> <span class="nn">polaris</span> <span class="k">as</span> <span class="nn">po</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">polaris</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">po</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># Load the dataset from the hub</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;polaris/hello-world&quot;</span><span class="p">)</span>
@@ -1525,7 +1615,7 @@ a variety of high-quality datasets, benchmarks and associated results.</p>
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright 2023 - 2024 Polaris
+      Copyright 2023 - 2025 Polaris
     </div>
   
   
@@ -1623,7 +1713,7 @@ a variety of high-quality datasets, benchmarks and associated results.</p>
     <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.sections", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.83f73b43.min.js"></script>
+      <script src="assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
