@@ -2,6 +2,7 @@ import re
 from base64 import b64encode
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
+from functools import lru_cache
 from hashlib import md5
 from itertools import islice
 from pathlib import PurePath
@@ -130,6 +131,19 @@ class S3Store(Store):
             )
 
     ## Custom methods
+
+    @lru_cache(maxsize=16)
+    def _get_object(self, full_key: str):
+        """
+        Basic cache layer.
+
+        By default, Zarr doesn't cache chunks. Meaning that even when sequentially accessing data in a chunk,
+        it will repeated download and decompress the same chunk. We add a very simple cache layer here.
+
+        NOTE (cwognum): The max_size is a arbitrarily set. This was meant to be a simple, short-term solution.
+        """
+        response = self.s3_client.get_object(Bucket=self.bucket_name, Key=full_key)
+        return response["Body"].read()
 
     def copy_to_destination(
         self, destination: Store, if_exists: ZarrConflictResolution = "replace", log: Callable = lambda: None
@@ -351,8 +365,7 @@ class S3Store(Store):
         with handle_s3_errors():
             try:
                 full_key = self._full_key(key)
-                response = self.s3_client.get_object(Bucket=self.bucket_name, Key=full_key)
-                return response["Body"].read()
+                return self._get_object(full_key=full_key)
             except self.s3_client.exceptions.NoSuchKey:
                 raise KeyError(key)
 
@@ -429,6 +442,10 @@ class S3Store(Store):
             page_iterator = paginator.paginate(Bucket=self.bucket_name, Prefix=self.prefix)
 
             return sum((page["KeyCount"] for page in page_iterator))
+
+    def __hash__(self):
+        """Custom hash function, to enable LRU caching"""
+        return hash((self.bucket_name, self.prefix, self.s3_client))
 
 
 class StorageTokenAuth:
