@@ -1,10 +1,54 @@
 from math import ceil
+from typing import Any, Generator, Sequence, TypeAlias
 
 import numpy as np
-from typing_extensions import TYPE_CHECKING, Self
+from typing_extensions import Self, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from polaris.dataset import DatasetV2
+
+SequenceContent: TypeAlias = Any
+
+
+def chunk_iterator(
+    content: Sequence[SequenceContent],
+    total_size: int,
+    chunk_size: int,
+    shuffle_chunks: bool = False,
+    shuffle_within_chunk: bool = False,
+    random_state: int | None = None,
+) -> Generator[SequenceContent, None, None]:
+    """
+    Iterate through a sequence in chunks, with optional shuffling of chunks and values within chunks.
+    When used on a Zarr Group, loading the chunk in memory will decompress it as well. This will speed up subsequent
+    access to elements in the same chunk, making iteration faster and more efficient.
+
+    Parameters:
+        content: The content to iterate through.
+        total_size: The total size of the group.
+        chunk_size: The size of each chunk.
+        shuffle_chunks: Whether to shuffle the order of chunks.
+        shuffle_within_chunk: Whether to shuffle the values within each chunk.
+        random_state: The random seed to use for shuffling.
+
+    Yields:
+        Any: The next element in the content, shuffled as indicated.
+    """
+    rng = np.random.default_rng(random_state)
+    chunk_indices = list(range(0, total_size, chunk_size))
+
+    if shuffle_chunks:
+        rng.shuffle(chunk_indices)
+
+    for start_idx in chunk_indices:
+        end_idx = min(start_idx + chunk_size, total_size)
+        chunk = content[start_idx:end_idx]
+
+        if shuffle_within_chunk:
+            rng.shuffle(chunk)
+
+        for element in chunk:
+            yield element
 
 
 class ChunkedIterator:

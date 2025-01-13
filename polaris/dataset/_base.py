@@ -2,7 +2,7 @@ import abc
 import json
 from os import PathLike
 from pathlib import Path, PurePath
-from typing import Any, MutableMapping
+from typing import Any, Iterable, MutableMapping
 from uuid import uuid4
 
 import fsspec
@@ -232,7 +232,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
     @property
     @abc.abstractmethod
-    def rows(self) -> list[str | int]:
+    def rows(self) -> Iterable[str | int]:
         """Return all row indices for the dataset"""
         raise NotImplementedError
 

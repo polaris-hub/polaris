@@ -130,18 +130,15 @@ class S3Store(Store):
                 Bucket=self.bucket_name, Key=full_key, UploadId=upload_id, MultipartUpload={"Parts": parts}
             )
 
-    ## Custom methods
-
-    @lru_cache(maxsize=16)
-    def _get_object(self, full_key: str):
+    @lru_cache()
+    def _get_object_body(self, full_key: str) -> bytes:
         """
-        Basic cache layer.
-        By default, Zarr doesn't cache chunks. Meaning that even when sequentially accessing data in a chunk,
-        it will repeated download and decompress the same chunk. We add a very simple cache layer here.
-        NOTE (cwognum): The max_size is a bit arbitrarily set. This was meant to be a simple, short-term solution.
+        Basic caching for the object body, to avoid multiple reads on remote bucket.
         """
         response = self.s3_client.get_object(Bucket=self.bucket_name, Key=full_key)
         return response["Body"].read()
+
+    ## Custom methods
 
     def copy_to_destination(
         self, destination: Store, if_exists: ZarrConflictResolution = "replace", log: Callable = lambda: None
@@ -363,7 +360,7 @@ class S3Store(Store):
         with handle_s3_errors():
             try:
                 full_key = self._full_key(key)
-                return self._get_object(full_key=full_key)
+                return self._get_object_body(full_key=full_key)
             except self.s3_client.exceptions.NoSuchKey:
                 raise KeyError(key)
 
