@@ -11,7 +11,7 @@ def test_chunked_iterator_sequential_access(chunk_size):
 
 def test_chunked_iterator_random_chunks_access():
     """
-    Shuffle the chunks!
+    Shuffle the chunks, but don't shuffle within chunks!
 
     For example: [10, 11, ..., 19] -> [40, 41, ..., 49] -> ... -> [70, 71, ..., 79]
     """

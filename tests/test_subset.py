@@ -74,10 +74,13 @@ def test_input_featurization(test_single_task_benchmark):
     x = test[0]
     assert isinstance(x, np.ndarray)
 
-    x, y = next(train)
+    train_iter = iter(train)
+    test_iter = iter(test)
+
+    x, y = next(train_iter)
     assert isinstance(x, np.ndarray)
 
-    x = next(test)
+    x = next(test_iter)
     assert isinstance(x, np.ndarray)
 
     x = train.X[0]

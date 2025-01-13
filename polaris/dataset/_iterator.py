@@ -1,6 +1,7 @@
 from math import ceil
 
 import numpy as np
+from pyroaring import BitMap
 from typing_extensions import TYPE_CHECKING, Self
 
 if TYPE_CHECKING:
@@ -17,6 +18,7 @@ class ChunkedIterator:
         shuffle_chunks: bool = False,
         shuffle_within_chunk: bool = False,
         random_state: int | None = None,
+        mask: BitMap | None = None,
     ):
         # Config
         self.shuffle_chunks = shuffle_chunks
@@ -24,6 +26,10 @@ class ChunkedIterator:
         self.total_size = total_size
         self.chunk_size = chunk_size
         self.random_state = random_state
+
+        if mask is not None and mask.max() > total_size:
+            raise ValueError("Mask contains indices greater than the total_size of the iterator.")
+        self.mask = mask
 
         # State
         self.idx = 0
@@ -125,6 +131,10 @@ class ChunkedIterator:
         if self.idx - self._offset >= current_chunk_size:
             self.update_chunk()
 
+        if self.mask is not None and self.idx not in self.mask:
+            self.idx += 1
+            return self.__next__()
+
         i = (
             self.idx
             if self.is_sequential
@@ -145,6 +155,7 @@ class CachedChunkIterator(ChunkedIterator):
         shuffle_chunks: bool = False,
         shuffle_within_chunk: bool = False,
         random_state: int | None = None,
+        mask: BitMap | None = None,
     ):
         super().__init__(
             total_size=len(dataset),
@@ -152,6 +163,7 @@ class CachedChunkIterator(ChunkedIterator):
             shuffle_chunks=shuffle_chunks,
             shuffle_within_chunk=shuffle_within_chunk,
             random_state=random_state,
+            mask=mask,
         )
 
         self.dataset = dataset

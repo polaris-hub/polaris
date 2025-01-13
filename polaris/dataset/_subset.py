@@ -7,6 +7,7 @@ from typing_extensions import Self
 
 from polaris.dataset import DatasetV1
 from polaris.dataset._adapters import Adapter
+from polaris.dataset._base import BaseDataset
 from polaris.utils.errors import TestAccessError
 from polaris.utils.types import DatapointType
 
@@ -64,7 +65,7 @@ class Subset:
 
     def __init__(
         self,
-        dataset: DatasetV1,
+        dataset: BaseDataset,
         indices: list[int | Sequence[int]],
         input_cols: Iterable[str] | str,
         target_cols: Iterable[str] | str,
