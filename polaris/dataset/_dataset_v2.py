@@ -2,7 +2,7 @@ import json
 import re
 from os import PathLike
 from pathlib import Path
-from typing import Any, ClassVar, Literal
+from typing import Any, ClassVar, Iterable, Literal
 
 import fsspec
 import numpy as np
@@ -82,19 +82,19 @@ class DatasetV2(BaseDataset):
     def n_rows(self) -> int:
         """Return all row indices for the dataset"""
         example = self.zarr_root[self.columns[0]]
-        if isinstance(example, zarr.Group):
-            return len(example[_INDEX_ARRAY_KEY])
-        return len(example)
+        match example:
+            case zarr.Group():
+                return len(example[_INDEX_ARRAY_KEY])
+            case _:
+                return len(example)
 
     @property
-    def rows(self) -> np.ndarray[int]:
-        """Return all row indices for the dataset
-
-        Warning: Memory consumption
-            This feature is added for completeness' sake, but it should be noted that large datasets could consume a lot of memory.
-            E.g. storing a billion indices with np.in64 would consume 8GB of memory. Use with caution.
+    def rows(self) -> Iterable[int]:
         """
-        return np.arange(len(self), dtype=int)
+        Return all row indices for the dataset
+        This feature is added for completeness' sake, but does not provide any performance benefits.
+        """
+        return range(self.n_rows)
 
     @property
     def columns(self) -> list[str]:
