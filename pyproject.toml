@@ -34,42 +34,40 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "tqdm",
-    "loguru",
-    "typer",
-    "pyyaml",
-    "pydantic >=2",
-    "pydantic-settings >=2",
     "authlib",
-    "httpx",
-    "tenacity",
-    "filelock",
-    "numpy < 2",
-    # We need to pin numpy to avoid issues with fastpdb/biotite.
-    "pandas",
-    "scipy",
-    "scikit-learn",
-    "seaborn",
+    "boto3>=1.35.0",
     "datamol >=0.12.1",
     "fastpdb",
-    "zarr >=2,<3",
-    "pyarrow < 18",
     "fsspec[http]",
-    "yaspin",
-    "typing-extensions>=4.12.0",
-    "boto3>=1.35.0",
+    "httpx",
+    "loguru",
+    "numcodecs[msgpack]>=0.13.1",
+    "numpy < 2", # We need to pin numpy to avoid issues with fastpdb/biotite.
+    "pandas",
+    "pyarrow < 18",
+    "pydantic >=2",
+    "pydantic-settings >=2",
     "pyroaring",
+    "pyyaml",
+    "scikit-learn",
+    "scipy",
+    "seaborn",
+    "tqdm",
+    "typer",
+    "typing-extensions>=4.12.0",
+    "yaspin",
+    "zarr >=2,<3",
 ]
 
 [dependency-groups]
 dev = [
+    "ipywidgets",
+    "jupyterlab",
+    "moto[s3]>=5.0.14",
     "pytest",
     "pytest-xdist",
     "pytest-cov",
     "ruff",
-    "jupyterlab",
-    "ipywidgets",
-    "moto[s3]>=5.0.14",
 ]
 doc = [
     "mkdocs",
@@ -79,8 +77,8 @@ doc = [
     "mkdocs-jupyter",
     "markdown-include",
     "mdx_truly_sane_lists",
+    "mike >=1.0.0",
     "nbconvert",
-    "mike >=1.0.0"
 ]
 codecs = [
     "imagecodecs",

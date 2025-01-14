@@ -136,9 +136,8 @@ rever/
 # VS Code
 .vscode/
 
-# Generated requirements.txt and uv lock file
+# Generated legacy requirements.txt
 requirements.txt
-uv.lock
 
 # OS-specific files
 .DS_store
