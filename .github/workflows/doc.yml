@@ -2,7 +2,7 @@ name: doc
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
 
 # Prevent doc action on `main` to conflict with each others.
 concurrency:
@@ -27,9 +27,9 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: ./pyproject.toml
-      
+
       - name: Install the project
-        run: uv sync --all-groups --python 3.12
+        run: uv sync --group doc
 
       - name: Configure git
         run: |
