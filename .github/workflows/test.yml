@@ -11,6 +11,10 @@ on:
   schedule:
     - cron: "0 4 * * MON"
 
+concurrency:
+  group: "test-${{ github.ref }}"
+  cancel-in-progress: true
+
 jobs:
   test-uv:
     strategy:
@@ -26,19 +30,14 @@ jobs:
       run:
         shell: bash -l {0}
 
-    name: |
-      os=${{ matrix.os }}
-      - python=${{ matrix.python-version }}
+    name: PyPi os=${{ matrix.os }} - python=${{ matrix.python-version }}
 
     steps:
       - name: Checkout the code
         uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          enable-cache: true
-          cache-dependency-glob: ./pyproject.toml
+        uses: astral-sh/setup-uv@v5
 
       - name: Install the project
         run: uv sync --all-groups --python ${{ matrix.python-version }}
@@ -79,7 +78,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: env.yml
-          environment-name: my_env
+          environment-name: polaris_testing_env
           cache-environment: true
           cache-downloads: true
           create-args: >-

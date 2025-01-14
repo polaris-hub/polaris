@@ -10,82 +10,74 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
+
+concurrency:
+  group: "release-${{ github.ref }}"
+  cancel-in-progress: false
+
+defaults:
+  runs-on: ubuntu-latest
+  timeout-minutes: 30
+  run:
+    shell: bash -l {0}
 
 jobs:
-  release:
+  check-semver:
+    runs-on: ubuntu-latest
     # Do not release if not triggered from the default branch
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
 
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
 
-    defaults:
-      run:
-        shell: bash -l {0}
+      - name: Get version
+        id: version
+        uses: proudust/gh-describe@v2
+
+      - name: Semver check
+        id: semver_check
+        uses: madhead/semver-utils@v4
+        with:
+          lenient: false
+          version: ${{ inputs.release-version }}
+          compare-to: ${{ steps.version.outputs.tag }}
+
+      - name: Semver ok
+        if: steps.semver_check.outputs.comparison != '>'
+        run: |
+          echo "The release version is not valid Semver that is greater than the current version ${{ steps.version.outputs.tag }}."
+          exit 1
+
+  release:
+    depends-on: semver
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout the code
         uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          enable-cache: true
-          cache-dependency-glob: ./pyproject.toml
-      
+        uses: astral-sh/setup-uv@v5
+
       - name: Install the project
         run: uv sync --all-groups --python 3.12
 
-      - name: Install build dependencies
-        run: uv pip install build semver setuptools_scm
-
-      - name: Check the version is valid semver
-        run: |
-          RELEASE_VERSION="${{ inputs.release-version }}"
-
-          {
-            uv run pysemver check $RELEASE_VERSION
-          } || {
-            echo "The version '$RELEASE_VERSION' is not a valid Semver version string."
-            echo "Please use a valid semver version string. More details at https://semver.org/"
-            echo "The release process is aborted."
-            exit 1
-          }
-
-      - name: Check the version is higher than the latest one
-        run: |
-          # Retrieve the git tags first
-          git fetch --prune --unshallow --tags &> /dev/null
-
-          RELEASE_VERSION="${{ inputs.release-version }}"
-          LATEST_VERSION=$(git describe --abbrev=0 --tags)
-
-          IS_HIGHER_VERSION=$(uv run pysemver compare $RELEASE_VERSION $LATEST_VERSION)
-
-          if [ "$IS_HIGHER_VERSION" != "1" ]; then
-            echo "The version '$RELEASE_VERSION' is not higher than the latest version '$LATEST_VERSION'."
-            echo "The release process is aborted."
-            exit 1
-          fi
-
       - name: Build Changelog
         id: github_release
-        uses: mikepenz/release-changelog-builder-action@v4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: mikepenz/release-changelog-builder-action@v5
         with:
           toTag: "main"
           configuration: ".github/changelog_config.json"
 
-      - name: Configure git
+      - name: Create and push git tag
         run: |
+          # Configure git
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-
-      - name: Create and push git tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
+          
           # Tag the release
           git tag -a "${{ inputs.release-version }}" -m "Release version ${{ inputs.release-version }}"
 
@@ -99,13 +91,10 @@ jobs:
           git push origin "${{ inputs.release-version }}"
 
       - name: Build the wheel and sdist
-        run: uv run python -m build --no-isolation
+        run: uv build
 
       - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          packages-dir: dist/
+        run: uv publish
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
