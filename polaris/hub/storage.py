@@ -2,6 +2,7 @@ import re
 from base64 import b64encode
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
+from functools import lru_cache
 from hashlib import md5
 from itertools import islice
 from pathlib import PurePath
@@ -128,6 +129,14 @@ class S3Store(Store):
             self.s3_client.complete_multipart_upload(
                 Bucket=self.bucket_name, Key=full_key, UploadId=upload_id, MultipartUpload={"Parts": parts}
             )
+
+    @lru_cache()
+    def _get_object_body(self, full_key: str) -> bytes:
+        """
+        Basic caching for the object body, to avoid multiple reads on remote bucket.
+        """
+        response = self.s3_client.get_object(Bucket=self.bucket_name, Key=full_key)
+        return response["Body"].read()
 
     ## Custom methods
 
@@ -351,8 +360,7 @@ class S3Store(Store):
         with handle_s3_errors():
             try:
                 full_key = self._full_key(key)
-                response = self.s3_client.get_object(Bucket=self.bucket_name, Key=full_key)
-                return response["Body"].read()
+                return self._get_object_body(full_key=full_key)
             except self.s3_client.exceptions.NoSuchKey:
                 raise KeyError(key)
 
@@ -429,6 +437,12 @@ class S3Store(Store):
             page_iterator = paginator.paginate(Bucket=self.bucket_name, Prefix=self.prefix)
 
             return sum((page["KeyCount"] for page in page_iterator))
+
+    def __hash__(self):
+        """
+        Custom hash function, to enable lru_cache decorator on methods
+        """
+        return hash((self.bucket_name, self.prefix, self.s3_client))
 
 
 class StorageTokenAuth:
