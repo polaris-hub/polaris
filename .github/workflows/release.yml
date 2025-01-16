@@ -50,9 +50,9 @@ jobs:
           compare-to: ${{ steps.version.outputs.version }}
 
       - name: Semver ok
-        if: steps.semver_check.outputs.comparison != '>'
+        if: steps.semver_check.outputs.comparison-result != '>'
         run: |
-          echo "The release version is not valid Semver that is greater than the current version ${{ steps.version.outputs.tag }}."
+          echo "The release version is not valid Semver (${{ inputs.release-version }}) that is greater than the current version ${{ steps.version.outputs.version }}."
           exit 1
 
   release:
