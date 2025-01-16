@@ -35,7 +35,7 @@ classifiers = [
 ]
 dependencies = [
     "authlib",
-    "boto3>=1.35.0",
+    "boto3 <1.36.0",
     "datamol >=0.12.1",
     "fastpdb",
     "fsspec[http]",
