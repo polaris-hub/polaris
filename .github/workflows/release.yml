@@ -99,6 +99,9 @@ jobs:
           # Push the tags
           git push origin "${{ inputs.release-version }}"
 
+      - name: Install build dependencies
+        run: uv pip install build setuptools_scm
+
       - name: Build the wheel and sdist
         run: uv run python -m build --no-isolation
 
