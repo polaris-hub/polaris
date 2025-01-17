@@ -3,8 +3,21 @@ import os
 import boto3
 import pytest
 from moto import mock_aws
+from moto.moto_server.threaded_moto_server import ThreadedMotoServer
 
 from polaris.hub.storage import S3Store
+
+
+@pytest.fixture(scope="module")
+def moto_server():
+    """
+    Fixture to run a mocked AWS server for testing.
+    """
+    server = ThreadedMotoServer(port=0)
+    server.start()
+    host, port = server.get_host_and_port()
+    yield f"http://{host}:{port}"
+    server.stop()
 
 
 @pytest.fixture(scope="function")
@@ -29,9 +42,9 @@ def mocked_aws(aws_credentials):
 
 
 @pytest.fixture
-def s3_store(mocked_aws):
+def s3_store(mocked_aws, moto_server):
     # Setup mock S3 environment
-    s3 = boto3.client("s3", region_name="us-east-1")
+    s3 = boto3.client("s3", region_name="us-east-1", endpoint_url=moto_server)
     bucket_name = "test-bucket"
     s3.create_bucket(Bucket=bucket_name)
 
@@ -41,7 +54,7 @@ def s3_store(mocked_aws):
         access_key="fake-access-key",
         secret_key="fake-secret-key",
         token="fake-token",
-        endpoint_url="https://s3.amazonaws.com",
+        endpoint_url=moto_server,
     )
 
     yield store

@@ -2,17 +2,19 @@ import re
 from base64 import b64encode
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
+from datetime import timedelta
 from functools import lru_cache
 from hashlib import md5
 from itertools import islice
 from pathlib import PurePath
 from typing import Any, Callable, Generator, Literal, Mapping, Sequence, TypeAlias
 
-import boto3
+import obstore as obs
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2 import OAuth2Error
 from authlib.oauth2.rfc6749 import OAuth2Token
-from botocore.exceptions import BotoCoreError, ClientError
+from obstore.exceptions import AlreadyExistsError, NotFoundError, ObstoreError, PermissionDeniedError
+from obstore.store import PrefixStore, S3Store as ObstoreS3Store
 from typing_extensions import Self
 from zarr import CopyError
 from zarr.context import Context
@@ -39,19 +41,15 @@ class S3StoreCredentialsExpiredException(S3StoreException):
 
 
 @contextmanager
-def handle_s3_errors():
+def handle_bucket_errors():
     """
-    Standardize error handling for S3 operations.
+    Standardize error handling for bucket operations.
     """
     try:
         yield
-    except ClientError as e:
-        error_code = e.response["Error"]["Code"]
-        if error_code == "ExpiredToken":
-            raise S3StoreCredentialsExpiredException(f"Error in S3Store: Credentials expired: {e}") from e
-        else:
-            raise S3StoreException(f"Error in S3Store: {e}") from e
-    except BotoCoreError as e:
+    except PermissionDeniedError as e:
+        raise S3StoreCredentialsExpiredException(f"Error in S3Store: Credentials expired: {e}") from e
+    except ObstoreError as e:
         raise S3StoreException(f"Error in S3Store: {e}") from e
 
 
@@ -77,66 +75,36 @@ class S3Store(Store):
     ) -> None:
         bucket_name, *prefix = PurePath(path).parts
 
-        self.s3_client = boto3.client(
-            "s3",
-            aws_access_key_id=access_key,
-            aws_secret_access_key=secret_key,
-            aws_session_token=token,
-            endpoint_url=endpoint_url,
+        bucket = ObstoreS3Store(
+            bucket_name,
+            config={
+                "aws_access_key_id": access_key,
+                "aws_secret_access_key": secret_key,
+                "aws_token": token,
+                "endpoint_url": endpoint_url
+            },
+            retry_config={
+                "backoff": {
+                    "init_backoff": timedelta(seconds=2),
+                    "max_backoff": timedelta(minutes=1),
+                    "base": 2,
+                },
+                "max_retries": 5,
+                "retry_timeout": timedelta(minutes=5),
+            },
         )
-        self.bucket_name = bucket_name
-        self.prefix = "/".join(prefix)
+        self.backend_store = PrefixStore(bucket, "/".join(prefix))
+
         self.part_size = part_size
         self.content_type = content_type
 
-    def _full_key(self, key: str) -> str:
-        """
-        Converts a relative key to the full bucket key.
-        """
-        return f"{self.prefix}/{key}"
-
-    def _multipart_upload(self, key: str, value: bytes) -> None:
-        """
-        For large files, use multipart to split the work.
-        """
-        full_key = self._full_key(key)
-        md5_hash = md5(value)
-        with handle_s3_errors():
-            upload = self.s3_client.create_multipart_upload(
-                Bucket=self.bucket_name,
-                Key=full_key,
-                ContentType=self.content_type,
-                Metadata={
-                    "md5sum": md5_hash.hexdigest(),
-                },
-            )
-            upload_id = upload["UploadId"]
-
-            parts = []
-            for i in range(0, len(value), self.part_size):
-                part_number = i // self.part_size + 1
-                part = value[i : i + self.part_size]
-                response = self.s3_client.upload_part(
-                    Bucket=self.bucket_name,
-                    Key=full_key,
-                    PartNumber=part_number,
-                    UploadId=upload_id,
-                    Body=part,
-                    ContentMD5=b64encode(md5(part).digest()).decode(),
-                )
-                parts.append({"ETag": response["ETag"], "PartNumber": part_number})
-
-            self.s3_client.complete_multipart_upload(
-                Bucket=self.bucket_name, Key=full_key, UploadId=upload_id, MultipartUpload={"Parts": parts}
-            )
-
     @lru_cache()
-    def _get_object_body(self, full_key: str) -> bytes:
+    def _get_object_body(self, key: str) -> memoryview:
         """
         Basic caching for the object body, to avoid multiple reads on remote bucket.
         """
-        response = self.s3_client.get_object(Bucket=self.bucket_name, Key=full_key)
-        return response["Body"].read()
+        result = obs.get(self.backend_store, key)
+        return memoryview(result.bytes())
 
     ## Custom methods
 
@@ -212,40 +180,37 @@ class S3Store(Store):
             """
             copied = skipped = bytes_copied = 0
 
-            with handle_s3_errors():
+            with handle_bucket_errors():
                 data = source[key]
                 if isinstance(data, memoryview):
                     data = data.tobytes()
 
                 md5_hash = md5(data)
                 try:
-                    # The default is to replace the existing key.
-                    # Setting this header will raise an error if the key already exists.
-                    extra = {"IfNoneMatch": "*"} if if_exists == "skip" else {}
-                    self.s3_client.put_object(
-                        Bucket=self.bucket_name,
-                        Key=self._full_key(key),
-                        Body=data,
-                        ContentType=self.content_type,
-                        ContentMD5=b64encode(md5_hash.digest()).decode(),
-                        Metadata={
+                    obs.put(
+                        self.backend_store,
+                        key,
+                        data,
+                        chunk_size=self.part_size,
+                        attributes={
+                            "Content-Type": self.content_type,
                             "md5sum": md5_hash.hexdigest(),
+                            "Content-MD5": b64encode(
+                                md5_hash.digest()
+                            ).decode(),  # TODO: Make sure this gets checked
                         },
-                        **extra,
+                        # Setting mode to "create" will raise an error if the key already exists
+                        mode="create" if if_exists == "skip" else "overwrite",
                     )
+
                     bytes_copied = buffer_size(data)
                     copied = 1
-                except ClientError as error:
-                    error_code = error.response["Error"]["Code"]
-                    # Raised when the key already exists and IfNoneMatch is set
-                    if error_code == "PreconditionFailed":
-                        match if_exists:
-                            case "skip":
-                                skipped = 1
-                            case "raise":
-                                raise CopyError(f"key {key!r} exists in destination")
-                    else:
-                        raise
+                except AlreadyExistsError:
+                    match if_exists:
+                        case "skip":
+                            skipped = 1
+                        case "raise":
+                            raise CopyError(f"key {key!r} exists in destination")
             return copied, skipped, bytes_copied
 
         source_store_version = getattr(source, "_store_version", 2)
@@ -289,27 +254,15 @@ class S3Store(Store):
         Uses pagination and return a generator to handle very large number of keys.
         Note: This might not help with some Zarr operations that materialize the whole sequence.
         """
-        prefix = self._full_key(path)
+        with handle_bucket_errors():
+            results = obs.list_with_delimiter(self.backend_store, path)
+            # Objects are "files"
+            for obj in results["objects"]:
+                yield obj.get("path")
 
-        # Ensure a trailing slash to avoid the path looking like one specific key
-        if prefix and not prefix.endswith("/"):
-            prefix += "/"
-
-        with handle_s3_errors():
-            # `list_objects_v2` returns a max of 1000 keys per request, so paginate requests
-            paginator = self.s3_client.get_paginator("list_objects_v2")
-            page_iterator = paginator.paginate(Bucket=self.bucket_name, Prefix=prefix, Delimiter="/")
-
-            for page in page_iterator:
-                # Contents are "files"
-                for obj in page.get("Contents", []):
-                    key = obj["Key"][len(prefix) :]
-                    if key:
-                        yield key.split("/")[0]
-
-                # CommonPrefixes are "subdirectories"
-                for common_prefix in page.get("CommonPrefixes", []):
-                    yield common_prefix["Prefix"][len(prefix) :].strip("/")
+            # Common prefixes are "subdirectories"
+            for common_prefix in results["common_prefixes"]:
+                yield common_prefix
 
     def getitems(self, keys: Sequence[str], *, contexts: Mapping[str, Context]) -> dict[str, Any]:
         """
@@ -345,23 +298,22 @@ class S3Store(Store):
         """
         Return the size (in bytes) of the object at the given key.
         """
-        with handle_s3_errors():
-            response = self.s3_client.head_object(Bucket=self.bucket_name, Key=self._full_key(key))
-            return response["ContentLength"]
+        with handle_bucket_errors():
+            result = obs.head(self.backend_store, key)
+            return result["size"]
 
     ## MutableMapping implementation, expected by Zarr store
 
-    def __getitem__(self, key: str) -> bytes:
+    def __getitem__(self, key: str) -> memoryview:
         """
         Retrieves the value for the given key from the store.
 
         Makes no provision to handle overly large values returned.
         """
-        with handle_s3_errors():
+        with handle_bucket_errors():
             try:
-                full_key = self._full_key(key)
-                return self._get_object_body(full_key=full_key)
-            except self.s3_client.exceptions.NoSuchKey:
+                return self._get_object_body(key)
+            except NotFoundError:
                 raise KeyError(key)
 
     def __setitem__(self, key: str, value: bytes | bytearray | memoryview) -> None:
@@ -374,21 +326,21 @@ class S3Store(Store):
         if isinstance(value, memoryview):
             value = value.tobytes()
 
-        if len(value) > self.part_size:
-            self._multipart_upload(key, value)
-        else:
-            with handle_s3_errors():
-                md5_hash = md5(value)
-                self.s3_client.put_object(
-                    Bucket=self.bucket_name,
-                    Key=self._full_key(key),
-                    Body=value,
-                    ContentType=self.content_type,
-                    ContentMD5=b64encode(md5_hash.digest()).decode(),
-                    Metadata={
-                        "md5sum": md5_hash.hexdigest(),
-                    },
-                )
+        with handle_bucket_errors():
+            md5_hash = md5(value)
+            obs.put(
+                self.backend_store,
+                key,
+                value,
+                chunk_size=self.part_size,
+                attributes={
+                    "Content-Type": self.content_type,
+                    "md5sum": md5_hash.hexdigest(),
+                    "Content-MD5": b64encode(
+                        md5_hash.digest()
+                    ).decode(),  #  TODO: Make sure this gets checked
+                },
+            )
 
     def __delitem__(self, key: str) -> None:
         """
@@ -403,46 +355,36 @@ class S3Store(Store):
         If the intent is to download the value after this check, it is more efficient to
         attempt tp retrieve it and handle the KeyError from a non-existent key.
         """
-        with handle_s3_errors():
+        with handle_bucket_errors():
             try:
-                self.s3_client.head_object(Bucket=self.bucket_name, Key=self._full_key(key))
+                obs.head(self.backend_store, key)
                 return True
-            except self.s3_client.exceptions.NoSuchKey:
+            except NotFoundError:
                 return False
-            except ClientError as e:
-                if e.response["Error"]["Code"] == "404":
-                    return False
-                raise e
 
     def __iter__(self) -> Generator[str, None, None]:
         """
         Iterate through all the keys in the store.
         """
-        with handle_s3_errors():
-            # `list_objects_v2` returns a max of 1000 keys per request, so paginate requests
-            paginator = self.s3_client.get_paginator("list_objects_v2")
-            page_iterator = paginator.paginate(Bucket=self.bucket_name, Prefix=self.prefix)
-
-            for page in page_iterator:
-                for obj in page.get("Contents", []):
-                    yield obj["Key"][len(self.prefix) + 1 :]
+        with handle_bucket_errors():
+            stream = obs.list(self.backend_store, chunk_size=1000)
+            for batch in stream:
+                for result in batch:
+                    yield result.get("path")
 
     def __len__(self) -> int:
         """
         Number of keys in the store.
         """
-        with handle_s3_errors():
-            # `list_objects_v2` returns a max of 1000 keys per request, so paginate requests
-            paginator = self.s3_client.get_paginator("list_objects_v2")
-            page_iterator = paginator.paginate(Bucket=self.bucket_name, Prefix=self.prefix)
-
-            return sum((page["KeyCount"] for page in page_iterator))
+        with handle_bucket_errors():
+            stream = obs.list(self.backend_store, chunk_size=1000)
+            return sum((len(batch) for batch in stream))
 
     def __hash__(self):
         """
         Custom hash function, to enable lru_cache decorator on methods
         """
-        return hash((self.bucket_name, self.prefix, self.s3_client))
+        return hash(repr(self.backend_store))
 
 
 class StorageTokenAuth:
@@ -540,7 +482,7 @@ class StorageSession(OAuth2Client):
     def _relative_path(self, path: str) -> PurePath:
         return PurePath(re.sub(r"^\w+://", "", path))
 
-    def set_file(self, path: str, value: bytes | bytearray):
+    def set_file(self, path: str, value: bytes | bytearray | memoryview):
         """
         Set a value at the given path.
         """
@@ -568,7 +510,7 @@ class StorageSession(OAuth2Client):
         )
         store[relative_path.name] = value
 
-    def get_file(self, path: str) -> bytes | bytearray:
+    def get_file(self, path: str) -> memoryview:
         """
         Get the value at the given path.
         """

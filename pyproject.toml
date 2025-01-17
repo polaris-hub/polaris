@@ -34,15 +34,17 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
+    "arro3-core>=0.4.5",
     "authlib",
-    "boto3 <1.36.0",
     "datamol >=0.12.1",
     "fastpdb",
     "fsspec[http]",
     "httpx",
     "loguru",
     "numcodecs[msgpack]>=0.13.1",
-    "numpy < 2", # We need to pin numpy to avoid issues with fastpdb/biotite.
+    # We need to pin numpy to avoid issues with fastpdb/biotite.
+    "numpy < 2",
+    "obstore>=0.3.0",
     "pandas",
     "pyarrow < 18",
     "pydantic >=2",
@@ -61,9 +63,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "boto3 <1.36.0",
     "ipywidgets",
     "jupyterlab",
-    "moto[s3]>=5.0.14",
+    "moto[s3,server]>=5.0.14",
     "pytest",
     "pytest-xdist",
     "pytest-cov",

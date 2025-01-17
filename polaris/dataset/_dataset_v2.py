@@ -257,6 +257,7 @@ class DatasetV2(BaseDataset):
         Returns:
             The path to the directory where data has been cached to.
         """
+        logger.info("Caching the dataset. This can take a while for large datasets.")
         if not destination:
             destination = self._cache_dir
 
@@ -264,6 +265,8 @@ class DatasetV2(BaseDataset):
         destination.mkdir(exist_ok=True, parents=True)
 
         self._cache_zarr(destination, if_exists)
+
+        logger.info(f"Dataset cached to {destination}")
 
         return str(destination)
 
