@@ -81,7 +81,8 @@ class S3Store(Store):
                 "aws_access_key_id": access_key,
                 "aws_secret_access_key": secret_key,
                 "aws_token": token,
-                "endpoint_url": endpoint_url
+                "endpoint_url": endpoint_url,
+                "conditional_put": 'etag' # Enables conflict resolution on PUT requests
             },
             retry_config={
                 "backoff": {
@@ -205,12 +206,12 @@ class S3Store(Store):
 
                     bytes_copied = buffer_size(data)
                     copied = 1
-                except AlreadyExistsError:
+                except AlreadyExistsError as e:
                     match if_exists:
                         case "skip":
                             skipped = 1
                         case "raise":
-                            raise CopyError(f"key {key!r} exists in destination")
+                            raise CopyError(f"key {key!r} exists in destination") from e
             return copied, skipped, bytes_copied
 
         source_store_version = getattr(source, "_store_version", 2)
@@ -337,9 +338,7 @@ class S3Store(Store):
                 attributes={
                     "Content-Type": self.content_type,
                     "md5sum": md5_hash.hexdigest(),
-                    "Content-MD5": b64encode(
-                        md5_hash.digest()
-                    ).decode(),  #  TODO: Make sure this gets checked
+                    "Content-MD5": b64encode(md5_hash.digest()).decode(),  #  TODO: Make sure this gets checked
                 },
             )
 
