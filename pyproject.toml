@@ -34,7 +34,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "arro3-core>=0.4.5",
     "authlib",
     "datamol >=0.12.1",
     "fastpdb",
@@ -63,10 +62,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "boto3 <1.36.0",
     "ipywidgets",
     "jupyterlab",
-    "moto[s3,server]>=5.0.14",
     "pytest",
     "pytest-xdist",
     "pytest-cov",

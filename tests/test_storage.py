@@ -1,61 +1,23 @@
-import os
-
-import boto3
+import obstore as obs
 import pytest
-from moto import mock_aws
-from moto.moto_server.threaded_moto_server import ThreadedMotoServer
+from obstore.store import MemoryStore, PrefixStore
 
 from polaris.hub.storage import S3Store
 
 
-@pytest.fixture(scope="module")
-def moto_server():
-    """
-    Fixture to run a mocked AWS server for testing.
-    """
-    server = ThreadedMotoServer(port=0)
-    server.start()
-    host, port = server.get_host_and_port()
-    yield f"http://{host}:{port}"
-    server.stop()
-
-
 @pytest.fixture(scope="function")
-def aws_credentials():
-    """
-    Mocked AWS Credentials for moto.
-    """
-    os.environ["AWS_ACCESS_KEY_ID"] = "testing"
-    os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
-    os.environ["AWS_SECURITY_TOKEN"] = "testing"
-    os.environ["AWS_SESSION_TOKEN"] = "testing"
-
-
-@pytest.fixture(scope="function")
-def mocked_aws(aws_credentials):
-    """
-    Mock all AWS interactions
-    Requires you to create your own boto3 clients
-    """
-    with mock_aws():
-        yield
-
-
-@pytest.fixture
-def s3_store(mocked_aws, moto_server):
-    # Setup mock S3 environment
-    s3 = boto3.client("s3", region_name="us-east-1", endpoint_url=moto_server)
-    bucket_name = "test-bucket"
-    s3.create_bucket(Bucket=bucket_name)
-
+def s3_store():
     # Create an instance of your S3Store
     store = S3Store(
-        path=f"{bucket_name}/prefix",
+        path="test_bucket/prefix",
         access_key="fake-access-key",
         secret_key="fake-secret-key",
         token="fake-token",
-        endpoint_url=moto_server,
+        endpoint_url="https://s3.amazonaws.com"
     )
+
+    # Mock the backing Obstore
+    store.backend_store = PrefixStore(MemoryStore(), "/prefix")
 
     yield store
 
@@ -106,14 +68,16 @@ def test_store_length(s3_store):
 
 
 def test_listdir(s3_store):
-    keys = ["dir1/subdir1", "dir1/subdir2", "dir1/file1.ext", "dir2/file2.ext"]
+    keys = ["dir1/subdir1/subfile1.ext", "dir1/subdir2/subfile1.ext", "dir1/file1.ext", "dir2/file2.ext"]
     for key in keys:
         s3_store[key] = b"test"
 
-    dir1_contents = list(s3_store.listdir("dir1"))
+    dir1_contents = list(s3_store.listdir("dir1/"))
+    print(obs.list_with_delimiter(s3_store.backend_store, "dir1"))
     assert set(dir1_contents) == {"file1.ext", "subdir1", "subdir2"}
 
     dir1_contents = list(s3_store.listdir())
+    print(obs.list_with_delimiter(s3_store.backend_store))
     assert set(dir1_contents) == {"dir1", "dir2"}
 
 

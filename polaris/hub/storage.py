@@ -251,18 +251,19 @@ class S3Store(Store):
         For a given path, list all the "subdirectories" and "files" for that path.
         The returned paths are relative to the input path.
 
-        Uses pagination and return a generator to handle very large number of keys.
+        Use a generator to handle very large number of keys.
         Note: This might not help with some Zarr operations that materialize the whole sequence.
         """
+        normalized_path = path.strip("/") + "/" if path else path
         with handle_bucket_errors():
-            results = obs.list_with_delimiter(self.backend_store, path)
+            results = obs.list_with_delimiter(self.backend_store, normalized_path)
             # Objects are "files"
             for obj in results["objects"]:
-                yield obj.get("path")
+                yield obj.get("path")[len(normalized_path) :]
 
             # Common prefixes are "subdirectories"
             for common_prefix in results["common_prefixes"]:
-                yield common_prefix
+                yield common_prefix[len(normalized_path) :]
 
     def getitems(self, keys: Sequence[str], *, contexts: Mapping[str, Context]) -> dict[str, Any]:
         """
@@ -313,7 +314,7 @@ class S3Store(Store):
         with handle_bucket_errors():
             try:
                 return self._get_object_body(key)
-            except NotFoundError:
+            except (NotFoundError, FileNotFoundError):
                 raise KeyError(key)
 
     def __setitem__(self, key: str, value: bytes | bytearray | memoryview) -> None:
@@ -359,7 +360,7 @@ class S3Store(Store):
             try:
                 obs.head(self.backend_store, key)
                 return True
-            except NotFoundError:
+            except (NotFoundError, FileNotFoundError):
                 return False
 
     def __iter__(self) -> Generator[str, None, None]:
