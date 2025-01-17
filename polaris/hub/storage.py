@@ -83,6 +83,7 @@ class S3Store(Store):
             aws_secret_access_key=secret_key,
             aws_session_token=token,
             endpoint_url=endpoint_url,
+            region_name="auto",
         )
         self.bucket_name = bucket_name
         self.prefix = "/".join(prefix)

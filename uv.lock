@@ -2212,7 +2212,7 @@ wheels = [
 
 [[package]]
 name = "polaris-lib"
-version = "0.11.1.dev2+gf358bf2.d20250116"
+version = "0.11.2.dev0+g6a96b94.d20250117"
 source = { editable = "." }
 dependencies = [
     { name = "authlib" },
