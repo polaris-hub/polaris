@@ -1,7 +1,6 @@
 from contextlib import contextmanager
 
-from yaspin import yaspin
-from yaspin.spinners import Spinners
+from halo import Halo
 
 from polaris.mixins import FormattingMixin
 
@@ -23,7 +22,7 @@ class ProgressIndicator(FormattingMixin):
         self._success_msg = success_msg
         self._error_msg = error_msg
 
-        self._spinner = yaspin(Spinners.dots, text=self._start_msg)
+        self._spinner = Halo(text=self._start_msg, spinner="dots")
 
     def __enter__(self):
         self._spinner.start()
@@ -33,9 +32,11 @@ class ProgressIndicator(FormattingMixin):
         self._spinner.text = ""
 
         if exc_type:
-            self._spinner.red.fail(f"💥 ERROR: {self._error_msg}")
+            self._spinner.text_color = "red"
+            self._spinner.fail(f"ERROR: {self._error_msg}")
         else:
-            self._spinner.green.ok(f"✅ SUCCESS: {self.format(self._success_msg, self.BOLD)}\n")
+            self._spinner.text_color = "green"
+            self._spinner.succeed(f"SUCCESS: {self.format(self._success_msg, self.BOLD)}\n")
 
         self._spinner.stop()
 
