@@ -580,6 +580,7 @@ class PolarisHubClient(OAuth2Client):
         timeout: TimeoutTypes = (10, 200),
         owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
+        upload_as_new_version: bool = False,
     ):
         """Upload a dataset to the Polaris Hub.
 
@@ -614,9 +615,14 @@ class PolarisHubClient(OAuth2Client):
             raise InvalidDatasetError(
                 f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some licenses are supported - {get_args(SupportedLicenseType)}."
             )
+        
+        if upload_as_new_version and not dataset.artifact_changelog:
+            raise InvalidDatasetError(
+                f"\nPlease specify a changelog for this dataset version."
+            )
 
         if isinstance(dataset, DatasetV1):
-            self._upload_v1_dataset(dataset, timeout, access, owner, if_exists)
+            self._upload_v1_dataset(dataset, timeout, access, owner, if_exists, upload_as_new_version)
         elif isinstance(dataset, DatasetV2):
             self._upload_v2_dataset(dataset, timeout, access, owner, if_exists)
 
@@ -627,6 +633,7 @@ class PolarisHubClient(OAuth2Client):
         access: AccessType,
         owner: HubOwner | str | None,
         if_exists: ZarrConflictResolution,
+        upload_as_new_version: bool,
     ):
         """
         Upload a V1 dataset to the Polaris Hub.
@@ -661,7 +668,7 @@ class PolarisHubClient(OAuth2Client):
             # Instead of directly uploading the data, we announce to the hub that we intend to upload it.
             # We do so separately for the Zarr archive and Parquet file.
             url = f"/v1/dataset/{dataset.artifact_id}"
-            self._base_request_to_hub(
+            response = self._base_request_to_hub(
                 url=url,
                 method="PUT",
                 json={
@@ -672,10 +679,13 @@ class PolarisHubClient(OAuth2Client):
                     },
                     "zarrContent": [md5sum.model_dump() for md5sum in dataset._zarr_md5sum_manifest],
                     "access": access,
+                    "uploadAsNewVersion": upload_as_new_version,
                     **dataset_json,
                 },
                 timeout=timeout,
             )
+
+            inserted_dataset = response.json()
 
             with StorageSession(self, "write", dataset.urn) as storage:
                 # Step 2: Upload the parquet file
@@ -702,7 +712,7 @@ class PolarisHubClient(OAuth2Client):
 
             progress_indicator.update_success_msg(
                 f"Your dataset has been successfully uploaded to the Hub. "
-                f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.name}')}"
+                f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{inserted_dataset["slug"]}')}"
             )
 
     def _upload_v2_dataset(
