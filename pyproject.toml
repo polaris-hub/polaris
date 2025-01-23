@@ -39,6 +39,7 @@ dependencies = [
     "datamol >=0.12.1",
     "fastpdb",
     "fsspec[http]",
+    "halo",
     "httpx",
     "loguru",
     "numcodecs[msgpack]>=0.13.1",
@@ -55,7 +56,6 @@ dependencies = [
     "tqdm",
     "typer",
     "typing-extensions>=4.12.0",
-    "halo",
     "zarr >=2,<3",
 ]
 
