@@ -34,7 +34,6 @@ def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_z
     if not is_file:
         # Load from the Hub
         with PolarisHubClient() as client:
-            client.ensure_active_token()
             return client.get_dataset(*path.split("/"), verify_checksum=verify_checksum)
 
     # Load from local file
@@ -73,7 +72,6 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
     if not is_file:
         # Load from the Hub
         with PolarisHubClient() as client:
-            client.ensure_active_token()
             return client.get_benchmark(*path.split("/"), verify_checksum=verify_checksum)
 
     with fsspec.open(path, "r") as fd:

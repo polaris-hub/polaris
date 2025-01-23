@@ -78,13 +78,12 @@ class ExternalAuthClient(OAuth2Client):
             ) from error
 
     def ensure_active_token(self, token: OAuth2Token | None = None) -> bool:
-        if token is None:
+        try:
             # This won't be needed with if we set a lower bound for authlib: >=1.3.2
             # See https://github.com/lepture/authlib/pull/625
             # As of now, this latest version is not available on Conda though.
-            token = self.token
-        try:
-            return super().ensure_active_token(token) or False
+            token = token or self.token
+            return super().ensure_active_token(token) if token else False
         except OAuthError:
             # The refresh attempt can fail with this error
             return False

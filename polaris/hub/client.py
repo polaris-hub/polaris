@@ -15,6 +15,7 @@ from authlib.oauth2 import OAuth2Error, TokenAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
 from httpx import HTTPStatusError, Response
 from loguru import logger
+from typing_extensions import Self
 
 from polaris.benchmark import (
     BenchmarkV1Specification,
@@ -120,6 +121,15 @@ class PolarisHubClient(OAuth2Client):
             settings=self.settings, cache_auth_token=cache_auth_token, **kwargs
         )
 
+    def __enter__(self: Self) -> Self:
+        """
+        When used as a context manager, automatically check that authentication is valid.
+        """
+        super().__enter__()
+        if not self.ensure_active_token():
+            raise PolarisUnauthorizedError()
+        return self
+
     @property
     def has_user_password(self) -> bool:
         return bool(self.settings.username and self.settings.password)
@@ -143,16 +153,13 @@ class PolarisHubClient(OAuth2Client):
         """
         Override the active check to trigger a refetch of the token if it is not active.
         """
-        if token is None:
-            # This won't be needed with if we set a lower bound for authlib: >=1.3.2
-            # See https://github.com/lepture/authlib/pull/625
-            # As of now, this latest version is not available on Conda though.
-            token = self.token
-
-        if token:
-            is_active = super().ensure_active_token(token)
-            if is_active:
-                return True
+        # This won't be needed with if we set a lower bound for authlib: >=1.3.2
+        # See https://github.com/lepture/authlib/pull/625
+        # As of now, this latest version is not available on Conda though.
+        token = token or self.token
+        is_active = super().ensure_active_token(token) if token else False
+        if is_active:
+            return True
 
         # Check if external token is still valid, or we're using password auth
         if not (self.has_user_password or self.external_client.ensure_active_token()):
