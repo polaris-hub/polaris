@@ -11,6 +11,7 @@ from pydantic import (
     model_validator,
 )
 from pydantic.alias_generators import to_camel
+from polaris.model import Model
 
 from polaris.evaluate import ResultsMetadata, BenchmarkPredictions
 from polaris.utils.errors import InvalidResultError
@@ -151,6 +152,7 @@ class BenchmarkResults(EvaluationResult):
     benchmark_artifact_id: str | None = Field(None)
     benchmark_name: SlugCompatibleStringType | None = Field(None, deprecated=True)
     benchmark_owner: HubOwner | None = Field(None, deprecated=True)
+    model: Model | None = Field(None)
 
     @model_validator(mode="after")
     def set_benchmark_artifact_id(self):

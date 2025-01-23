@@ -8,6 +8,7 @@ from polaris.dataset import DatasetV1, create_dataset_from_file
 from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.client import PolarisHubClient
 from polaris.utils.types import ChecksumStrategy
+from polaris.model import Model
 
 
 def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr") -> DatasetV1:
@@ -111,3 +112,13 @@ def load_competition(artifact_id: str):
     """
     with PolarisHubClient() as client:
         return client.get_competition(artifact_id)
+
+
+def load_model(artifact_id: str) -> Model:
+    """
+    Loads a Polaris model.
+
+    On Polaris, a model centralizes all data about a method and can be attached to different results.
+    """
+    with PolarisHubClient() as client:
+        return client.get_model(artifact_id)

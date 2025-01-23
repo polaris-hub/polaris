@@ -23,6 +23,7 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.competition import CompetitionSpecification
+from polaris.model import Model
 from polaris.dataset import Dataset, DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResults, CompetitionPredictions
 from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
@@ -955,3 +956,54 @@ class PolarisHubClient(OAuth2Client):
                 "Your competition predictions have been successfully uploaded to the Hub for evaluation."
             )
             return response
+
+    def get_model(self, artifact_id: str) -> Model:
+        url = f"/v1/model/{artifact_id}"
+        response = self._base_request_to_hub(url=url, method="GET")
+        response_data = response.json()
+
+        return Model(**response_data)
+
+    def upload_model(
+        self,
+        model: Model,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
+    ):
+        """Upload a model to the Polaris Hub.
+
+        Info: Owner
+            You have to manually specify the owner in the model data model. Because the owner could
+            be a user or an organization, we cannot automatically infer this from just the logged-in user.
+
+        Note: Required meta-data
+            The Polaris client and hub maintain different requirements as to which meta-data is required.
+            The requirements by the hub are stricter, so when uploading to the hub you might
+            get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
+            before uploading.
+
+        Args:
+            model: The model to upload.
+            access: Grant public or private access to result
+            owner: Which Hub user or organization owns the artifact. Takes precedence over `model.owner`.
+        """
+        with ProgressIndicator(
+            start_msg="Uploading model...",
+            success_msg="Uploaded model.",
+            error_msg="Failed to upload model.",
+        ) as progress_indicator:
+            # Get the serialized model data-structure
+            model.owner = HubOwner.normalize(owner or model.owner)
+            model_json = model.model_dump(by_alias=True, exclude_none=True)
+
+            # Make a request to the hub
+            response = self._base_request_to_hub(
+                url="/v1/model", method="POST", json={"access": access, **model_json}
+            )
+
+            # Inform the user about where to find their newly created artifact.
+            model_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
+
+            progress_indicator.update_success_msg(
+                f"Your model has been successfully uploaded to the Hub. View it here: {model_url}"
+            )
