@@ -125,10 +125,10 @@ omit = [
     # We cannot yet test the interaction with the Hub.
     # See e.g. https://github.com/polaris-hub/polaris/issues/30
     "polaris/hub/client.py",
-    "polaris/hub/external_auth_client.py",
-    "polaris/hub/oauth2.py",
+    "polaris/hub/external_client.py",
     "polaris/hub/settings.py",
-    "polaris/hub/polarisfs.py",
+    "polaris/hub/oauth.py",
+    "polaris/hub/storage.py",
     "polaris/hub/__init__.py",
 ]
 
