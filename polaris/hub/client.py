@@ -189,42 +189,31 @@ class PolarisHubClient(OAuth2Client):
 
     def _base_request_to_hub(self, url: str, method: str, **kwargs) -> Response:
         """Utility function since most API methods follow the same pattern"""
-        response = self.request(url=url, method=method, **kwargs)
         try:
+            response = self.request(url=url, method=method, **kwargs)
             response.raise_for_status()
             return response
         except HTTPStatusError as error:
-            response_status_code = response.status_code
-
-            # With an internal server error, we are not sure the custom error-handling code on the hub is reached.
-            if response_status_code == 500:
-                raise
-
-            # If JSON is included in the response body, we retrieve it and format it for output. If not, we fallback to
-            # retrieving plain text from the body. This is important for handling certain errors thrown from the backend
-            # which do not contain JSON in the response.
+            # If JSON is included in the response body, we retrieve it and format it for output. If not, we fall back to
+            # retrieving plain text from the body. 500 errors will not have a JSON response.
             try:
-                response = response.json()
-                response = json.dumps(response, indent=2, sort_keys=True)
+                response_text = error.response.json()
+                response_text = json.dumps(response_text, indent=2, sort_keys=True)
             except (json.JSONDecodeError, TypeError):
-                response = response.text
+                response_text = error.response.text
 
-            # Providing the user a more helpful error message suggesting a re-login when their access
-            # credentials expire.
-            if response_status_code == 401:
-                raise PolarisUnauthorizedError(response=response) from error
-
-            # The below two error cases can happen due to the JWT token containing outdated information.
-            # We therefore throw a custom error with a recommended next step.
-            if response_status_code == 403:
-                # This happens when trying to create an artifact for an owner the user has no access to.
-                raise PolarisCreateArtifactError(response=response) from error
-
-            if response_status_code == 404:
-                # This happens when an artifact doesn't exist _or_ when the user has no access to that artifact.
-                raise PolarisRetrieveArtifactError(response=response) from error
-
-            raise PolarisHubError(response=response) from error
+            match error.response.status_code:
+                case 401:
+                    # Providing the user a more helpful error message suggesting a re-login when their access credentials expire.
+                    raise PolarisUnauthorizedError(response_text=response_text) from error
+                case 403:
+                    # The error can happen due to the JWT token containing outdated information.
+                    raise PolarisCreateArtifactError(response_text=response_text) from error
+                case 404:
+                    # This happens when an artifact doesn't exist _or_ when the user has no access to that artifact.
+                    raise PolarisRetrieveArtifactError(response_text=response_text) from error
+                case _:
+                    raise PolarisHubError(response_text=response_text) from error
 
     def get_metadata_from_response(self, response: Response, key: str) -> str | None:
         """Get custom metadata saved to the R2 object from the headers."""
@@ -247,19 +236,8 @@ class PolarisHubClient(OAuth2Client):
                     "SSL verification by setting the POLARIS_CA_BUNDLE environment variable to `false`."
                 ) from error
             raise error
-        except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError, OAuthError) as error:
-            if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:
-                raise
-
-            # The `MissingTokenError`, `InvalidTokenError` and `OAuthError` errors from the AuthlibBaseError
-            # class do not hold the `response` attribute. To prevent a misleading `AttributeError` from
-            # being thrown, we conditionally set the error response below based on the error type.
-            if isinstance(error, httpx.HTTPStatusError):
-                error_response = error.response
-            else:
-                error_response = None
-
-            raise PolarisUnauthorizedError(response=error_response) from error
+        except (MissingTokenError, InvalidTokenError, OAuthError) as error:
+            raise PolarisUnauthorizedError() from error
 
     def login(self, overwrite: bool = False, auto_open_browser: bool = True):
         """Login to the Polaris Hub using the OAuth2 protocol.

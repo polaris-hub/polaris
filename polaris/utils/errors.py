@@ -1,6 +1,3 @@
-from httpx import Response
-
-
 class InvalidDatasetError(ValueError):
     pass
 
@@ -48,43 +45,35 @@ class PolarisHubError(Exception):
     YELLOW = "\033[93m"
     _END_CODE = "\033[0m"
 
-    def __init__(self, message: str = "", response: Response | None = None):
-        prefix = "The request to the Polaris Hub failed."
-
-        if response is not None:
-            prefix += f" The Hub responded with:\n{response}"
-
-        super().__init__("\n".join([prefix, message]))
-
-    def format(self, text: str, codes: str | list[str]):
-        if not isinstance(codes, list):
-            codes = [codes]
-
-        return "".join(codes) + text + self._END_CODE
-
+    def __init__(self, message: str = "", response_text: str | None = None):
+        super().__init__("\n".join([
+            f"{self.BOLD}The request to the Polaris Hub has failed.{self._END_CODE}",
+            f"{self.YELLOW}{message}{self._END_CODE}",
+            response_text or "",
+        ]))
 
 class PolarisUnauthorizedError(PolarisHubError):
-    def __init__(self, response: Response | None = None):
+    def __init__(self, response_text: str | None = None):
         message = (
             "You are not logged in to Polaris or your login has expired. "
             "You can use the Polaris CLI to easily authenticate yourself again with `polaris login --overwrite`."
         )
-        super().__init__(message, response)
+        super().__init__(message, response_text)
 
 
 class PolarisCreateArtifactError(PolarisHubError):
-    def __init__(self, response: Response | None = None):
+    def __init__(self, response_text: str | None = None):
         message = (
             "Note: If you can confirm that you are authorized to perform this action, "
             "please call 'polaris login --overwrite' and try again. If the issue persists, please reach out to the Polaris team for support."
         )
-        super().__init__(message, response)
+        super().__init__(message, response_text)
 
 
 class PolarisRetrieveArtifactError(PolarisHubError):
-    def __init__(self, response: Response | None = None):
+    def __init__(self, response_text: str | None = None):
         message = (
             "Note: If this artifact exists and you can confirm that you are authorized to retrieve it, "
             "please call 'polaris login --overwrite' and try again. If the issue persists, please reach out to the Polaris team for support."
         )
-        super().__init__(message, response)
+        super().__init__(message, response_text)
