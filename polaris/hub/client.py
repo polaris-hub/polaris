@@ -1,11 +1,9 @@
 import json
-import ssl
 from hashlib import md5
 from io import BytesIO
 from typing import get_args
 from urllib.parse import urljoin
 
-import certifi
 import httpx
 import pandas as pd
 import zarr
@@ -13,7 +11,7 @@ from authlib.integrations.base_client.errors import InvalidTokenError, MissingTo
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2 import OAuth2Error, TokenAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
-from httpx import HTTPStatusError, Response
+from httpx import ConnectError, HTTPStatusError, Response
 from loguru import logger
 from typing_extensions import Self
 
@@ -36,6 +34,7 @@ from polaris.utils.errors import (
     PolarisCreateArtifactError,
     PolarisHubError,
     PolarisRetrieveArtifactError,
+    PolarisSSLError,
     PolarisUnauthorizedError,
 )
 from polaris.utils.types import (
@@ -224,18 +223,12 @@ class PolarisHubClient(OAuth2Client):
         """Wraps the base request method to handle errors"""
         try:
             return super().request(method, url, withhold_token, auth, **kwargs)
-        except httpx.ConnectError as error:
+        except ConnectError as error:
             # NOTE (cwognum): In the stack trace, the more specific SSLCertVerificationError is raised.
             #   We could use the traceback module to catch this specific error, but that would be overkill here.
-            if _HTTPX_SSL_ERROR_CODE in str(error):
-                raise ssl.SSLCertVerificationError(
-                    "We could not verify the SSL certificate. "
-                    f"Please ensure the installed version ({certifi.__version__}) of the `certifi` package is the latest. "
-                    "If you require the usage of a custom CA bundle, you can set the POLARIS_CA_BUNDLE "
-                    "environment variable to the path of your CA bundle. For debugging, you can temporarily disable "
-                    "SSL verification by setting the POLARIS_CA_BUNDLE environment variable to `false`."
-                ) from error
-            raise error
+            error_string = str(error)
+            ExceptionClass = PolarisSSLError if _HTTPX_SSL_ERROR_CODE in error_string else PolarisHubError
+            raise ExceptionClass(error_string) from error
         except (MissingTokenError, InvalidTokenError, OAuthError) as error:
             raise PolarisUnauthorizedError() from error
 

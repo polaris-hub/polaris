@@ -1,3 +1,6 @@
+import certifi
+
+
 class InvalidDatasetError(ValueError):
     pass
 
@@ -45,15 +48,21 @@ class PolarisHubError(Exception):
     YELLOW = "\033[93m"
     _END_CODE = "\033[0m"
 
-    def __init__(self, message: str = "", response_text: str | None = None):
-        super().__init__("\n".join([
-            f"{self.BOLD}The request to the Polaris Hub has failed.{self._END_CODE}",
-            f"{self.YELLOW}{message}{self._END_CODE}",
-            response_text or "",
-        ]))
+    def __init__(self, message: str = "", response_text: str = ""):
+        parts = filter(
+            bool,
+            [
+                f"{self.BOLD}The request to the Polaris Hub has failed.{self._END_CODE}",
+                f"{self.YELLOW}{message}{self._END_CODE}" if message else "",
+                f"----------------------\nError reported was:\n{response_text}" if response_text else "",
+            ],
+        )
+
+        super().__init__("\n".join(parts))
+
 
 class PolarisUnauthorizedError(PolarisHubError):
-    def __init__(self, response_text: str | None = None):
+    def __init__(self, response_text: str = ""):
         message = (
             "You are not logged in to Polaris or your login has expired. "
             "You can use the Polaris CLI to easily authenticate yourself again with `polaris login --overwrite`."
@@ -62,7 +71,7 @@ class PolarisUnauthorizedError(PolarisHubError):
 
 
 class PolarisCreateArtifactError(PolarisHubError):
-    def __init__(self, response_text: str | None = None):
+    def __init__(self, response_text: str = ""):
         message = (
             "Note: If you can confirm that you are authorized to perform this action, "
             "please call 'polaris login --overwrite' and try again. If the issue persists, please reach out to the Polaris team for support."
@@ -71,9 +80,21 @@ class PolarisCreateArtifactError(PolarisHubError):
 
 
 class PolarisRetrieveArtifactError(PolarisHubError):
-    def __init__(self, response_text: str | None = None):
+    def __init__(self, response_text: str = ""):
         message = (
             "Note: If this artifact exists and you can confirm that you are authorized to retrieve it, "
             "please call 'polaris login --overwrite' and try again. If the issue persists, please reach out to the Polaris team for support."
+        )
+        super().__init__(message, response_text)
+
+
+class PolarisSSLError(PolarisHubError):
+    def __init__(self, response_text: str = ""):
+        message = (
+            "We could not verify the SSL certificate. "
+            f"Please ensure the installed version ({certifi.__version__}) of the `certifi` package is the latest. "
+            "If you require the usage of a custom CA bundle, you can set the POLARIS_CA_BUNDLE "
+            "environment variable to the path of your CA bundle. For debugging, you can temporarily disable "
+            "SSL verification by setting the POLARIS_CA_BUNDLE environment variable to `false`."
         )
         super().__init__(message, response_text)
