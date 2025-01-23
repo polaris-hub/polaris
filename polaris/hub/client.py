@@ -15,6 +15,7 @@ from authlib.oauth2 import OAuth2Error, TokenAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
 from httpx import HTTPStatusError, Response
 from loguru import logger
+from typing_extensions import Self
 
 from polaris.benchmark import (
     BenchmarkV1Specification,
@@ -119,6 +120,15 @@ class PolarisHubClient(OAuth2Client):
         self.external_client = ExternalAuthClient(
             settings=self.settings, cache_auth_token=cache_auth_token, **kwargs
         )
+
+    def __enter__(self: Self) -> Self:
+        """
+        When used as a context manager, automatically check that authentication is valid.
+        """
+        super().__enter__()
+        if not self.ensure_active_token():
+            raise PolarisUnauthorizedError()
+        return self
 
     @property
     def has_user_password(self) -> bool:

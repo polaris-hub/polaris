@@ -7,7 +7,6 @@ from polaris.benchmark import MultiTaskBenchmarkSpecification, SingleTaskBenchma
 from polaris.dataset import DatasetV1, create_dataset_from_file
 from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.client import PolarisHubClient
-from polaris.utils.errors import PolarisUnauthorizedError
 from polaris.utils.types import ChecksumStrategy
 
 
@@ -35,8 +34,6 @@ def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_z
     if not is_file:
         # Load from the Hub
         with PolarisHubClient() as client:
-            if not client.ensure_active_token():
-                raise PolarisUnauthorizedError()
             return client.get_dataset(*path.split("/"), verify_checksum=verify_checksum)
 
     # Load from local file
@@ -75,8 +72,6 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
     if not is_file:
         # Load from the Hub
         with PolarisHubClient() as client:
-            if not client.ensure_active_token():
-                raise PolarisUnauthorizedError()
             return client.get_benchmark(*path.split("/"), verify_checksum=verify_checksum)
 
     with fsspec.open(path, "r") as fd:
@@ -115,6 +110,4 @@ def load_competition(artifact_id: str):
 
     """
     with PolarisHubClient() as client:
-        if not client.ensure_active_token():
-            raise PolarisUnauthorizedError()
         return client.get_competition(artifact_id)
