@@ -615,11 +615,6 @@ class PolarisHubClient(OAuth2Client):
             raise InvalidDatasetError(
                 f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some licenses are supported - {get_args(SupportedLicenseType)}."
             )
-        
-        if upload_as_new_version and not dataset.artifact_changelog:
-            raise InvalidDatasetError(
-                f"\nPlease specify a changelog for this dataset version."
-            )
 
         if isinstance(dataset, DatasetV1):
             self._upload_v1_dataset(dataset, timeout, access, owner, if_exists, upload_as_new_version)
