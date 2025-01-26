@@ -1,12 +1,14 @@
+import logging
 from itertools import chain
 
-from loguru import logger
 from pydantic import BaseModel, computed_field, field_serializer, model_validator
 from typing_extensions import Self
 
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.misc import listit
 from polaris.utils.types import SplitType
+
+logger = logging.getLogger(__name__)
 
 
 class SplitSpecificationV1Mixin(BaseModel):

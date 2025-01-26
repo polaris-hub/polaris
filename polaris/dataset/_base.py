@@ -1,5 +1,6 @@
 import abc
 import json
+import logging
 from os import PathLike
 from pathlib import Path, PurePath
 from typing import Any, Iterable, MutableMapping
@@ -8,7 +9,6 @@ from uuid import uuid4
 import fsspec
 import numpy as np
 import zarr
-from loguru import logger
 from pydantic import (
     Field,
     PrivateAttr,
@@ -36,6 +36,8 @@ from polaris.utils.types import (
     SupportedLicenseType,
     ZarrConflictResolution,
 )
+
+logger = logging.getLogger(__name__)
 
 # Constants
 _CACHE_SUBDIR = "datasets"

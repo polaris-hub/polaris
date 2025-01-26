@@ -41,7 +41,6 @@ dependencies = [
     "fsspec[http]",
     "halo",
     "httpx",
-    "loguru",
     "numcodecs[msgpack]>=0.13.1",
     "numpy < 2", # We need to pin numpy to avoid issues with fastpdb/biotite.
     "pandas",
@@ -50,6 +49,7 @@ dependencies = [
     "pydantic-settings >=2",
     "pyroaring",
     "pyyaml",
+    "rich>=13.9.4",
     "scikit-learn",
     "scipy",
     "seaborn",

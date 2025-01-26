@@ -1,4 +1,5 @@
 import json
+import logging
 from hashlib import md5
 from io import BytesIO
 from typing import get_args
@@ -12,7 +13,6 @@ from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2 import OAuth2Error, TokenAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
 from httpx import ConnectError, HTTPStatusError, Response
-from loguru import logger
 from typing_extensions import Self
 
 from polaris.benchmark import (
@@ -28,7 +28,7 @@ from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
 from polaris.hub.storage import StorageSession
-from polaris.utils.context import ProgressIndicator
+from polaris.utils.context import ProgressIndicator, track_progress
 from polaris.utils.errors import (
     InvalidDatasetError,
     PolarisCreateArtifactError,
@@ -45,6 +45,8 @@ from polaris.utils.types import (
     TimeoutTypes,
     ZarrConflictResolution,
 )
+
+logger = logging.getLogger(__name__)
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -247,7 +249,7 @@ class PolarisHubClient(OAuth2Client):
             self.external_client.interactive_login(overwrite=overwrite, auto_open_browser=auto_open_browser)
             self.token = self.fetch_token()
 
-        logger.success("You are successfully logged in to the Polaris Hub.")
+        logger.info("You are successfully logged in to the Polaris Hub.")
 
     # =========================
     #     API Endpoints
@@ -317,11 +319,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `Dataset` instance, if it exists.
         """
-        with ProgressIndicator(
-            start_msg="Fetching dataset...",
-            success_msg="Fetched dataset.",
-            error_msg="Failed to fetch dataset.",
-        ):
+        with track_progress("Fetching dataset", 1):
             try:
                 return self._get_v1_dataset(owner, name, verify_checksum)
             except PolarisRetrieveArtifactError:
@@ -449,11 +447,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `BenchmarkSpecification` instance, if it exists.
         """
-        with ProgressIndicator(
-            start_msg="Fetching benchmark...",
-            success_msg="Fetched benchmark.",
-            error_msg="Failed to fetch benchmark.",
-        ):
+        with track_progress("Fetching benchmark", 1):
             try:
                 return self._get_v1_benchmark(owner, name, verify_checksum)
             except PolarisRetrieveArtifactError:
