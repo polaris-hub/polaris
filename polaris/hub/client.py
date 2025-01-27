@@ -315,7 +315,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `Dataset` instance, if it exists.
         """
-        with track_progress("Fetching dataset", 1):
+        with track_progress(description="Fetching dataset", total=1):
             try:
                 return self._get_v1_dataset(owner, name, verify_checksum)
             except PolarisRetrieveArtifactError:
