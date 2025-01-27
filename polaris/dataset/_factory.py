@@ -1,14 +1,16 @@
+import logging
 import os
 from typing import Literal
 
 import datamol as dm
 import pandas as pd
 import zarr
-from loguru import logger
 
 from polaris.dataset import ColumnAnnotation, DatasetV1
 from polaris.dataset._adapters import Adapter
 from polaris.dataset.converters import Converter, PDBConverter, SDFConverter, ZarrConverter
+
+logger = logging.getLogger(__name__)
 
 
 def create_dataset_from_file(path: str, zarr_root_path: str | None = None) -> DatasetV1:

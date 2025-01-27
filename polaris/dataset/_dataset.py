@@ -332,6 +332,8 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         if verify_checksum:
             self.verify_checksum()
+        else:
+            self._md5sum = None
 
         return str(destination)
 

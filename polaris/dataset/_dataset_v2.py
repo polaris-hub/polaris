@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 from os import PathLike
 from pathlib import Path
@@ -7,7 +8,6 @@ from typing import Any, ClassVar, Iterable, Literal
 import fsspec
 import numpy as np
 import zarr
-from loguru import logger
 from pydantic import PrivateAttr, computed_field, model_validator
 from typing_extensions import Self
 
@@ -16,6 +16,8 @@ from polaris.dataset._base import BaseDataset
 from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import AccessType, ChecksumStrategy, HubOwner, ZarrConflictResolution
+
+logger = logging.getLogger(__name__)
 
 _INDEX_ARRAY_KEY = "__index__"
 

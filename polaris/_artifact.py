@@ -1,8 +1,8 @@
 import json
+import logging
 from typing import ClassVar, Literal
 
 import fsspec
-from loguru import logger
 from packaging.version import Version
 from pydantic import (
     BaseModel,
@@ -18,6 +18,8 @@ from typing_extensions import Self
 import polaris
 from polaris.utils.misc import slugify
 from polaris.utils.types import ArtifactUrn, HubOwner, SlugCompatibleStringType, SlugStringType
+
+logger = logging.getLogger(__name__)
 
 
 class BaseArtifactModel(BaseModel):
