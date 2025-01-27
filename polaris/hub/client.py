@@ -439,7 +439,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `BenchmarkSpecification` instance, if it exists.
         """
-        with track_progress("Fetching benchmark", 1):
+        with track_progress(description="Fetching benchmark", total=1):
             try:
                 return self._get_v1_benchmark(owner, name, verify_checksum)
             except PolarisRetrieveArtifactError:
@@ -675,7 +675,7 @@ class PolarisHubClient(OAuth2Client):
         Upload a V2 dataset to the Polaris Hub.
         """
 
-        with track_progress(description="Uploading dataset.", total=1) as (progress, task):
+        with track_progress(description="Uploading dataset", total=1) as (progress, task):
             # Get the serialized data-model
             dataset.owner = HubOwner.normalize(owner or dataset.owner)
             dataset_json = dataset.model_dump(exclude_none=True, by_alias=True)
@@ -784,7 +784,7 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
         """
-        with track_progress(description="Uploading benchmark.", total=1) as (progress, task):
+        with track_progress(description="Uploading benchmark", total=1) as (progress, task):
             # Get the serialized data-model
             # We exclude the dataset as we expect it to exist on the hub already.
             benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
