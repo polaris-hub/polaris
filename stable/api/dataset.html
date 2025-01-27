@@ -1515,27 +1515,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="hub.polarisfs.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    PolarisFileSystem
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -4562,7 +4541,7 @@ to read the content of a file by directly mapping to memory.</p>
 
 <details class="warning" open>
   <summary>This checksum is sensitive to Zarr configuration.</summary>
-  <p>This checksum is sensitive to change in the Zarr structure. For example, if you change the chunk size, 
+  <p>This checksum is sensitive to change in the Zarr structure. For example, if you change the chunk size,
 the checksum will also change.</p>
 </details>        <p>To understand how this works, consider the following directory structure:</p>
 <div class="language-text highlight"><pre><span></span><code>       . (root)
@@ -4576,9 +4555,9 @@ the checksum will also change.</p>
 <li><code>root</code>: A Zarr Group with a single Array.</li>
 <li><code>a</code>: A Zarr Array</li>
 <li><code>b</code>: A single chunk of the Zarr Array</li>
-<li><code>c</code>: A metadata file (i.e. .zarray, .zattrs or .zgroup) </li>
+<li><code>c</code>: A metadata file (i.e. .zarray, .zattrs or .zgroup)</li>
 </ul>
-<p>To compute the checksum, we first find all the trees in the node, in this case b and c. 
+<p>To compute the checksum, we first find all the trees in the node, in this case b and c.
 We compute the hash of the content (the raw bytes) for each of these files.</p>
 <p>We then work our way up the tree. For any node (directory), we find all children of that node.
 In an sorted order, we then serialize a list with - for each of the children - the checksum, size, and number of children.
