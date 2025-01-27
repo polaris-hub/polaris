@@ -45,8 +45,8 @@ import zarr
 import zarr.errors
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
-from tqdm import tqdm
 
+from polaris.utils.context import track_progress
 from polaris.utils.errors import InvalidZarrChecksum
 
 ZARR_DIGEST_PATTERN = "([0-9a-f]{32})-([0-9]+)-([0-9]+)"
@@ -56,8 +56,8 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple["_ZarrDirectoryDigest", 
     r"""
     Implements an algorithm to compute the Zarr checksum.
 
-    Warning: This checksum is sensitive to Zarr configuration. 
-        This checksum is sensitive to change in the Zarr structure. For example, if you change the chunk size, 
+    Warning: This checksum is sensitive to Zarr configuration.
+        This checksum is sensitive to change in the Zarr structure. For example, if you change the chunk size,
         the checksum will also change.
 
     To understand how this works, consider the following directory structure:
@@ -67,17 +67,17 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple["_ZarrDirectoryDigest", 
              a   c
             /
            b
-    
+
     Within zarr, this would for example be:
 
     - `root`: A Zarr Group with a single Array.
     - `a`: A Zarr Array
     - `b`: A single chunk of the Zarr Array
-    - `c`: A metadata file (i.e. .zarray, .zattrs or .zgroup) 
+    - `c`: A metadata file (i.e. .zarray, .zattrs or .zgroup)
 
-    To compute the checksum, we first find all the trees in the node, in this case b and c. 
+    To compute the checksum, we first find all the trees in the node, in this case b and c.
     We compute the hash of the content (the raw bytes) for each of these files.
-    
+
     We then work our way up the tree. For any node (directory), we find all children of that node.
     In an sorted order, we then serialize a list with - for each of the children - the checksum, size, and number of children.
     The hash of the directory is then equal to the hash of the serialized JSON.
@@ -116,33 +116,40 @@ def compute_zarr_checksum(zarr_root_path: str) -> Tuple["_ZarrDirectoryDigest", 
     leaves = fs.find(zarr_root_path, detail=True)
     zarr_md5sum_manifest = []
 
-    for file in tqdm(leaves.values(), desc="Finding all files in the Zarr archive"):
-        path = file["name"]
+    files = leaves.values()
+    with track_progress(description="Finding all files in the Zarr archive", total=len(files)) as (
+        progress,
+        task,
+    ):
+        for file in files:
+            path = file["name"]
 
-        relpath = path.removeprefix(zarr_root_path)
-        relpath = relpath.lstrip("/")
-        relpath = Path(relpath)
+            relpath = path.removeprefix(zarr_root_path)
+            relpath = relpath.lstrip("/")
+            relpath = Path(relpath)
 
-        size = file["size"]
+            size = file["size"]
 
-        # Compute md5sum of file
-        md5sum = hashlib.md5()
-        with fs.open(path, "rb") as f:
-            for chunk in iter(lambda: f.read(8192), b""):
-                md5sum.update(chunk)
-        digest = md5sum.hexdigest()
+            # Compute md5sum of file
+            md5sum = hashlib.md5()
+            with fs.open(path, "rb") as f:
+                for chunk in iter(lambda: f.read(8192), b""):
+                    md5sum.update(chunk)
+            digest = md5sum.hexdigest()
 
-        # Add a leaf to the tree
-        # (This actually adds the file's checksum to the parent directory's manifest)
-        tree.add_leaf(
-            path=relpath,
-            size=size,
-            digest=digest,
-        )
+            # Add a leaf to the tree
+            # (This actually adds the file's checksum to the parent directory's manifest)
+            tree.add_leaf(
+                path=relpath,
+                size=size,
+                digest=digest,
+            )
 
-        # We persist the checksums for leaf nodes separately,
-        # because this is what the Hub needs to verify data integrity.
-        zarr_md5sum_manifest.append(ZarrFileChecksum(path=str(relpath), md5sum=digest, size=size))
+            # We persist the checksums for leaf nodes separately,
+            # because this is what the Hub needs to verify data integrity.
+            zarr_md5sum_manifest.append(ZarrFileChecksum(path=str(relpath), md5sum=digest, size=size))
+
+            progress.update(task, advance=1, refresh=True)
 
     # Compute digest
     return tree.process(), zarr_md5sum_manifest

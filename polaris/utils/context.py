@@ -4,9 +4,9 @@ from itertools import cycle
 
 from rich.progress import (
     BarColumn,
+    MofNCompleteColumn,
     Progress,
     SpinnerColumn,
-    TaskProgressColumn,
     TextColumn,
     TimeElapsedColumn,
 )
@@ -18,7 +18,7 @@ progress_instance = ContextVar(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         BarColumn(),
-        TaskProgressColumn(),
+        MofNCompleteColumn(),
         TimeElapsedColumn(),
     ),
 )
@@ -33,7 +33,7 @@ colors = cycle(
 
 
 @contextmanager
-def track_progress(description: str, total: float | None = 100.0):
+def track_progress(description: str, total: float | None = 1.0):
     """
     Use the Progress instance to track a task's progress
     """

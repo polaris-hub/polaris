@@ -641,9 +641,7 @@ class PolarisHubClient(OAuth2Client):
 
                     # Step 3: Upload any associated Zarr archive
                 if dataset.uses_zarr:
-                    with track_progress(description="Copying Zarr archive", total=1) as (progress, task):
-                        progress.log("[yellow]This may take a while.")
-
+                    with track_progress(description="Copying Zarr archive", total=1):
                         destination = storage.store("extension")
 
                         # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
@@ -702,8 +700,11 @@ class PolarisHubClient(OAuth2Client):
                         storage.set_file("manifest", manifest_file.read())
 
                 # Step 3: Upload the Zarr archive
-                with track_progress(description="Copying Zarr archive", total=1) as (progress, task):
-                    progress.log("[yellow]This may take a while.")
+                with track_progress(description="Copying Zarr archive", total=1) as (
+                    progress_zarr,
+                    task_zarr,
+                ):
+                    progress_zarr.log("[yellow]This may take a while.")
 
                     destination = storage.store("root")
 
@@ -830,11 +831,11 @@ class PolarisHubClient(OAuth2Client):
                 # 2. Upload each index set bitmap
                 with track_progress(
                     description="Copying index sets", total=benchmark.split.n_test_sets + 1
-                ) as (progress, task):
+                ) as (progress_index_sets, task_index_sets):
                     for label, index_set in benchmark.split:
                         logger.info(f"Copying index set {label} to the Hub.")
                         storage.set_file(label, index_set.serialize())
-                        progress.update(task, advance=1, refresh=True)
+                        progress_index_sets.update(task_index_sets, advance=1, refresh=True)
 
             benchmark_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
             progress.log(

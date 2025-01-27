@@ -20,6 +20,7 @@ from zarr.storage import Store
 from zarr.util import buffer_size
 
 from polaris.hub.oauth import BenchmarkV2Paths, DatasetV1Paths, DatasetV2Paths, HubStorageOAuth2Token
+from polaris.utils.context import track_progress
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import ArtifactUrn, ZarrConflictResolution
 
@@ -168,25 +169,33 @@ class S3Store(Store):
 
         number_source_keys = len(self)
 
-        batch_iter = iter(self)
-        while batch := tuple(islice(batch_iter, self._batch_size)):
-            to_put = batch if if_exists == "replace" else filter(lambda key: key not in destination, batch)
-            skipped = len(batch) - len(to_put)
+        with track_progress(description="Copying Zarr keys", total=number_source_keys) as (
+            progress_keys,
+            task_keys,
+        ):
+            batch_iter = iter(self)
+            while batch := tuple(islice(batch_iter, self._batch_size)):
+                to_put = (
+                    batch if if_exists == "replace" else filter(lambda key: key not in destination, batch)
+                )
+                skipped = len(batch) - len(to_put)
 
-            if skipped > 0 and if_exists == "raise":
-                raise CopyError(f"keys {to_put} exist in destination")
+                if skipped > 0:
+                    if if_exists == "raise":
+                        raise CopyError(f"keys {to_put} exist in destination")
+                    else:
+                        progress_keys.log(f"Skipped {skipped} keys that already exists")
 
-            items = self.getitems(to_put, contexts={})
-            for key, content in items.items():
-                destination[key] = content
-                total_bytes_copied += buffer_size(content)
+                items = self.getitems(to_put, contexts={})
+                for key, content in items.items():
+                    destination[key] = content
 
-            total_copied += len(to_put)
-            total_skipped += skipped
+                    size_copied = buffer_size(content)
+                    total_bytes_copied += size_copied
+                    total_copied += 1
 
-            log(
-                f"Copied {total_copied} ({total_bytes_copied / (1024**2):.2f} MiB), skipped {total_skipped}, of {number_source_keys} keys. {(total_copied + total_skipped) / number_source_keys * 100:.2f}% completed."
-            )
+                total_skipped += skipped
+                progress_keys.update(task_keys, advance=len(batch), refresh=True)
 
         return total_copied, total_skipped, total_bytes_copied
 
@@ -259,24 +268,29 @@ class S3Store(Store):
 
             number_source_keys = len(source)
 
-            # Batch the keys, otherwise we end up with too many files open at the same time
-            batch_iter = iter(source.keys())
-            while batch := tuple(islice(batch_iter, self._batch_size)):
-                # Create a future for each key to copy
-                future_to_key = [
-                    executor.submit(copy_key, source_key, source, if_exists) for source_key in batch
-                ]
+            with track_progress(description="Copying Zarr keys", total=number_source_keys) as (
+                progress_keys,
+                task_keys,
+            ):
+                # Batch the keys, otherwise we end up with too many files open at the same time
+                batch_iter = iter(source.keys())
+                while batch := tuple(islice(batch_iter, self._batch_size)):
+                    # Create a future for each key to copy
+                    future_to_key = [
+                        executor.submit(copy_key, source_key, source, if_exists) for source_key in batch
+                    ]
 
-                # As each future completes, collect the results
-                for future in as_completed(future_to_key):
-                    result_copied, result_skipped, result_bytes_copied = future.result()
-                    total_copied += result_copied
-                    total_skipped += result_skipped
-                    total_bytes_copied += result_bytes_copied
+                    # As each future completes, collect the results
+                    for future in as_completed(future_to_key):
+                        result_copied, result_skipped, result_bytes_copied = future.result()
+                        total_copied += result_copied
+                        progress_keys.update(task_keys, advance=result_copied, refresh=True)
 
-                log(
-                    f"Copied {total_copied} ({total_bytes_copied / (1024**2):.2f} MiB), skipped {total_skipped}, of {number_source_keys} keys. {(total_copied + total_skipped) / number_source_keys * 100:.2f}% completed."
-                )
+                        total_skipped += result_skipped
+                        if result_skipped > 0:
+                            progress_keys.log(f"Skipped {result_skipped} keys that already exists")
+
+                        total_bytes_copied += result_bytes_copied
 
             return total_copied, total_skipped, total_bytes_copied
 

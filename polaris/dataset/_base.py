@@ -25,6 +25,7 @@ from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.dataset.zarr._utils import check_zarr_codecs, load_zarr_group_to_memory
 from polaris.utils.constants import DEFAULT_CACHE_DIR
+from polaris.utils.context import track_progress
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
@@ -373,19 +374,24 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         # Copy over Zarr data to the destination
         self._warn_about_remote_zarr = False
 
-        logger.info(f"Copying Zarr archive to {destination_zarr_root}. This may take a while.")
-        destination_store = zarr.open(str(destination_zarr_root), "w").store
-        source_store = self.zarr_root.store.store
+        with track_progress(description="Copying Zarr archive", total=1) as (
+            progress,
+            task,
+        ):
+            progress.log(f"[green]Copying to destination {destination_zarr_root}")
+            progress.log("[yellow]For large Zarr archives, this may take a while.")
+            destination_store = zarr.open(str(destination_zarr_root), "w").store
+            source_store = self.zarr_root.store.store
 
-        if isinstance(source_store, S3Store):
-            source_store.copy_to_destination(destination_store, if_exists, logger.info)
-        else:
-            zarr.copy_store(
-                source=source_store,
-                dest=destination_store,
-                log=logger.info,
-                if_exists=if_exists,
-            )
-        self.zarr_root_path = str(destination_zarr_root)
-        self._zarr_root = None
-        self._zarr_data = None
+            if isinstance(source_store, S3Store):
+                source_store.copy_to_destination(destination_store, if_exists, logger.info)
+            else:
+                zarr.copy_store(
+                    source=source_store,
+                    dest=destination_store,
+                    log=logger.info,
+                    if_exists=if_exists,
+                )
+            self.zarr_root_path = str(destination_zarr_root)
+            self._zarr_root = None
+            self._zarr_data = None
