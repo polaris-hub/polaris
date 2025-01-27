@@ -1,14 +1,16 @@
+import logging
 from functools import cached_property
 from hashlib import md5
 from typing import Generator, Sequence
 
-from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 from pyroaring import BitMap
 from typing_extensions import Self
 
 from polaris.utils.errors import InvalidBenchmarkError
+
+logger = logging.getLogger(__name__)
 
 
 class IndexSet(BaseModel):
