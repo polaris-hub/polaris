@@ -921,11 +921,7 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `model.owner`.
         """
-        with ProgressIndicator(
-            start_msg="Uploading model...",
-            success_msg="Uploaded model.",
-            error_msg="Failed to upload model.",
-        ) as progress_indicator:
+        with track_progress(description="Uploading model", total=1) as (progress, task):
             # Get the serialized model data-structure
             model.owner = HubOwner.normalize(owner or model.owner)
             model_json = model.model_dump(by_alias=True, exclude_none=True)
@@ -938,6 +934,6 @@ class PolarisHubClient(OAuth2Client):
             # Inform the user about where to find their newly created artifact.
             model_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
 
-            progress_indicator.update_success_msg(
-                f"Your model has been successfully uploaded to the Hub. View it here: {model_url}"
+            progress.log(
+                f"[green]Your model has been successfully uploaded to the Hub. View it here: {model_url}"
             )
