@@ -200,16 +200,19 @@ class Subset:
             This method loads the entire dataset in memory.
         """
         # Create an empty dataframe
-        cols = self.input_cols + self.target_cols
+        cols = self.input_cols
+        if not self._hide_targets:
+            cols += self.target_cols
         df = pd.DataFrame(columns=cols)
 
         # Fill the dataframe
-        targets = self.targets
-        if not self.is_multi_task:
-            targets = {self.target_cols[0]: targets}
+        if not self._hide_targets:
+            targets = self.targets
+            if not self.is_multi_task:
+                targets = {self.target_cols[0]: targets}
 
-        for k in targets:
-            df[k] = targets[k]
+            for k in targets:
+                df[k] = targets[k]
 
         inputs = self.inputs
         if not self.is_multi_input:
