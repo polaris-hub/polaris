@@ -22,7 +22,7 @@ class RDKitMolCodec(VLenBytes):
         """
         Encode a chunk of RDKit Mols to byte strings
         """
-        to_encode = np.empty(shape=len(buf), dtype=object)
+        to_encode = np.full(fill_value=b"", shape=len(buf), dtype=object)
         for idx, mol in enumerate(buf):
             if mol is None or (isinstance(mol, bytes) and len(mol) == 0):
                 continue
