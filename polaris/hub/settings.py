@@ -34,7 +34,9 @@ class PolarisHubSettings(BaseSettings):
     """
 
     # Configuration of the pydantic model
-    model_config = SettingsConfigDict(env_file=".env", env_prefix="POLARIS_", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="POLARIS_", extra="ignore", env_ignore_empty=True
+    )
 
     # Hub settings
     hub_url: HttpUrlString = "https://polarishub.io/"

@@ -1,14 +1,15 @@
-import os
-
 import pytest
 
 import polaris as po
 from polaris.benchmark._base import BenchmarkSpecification
 from polaris.dataset._base import BaseDataset
+from polaris.hub.settings import PolarisHubSettings
+
+settings = PolarisHubSettings()
 
 
 @pytest.mark.skipif(
-    os.getenv("POLARIS_PASSWORD") is None and os.getenv("POLARIS_USER") is None,
+    settings.username is None or settings.password is None,
     reason="This test case requires headless authentication to be set up",
 )
 def test_load_dataset_flow():
@@ -17,7 +18,7 @@ def test_load_dataset_flow():
 
 
 @pytest.mark.skipif(
-    os.getenv("POLARIS_PASSWORD") is None and os.getenv("POLARIS_USER") is None,
+    settings.username is None or settings.password is None,
     reason="This test case requires headless authentication to be set up",
 )
 def test_load_benchmark_flow():

@@ -1,5 +1,6 @@
 import datamol as dm
 import numpy as np
+import pandas as pd
 import pytest
 
 from polaris.dataset import Subset
@@ -51,6 +52,14 @@ def test_access_to_test_set(test_single_task_benchmark):
     # For the train set it should work
     assert all(isinstance(y, float) for x, y in train)
     assert all(isinstance(train[i][1], float) for i in range(len(train)))
+
+    # as_dataframe should work for both, but contain no targets for test
+    train_df = train.as_dataframe()
+    assert isinstance(train_df, pd.DataFrame)
+    assert "expt" in train_df.columns
+    test_df = test.as_dataframe()
+    assert isinstance(test_df, pd.DataFrame)
+    assert "expt" not in test_df.columns
 
 
 def test_input_featurization(test_single_task_benchmark):
