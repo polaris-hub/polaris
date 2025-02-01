@@ -22,12 +22,14 @@ class RDKitMolCodec(VLenBytes):
         """
         Encode a chunk of RDKit Mols to byte strings
         """
-        to_encode = np.empty(shape=len(buf), dtype=object)
+        # NOTE (cwognum): I ran into a Cython issue because we could pass None to the VLenBytes codec.
+        # Using np.full() ensures all elements are initialized as empty byte strings instead.
+        to_encode = np.full(fill_value=b"", shape=len(buf), dtype=object)
         for idx, mol in enumerate(buf):
             if mol is None or (isinstance(mol, bytes) and len(mol) == 0):
                 continue
             if not isinstance(mol, Chem.Mol):
-                raise ValueError(f"Expected an RDKitMol, but got {type(buf)} instead.")
+                raise ValueError(f"Expected an RDKitMol, but got {type(mol)} instead.")
             props = Chem.PropertyPickleOptions.AllProps
             to_encode[idx] = mol.ToBinary(props)
 
