@@ -249,7 +249,7 @@ class PolarisHubClient(OAuth2Client):
             self.external_client.interactive_login(overwrite=overwrite, auto_open_browser=auto_open_browser)
             self.token = self.fetch_token()
 
-        logger.info("You are successfully logged in to the Polaris Hub.")
+        logger.info("You are successfully logged in to the Polaris Hub. 🎉 :tada:")
 
     # =========================
     #     API Endpoints
