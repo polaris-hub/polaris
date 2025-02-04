@@ -37,6 +37,7 @@ from polaris.utils.errors import (
     PolarisRetrieveArtifactError,
     PolarisUnauthorizedError,
 )
+from polaris.utils.misc import build_urn
 from polaris.utils.types import (
     AccessType,
     ChecksumStrategy,
@@ -690,7 +691,9 @@ class PolarisHubClient(OAuth2Client):
 
             inserted_dataset = response.json()
 
-            with StorageSession(self, "write", dataset.urn) as storage:
+            inserted_dataset_urn = build_urn("dataset", inserted_dataset["owner"]["slug"], inserted_dataset["slug"])
+
+            with StorageSession(self, "write", inserted_dataset_urn) as storage:
                 # Step 2: Upload the parquet file
                 logger.info("Copying Parquet file to the Hub. This may take a while.")
                 storage.set_file("root", in_memory_parquet.getvalue())

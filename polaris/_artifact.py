@@ -16,7 +16,7 @@ from pydantic.alias_generators import to_camel
 from typing_extensions import Self
 
 import polaris
-from polaris.utils.misc import slugify
+from polaris.utils.misc import build_urn, slugify
 from polaris.utils.types import ArtifactUrn, HubOwner, SlugCompatibleStringType, SlugStringType
 
 
@@ -126,4 +126,4 @@ class BaseArtifactModel(BaseModel):
 
     @classmethod
     def urn_for(cls, owner: str | HubOwner, name: str) -> ArtifactUrn:
-        return f"urn:polaris:{cls._artifact_type}:{owner}:{slugify(name)}"
+        return build_urn(cls._artifact_type, owner, slugify(name))
