@@ -368,13 +368,8 @@ class PolarisHubClient(OAuth2Client):
             A `Dataset` instance, if it exists.
         """
         url = f"/v1/dataset/{owner}/{name}"
-        response = self._base_request_to_hub(url=url, method="GET", params={"checkChildren": True})
+        response = self._base_request_to_hub(url=url, method="GET")
         response_data = response.json()
-
-        hasLaterVersion = response_data["laterVersions"] > 0
-
-        # This is not part of the dataset
-        response_data.pop("laterVersions", None)
 
         # Disregard the Zarr root in the response. We'll get it from the storage token instead.
         response_data.pop("zarrRootPath", None)
@@ -396,9 +391,6 @@ class PolarisHubClient(OAuth2Client):
             dataset.verify_checksum(md5sum)
         else:
             dataset.md5sum = md5sum
-
-        if hasLaterVersion:
-            logger.info("A more recent version of this dataset exists.")
 
         return dataset
 
