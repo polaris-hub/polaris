@@ -892,7 +892,7 @@ class PolarisHubClient(OAuth2Client):
             return response
 
     def get_model(self, artifact_id: str) -> Model:
-        url = f"/v1/model/{artifact_id}"
+        url = f"/v2/model/{artifact_id}"
         response = self._base_request_to_hub(url=url, method="GET")
         response_data = response.json()
 
@@ -928,7 +928,7 @@ class PolarisHubClient(OAuth2Client):
 
             # Make a request to the hub
             response = self._base_request_to_hub(
-                url="/v1/model", method="POST", json={"access": access, **model_json}
+                url="/v2/model", method="POST", json={"access": access, **model_json}
             )
 
             # Inform the user about where to find their newly created artifact.

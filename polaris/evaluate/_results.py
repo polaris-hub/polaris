@@ -11,9 +11,8 @@ from pydantic import (
     model_validator,
 )
 from pydantic.alias_generators import to_camel
-from polaris.model import Model
 
-from polaris.evaluate import ResultsMetadata
+from polaris.evaluate import ResultsMetadataV1, ResultsMetadataV2
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import slugify
 from polaris.utils.types import (
@@ -41,8 +40,8 @@ class ResultRecords(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 
-class EvaluationResult(ResultsMetadata):
-    """Class for saving evaluation results
+class BaseEvaluationResult:
+    """Base class for saving evaluation results
 
     The actual results are saved in the `results` field using the following tabular format:
 
@@ -134,8 +133,20 @@ class EvaluationResult(ResultsMetadata):
         return serialized
 
 
-class BenchmarkResults(EvaluationResult):
-    """Class specific to results for standard benchmarks.
+class EvaluationResultV1(ResultsMetadataV1, BaseEvaluationResult):
+    """V1 implementation of evaluation results without model field support"""
+
+    pass
+
+
+class EvaluationResultV2(ResultsMetadataV2, BaseEvaluationResult):
+    """V2 implementation of evaluation results with model field replacing URLs"""
+
+    pass
+
+
+class BaseBenchmarkResults:
+    """Base class for results of standard benchmarks.
 
     This object is returned by [`BenchmarkSpecification.evaluate`][polaris.benchmark.BenchmarkSpecification.evaluate].
     In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
@@ -152,7 +163,6 @@ class BenchmarkResults(EvaluationResult):
     benchmark_artifact_id: str | None = Field(None)
     benchmark_name: SlugCompatibleStringType | None = Field(None, deprecated=True)
     benchmark_owner: HubOwner | None = Field(None, deprecated=True)
-    model: Model | None = Field(None)
 
     @model_validator(mode="after")
     def set_benchmark_artifact_id(self):
@@ -165,7 +175,7 @@ class BenchmarkResults(EvaluationResult):
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
         **kwargs: dict,
-    ) -> "BenchmarkResults":
+    ):
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_results`][polaris.hub.client.PolarisHubClient.upload_results] method.
@@ -176,7 +186,19 @@ class BenchmarkResults(EvaluationResult):
             return client.upload_results(self, access=access, owner=owner)
 
 
-class CompetitionResults(EvaluationResult):
+class BenchmarkResultsV1(EvaluationResultV1, BaseBenchmarkResults):
+    """V1 implementation of benchmark results without model field support"""
+
+    pass
+
+
+class BenchmarkResultsV2(EvaluationResultV2, BaseBenchmarkResults):
+    """V2 implementation of benchmark results with model field replacing URLs"""
+
+    pass
+
+
+class CompetitionResults(EvaluationResultV1):
     """Class specific to results for competition benchmarks.
 
     This object is returned by [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].

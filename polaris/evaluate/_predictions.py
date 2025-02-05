@@ -12,7 +12,7 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-from polaris.evaluate import ResultsMetadata
+from polaris.evaluate import ResultsMetadataV1
 from polaris.utils.misc import convert_lists_to_arrays
 from polaris.utils.types import (
     HttpUrlString,
@@ -249,7 +249,7 @@ class BenchmarkPredictions(BaseModel):
         return self.get_size()
 
 
-class CompetitionPredictions(BenchmarkPredictions, ResultsMetadata):
+class CompetitionPredictions(BenchmarkPredictions, ResultsMetadataV1):
     """
     Predictions for competition benchmarks.
 
