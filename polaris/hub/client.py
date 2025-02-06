@@ -683,7 +683,9 @@ class PolarisHubClient(OAuth2Client):
 
             inserted_dataset = response.json()
 
-            inserted_dataset_urn = build_urn("dataset", inserted_dataset["owner"]["slug"], inserted_dataset["slug"])
+            inserted_dataset_urn = build_urn(
+                "dataset", inserted_dataset["owner"]["slug"], inserted_dataset["slug"]
+            )
 
             with StorageSession(self, "write", inserted_dataset_urn) as storage:
                 # Step 2: Upload the parquet file

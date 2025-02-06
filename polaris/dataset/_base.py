@@ -82,9 +82,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     source: HttpUrlString | None = None
     license: SupportedLicenseType | None = None
     curation_reference: HttpUrlString | None = None
-
-    # Version-related fields
-    artifact_version: int = 1
     artifact_changelog: str | None = None
 
     # Private attributes
