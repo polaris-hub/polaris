@@ -29,7 +29,9 @@ _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
 _INDEX_SEP = "#"
 
 
-@deprecated("Use DatasetV2 instead")
+@deprecated(
+    "Use DatasetV2 instead. If you're loading this dataset from the Polaris Hub, you can ignore this warning."
+)
 class DatasetV1(BaseDataset, ChecksumMixin):
     """First version of a Polaris Dataset.
 
