@@ -4,7 +4,6 @@ from hashlib import md5
 from itertools import chain
 from pathlib import Path
 from typing import Any, Callable, ClassVar, Literal
-from warnings import deprecated
 
 import fsspec
 import numpy as np
@@ -16,7 +15,7 @@ from pydantic import (
     model_validator,
 )
 from sklearn.utils.multiclass import type_of_target
-from typing_extensions import Self
+from typing_extensions import Self, deprecated
 
 from polaris._artifact import BaseArtifactModel
 from polaris.benchmark._split import SplitSpecificationV1Mixin
