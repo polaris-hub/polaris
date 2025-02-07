@@ -3,7 +3,6 @@ from hashlib import md5
 from os import PathLike
 from pathlib import Path
 from typing import Any, ClassVar, List, Literal
-from warnings import deprecated
 
 import fsspec
 import numpy as np
@@ -11,7 +10,7 @@ import pandas as pd
 import zarr
 from datamol.utils import fs as dmfs
 from pydantic import PrivateAttr, computed_field, field_validator, model_validator
-from typing_extensions import Self
+from typing_extensions import Self, deprecated
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset

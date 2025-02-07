@@ -1,12 +1,12 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Sequence, Union
-from warnings import deprecated
 
 import fastpdb
 import numpy as np
 import pandas as pd
 import zarr
 from fastpdb import struc
+from typing_extensions import deprecated
 
 from polaris.dataset import ColumnAnnotation, Modality
 from polaris.dataset._adapters import Adapter

@@ -1,10 +1,10 @@
 import uuid
 from typing import TYPE_CHECKING, Optional, Sequence
-from warnings import deprecated
 
 import datamol as dm
 import pandas as pd
 from rdkit import Chem
+from typing_extensions import deprecated
 
 from polaris.dataset import ColumnAnnotation, Modality
 from polaris.dataset._adapters import Adapter

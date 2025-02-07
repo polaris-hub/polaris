@@ -1,7 +1,7 @@
 from enum import Enum, auto, unique
-from warnings import deprecated
 
 import datamol as dm
+from typing_extensions import deprecated
 
 
 @deprecated("Please use the custom codecs in `polaris.dataset.zarr.codecs` instead.")

@@ -1,10 +1,10 @@
 import os
 from collections import defaultdict
 from typing import TYPE_CHECKING
-from warnings import deprecated
 
 import pandas as pd
 import zarr
+from typing_extensions import deprecated
 
 from polaris.dataset import ColumnAnnotation
 from polaris.dataset.converters._base import Converter, FactoryProduct

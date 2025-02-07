@@ -1,11 +1,11 @@
 import logging
 import os
 from typing import Literal
-from warnings import deprecated
 
 import datamol as dm
 import pandas as pd
 import zarr
+from typing_extensions import deprecated
 
 from polaris.dataset import ColumnAnnotation, DatasetV1
 from polaris.dataset._adapters import Adapter
