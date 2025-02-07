@@ -3,6 +3,7 @@ from hashlib import md5
 from os import PathLike
 from pathlib import Path
 from typing import Any, ClassVar, List, Literal
+from warnings import deprecated
 
 import fsspec
 import numpy as np
@@ -29,6 +30,7 @@ _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
 _INDEX_SEP = "#"
 
 
+@deprecated("Use DatasetV2 instead")
 class DatasetV1(BaseDataset, ChecksumMixin):
     """First version of a Polaris Dataset.
 

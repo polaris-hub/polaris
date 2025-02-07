@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Literal
+from warnings import deprecated
 
 import datamol as dm
 import pandas as pd
@@ -13,6 +14,9 @@ from polaris.dataset.converters import Converter, PDBConverter, SDFConverter, Za
 logger = logging.getLogger(__name__)
 
 
+@deprecated(
+    "Please create the Zarr archive directly. For guidance, see https://polaris-hub.github.io/polaris/stable/tutorials/create_a_dataset.html."
+)
 def create_dataset_from_file(path: str, zarr_root_path: str | None = None) -> DatasetV1:
     """
     This function is a convenience function to create a dataset from a file.
@@ -29,6 +33,9 @@ def create_dataset_from_file(path: str, zarr_root_path: str | None = None) -> Da
     return factory.build()
 
 
+@deprecated(
+    "Please create the Zarr archive directly. For guidance, see https://polaris-hub.github.io/polaris/stable/tutorials/create_a_dataset.html."
+)
 def create_dataset_from_files(
     paths: list[str], zarr_root_path: str | None = None, axis: Literal[0, 1, "index", "columns"] = 0
 ) -> DatasetV1:
@@ -52,6 +59,9 @@ def create_dataset_from_files(
     return factory.build()
 
 
+@deprecated(
+    "Please create the Zarr archive directly. For guidance, see https://polaris-hub.github.io/polaris/stable/tutorials/create_a_dataset.html."
+)
 class DatasetFactory:
     """
     The `DatasetFactory` makes it easier to create complex datasets.
@@ -196,7 +206,7 @@ class DatasetFactory:
 
         If not specifying a key to merge on, the columns will simply be added to the dataset
         that has been built so far without any reordering. They are therefore expected to meet all
-        the same expectations as for [`add_column`][polaris.dataset.DatasetFactory.add_column].
+        the same expectations as for `add_column()`.
 
         Args:
             df: A Pandas DataFrame with the columns that we want to add to the dataset.

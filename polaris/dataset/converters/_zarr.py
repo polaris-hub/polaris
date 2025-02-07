@@ -1,6 +1,7 @@
+import os
 from collections import defaultdict
 from typing import TYPE_CHECKING
-import os
+from warnings import deprecated
 
 import pandas as pd
 import zarr
@@ -12,12 +13,9 @@ if TYPE_CHECKING:
     from polaris.dataset import DatasetFactory
 
 
+@deprecated("Please use the custom codecs in `polaris.dataset.zarr.codecs` instead.")
 class ZarrConverter(Converter):
     """Parse a [.zarr](https://zarr.readthedocs.io/en/stable/index.html) archive into a Polaris `Dataset`.
-
-    Tip: Tutorial
-        To learn more about the zarr format, see the
-        [tutorial](../tutorials/dataset_zarr.ipynb).
 
     Warning: Loading from `.zarr`
         Loading and saving datasets from and to `.zarr` is still experimental and currently not

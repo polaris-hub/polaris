@@ -1,5 +1,6 @@
 import uuid
 from typing import TYPE_CHECKING, Optional, Sequence
+from warnings import deprecated
 
 import datamol as dm
 import pandas as pd
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
     from polaris.dataset import DatasetFactory
 
 
+@deprecated("Please use the custom codecs in `polaris.dataset.zarr.codecs` instead.")
 class SDFConverter(Converter):
     """
     Converts a SDF file into a Polaris dataset.

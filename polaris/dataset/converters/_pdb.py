@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Sequence, Union
+from warnings import deprecated
 
 import fastpdb
 import numpy as np
@@ -76,6 +77,7 @@ def zarr_to_pdb(atom_dict: zarr.Group):
     return struc.array(atom_array)
 
 
+@deprecated("Please use the custom codecs in `polaris.dataset.zarr.codecs` instead.")
 class PDBConverter(Converter):
     """
     Converts PDB files into a Polaris dataset based on fastpdb.

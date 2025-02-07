@@ -50,8 +50,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     At its core, a dataset in Polaris can _conceptually_ be thought of as tabular data structure that stores data-points
     in a row-wise manner, where each column correspond to a variable associated with that datapoint.
 
-    A Dataset can have multiple modalities or targets, can be sparse and can be part of one or multiple
-     [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] objects.
+    A Dataset can have multiple modalities or targets, can be sparse and can be part of one or multiple benchmarks.
 
     Attributes:
         default_adapters: The adapters that the Dataset recommends to use by default to change the format of the data
@@ -164,7 +163,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
         Note: Different to `zarr_data`
             The `zarr_data` attribute references either to the Zarr archive or to a in-memory copy of the data.
-            See also [`Dataset.load_to_memory`][polaris.dataset.Dataset.load_to_memory].
+            See also `dataset.load_to_memory()`.
         """
 
         from polaris.hub.storage import StorageSession

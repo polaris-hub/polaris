@@ -1,8 +1,10 @@
 from enum import Enum, auto, unique
+from warnings import deprecated
 
 import datamol as dm
 
 
+@deprecated("Please use the custom codecs in `polaris.dataset.zarr.codecs` instead.")
 @unique
 class Adapter(Enum):
     """

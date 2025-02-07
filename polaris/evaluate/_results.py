@@ -136,7 +136,8 @@ class EvaluationResult(ResultsMetadata):
 class BenchmarkResults(EvaluationResult):
     """Class specific to results for standard benchmarks.
 
-    This object is returned by [`BenchmarkSpecification.evaluate`][polaris.benchmark.BenchmarkSpecification.evaluate].
+    This object is returned by  `benchmark.evaluate()`.
+
     In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
     the results with the Polaris Hub.
 

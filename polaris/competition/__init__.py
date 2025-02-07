@@ -23,9 +23,7 @@ from polaris.utils.types import (
 
 
 class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, SplitSpecificationV1Mixin):
-    """An instance of this class represents a Polaris competition. It defines fields and functionality
-    that in combination with the [`DatasetV2`][polaris.dataset.DatasetV2] class, allow
-    users to participate in competitions hosted on Polaris Hub.
+    """An instance of this class represents a Polaris competition.
 
     Examples:
         Basic API usage:
