@@ -157,4 +157,4 @@ class ExternalAuthClient(OAuth2Client):
         # Step 3: Exchange authorization code for an access token
         self.fetch_token(code=authorization_code, grant_type="authorization_code")
 
-        logger.info(f"Successfully authenticated to the Polaris Hub as `{self.user_info['email']}`! 🎉")
+        logger.info(f"Successfully authenticated to the Polaris Hub as `{self.user_info['email']}`!")
