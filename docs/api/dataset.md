@@ -1,9 +1,3 @@
-::: polaris.dataset.Dataset
-    options:
-        filters: ["!^_"]
-
---- 
-
 ::: polaris.dataset.DatasetV2
     options:
         filters: ["!^_"]
@@ -26,4 +20,4 @@
     options:
         filters: ["!^_"]
 
----
+--- 

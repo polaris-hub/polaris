@@ -2,21 +2,15 @@
 
 Welcome to the Polaris documentation!
 
-
-
---- 
-
 ## What is Polaris?
 
-!!! info "Our vision"
+!!! info "Our mission"
 
-    Polaris aims to **foster the development of impactful AI models in drug discovery** by establishing a new 
-    and adaptive standard for measuring progress of computational tools in drug discovery.
+    Polaris is on a mission to bring innovators and practitioners closer together to develop methods that matter.
 
-Polaris is a suite of tools to implement, host and run benchmarks in computational drug discovery. Existing benchmarks leave several key challenges - related to the characteristics of datasets in drug discovery - unaddressed. This can lead to a situation in which newly proposed models do not perform as well _as advertised_ in real drug discovery programs, ultimately risking misalignment between the scientists developing the models and downstream users. With Polaris, we aim to further close that gap. 
+Polaris is an optimistic community that fundamentally believes in the ability of Machine Learning to radically improve lives by disrupting the drug discovery process. However, we recognize that the absence of standardized, domain-appropriate datasets, guidelines, and tools for method evaluation is limiting its current impact.
 
-### Polaris Hub
-A quick word on the [Polaris Hub](https://polarishub.io/). The hub hosts a variety of high-quality benchmarks and datasets. While the hub is built to easily integrate with the Polaris library, you can use them independently.
+Polaris is a Python library designed to interact with the [Polaris Hub](https://www.polarishub.io). Our aim is to build the leading benchmarking platform for drug discovery, promoting the use of high-quality resources and domain-appropriate evaluation protocols. Learn more through our [blog posts](https://polarishub.io/blog).
 
 ## Where to next?
 
@@ -35,7 +29,7 @@ If you are entirely new to Polaris, this is the place to start! Learn about the 
 
 Dive deeper into the Polaris code and learn about advanced concepts to create your own benchmarks and datasets. 
 
-[:material-arrow-right: Let's get started](./tutorials/basics.ipynb)
+[:material-arrow-right: Let's get started](./tutorials/submit_to_benchmark.ipynb)
 
 ---
 
