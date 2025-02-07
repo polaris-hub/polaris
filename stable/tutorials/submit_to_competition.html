@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/polaris-hub/polaris/stable/tutorials/competition.participate.html">
+        <link rel="canonical" href="https://github.com/polaris-hub/polaris/stable/tutorials/submit_to_competition.html">
       
       
-        <link rel="prev" href="optimization.html">
+        <link rel="prev" href="submit_to_benchmark.html">
       
       
-        <link rel="next" href="../api/load.html">
+        <link rel="next" href="create_a_dataset.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Participating in a Competition - Polaris</title>
+        <title>Submit to a Competition - Polaris</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#participating-in-a-competition" class="md-skip">
+        <a href="#login" class="md-skip">
           Skip to content
         </a>
       
@@ -125,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Participating in a Competition
+              Submit to a Competition
             
           </span>
         </div>
@@ -227,14 +227,25 @@
   
     
     
+      
+  
+  
+    
+  
+  
+    
+    
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="basics.html" class="md-tabs__link">
+        <a href="submit_to_benchmark.html" class="md-tabs__link">
           
   
   Tutorials
 
         </a>
       </li>
+    
+  
+
     
   
 
@@ -417,6 +428,27 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../resources.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Resources
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -473,14 +505,59 @@
                 
   
   
+    
+  
+  
+  
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Submit
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            Submit
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
   
   
     <li class="md-nav__item">
-      <a href="basics.html" class="md-nav__link">
+      <a href="submit_to_benchmark.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    The Basics
+    Submit to a Benchmark
   </span>
   
 
@@ -494,18 +571,104 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="custom_dataset_benchmark.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Submit to a Competition
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="submit_to_competition.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Data Models
+    Submit to a Competition
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#login" class="md-nav__link">
+    <span class="md-ellipsis">
+      Login
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#load-the-competition" class="md-nav__link">
+    <span class="md-ellipsis">
+      Load the Competition
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-competition-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Competition API
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Competition API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#submit-your-predictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Submit your predictions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -533,161 +696,24 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="">
             
   
   <span class="md-ellipsis">
-    Creating Datasets
+    Create
   </span>
   
 
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
             <span class="md-nav__icon md-icon"></span>
-            Creating Datasets
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="dataset_zarr.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Zarr Datasets
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="dataset_pdb.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    PDB Datasets
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="dataset_sdf.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    SDF Datasets
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="optimization.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Optimization
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
-            
-  
-  <span class="md-ellipsis">
-    Competitions
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2_4">
-            <span class="md-nav__icon md-icon"></span>
-            Competitions
+            Create
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -695,76 +721,39 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Participating in a Competition
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="competition.participate.html" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="create_a_dataset.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Participating in a Competition
+    Create a Dataset
   </span>
   
 
       </a>
-      
-        
+    </li>
+  
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+              
+            
+              
+                
   
   
   
-    
   
+    <li class="md-nav__item">
+      <a href="create_a_benchmark.html" class="md-nav__link">
+        
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#fetching-a-competition" class="md-nav__link">
-    <span class="md-ellipsis">
-      Fetching a Competition
-    </span>
-  </a>
+  <span class="md-ellipsis">
+    Create a Benchmark
+  </span>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#participate-in-the-competition" class="md-nav__link">
-    <span class="md-ellipsis">
-      Participate in the Competition
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
+
+      </a>
     </li>
   
 
@@ -1136,69 +1125,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/factory.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Dataset Factory
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../api/converters.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Data Converters
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../api/adapters.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Data Adapters
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../api/base.html" class="md-nav__link">
         
   
@@ -1306,8 +1232,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1316,20 +1240,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#fetching-a-competition" class="md-nav__link">
+  <a href="#login" class="md-nav__link">
     <span class="md-ellipsis">
-      Fetching a Competition
+      Login
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#participate-in-the-competition" class="md-nav__link">
+  <a href="#load-the-competition" class="md-nav__link">
     <span class="md-ellipsis">
-      Participate in the Competition
+      Load the Competition
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-competition-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Competition API
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Competition API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#submit-your-predictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Submit your predictions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1350,6 +1298,8 @@
   
   
 
+
+  <h1>Submit to a Competition</h1>
 
 <script>
 (function (global, factory) {
@@ -1793,17 +1743,13 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="participating-in-a-competition">Participating in a Competition<a class="anchor-link" href="#participating-in-a-competition">¶</a></h1><div class="admonition abstract highlight">
-<p class="admonition-title">In short</p>
-<p>This tutorial walks you through how to fetch an active competition from Polaris, prepare your predictions and then submit them for secure evaluation by the Polaris Hub.</p>
-</div>
-<p>Participating in a competition on Polaris is very similar to participating in a standard benchmark. The main difference lies in how predictions are prepared and how they are evaluated. We'll touch on each of these topics later in the tutorial.</p>
-<p>Before continuing, please ensure you are logged into Polaris.</p>
+<p>On Polaris, submitting to a competition is very similar to submitting to a benchmark.</p>
+<p>The main difference lies in how predictions are prepared and how they are evaluated</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=9b465ea4-7c71-443b-9908-3f9e567ee4c4">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=66cd175c-1f8d-4209-ad78-8d959ea31d9f">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1822,45 +1768,31 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">polaris</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">po</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">polaris.hub.client</span><span class="w"> </span><span class="kn">import</span> <span class="n">PolarisHubClient</span>
-
-<span class="c1"># Don't forget to add your Polaris Hub username below!</span>
-<span class="n">MY_POLARIS_USERNAME</span> <span class="o">=</span> <span class="s2">""</span>
-
-<span class="n">client</span> <span class="o">=</span> <span class="n">PolarisHubClient</span><span class="p">()</span>
-<span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import polaris as po
-from polaris.hub.client import PolarisHubClient
-
-# Don't forget to add your Polaris Hub username below!
-MY_POLARIS_USERNAME = ""
-
-client = PolarisHubClient()
-client.login()</div>
+<div class="clipboard-copy-txt" id="cell-1">import polaris as po</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5edee39f-ce29-4ae6-91ce-453d9190541b">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=84b6d1b9-3ee8-4ff4-9d92-8ed91ffa2f51">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="fetching-a-competition">Fetching a Competition<a class="anchor-link" href="#fetching-a-competition">¶</a></h2><p>As with standard benchmarks, Polaris provides simple APIs that allow you to quickly fetch a competition from the Polaris Hub. All you need is the unique identifier for the competition which follows the format of <code>competition_owner</code>/<code>competition_name</code>.</p>
+<h2 id="login">Login<a class="anchor-link" href="#login">¶</a></h2><p>As before, we first need to authenticate ourselves using our Polaris account. If you don't have an account yet, you can create one <a href="https://polarishub.io/sign-up">here</a>.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=4e004589-6c48-4232-b353-b1700536dde6">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=9b465ea4-7c71-443b-9908-3f9e567ee4c4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
@@ -1873,38 +1805,38 @@ client.login()</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">competition_id</span> <span class="o">=</span> <span class="s2">"polaris/hello-world-competition"</span>
-<span class="n">competition</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_competition</span><span class="p">(</span><span class="n">competition_id</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.hub.client</span><span class="w"> </span><span class="kn">import</span> <span class="n">PolarisHubClient</span>
+
+<span class="k">with</span> <span class="n">PolarisHubClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">competition_id = "polaris/hello-world-competition"
-competition = po.load_competition(competition_id)</div>
+<div class="clipboard-copy-txt" id="cell-2">from polaris.hub.client import PolarisHubClient
+
+with PolarisHubClient() as client:
+    client.login()</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=36f3e829">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5edee39f-ce29-4ae6-91ce-453d9190541b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="participate-in-the-competition">Participate in the Competition<a class="anchor-link" href="#participate-in-the-competition">¶</a></h2><p>The Polaris library is designed to make it easy to participate in a competition. In just a few lines of code, we can get the train and test partition, access the associated data in various ways and evaluate our predictions. There's two main API endpoints.</p>
-<ul>
-<li><code>get_train_test_split()</code>: For creating objects through which we can access the different dataset partitions.</li>
-<li><code>submit_predictions()</code>: For submitting the predictions to an active competition.</li>
-</ul>
+<h2 id="load-the-competition">Load the Competition<a class="anchor-link" href="#load-the-competition">¶</a></h2><p>As with regular benchmarks, a competition is identified by the <code>owner/slug</code> id.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d8605928">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=4e004589-6c48-4232-b353-b1700536dde6">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
@@ -1917,27 +1849,34 @@ competition = po.load_competition(competition_id)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">competition</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">()</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">competition</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_competition</span><span class="p">(</span><span class="s2">"polaris/hello-world-competition"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">train, test = competition.get_train_test_split()</div>
+<div class="clipboard-copy-txt" id="cell-3">competition = po.load_competition("polaris/hello-world-competition")</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e78bf878">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=36f3e829">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Similar to benchmarks, the created test and train objects support various flavours to access the data.</p>
+<h2 id="the-competition-api">The Competition API<a class="anchor-link" href="#the-competition-api">¶</a></h2><p>Similar to the benchmark API, the competition exposes two main API endpoints:</p>
+<ul>
+<li><code>get_train_test_split()</code>, which does exactly the same as for benchmarks.</li>
+<li><code>submit_predictions()</code>, which is used to submit your predictions to a competition.</li>
+</ul>
+<p>Note that different from regular benchmarks, competitions don't have an <code>evaluate()</code> endpoint.</p>
+<p>That's because the evaluation happens server side. This gives the competition organizers precise control over how and when the test set and associated results get published, providing a unique opportunity for unbiased evaluation and comparison of different methods.</p>
+<h3 id="submit-your-predictions">Submit your <em>predictions</em><a class="anchor-link" href="#submit-your-predictions">¶</a></h3><p>Similar to your actual results, you can also provide metadata about your predictions.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=7b17bb31">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=2b36e09b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1955,197 +1894,29 @@ competition = po.load_competition(competition_id)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># The objects are iterable</span>
-<span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">train</span><span class="p">:</span>
-    <span class="k">pass</span>
-
-<span class="c1"># The objects can be indexed</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">)):</span>
-    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-
-<span class="c1"># The objects have properties to access all data at once. Use this with</span>
-<span class="c1"># caution if the underlying dataset is large!</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">inputs</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">targets</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-4"># The objects are iterable
-for x, y in train:
-    pass
-
-# The objects can be indexed
-for i in range(len(train)):
-    x, y = train[i]
-
-# The objects have properties to access all data at once. Use this with
-# caution if the underlying dataset is large!
-x = train.inputs
-y = train.targets</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5ec12825">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Now, let's create some predictions against the imaginary <code>hello-world-competition</code>. Let's assume we train a simple random forest model on the ECFP representation through scikit-learn and datamol, and then we submit our results for secure evaluation by the Polaris Hub.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=902353bc">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datamol</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestRegressor</span>
-
-<span class="c1"># Load the competition (automatically loads the underlying dataset as well)</span>
-<span class="n">competition</span> <span class="o">=</span> <span class="n">po</span><span class="o">.</span><span class="n">load_competition</span><span class="p">(</span><span class="s2">"polaris/hello-world-benchmark"</span><span class="p">)</span>
-
-<span class="c1"># Get the split and convert SMILES to ECFP fingerprints by specifying a featurize function.</span>
-<span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">competition</span><span class="o">.</span><span class="n">get_train_test_split</span><span class="p">(</span><span class="n">featurization_fn</span><span class="o">=</span><span class="n">dm</span><span class="o">.</span><span class="n">to_fp</span><span class="p">)</span>
-
-<span class="c1"># Define a model and train</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">train</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-
-<span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-5">import datamol as dm
-from sklearn.ensemble import RandomForestRegressor
-
-# Load the competition (automatically loads the underlying dataset as well)
-competition = po.load_competition("polaris/hello-world-benchmark")
-
-# Get the split and convert SMILES to ECFP fingerprints by specifying a featurize function.
-train, test = competition.get_train_test_split(featurization_fn=dm.to_fp)
-
-# Define a model and train
-model = RandomForestRegressor(max_depth=2, random_state=0)
-model.fit(train.X, train.y)
-
-predictions = model.predict(test.X)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1a36e334">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Now that we have created some predictions, we can construct a <code>CompetitionPredictions</code> object that will prepare our predictions for evaluation by the Polaris Hub. Here, you can also add metadata to your predictions to better describe your results and how you achieved them.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=2b36e09b">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.evaluate</span><span class="w"> </span><span class="kn">import</span> <span class="n">CompetitionPredictions</span>
-
-<span class="n">competition_predictions</span> <span class="o">=</span> <span class="n">CompetitionPredictions</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">"hello-world-result"</span><span class="p">,</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">competition</span><span class="o">.</span><span class="n">submit_predictions</span><span class="p">(</span>
     <span class="n">predictions</span><span class="o">=</span><span class="n">predictions</span><span class="p">,</span>
-    <span class="n">target_labels</span><span class="o">=</span><span class="n">competition</span><span class="o">.</span><span class="n">target_cols</span><span class="p">,</span>
-    <span class="n">test_set_labels</span><span class="o">=</span><span class="n">competition</span><span class="o">.</span><span class="n">test_set_labels</span><span class="p">,</span>
-    <span class="n">test_set_sizes</span><span class="o">=</span><span class="n">competition</span><span class="o">.</span><span class="n">test_set_sizes</span><span class="p">,</span>
-    <span class="n">github_url</span><span class="o">=</span><span class="s2">"https://github.com/polaris-hub/polaris-hub"</span><span class="p">,</span>
-    <span class="n">paper_url</span><span class="o">=</span><span class="s2">"https://polarishub.io/"</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"Hello, World!"</span><span class="p">,</span>
+    <span class="n">prediction_name</span><span class="o">=</span><span class="s2">"my-first-predictions"</span><span class="p">,</span>
+    <span class="n">prediction_owner</span><span class="o">=</span><span class="s2">"my-username"</span><span class="p">,</span>
+    <span class="n">report_url</span><span class="o">=</span><span class="s2">"https://www.example.com"</span><span class="p">,</span> 
+    <span class="c1"># The below metadata is optional, but recommended.</span>
+    <span class="n">github_url</span><span class="o">=</span><span class="s2">"https://github.com/polaris-hub/polaris"</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"Just testing the Polaris API here!"</span><span class="p">,</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">"tutorial"</span><span class="p">],</span>
+    <span class="n">user_attributes</span><span class="o">=</span><span class="p">{</span><span class="s2">"Framework"</span><span class="p">:</span> <span class="s2">"Scikit-learn"</span><span class="p">,</span> <span class="s2">"Method"</span><span class="p">:</span> <span class="s2">"Gradient Boosting"</span><span class="p">}</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">from polaris.evaluate import CompetitionPredictions
-
-competition_predictions = CompetitionPredictions(
-    name="hello-world-result",
+<div class="clipboard-copy-txt" id="cell-4">competition.submit_predictions(
     predictions=predictions,
-    target_labels=competition.target_cols,
-    test_set_labels=competition.test_set_labels,
-    test_set_sizes=competition.test_set_sizes,
-    github_url="https://github.com/polaris-hub/polaris-hub",
-    paper_url="https://polarishub.io/",
-    description="Hello, World!",
+    prediction_name="my-first-predictions",
+    prediction_owner="my-username",
+    report_url="https://www.example.com", 
+    # The below metadata is optional, but recommended.
+    github_url="https://github.com/polaris-hub/polaris",
+    description="Just testing the Polaris API here!",
+    tags=["tutorial"],
+    user_attributes={"Framework": "Scikit-learn", "Method": "Gradient Boosting"}
 )</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5ff06a9c">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Once your <code>CompetitionPredictions</code> object is created, you're ready to submit them for evaluation! This will automatically save your result to the Polaris Hub, but it will be private until the competition closes.</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=e684c611">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">competition</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">competition_predictions</span><span class="p">)</span>
-
-<span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-7">results = competition.evaluate(competition_predictions)
-
-client.close()</div>
 </div>
 </div>
 </div>
@@ -2158,9 +1929,13 @@ client.close()</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>That's it! Just like that you have partaken in your first Polaris competition. Keep an eye on that leaderboard when it goes public and best of luck in your future competitions!</p>
-<p>The End.</p>
+<p>That's it! Just like that you have partaken in your first Polaris competition.</p>
+<div class="admonition info">
+<p class="admonition-title">Where are my results?</p>
+<p>The results will only be published at predetermined intervals, as detailed in the competition details. Keep an eye on that leaderboard when it goes public and best of luck!</p>
+</div>
 <hr/>
+<p>The End.</p>
 </div>
 </div>
 </div>
@@ -2249,7 +2024,7 @@ client.close()</div>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="optimization.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Optimization">
+          <a href="submit_to_benchmark.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Submit to a Benchmark">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2259,20 +2034,20 @@ client.close()</div>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Optimization
+                Submit to a Benchmark
               </div>
             </div>
           </a>
         
         
           
-          <a href="../api/load.html" class="md-footer__link md-footer__link--next" aria-label="Next: Load">
+          <a href="create_a_dataset.html" class="md-footer__link md-footer__link--next" aria-label="Next: Create a Dataset">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Load
+                Create a Dataset
               </div>
             </div>
             <div class="md-footer__button md-icon">

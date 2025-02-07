@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/polaris-hub/polaris/stable/tutorials/dataset_pdb.html">
+        <link rel="canonical" href="https://github.com/polaris-hub/polaris/stable/tutorials/create_a_benchmark.html">
       
       
-        <link rel="prev" href="dataset_zarr.html">
+        <link rel="prev" href="create_a_dataset.html">
       
       
-        <link rel="next" href="dataset_sdf.html">
+        <link rel="next" href="../api/load.html">
       
       
       <link rel="icon" href="../images/logo-black.svg">
@@ -24,7 +24,7 @@
     
     
       
-        <title>PDB Datasets - Polaris</title>
+        <title>Create a Benchmark - Polaris</title>
       
     
     
@@ -88,7 +88,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#dummy-pdb-example" class="md-skip">
+        <a href="#create-a-benchmark" class="md-skip">
           Skip to content
         </a>
       
@@ -125,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PDB Datasets
+              Create a Benchmark
             
           </span>
         </div>
@@ -227,14 +227,25 @@
   
     
     
+      
+  
+  
+    
+  
+  
+    
+    
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="basics.html" class="md-tabs__link">
+        <a href="submit_to_benchmark.html" class="md-tabs__link">
           
   
   Tutorials
 
         </a>
       </li>
+    
+  
+
     
   
 
@@ -417,6 +428,27 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../resources.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Resources
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -475,12 +507,55 @@
   
   
   
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Submit
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            Submit
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
-      <a href="basics.html" class="md-nav__link">
+      <a href="submit_to_benchmark.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    The Basics
+    Submit to a Benchmark
   </span>
   
 
@@ -497,15 +572,23 @@
   
   
     <li class="md-nav__item">
-      <a href="custom_dataset_benchmark.html" class="md-nav__link">
+      <a href="submit_to_competition.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Data Models
+    Submit to a Competition
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -535,24 +618,24 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="">
             
   
   <span class="md-ellipsis">
-    Creating Datasets
+    Create
   </span>
   
 
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_2">
             <span class="md-nav__icon md-icon"></span>
-            Creating Datasets
+            Create
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -563,11 +646,11 @@
   
   
     <li class="md-nav__item">
-      <a href="dataset_zarr.html" class="md-nav__link">
+      <a href="create_a_dataset.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Zarr Datasets
+    Create a Dataset
   </span>
   
 
@@ -595,18 +678,18 @@
           
   
   <span class="md-ellipsis">
-    PDB Datasets
+    Create a Benchmark
   </span>
   
 
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="dataset_pdb.html" class="md-nav__link md-nav__link--active">
+      <a href="create_a_benchmark.html" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    PDB Datasets
+    Create a Benchmark
   </span>
   
 
@@ -626,63 +709,69 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#dummy-pdb-example" class="md-nav__link">
+  <a href="#create-a-benchmark" class="md-nav__link">
     <span class="md-ellipsis">
-      Dummy PDB example
+      Create a Benchmark
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Create a Benchmark">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#define-the-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Define the dataset
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#fetch-pdb-files-from-rcsb-pdb" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#define-the-task" class="md-nav__link">
     <span class="md-ellipsis">
-      Fetch PDB files from RCSB PDB
+      Define the task
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#create-dataset-from-pdb-file" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#define-the-split" class="md-nav__link">
     <span class="md-ellipsis">
-      Create dataset from PDB file
+      Define the split
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#check-the-dataset" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#define-the-metrics" class="md-nav__link">
     <span class="md-ellipsis">
-      Check the dataset
+      Define the metrics
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#check-data-table" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#bringing-it-all-together" class="md-nav__link">
     <span class="md-ellipsis">
-      Check data table
+      Bringing it all together
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#get-pdb-data-from-specific-row" class="md-nav__link">
-    <span class="md-ellipsis">
-      Get PDB data from specific row
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#create-dataset-from-multiple-pdb-files" class="md-nav__link">
+  <a href="#share-your-benchmark" class="md-nav__link">
     <span class="md-ellipsis">
-      Create dataset from multiple PDB files
+      Share your benchmark
     </span>
   </a>
   
@@ -692,120 +781,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="dataset_sdf.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    SDF Datasets
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="optimization.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Optimization
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
-            
-  
-  <span class="md-ellipsis">
-    Competitions
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
-            <span class="md-nav__icon md-icon"></span>
-            Competitions
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="competition.participate.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Participating in a Competition
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -1177,69 +1152,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/factory.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Dataset Factory
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../api/converters.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Data Converters
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../api/adapters.html" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Data Adapters
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../api/base.html" class="md-nav__link">
         
   
@@ -1355,63 +1267,69 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#dummy-pdb-example" class="md-nav__link">
+  <a href="#create-a-benchmark" class="md-nav__link">
     <span class="md-ellipsis">
-      Dummy PDB example
+      Create a Benchmark
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Create a Benchmark">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#define-the-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Define the dataset
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#fetch-pdb-files-from-rcsb-pdb" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#define-the-task" class="md-nav__link">
     <span class="md-ellipsis">
-      Fetch PDB files from RCSB PDB
+      Define the task
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#create-dataset-from-pdb-file" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#define-the-split" class="md-nav__link">
     <span class="md-ellipsis">
-      Create dataset from PDB file
+      Define the split
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#check-the-dataset" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#define-the-metrics" class="md-nav__link">
     <span class="md-ellipsis">
-      Check the dataset
+      Define the metrics
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#check-data-table" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#bringing-it-all-together" class="md-nav__link">
     <span class="md-ellipsis">
-      Check data table
+      Bringing it all together
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#get-pdb-data-from-specific-row" class="md-nav__link">
-    <span class="md-ellipsis">
-      Get PDB data from specific row
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#create-dataset-from-multiple-pdb-files" class="md-nav__link">
+  <a href="#share-your-benchmark" class="md-nav__link">
     <span class="md-ellipsis">
-      Create dataset from multiple PDB files
+      Share your benchmark
     </span>
   </a>
   
@@ -1435,7 +1353,7 @@
   
 
 
-  <h1>PDB Datasets</h1>
+  <h1>Create a Benchmark</h1>
 
 <script>
 (function (global, factory) {
@@ -1873,41 +1791,38 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=39b58e71">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<div class="admonition abstract highlight">
-<p class="admonition-title">In short</p>
-<p>This tutorial shows how to create datasets with PDBs through the .zarr format.</p>
+<p>Polaris explicitly distinguished datasets from benchmarks. A benchmark defines the ML task and evaluation logic (e.g. split and metrics) for a dataset. Because of this, a single dataset can be the basis of multiple benchmarks.</p>
+<h2 id="create-a-benchmark">Create a Benchmark<a class="anchor-link" href="#create-a-benchmark">¶</a></h2><p>To create a benchmark, you need to instantiate the <code>BenchmarkV2Specification</code> class. This requires you to specify:</p>
+<ol>
+<li>The <strong>dataset</strong>, which can be stored either locally or on the Hub.</li>
+<li>The <strong>task</strong>, where a task is defined by input and target columns.</li>
+<li>The <strong>split</strong>, where a split is defined by a bunch of indices.</li>
+<li>The <strong>metric</strong>, where a metric needs to be officially supported by Polaris.</li>
+<li>The <strong>metadata</strong> to contextualize your benchmark.</li>
+</ol>
+<h3 id="define-the-dataset">Define the dataset<a class="anchor-link" href="#define-the-dataset">¶</a></h3><p>To learn how to create a dataset, see <a href="./create_a_dataset.html">this tutorial</a>.</p>
+<p>Alternatively, we can also load an existing dataset from the Hub.</p>
+<div class="admonition warning">
+<p class="admonition-title">Not all Hub datasets are supported</p>
+<p>You can only create benchmarks for DatasetV2 instances, not for DatasetV1 instances. Some of the datasets stored on the Hub are still V1 datasets.</p>
 </div>
-<div class="admonition abstract example">
-<p class="admonition-title">This feature is still very new.</p>
-<p>The features we will show in this tutorial are still experimental. We would love to learn from the community how we can make it easier to create datasets.</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e154bb54">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="dummy-pdb-example">Dummy PDB example<a class="anchor-link" href="#dummy-pdb-example">¶</a></h3>
+<h3 id="define-the-task">Define the task<a class="anchor-link" href="#define-the-task">¶</a></h3><p>Currently, Polaris only supports predictive tasks. Specifying a predictive task is simply done by specifying the input and target columns.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5e201379">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
@@ -1920,41 +1835,31 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">platformdirs</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">datamol</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dm</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">polaris.dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetFactory</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">polaris.dataset.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">PDBConverter</span>
-
-<span class="n">SAVE_DIR</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">platformdirs</span><span class="o">.</span><span class="n">user_cache_dir</span><span class="p">(</span><span class="n">appname</span><span class="o">=</span><span class="s2">"polaris-tutorials"</span><span class="p">),</span> <span class="s2">"dataset_pdb"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">input_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"SMILES"</span><span class="p">]</span>
+<span class="n">target_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"LOG_SOLUBILITY"</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import platformdirs
-
-import datamol as dm
-
-from polaris.dataset import DatasetFactory
-from polaris.dataset.converters import PDBConverter
-
-SAVE_DIR = dm.fs.join(platformdirs.user_cache_dir(appname="polaris-tutorials"), "dataset_pdb")</div>
+<div class="clipboard-copy-txt" id="cell-1">input_columns = ["SMILES"]
+target_columns = ["LOG_SOLUBILITY"]</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f4a4a9c7">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="fetch-pdb-files-from-rcsb-pdb">Fetch PDB files from RCSB PDB<a class="anchor-link" href="#fetch-pdb-files-from-rcsb-pdb">¶</a></h3>
+<p>In this case, we specified just a single input and target column, but a benchmark can have multiple (e.g. a multi-task benchmark).</p>
+<h3 id="define-the-split">Define the split<a class="anchor-link" href="#define-the-split">¶</a></h3><p>To ensure reproducible results, Polaris represents a split through a bunch of sets of indices.</p>
+<p><em>But there is a catch</em>: We want Polaris to scale to extra large datasets. If we are to naively store millions of indices as lists of integers, this would impose a significant memory footprint. We therefore use bitmaps, more specifically <a href="https://roaringbitmap.org/">roaring bitmaps</a> to store the splits in a memory efficient way.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=fda9b878">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1972,38 +1877,31 @@ SAVE_DIR = dm.fs.join(platformdirs.user_cache_dir(appname="polaris-tutorials"), 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">biotite.database.rcsb</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rcsb</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.benchmark._split_v2</span><span class="w"> </span><span class="kn">import</span> <span class="n">IndexSet</span>
 
-<span class="n">pdb_path</span> <span class="o">=</span> <span class="n">rcsb</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s2">"6s89"</span><span class="p">,</span> <span class="s2">"pdb"</span><span class="p">,</span> <span class="n">SAVE_DIR</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">)</span>
+<span class="c1"># To specify a set of integers, you can directly pass in a list of integers</span>
+<span class="c1"># This will automatically convert the indices to a BitMap</span>
+<span class="n">training</span> <span class="o">=</span> <span class="n">IndexSet</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">test</span> <span class="o">=</span> <span class="n">IndexSet</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">import biotite.database.rcsb as rcsb
+<div class="clipboard-copy-txt" id="cell-2">from polaris.benchmark._split_v2 import IndexSet
 
-pdb_path = rcsb.fetch("6s89", "pdb", SAVE_DIR)
-print(pdb_path)</div>
+# To specify a set of integers, you can directly pass in a list of integers
+# This will automatically convert the indices to a BitMap
+training = IndexSet(indices=[0, 1])
+test = IndexSet(indices=[2])</div>
 </div>
 </div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8a47ae20">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="create-dataset-from-pdb-file">Create dataset from PDB file<a class="anchor-link" href="#create-dataset-from-pdb-file">¶</a></h3>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=07442028">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
@@ -2016,50 +1914,35 @@ print(pdb_path)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">save_dst</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="p">,</span> <span class="s2">"tutorial_pdb.zarr"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyroaring</span><span class="w"> </span><span class="kn">import</span> <span class="n">BitMap</span>
 
-<span class="n">factory</span> <span class="o">=</span> <span class="n">DatasetFactory</span><span class="p">(</span><span class="n">zarr_root_path</span><span class="o">=</span><span class="n">save_dst</span><span class="p">)</span>
-<span class="n">factory</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)</span>
+<span class="c1"># Or you can create the BitMap manually and iteratively</span>
+<span class="n">indices</span> <span class="o">=</span> <span class="n">BitMap</span><span class="p">()</span>
+<span class="n">indices</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">indices</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="n">factory</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">"pdb"</span><span class="p">,</span> <span class="n">PDBConverter</span><span class="p">(</span><span class="n">pdb_column</span><span class="o">=</span><span class="s2">"pdb"</span><span class="p">))</span>
-<span class="n">factory</span><span class="o">.</span><span class="n">add_from_file</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">)</span>
-
-<span class="c1"># Build the dataset</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="n">training</span> <span class="o">=</span> <span class="n">IndexSet</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">save_dst = dm.fs.join(SAVE_DIR, "tutorial_pdb.zarr")
+<div class="clipboard-copy-txt" id="cell-3">from pyroaring import BitMap
 
-factory = DatasetFactory(zarr_root_path=save_dst)
-factory.reset(save_dst)
+# Or you can create the BitMap manually and iteratively
+indices = BitMap()
+indices.add(0)
+indices.add(1)
 
-factory.register_converter("pdb", PDBConverter(pdb_column="pdb"))
-factory.add_from_file(pdb_path)
-
-# Build the dataset
-dataset = factory.build()</div>
+training = IndexSet(indices=indices)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=35bb183e">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="check-the-dataset">Check the dataset<a class="anchor-link" href="#check-the-dataset">¶</a></h3>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=05712cbd">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
@@ -2072,44 +1955,39 @@ dataset = factory.build()</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.benchmark._split_v2</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplitV2</span>
+
+<span class="c1"># Finally, we create the actual split object</span>
+<span class="n">split</span> <span class="o">=</span> <span class="n">SplitV2</span><span class="p">(</span><span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="n">test</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">dataset</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[15]:</div>
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-<table border="1"><tr><th>name</th><td>None</td></tr><tr><th>description</th><td></td></tr><tr><th>tags</th><td></td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>owner</th><td>None</td></tr><tr><th>polaris_version</th><td>0.7.10.dev22+g8edf177.d20240814</td></tr><tr><th>default_adapters</th><td><table border="1"><tr><th>pdb</th><td>ARRAY_TO_PDB</td></tr></table></td></tr><tr><th>zarr_root_path</th><td>/Users/lu.zhu/Library/Caches/polaris-tutorials/002/tutorial_pdb.zarr</td></tr><tr><th>readme</th><td></td></tr><tr><th>annotations</th><td><table border="1"><tr><th>pdb</th><td><table border="1"><tr><th>is_pointer</th><td>True</td></tr><tr><th>modality</th><td>PROTEIN_3D</td></tr><tr><th>description</th><td>None</td></tr><tr><th>user_attributes</th><td></td></tr><tr><th>dtype</th><td>object</td></tr></table></td></tr></table></td></tr><tr><th>source</th><td>None</td></tr><tr><th>license</th><td>None</td></tr><tr><th>curation_reference</th><td>None</td></tr><tr><th>cache_dir</th><td>/Users/lu.zhu/Library/Caches/polaris/datasets/b0895f92-5a11-4e48-953f-3f969c6a9ca6</td></tr><tr><th>md5sum</th><td>66f3c7774e655bc6d48c907100d6912f</td></tr><tr><th>artifact_id</th><td>None</td></tr><tr><th>n_rows</th><td>1</td></tr><tr><th>n_columns</th><td>1</td></tr></table>
+<div class="clipboard-copy-txt" id="cell-4">from polaris.benchmark._split_v2 import SplitV2
+
+# Finally, we create the actual split object
+split = SplitV2(training=training, test=test)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e5f904bc">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="check-data-table">Check data table<a class="anchor-link" href="#check-data-table">¶</a></h3>
+<h3 id="define-the-metrics">Define the metrics<a class="anchor-link" href="#define-the-metrics">¶</a></h3><p>Even something as widely used as Mean Absolute Error (MAE) can be implemented in subtly different ways. Some people apply a log transform first, others might clip outliers, and sometimes an off-by-one or a bug creeps in. Over time, these variations add up. We decided to codify each metric for a Polaris benchmark in a single, transparent implementation. Our priority here is eliminating “mystery differences” that have nothing to do with actual model performance. Learn more <a href="https://polarishub.io/blog/reproducible-machine-learning-in-drug-discovery-how-polaris-serves-as-a-single-source-of-truth">here</a>.</p>
+<p>Specifying a metric is easy. You can simply specify its label.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=6b7017ad">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
@@ -2122,68 +2000,27 @@ dataset = factory.build()</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">table</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mean_absolute_error"</span><span class="p">,</span> <span class="s2">"mean_squared_error"</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">dataset.table</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[16]:</div>
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-<div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-<thead>
-<tr style="text-align: right;">
-<th></th>
-<th>pdb</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<th>0</th>
-<td>pdb/6s89</td>
-</tr>
-</tbody>
-</table>
+<div class="clipboard-copy-txt" id="cell-5">metrics = ["mean_absolute_error", "mean_squared_error"]</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a89953b8">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="get-pdb-data-from-specific-row">Get PDB data from specific row<a class="anchor-link" href="#get-pdb-data-from-specific-row">¶</a></h3><p>A array of list of <code>biotite.Atom</code> will be returned.
-See more details at <a href="https://github.com/biotite-dev/fastpdb">fastpdb</a> and <a href="https://github.com/biotite-dev/biotite/blob/main/src/biotite/structure/atoms.py">Atom</a>.</p>
+<p>You can also specify a main metric, which will be the metric used to rank the leaderboard.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=f2583c8d">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2201,32 +2038,32 @@ See more details at <a href="https://github.com/biotite-dev/fastpdb">fastpdb</a>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"pdb"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">main_metric</span> <span class="o">=</span> <span class="s2">"mean_absolute_error"</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">dataset.get_data(0, "pdb")</div>
+<div class="clipboard-copy-txt" id="cell-6">main_metric = "mean_absolute_error"</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5b3c1be6">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="create-dataset-from-multiple-pdb-files">Create dataset from multiple PDB files<a class="anchor-link" href="#create-dataset-from-multiple-pdb-files">¶</a></h3>
+<p>To get a list of all support metrics, you can use:</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5647c8ff">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
@@ -2239,36 +2076,36 @@ See more details at <a href="https://github.com/biotite-dev/fastpdb">fastpdb</a>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">pdb_paths</span> <span class="o">=</span> <span class="n">rcsb</span><span class="o">.</span><span class="n">fetch</span><span class="p">([</span><span class="s2">"1l2y"</span><span class="p">,</span> <span class="s2">"4i23"</span><span class="p">],</span> <span class="s2">"pdb"</span><span class="p">,</span> <span class="n">SAVE_DIR</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">pdb_paths</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.evaluate._metric</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_METRICS</span>
+
+<span class="n">DEFAULT_METRICS</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">pdb_paths = rcsb.fetch(["1l2y", "4i23"], "pdb", SAVE_DIR)
-print(pdb_paths)</div>
+<div class="clipboard-copy-txt" id="cell-7">from polaris.evaluate._metric import DEFAULT_METRICS
+
+DEFAULT_METRICS.keys()</div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>['/Users/lu.zhu/Library/Caches/polaris-tutorials/002/1l2y.pdb', '/Users/lu.zhu/Library/Caches/polaris-tutorials/002/4i23.pdb']
-</pre>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>You can also create more complex metrics that wrap these base metrics.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=1bd32964">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
@@ -2281,33 +2118,42 @@ print(pdb_paths)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">factory</span> <span class="o">=</span> <span class="n">DatasetFactory</span><span class="p">(</span><span class="n">SAVE_DIR</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"pdbs.zarr"</span><span class="p">))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.evaluate</span><span class="w"> </span><span class="kn">import</span> <span class="n">Metric</span>
 
-<span class="n">converter</span> <span class="o">=</span> <span class="n">PDBConverter</span><span class="p">()</span>
-<span class="n">factory</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">"pdb"</span><span class="p">,</span> <span class="n">converter</span><span class="p">)</span>
-
-<span class="n">factory</span><span class="o">.</span><span class="n">add_from_files</span><span class="p">(</span><span class="n">pdb_paths</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="n">mae_agg</span> <span class="o">=</span> <span class="n">Metric</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">"mean_absolute_error"</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">"group_by"</span><span class="p">:</span> <span class="s2">"UNIQUE_ID"</span><span class="p">,</span> <span class="s2">"on_error"</span><span class="p">:</span> <span class="s2">"ignore"</span><span class="p">,</span> <span class="s2">"aggregation"</span><span class="p">:</span> <span class="s2">"mean"</span><span class="p">})</span>
+<span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mae_agg</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">factory = DatasetFactory(SAVE_DIR.join("pdbs.zarr"))
+<div class="clipboard-copy-txt" id="cell-8">from polaris.evaluate import Metric
 
-converter = PDBConverter()
-factory.register_converter("pdb", converter)
-
-factory.add_from_files(pdb_paths, axis=0)
-dataset = factory.build()</div>
+mae_agg = Metric(label="mean_absolute_error", config={"group_by": "UNIQUE_ID", "on_error": "ignore", "aggregation": "mean"})
+metrics.append(mae_agg)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=1e05109e">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<div class="admonition info">
+<p class="admonition-title">What if my metric isn't supported yet?</p>
+<p>Using a metric that's not supported yet, currently requires adding it to the <a href="https://github.com/polaris-hub/polaris">Polaris codebase</a>. We're always looking to improve support. Reach out to us over Github and we're happy to help!</p>
+</div>
+<h3 id="bringing-it-all-together">Bringing it all together<a class="anchor-link" href="#bringing-it-all-together">¶</a></h3><p>Now we can create the <code>BenchmarkV2Specification</code> instance.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
@@ -2320,60 +2166,16 @@ dataset = factory.build()</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">table</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="nb">type</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-9">dataset.table</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-<div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-<thead>
-<tr style="text-align: right;">
-<th></th>
-<th>pdb</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<th>0</th>
-<td>pdb/1l2y</td>
-</tr>
-<tr>
-<th>1</th>
-<td>pdb/4i23</td>
-</tr>
-</tbody>
-</table>
-</div>
+<div class="clipboard-copy-txt" id="cell-9">type(dataset)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=a064942f">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2391,22 +2193,98 @@ dataset = factory.build()</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">"pdb"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">polaris.benchmark._benchmark_v2</span><span class="w"> </span><span class="kn">import</span> <span class="n">BenchmarkV2Specification</span>
+
+<span class="n">benchmark</span> <span class="o">=</span> <span class="n">BenchmarkV2Specification</span><span class="p">(</span>
+    <span class="c1"># 1. The dataset</span>
+    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+    <span class="c1"># 2. The task</span>
+    <span class="n">input_cols</span><span class="o">=</span><span class="n">input_columns</span><span class="p">,</span>
+    <span class="n">target_cols</span><span class="o">=</span><span class="n">target_columns</span><span class="p">,</span>
+    <span class="c1"># 3. The split</span>
+    <span class="n">split</span><span class="o">=</span><span class="n">split</span><span class="p">,</span>
+    <span class="c1"># 4. The metrics</span>
+    <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+    <span class="n">main_metric</span><span class="o">=</span><span class="n">main_metric</span><span class="p">,</span>
+    <span class="c1"># 5. The metadata</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"my-first-benchmark"</span><span class="p">,</span>
+    <span class="n">owner</span><span class="o">=</span><span class="s2">"your-username"</span><span class="p">,</span> 
+    <span class="n">description</span><span class="o">=</span><span class="s2">"Created using the Polaris tutorial"</span><span class="p">,</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s2">"tutorial"</span><span class="p">],</span> 
+    <span class="n">user_attributes</span><span class="o">=</span><span class="p">{</span><span class="s2">"Key"</span><span class="p">:</span> <span class="s2">"Value"</span><span class="p">}</span>
+<span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10">dataset.get_data(1, "pdb")</div>
+<div class="clipboard-copy-txt" id="cell-10">from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
+
+benchmark = BenchmarkV2Specification(
+    # 1. The dataset
+    dataset=dataset,
+    # 2. The task
+    input_cols=input_columns,
+    target_cols=target_columns,
+    # 3. The split
+    split=split,
+    # 4. The metrics
+    metrics=metrics,
+    main_metric=main_metric,
+    # 5. The metadata
+    name="my-first-benchmark",
+    owner="your-username", 
+    description="Created using the Polaris tutorial",
+    tags=["tutorial"], 
+    user_attributes={"Key": "Value"}
+)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=72767ef2">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>The process of completing the dataset's metadata and uploading it to the hub follows the same steps as outlined in the tutorial <a href="docs/tutorials/dataset_zarr.ipynb">dataset_zarr.ipynb</a></p>
+<h2 id="share-your-benchmark">Share your benchmark<a class="anchor-link" href="#share-your-benchmark">¶</a></h2><p>Want to share your benchmark with the community? Upload it to the Polaris Hub!</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-11">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">benchmark</span><span class="o">.</span><span class="n">upload_to_hub</span><span class="p">(</span><span class="n">owner</span><span class="o">=</span><span class="s2">"your-username"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-11">benchmark.upload_to_hub(owner="your-username")</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<hr/>
 <p>The End.</p>
 </div>
 </div>
@@ -2496,7 +2374,7 @@ dataset = factory.build()</div>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="dataset_zarr.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Zarr Datasets">
+          <a href="create_a_dataset.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Create a Dataset">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2506,20 +2384,20 @@ dataset = factory.build()</div>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Zarr Datasets
+                Create a Dataset
               </div>
             </div>
           </a>
         
         
           
-          <a href="dataset_sdf.html" class="md-footer__link md-footer__link--next" aria-label="Next: SDF Datasets">
+          <a href="../api/load.html" class="md-footer__link md-footer__link--next" aria-label="Next: Load">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                SDF Datasets
+                Load
               </div>
             </div>
             <div class="md-footer__button md-icon">
