@@ -8,8 +8,8 @@ from polaris.evaluate.utils import evaluate_benchmark
 from polaris.utils.types import IncomingPredictionsType
 
 from polaris.evaluate import BenchmarkResultsV2
+from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
 from polaris.dataset import DatasetV2, Subset
-from polaris.experimental._split_v2 import SplitSpecificationV2Mixin
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName
 
@@ -18,7 +18,7 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
     _version: ClassVar[Literal[2]] = 2
 
     dataset: DatasetV2 = Field(exclude=True)
-    n_classes: dict[ColumnName, int]
+    n_classes: dict[ColumnName, int] = Field(default_factory=dict)
 
     @field_validator("dataset", mode="before")
     @classmethod

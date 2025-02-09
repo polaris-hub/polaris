@@ -20,11 +20,11 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
+from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
 from polaris.competition import CompetitionSpecification
 from polaris.model import Model
 from polaris.dataset import Dataset, DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResults, CompetitionPredictions
-from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings

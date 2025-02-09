@@ -15,7 +15,7 @@ from pydantic import (
     model_validator,
 )
 from sklearn.utils.multiclass import type_of_target
-from typing_extensions import Self
+from typing_extensions import Self, deprecated
 
 from polaris._artifact import BaseArtifactModel
 from polaris.benchmark._split import SplitSpecificationV1Mixin
@@ -75,18 +75,13 @@ class BaseSplitSpecificationMixin(BaseModel):
 class BenchmarkSpecification(
     PredictiveTaskSpecificationMixin, BaseArtifactModel, BaseSplitSpecificationMixin, abc.ABC
 ):
-    """This class wraps a [`Dataset`][polaris.dataset.Dataset] with additional data
-     to specify the evaluation logic.
+    """This class wraps a dataset with additional data to specify the evaluation logic.
 
     Specifically, it specifies:
 
-    1. Which dataset to use (see [`Dataset`][polaris.dataset.Dataset]);
+    1. Which dataset to use;
     2. A task definition (we currently only support predictive tasks);
     3. A predefined, static train-test split to use during evaluation.
-
-    info: Subclasses
-        Polaris includes various subclasses of the `BenchmarkSpecification` that provide a more precise data-model or
-         additional logic, e.g. [`SingleTaskBenchmarkSpecification`][polaris.benchmark.SingleTaskBenchmarkSpecification].
 
     Examples:
         Basic API usage:
@@ -178,7 +173,6 @@ class BenchmarkSpecification(
         Warning: Multiple files
             Perhaps unintuitive, this method creates multiple files in the destination directory as it also saves
             the dataset it is based on to the specified destination.
-            See the docstring of [`Dataset.to_json`][polaris.dataset.Dataset.to_json] for more information.
 
         Args:
             destination: The _directory_ to save the associated data to.
@@ -215,6 +209,9 @@ class BenchmarkSpecification(
         return self.__repr__()
 
 
+@deprecated(
+    "Use BenchmarkV2Specification instead. If you're loading this dataset from the Polaris Hub, you can ignore this warning."
+)
 class BenchmarkV1Specification(SplitSpecificationV1Mixin, ChecksumMixin, BenchmarkSpecification):
     _version: ClassVar[Literal[1]] = 1
 

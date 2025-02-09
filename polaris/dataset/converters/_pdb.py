@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import zarr
 from fastpdb import struc
+from typing_extensions import deprecated
 
 from polaris.dataset import ColumnAnnotation, Modality
 from polaris.dataset._adapters import Adapter
@@ -76,6 +77,7 @@ def zarr_to_pdb(atom_dict: zarr.Group):
     return struc.array(atom_array)
 
 
+@deprecated("Please use the custom codecs in `polaris.dataset.zarr.codecs` instead.")
 class PDBConverter(Converter):
     """
     Converts PDB files into a Polaris dataset based on fastpdb.
