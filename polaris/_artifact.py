@@ -11,6 +11,7 @@ from pydantic import (
     computed_field,
     field_serializer,
     field_validator,
+    model_validator,
 )
 from pydantic.alias_generators import to_camel
 from typing_extensions import Self
@@ -53,27 +54,27 @@ class BaseArtifactModel(BaseModel):
     user_attributes: dict[str, str] = Field(default_factory=dict)
     owner: HubOwner | None = None
     polaris_version: str = polaris.__version__
-    slug: SlugStringType | None
+    slug: SlugStringType | None = None
 
-    @computed_field
-    @property
-    def _slug(cls) -> SlugStringType | None:
-        if cls.slug is None:
-            return slugify(cls.name) if cls.name else None
-        return cls.slug
+    @model_validator(mode="before")
+    def _validate_slug(cls, values):
+        if "slug" not in values or values["slug"] is None:
+            if "name" in values:
+                values["slug"] = slugify(values["name"])
+        return values
 
     @computed_field
     @property
     def artifact_id(self) -> str | None:
-        if self.owner and self._slug:
-            return f"{self.owner}/{self._slug}"
+        if self.owner and self.slug:
+            return f"{self.owner}/{self.slug}"
         return None
 
     @computed_field
     @property
     def urn(self) -> ArtifactUrn | None:
-        if self.owner and self._slug:
-            return self.urn_for(self.owner, self._slug)
+        if self.owner and self.slug:
+            return self.urn_for(self.owner, self.slug)
         return None
 
     @computed_field
