@@ -606,6 +606,7 @@ class PolarisHubClient(OAuth2Client):
             owner: Which Hub user or organization owns the artifact. Takes precedence over `dataset.owner`.
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
+            upload_as_new_version: Uploads the dataset as a new version.
         """
         # Normalize timeout
         if timeout is None:
@@ -620,7 +621,7 @@ class PolarisHubClient(OAuth2Client):
         if isinstance(dataset, DatasetV1):
             self._upload_v1_dataset(dataset, timeout, access, owner, if_exists, upload_as_new_version)
         elif isinstance(dataset, DatasetV2):
-            self._upload_v2_dataset(dataset, timeout, access, owner, if_exists)
+            self._upload_v2_dataset(dataset, timeout, access, owner, if_exists, upload_as_new_version)
 
     def _upload_v1_dataset(
         self,
@@ -719,6 +720,7 @@ class PolarisHubClient(OAuth2Client):
         access: AccessType,
         owner: HubOwner | str | None,
         if_exists: ZarrConflictResolution,
+        upload_as_new_version: bool,
     ):
         """
         Upload a V2 dataset to the Polaris Hub.
@@ -734,7 +736,7 @@ class PolarisHubClient(OAuth2Client):
             dataset_json = dataset.model_dump(exclude_none=True, by_alias=True)
 
             # Step 1: Upload dataset meta-data
-            url = f"/v2/dataset/{dataset.owner}/{dataset.name}"
+            url = f"/v2/dataset/{dataset.artifact_id}"
             response = self._base_request_to_hub(
                 url=url,
                 method="PUT",
@@ -743,10 +745,14 @@ class PolarisHubClient(OAuth2Client):
                         "md5Sum": dataset.zarr_manifest_md5sum,
                     },
                     "access": access,
+                    "uploadAsNewVersion": upload_as_new_version,
                     **dataset_json,
                 },
                 timeout=timeout,
             )
+
+            inserted_dataset = response.json()
+            dataset.slug = inserted_dataset["slug"]
 
             with StorageSession(self, "write", dataset.urn) as storage:
                 # Step 2: Upload the manifest file
