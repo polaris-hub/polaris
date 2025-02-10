@@ -53,24 +53,27 @@ class BaseArtifactModel(BaseModel):
     user_attributes: dict[str, str] = Field(default_factory=dict)
     owner: HubOwner | None = None
     polaris_version: str = polaris.__version__
+    slug: SlugStringType | None
 
     @computed_field
     @property
-    def slug(self) -> SlugStringType | None:
-        return slugify(self.name) if self.name else None
+    def _slug(cls) -> SlugStringType | None:
+        if cls.slug is None:
+            return slugify(cls.name) if cls.name else None
+        return cls.slug
 
     @computed_field
     @property
     def artifact_id(self) -> str | None:
-        if self.owner and self.slug:
-            return f"{self.owner}/{self.slug}"
+        if self.owner and self._slug:
+            return f"{self.owner}/{self._slug}"
         return None
 
     @computed_field
     @property
     def urn(self) -> ArtifactUrn | None:
-        if self.owner and self.slug:
-            return self.urn_for(self.owner, self.slug)
+        if self.owner and self._slug:
+            return self.urn_for(self.owner, self._slug)
         return None
 
     @computed_field
@@ -125,5 +128,5 @@ class BaseArtifactModel(BaseModel):
             f.write(self.model_dump_json())
 
     @classmethod
-    def urn_for(cls, owner: str | HubOwner, name: str) -> ArtifactUrn:
-        return build_urn(cls._artifact_type, owner, slugify(name))
+    def urn_for(cls, owner: str | HubOwner, slug: str) -> ArtifactUrn:
+        return build_urn(cls._artifact_type, owner, slug)

@@ -682,12 +682,9 @@ class PolarisHubClient(OAuth2Client):
             )
 
             inserted_dataset = response.json()
+            dataset.slug = inserted_dataset["slug"]
 
-            inserted_dataset_urn = build_urn(
-                "dataset", inserted_dataset["owner"]["slug"], inserted_dataset["slug"]
-            )
-
-            with StorageSession(self, "write", inserted_dataset_urn) as storage:
+            with StorageSession(self, "write", dataset.urn) as storage:
                 # Step 2: Upload the parquet file
                 logger.info("Copying Parquet file to the Hub. This may take a while.")
                 storage.set_file("root", in_memory_parquet.getvalue())
@@ -712,7 +709,7 @@ class PolarisHubClient(OAuth2Client):
 
             progress_indicator.update_success_msg(
                 f"Your dataset has been successfully uploaded to the Hub. "
-                f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{inserted_dataset["slug"]}')}"
+                f"View it here: {urljoin(self.settings.hub_url, f'datasets/{dataset.owner}/{dataset.slug}')}"
             )
 
     def _upload_v2_dataset(
