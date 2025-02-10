@@ -326,14 +326,14 @@ class PolarisHubClient(OAuth2Client):
     def get_dataset(
         self,
         owner: str | HubOwner,
-        name: str,
+        slug: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> DatasetV1 | DatasetV2:
         """Load a standard dataset from the Polaris Hub.
 
         Args:
             owner: The owner of the dataset. Can be either a user or organization from the Polaris Hub.
-            name: The name of the dataset.
+            slug: The slug of the dataset.
             verify_checksum: Whether to use the checksum to verify the integrity of the dataset. If None,
                 will infer a practical default based on the dataset's storage location.
 
@@ -346,28 +346,28 @@ class PolarisHubClient(OAuth2Client):
             error_msg="Failed to fetch dataset.",
         ):
             try:
-                return self._get_v1_dataset(owner, name, verify_checksum)
+                return self._get_v1_dataset(owner, slug, verify_checksum)
             except PolarisRetrieveArtifactError:
                 # If the v1 dataset is not found, try to load a v2 dataset
-                return self._get_v2_dataset(owner, name)
+                return self._get_v2_dataset(owner, slug)
 
     def _get_v1_dataset(
         self,
         owner: str | HubOwner,
-        name: str,
+        slug: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> DatasetV1:
         """Loads a V1 dataset from Polaris Hub
 
         Args:
             owner: The owner of the dataset. Can be either a user or organization from the Polaris Hub.
-            name: The name of the dataset.
+            slug: The slug of the dataset.
             verify_checksum: Whether to use the checksum to verify the integrity of the dataset.
 
         Returns:
             A `Dataset` instance, if it exists.
         """
-        url = f"/v1/dataset/{owner}/{name}"
+        url = f"/v1/dataset/{owner}/{slug}"
         response = self._base_request_to_hub(url=url, method="GET")
         response_data = response.json()
 
@@ -375,7 +375,7 @@ class PolarisHubClient(OAuth2Client):
         response_data.pop("zarrRootPath", None)
 
         # Load the dataset table and optional Zarr archive
-        with StorageSession(self, "read", Dataset.urn_for(owner, name)) as storage:
+        with StorageSession(self, "read", Dataset.urn_for(owner, slug)) as storage:
             table = pd.read_parquet(BytesIO(storage.get_file("root")))
             zarr_root_path = storage.paths.extension
 
@@ -394,9 +394,9 @@ class PolarisHubClient(OAuth2Client):
 
         return dataset
 
-    def _get_v2_dataset(self, owner: str | HubOwner, name: str) -> DatasetV2:
+    def _get_v2_dataset(self, owner: str | HubOwner, slug: str) -> DatasetV2:
         """"""
-        url = f"/v2/dataset/{owner}/{name}"
+        url = f"/v2/dataset/{owner}/{slug}"
         response = self._base_request_to_hub(url=url, method="GET")
         response_data = response.json()
 
@@ -404,7 +404,7 @@ class PolarisHubClient(OAuth2Client):
         response_data.pop("zarrRootPath", None)
 
         # Load the Zarr archive
-        with StorageSession(self, "read", DatasetV2.urn_for(owner, name)) as storage:
+        with StorageSession(self, "read", DatasetV2.urn_for(owner, slug)) as storage:
             zarr_root_path = str(storage.paths.root)
 
         dataset = DatasetV2(zarr_root_path=zarr_root_path, **response_data)
