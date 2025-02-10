@@ -125,7 +125,7 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
                 number of tasks and test sets.
 
         Returns:
-            A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
+            A `BenchmarkResultsV2` object. This object can be directly submitted to the Polaris Hub.
 
         Examples:
             1. For regression benchmarks:

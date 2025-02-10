@@ -7,8 +7,8 @@ from polaris.evaluate._results import (
     BenchmarkResultsV1,
     BenchmarkResultsV2,
     CompetitionResults,
-    EvaluationResultV1,
     EvaluationResultV1 as EvaluationResult,
+    EvaluationResultV1,
     EvaluationResultV2,
 )
 from polaris.evaluate.utils import evaluate_benchmark
