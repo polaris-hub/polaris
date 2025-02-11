@@ -3,7 +3,7 @@ import json
 from hashlib import md5
 from itertools import chain
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Literal
+from typing import Any, Callable, ClassVar, Literal, TypeVar, Generic
 
 import fsspec
 import numpy as np
@@ -34,6 +34,9 @@ from polaris.utils.types import (
     IncomingPredictionsType,
     TargetType,
 )
+
+# Type variable for the return type of evaluate
+BenchmarkResultsType = TypeVar("BenchmarkResultsType")
 
 
 class BaseSplitSpecificationMixin(BaseModel):
@@ -73,7 +76,11 @@ class BaseSplitSpecificationMixin(BaseModel):
 
 
 class BenchmarkSpecification(
-    PredictiveTaskSpecificationMixin, BaseArtifactModel, BaseSplitSpecificationMixin, abc.ABC
+    PredictiveTaskSpecificationMixin,
+    BaseArtifactModel,
+    BaseSplitSpecificationMixin,
+    abc.ABC,
+    Generic[BenchmarkResultsType],
 ):
     """This class wraps a dataset with additional data to specify the evaluation logic.
 
@@ -132,6 +139,14 @@ class BenchmarkSpecification(
     def _get_test_sets(
         self, hide_targets=True, featurization_fn: Callable | None = None
     ) -> dict[str, Subset]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def evaluate(
+        self,
+        y_pred: IncomingPredictionsType | None = None,
+        y_prob: IncomingPredictionsType | None = None,
+    ) -> BenchmarkResultsType:
         raise NotImplementedError
 
     def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
@@ -212,7 +227,9 @@ class BenchmarkSpecification(
 @deprecated(
     "Use BenchmarkV2Specification instead. If you're loading this dataset from the Polaris Hub, you can ignore this warning."
 )
-class BenchmarkV1Specification(SplitSpecificationV1Mixin, ChecksumMixin, BenchmarkSpecification):
+class BenchmarkV1Specification(
+    SplitSpecificationV1Mixin, ChecksumMixin, BenchmarkSpecification[BenchmarkResultsV1]
+):
     _version: ClassVar[Literal[1]] = 1
 
     dataset: DatasetV1 = Field(exclude=True)

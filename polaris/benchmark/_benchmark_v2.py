@@ -14,7 +14,7 @@ from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName
 
 
-class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification):
+class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification[BenchmarkResultsV2]):
     _version: ClassVar[Literal[2]] = 2
 
     dataset: DatasetV2 = Field(exclude=True)
