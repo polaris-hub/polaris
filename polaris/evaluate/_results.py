@@ -60,7 +60,7 @@ class BaseEvaluationResult:
     Attributes:
         results: Evaluation results are stored directly in a dataframe or in a serialized, JSON compatible dict
             that can be decoded into the associated tabular format.
-    For additional meta-data attributes, see the base classes.
+    For additional metadata attributes, see the base classes.
     """
 
     # Define the columns of the results table
@@ -150,7 +150,7 @@ class BaseBenchmarkResults:
 
     This object is returned by  `benchmark.evaluate()`.
 
-    In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
+    In addition to the metrics on the test set, it contains additional metadata and logic to integrate
     the results with the Polaris Hub.
 
     benchmark_name: The name of the benchmark for which these results were generated.
@@ -203,7 +203,7 @@ class CompetitionResults(EvaluationResultV1):
     """Class specific to results for competition benchmarks.
 
     This object is returned by [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
-    In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
+    In addition to the metrics on the test set, it contains additional metadata and logic to integrate
     the results with the Polaris Hub.
 
     Attributes:

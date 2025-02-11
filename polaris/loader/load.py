@@ -53,7 +53,7 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
     """
     Loads a Polaris benchmark.
 
-    In Polaris, a benchmark wraps a dataset with additional meta-data to specify the evaluation logic.
+    In Polaris, a benchmark wraps a dataset with additional metadata to specify the evaluation logic.
 
     The Polaris benchmark can be loaded from the Hub or from a local or remote directory.
 

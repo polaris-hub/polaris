@@ -59,7 +59,7 @@ class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, Spli
         end_time: The time at which the competition stops accepting prediction submissions.
         n_classes: The number of classes within each target column that defines a classification task.
 
-    For additional meta-data attributes, see the base classes.
+    For additional metadata attributes, see the base classes.
     """
 
     _artifact_type = "competition"

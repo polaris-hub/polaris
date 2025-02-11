@@ -24,15 +24,15 @@ KnownContentType: TypeAlias = Literal["chemical/x-smiles", "chemical/x-pdb"]
 class ColumnAnnotation(BaseModel):
     """
     The `ColumnAnnotation` class is used to annotate the columns of the  object.
-    This mostly just stores meta-data and does not affect the logic. The exception is the `is_pointer` attribute.
+    This mostly just stores metadata and does not affect the logic. The exception is the `is_pointer` attribute.
 
     Attributes:
         is_pointer: Annotates whether a column is a pointer column. If so, it does not contain data,
             but rather contains references to blobs of data from which the data is loaded.
-        modality: The data modality describes the data type and is used to categorize datasets on the hub
-            and while it does not affect logic in this library, it does affect the logic of the hub.
+        modality: The data modality describes the data type and is used to categorize datasets on the Hub
+            and while it does not affect logic in this library, it does affect the logic of the Hub.
         description: Describes how the data was generated.
-        user_attributes: Any additional meta-data can be stored in the user attributes.
+        user_attributes: Any additional metadata can be stored in the user attributes.
         content_type: Specify column's IANA content type. If the the content type matches with a known type for
             molecules (e.g. "chemical/x-smiles"), visualization for its content will be activated on the Hub side
     """

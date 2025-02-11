@@ -35,7 +35,7 @@ class Model(BaseArtifactModel):
         upload_to_hub(access: AccessType = "private", owner: HubOwner | str | None = None):
             Uploads the model artifact to the Polaris Hub, associating it with a specified owner and access level.
 
-    For additional meta-data attributes, see the base class.
+    For additional metadata attributes, see the base class.
     """
 
     _artifact_type = "model"

@@ -65,7 +65,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         license: The dataset license. Polaris only supports some Creative Commons licenses. See [`SupportedLicenseType`][polaris.utils.types.SupportedLicenseType] for accepted ID values.
         curation_reference: A reference to the curation process, e.g. a DOI, Github repo or URI.
 
-    For additional meta-data attributes, see the base classes.
+    For additional metadata attributes, see the base classes.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
@@ -76,7 +76,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     default_adapters: dict[str, Adapter] = Field(default_factory=dict)
     zarr_root_path: str | None = None
 
-    # Additional meta-data
+    # Additional metadata
     readme: str = ""
     annotations: dict[str, ColumnAnnotation] = Field(default_factory=dict)
     source: HttpUrlString | None = None

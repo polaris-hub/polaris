@@ -256,7 +256,7 @@ class CompetitionPredictions(BenchmarkPredictions, ResultsMetadataV1):
     This object is to be used as input to
     [`PolarisHubClient.submit_competition_predictions`][polaris.hub.client.PolarisHubClient.submit_competition_predictions].
     It is used to ensure that the structure of the predictions are compatible with evaluation methods on the Polaris Hub.
-    In addition to the predictions, it contains meta-data that describes a predictions object.
+    In addition to the predictions, it contains metadata that describes a predictions object.
 
     Attributes:
         name: A slug-compatible name for the artifact. It is redeclared here to be required.

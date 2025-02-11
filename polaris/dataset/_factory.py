@@ -83,9 +83,9 @@ class DatasetFactory:
         dataset = create_dataset_from_file("path/to/my_dataset.sdf")
         ```
 
-    Question: How to make adding meta-data easier?
+    Question: How to make adding metadata easier?
         The `DatasetFactory` is designed to more easily pull together data from different sources.
-        However, adding meta-data remains a laborious process. How could we make this simpler through
+        However, adding metadata remains a laborious process. How could we make this simpler through
         the Python API?
     """
 

@@ -22,7 +22,7 @@ from polaris.benchmark._split import SplitSpecificationV1Mixin
 from polaris.benchmark._task import PredictiveTaskSpecificationMixin
 from polaris.dataset import DatasetV1, Subset
 from polaris.dataset._base import BaseDataset
-from polaris.evaluate import BenchmarkResultsV1
+from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.mixins import ChecksumMixin
@@ -36,7 +36,7 @@ from polaris.utils.types import (
 )
 
 # Type variable for the return type of evaluate
-BenchmarkResultsType = TypeVar("BenchmarkResultsType")
+BenchmarkResultsType = TypeVar("BenchmarkResultsType", BenchmarkResultsV1, BenchmarkResultsV2)
 
 
 class BaseSplitSpecificationMixin(BaseModel):
@@ -122,7 +122,7 @@ class BenchmarkSpecification(
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
-    For additional meta-data attributes, see the base classes.
+    For additional metadata attributes, see the base classes.
     """
 
     _artifact_type = "benchmark"

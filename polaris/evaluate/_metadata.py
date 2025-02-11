@@ -16,10 +16,10 @@ class ResultsMetadataV1(BaseArtifactModel):
         paper_url: The URL to the paper describing the methodology used to generate these results.
         contributors: The users that are credited for these results.
 
-    For additional meta-data attributes, see the base classes.
+    For additional metadata attributes, see the base classes.
     """
 
-    # Additional meta-data
+    # Additional metadata
     github_url: HttpUrlString | None = None
     paper_url: HttpUrlString | None = None
     contributors: list[HubUser] = Field(default_factory=list)
@@ -42,10 +42,10 @@ class ResultsMetadataV2(BaseArtifactModel):
         model: The model that was used to generate these results.
         contributors: The users that are credited for these results.
 
-    For additional meta-data attributes, see the base classes.
+    For additional metadata attributes, see the base classes.
     """
 
-    # Additional meta-data
+    # Additional metadata
     model: Model | None = Field(None, exclude=True)
     contributors: list[HubUser] = Field(default_factory=list)
 

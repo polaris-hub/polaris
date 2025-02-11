@@ -28,7 +28,7 @@ class PolarisHubSettings(BaseSettings):
             Allows for custom SSL certificates to be used.
         default_timeout: The default timeout for requests.
         hub_token_url: The URL of the Polaris Hub token endpoint.
-            A default value is generated based on the hub URL, and this should not need to be overridden.
+            A default value is generated based on the Hub URL, and this should not need to be overridden.
         username: The username for the Polaris Hub, for the optional password-based authentication.
         password: The password for the specified username.
     """
