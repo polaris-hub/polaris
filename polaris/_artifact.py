@@ -10,8 +10,7 @@ from pydantic import (
     Field,
     computed_field,
     field_serializer,
-    field_validator,
-    model_validator,
+    field_validator
 )
 from pydantic.alias_generators import to_camel
 from typing_extensions import Self
@@ -58,7 +57,7 @@ class BaseArtifactModel(BaseModel):
 
 
     @field_validator("slug")
-    def _validate_slug(cls, val: Optional[str], info) -> str | None:
+    def _validate_slug(cls, val: Optional[str], info) -> SlugStringType | None:
         if val is None:
             if "name" in info.data: return slugify(info.data.get("name"))
         return val
