@@ -1,5 +1,5 @@
 import json
-from typing import ClassVar, Literal
+from typing import Annotated, ClassVar, Literal, Optional
 
 import fsspec
 from loguru import logger
@@ -54,14 +54,14 @@ class BaseArtifactModel(BaseModel):
     user_attributes: dict[str, str] = Field(default_factory=dict)
     owner: HubOwner | None = None
     polaris_version: str = polaris.__version__
-    slug: SlugStringType | None = None
+    slug: Annotated[Optional[SlugStringType], Field(validate_default=True)] = None
 
-    @model_validator(mode="before")
-    def _validate_slug(cls, values):
-        if "slug" not in values or values["slug"] is None:
-            if "name" in values:
-                values["slug"] = slugify(values["name"])
-        return values
+
+    @field_validator("slug")
+    def _validate_slug(cls, val: Optional[str], info) -> str | None:
+        if val is None:
+            if "name" in info.data: return slugify(info.data.get("name"))
+        return val
 
     @computed_field
     @property
