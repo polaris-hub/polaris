@@ -57,12 +57,12 @@ class BaseArtifactModel(BaseModel):
     polaris_version: str = polaris.__version__
     slug: Annotated[Optional[SlugStringType], Field(validate_default=True)] = None
 
-
     @field_validator("slug")
     def _validate_slug(cls, val: Optional[str], info) -> SlugStringType | None:
         # A slug may be None when an artifact is created locally
         if val is None:
-            if "name" in info.data: return slugify(info.data.get("name"))
+            if "name" in info.data:
+                return slugify(info.data.get("name"))
         return val
 
     @computed_field

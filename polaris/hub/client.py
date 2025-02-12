@@ -37,7 +37,6 @@ from polaris.utils.errors import (
     PolarisSSLError,
     PolarisUnauthorizedError,
 )
-from polaris.utils.misc import build_urn
 from polaris.utils.types import (
     AccessType,
     ChecksumStrategy,
