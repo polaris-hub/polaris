@@ -12,7 +12,7 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-from polaris.evaluate import ResultsMetadata
+from polaris.evaluate import ResultsMetadataV1
 from polaris.utils.misc import convert_lists_to_arrays
 from polaris.utils.types import (
     HttpUrlString,
@@ -249,14 +249,14 @@ class BenchmarkPredictions(BaseModel):
         return self.get_size()
 
 
-class CompetitionPredictions(BenchmarkPredictions, ResultsMetadata):
+class CompetitionPredictions(BenchmarkPredictions, ResultsMetadataV1):
     """
     Predictions for competition benchmarks.
 
     This object is to be used as input to
     [`PolarisHubClient.submit_competition_predictions`][polaris.hub.client.PolarisHubClient.submit_competition_predictions].
     It is used to ensure that the structure of the predictions are compatible with evaluation methods on the Polaris Hub.
-    In addition to the predictions, it contains meta-data that describes a predictions object.
+    In addition to the predictions, it contains metadata that describes a predictions object.
 
     Attributes:
         name: A slug-compatible name for the artifact. It is redeclared here to be required.

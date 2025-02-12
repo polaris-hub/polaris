@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class BaseArtifactModel(BaseModel):
     """
-    Base class for all artifacts on the Hub. Specifies meta-data that is used by the Hub.
+    Base class for all artifacts on the Hub. Specifies metadata that is used by the Hub.
 
     Info: Optional
         Despite all artifacts basing this class, note that all attributes are optional.
@@ -35,7 +35,7 @@ class BaseArtifactModel(BaseModel):
         name: A slug-compatible name for the artifact.
             Together with the owner, this is used by the Hub to uniquely identify the artifact.
         description: A beginner-friendly, short description of the artifact.
-        tags: A list of tags to categorize the artifact by. This is used by the hub to search over artifacts.
+        tags: A list of tags to categorize the artifact by. This is used by the Hub to search over artifacts.
         user_attributes: A dict with additional, textual user attributes.
         owner: A slug-compatible name for the owner of the artifact.
             If the artifact comes from the Polaris Hub, this is the associated owner (organization or user).

@@ -22,6 +22,7 @@ from polaris.benchmark import (
 )
 from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
 from polaris.competition import CompetitionSpecification
+from polaris.model import Model
 from polaris.dataset import Dataset, DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResults, CompetitionPredictions
 from polaris.hub.external_client import ExternalAuthClient
@@ -501,14 +502,14 @@ class PolarisHubClient(OAuth2Client):
         """Upload the results to the Polaris Hub.
 
         Info: Owner
-            The owner of the results will automatically be inferred by the hub from the user making the request.
+            The owner of the results will automatically be inferred by the Hub from the user making the request.
             Contrary to other artifact types, an organization cannot own a set of results.
             However, you can specify the `BenchmarkResults.contributors` field to share credit with other hub users.
 
-        Note: Required meta-data
-            The Polaris client and hub maintain different requirements as to which meta-data is required.
-            The requirements by the hub are stricter, so when uploading to the hub you might
-            get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
+        Note: Required metadata
+            The Polaris client and Hub maintain different requirements as to which metadata is required.
+            The requirements by the Hub are stricter, so when uploading to the Hub you might
+            get some errors on missing metadata. Make sure to fill-in as much of the metadata as possible
             before uploading.
 
         Args:
@@ -521,7 +522,7 @@ class PolarisHubClient(OAuth2Client):
             results.owner = HubOwner.normalize(owner or results.owner)
             result_json = results.model_dump(by_alias=True, exclude_none=True)
 
-            # Make a request to the hub
+            # Make a request to the Hub
             response = self._base_request_to_hub(
                 url="/v2/result", method="POST", json={"access": access, **result_json}
             )
@@ -547,10 +548,10 @@ class PolarisHubClient(OAuth2Client):
             You have to manually specify the owner in the dataset data model. Because the owner could
             be a user or an organization, we cannot automatically infer this from just the logged-in user.
 
-        Note: Required meta-data
-            The Polaris client and hub maintain different requirements as to which meta-data is required.
-            The requirements by the hub are stricter, so when uploading to the hub you might
-            get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
+        Note: Required metadata
+            The Polaris client and Hub maintain different requirements as to which metadata is required.
+            The requirements by the Hub are stricter, so when uploading to the Hub you might
+            get some errors on missing metadata. Make sure to fill-in as much of the metadata as possible
             before uploading.
 
         Args:
@@ -603,7 +604,7 @@ class PolarisHubClient(OAuth2Client):
                 dataset_json["zarrRootPath"] = f"{StorageSession.polaris_protocol}://data.zarr"
 
             # Uploading a dataset is a three-step process.
-            # 1. Upload the dataset meta-data to the hub and prepare the hub to receive the data
+            # 1. Upload the dataset metadata to the Hub and prepare the Hub to receive the data
             # 2. Upload the parquet file to Hub storage
             # 3. Upload the associated Zarr archive to Hub storage
 
@@ -613,8 +614,8 @@ class PolarisHubClient(OAuth2Client):
             parquet_size = len(in_memory_parquet.getbuffer())
             parquet_md5 = md5(in_memory_parquet.getbuffer()).hexdigest()
 
-            # Step 1: Upload meta-data
-            # Instead of directly uploading the data, we announce to the hub that we intend to upload it.
+            # Step 1: Upload metadata
+            # Instead of directly uploading the data, we announce to the Hub that we intend to upload it.
             # We do so separately for the Zarr archive and Parquet file.
             url = f"/v1/dataset/{dataset.artifact_id}"
             self._base_request_to_hub(
@@ -651,7 +652,7 @@ class PolarisHubClient(OAuth2Client):
                         zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
                         destination[".zmetadata"] = zmetadata_content
 
-                        # Copy the Zarr archive to the hub
+                        # Copy the Zarr archive to the Hub
                         destination.copy_from_source(
                             dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
                         )
@@ -678,7 +679,7 @@ class PolarisHubClient(OAuth2Client):
             dataset.owner = HubOwner.normalize(owner or dataset.owner)
             dataset_json = dataset.model_dump(exclude_none=True, by_alias=True)
 
-            # Step 1: Upload dataset meta-data
+            # Step 1: Upload dataset metadata
             url = f"/v2/dataset/{dataset.owner}/{dataset.name}"
             response = self._base_request_to_hub(
                 url=url,
@@ -715,7 +716,7 @@ class PolarisHubClient(OAuth2Client):
                     zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
                     destination[".zmetadata"] = zmetadata_content
 
-                    # Copy the Zarr archive to the hub
+                    # Copy the Zarr archive to the Hub
                     destination.copy_from_source(
                         dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
                     )
@@ -737,14 +738,14 @@ class PolarisHubClient(OAuth2Client):
             You have to manually specify the owner in the benchmark data model. Because the owner could
             be a user or an organization, we cannot automatically infer this from the logged-in user.
 
-        Note: Required meta-data
-            The Polaris client and hub maintain different requirements as to which meta-data is required.
-            The requirements by the hub are stricter, so when uploading to the hub you might
-            get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
+        Note: Required metadata
+            The Polaris client and Hub maintain different requirements as to which metadata is required.
+            The requirements by the Hub are stricter, so when uploading to the Hub you might
+            get some errors on missing metadata. Make sure to fill-in as much of the metadata as possible
             before uploading.
 
         Note: Non-existent datasets
-            The client will _not_ upload the associated dataset to the hub if it does not yet exist.
+            The client will _not_ upload the associated dataset to the Hub if it does not yet exist.
             Make sure to specify an existing dataset or upload the dataset first.
 
         Args:
@@ -770,14 +771,14 @@ class PolarisHubClient(OAuth2Client):
             You have to manually specify the owner in the benchmark data model. Because the owner could
             be a user or an organization, we cannot automatically infer this from the logged-in user.
 
-        Note: Required meta-data
-            The Polaris client and hub maintain different requirements as to which meta-data is required.
-            The requirements by the hub are stricter, so when uploading to the hub you might
-            get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
+        Note: Required metadata
+            The Polaris client and Hub maintain different requirements as to which metadata is required.
+            The requirements by the Hub are stricter, so when uploading to the Hub you might
+            get some errors on missing metadata. Make sure to fill-in as much of the metadata as possible
             before uploading.
 
         Note: Non-existent datasets
-            The client will _not_ upload the associated dataset to the hub if it does not yet exist.
+            The client will _not_ upload the associated dataset to the Hub if it does not yet exist.
             Make sure to specify an existing dataset or upload the dataset first.
 
         Args:
@@ -787,7 +788,7 @@ class PolarisHubClient(OAuth2Client):
         """
         with track_progress(description="Uploading benchmark", total=1) as (progress, task):
             # Get the serialized data-model
-            # We exclude the dataset as we expect it to exist on the hub already.
+            # We exclude the dataset as we expect it to exist on the Hub already.
             benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
             benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
             benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
@@ -809,15 +810,15 @@ class PolarisHubClient(OAuth2Client):
     ):
         with track_progress(description="Uploading benchmark", total=1) as (progress, task):
             # Get the serialized data-model
-            # We exclude the dataset as we expect it to exist on the hub already.
+            # We exclude the dataset as we expect it to exist on the Hub already.
             benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
             benchmark_json = benchmark.model_dump(exclude_none=True, by_alias=True)
 
             # Uploading a V2 benchmark is a multistep process.
-            # 1. Upload the benchmark meta-data to the hub and prepare the hub to receive the data
+            # 1. Upload the benchmark metadata to the Hub and prepare the Hub to receive the data
             # 2. Upload each index set bitmap to the Hub storage
 
-            # Step 1: Upload meta-data
+            # Step 1: Upload metadata
             url = f"/v2/benchmark/{benchmark.owner}/{benchmark.name}"
             response = self._base_request_to_hub(
                 url=url,
@@ -889,3 +890,50 @@ class PolarisHubClient(OAuth2Client):
                 json=prediction_payload,
             )
             return response
+
+    def get_model(self, artifact_id: str) -> Model:
+        url = f"/v2/model/{artifact_id}"
+        response = self._base_request_to_hub(url=url, method="GET")
+        response_data = response.json()
+
+        return Model(**response_data)
+
+    def upload_model(
+        self,
+        model: Model,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
+    ):
+        """Upload a model to the Polaris Hub.
+
+        Info: Owner
+            You have to manually specify the owner in the model data model. Because the owner could
+            be a user or an organization, we cannot automatically infer this from just the logged-in user.
+
+        Note: Required metadata
+            The Polaris client and Hub maintain different requirements as to which metadata is required.
+            The requirements by the Hub are stricter, so when uploading to the Hub you might
+            get some errors on missing metadata. Make sure to fill-in as much of the metadata as possible
+            before uploading.
+
+        Args:
+            model: The model to upload.
+            access: Grant public or private access to result
+            owner: Which Hub user or organization owns the artifact. Takes precedence over `model.owner`.
+        """
+        with track_progress(description="Uploading model", total=1) as (progress, task):
+            # Get the serialized model data-structure
+            model.owner = HubOwner.normalize(owner or model.owner)
+            model_json = model.model_dump(by_alias=True, exclude_none=True)
+
+            # Make a request to the Hub
+            response = self._base_request_to_hub(
+                url="/v2/model", method="POST", json={"access": access, **model_json}
+            )
+
+            # Inform the user about where to find their newly created artifact.
+            model_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
+
+            progress.log(
+                f"[green]Your model has been successfully uploaded to the Hub. View it here: {model_url}"
+            )

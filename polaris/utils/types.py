@@ -60,14 +60,14 @@ SlugStringType: TypeAlias = Annotated[
     str, StringConstraints(pattern="^[a-z0-9-]+$", min_length=4, max_length=64)
 ]
 """
-A URL-compatible string that can serve as slug on the hub.
+A URL-compatible string that can serve as slug on the Hub.
 """
 
 SlugCompatibleStringType: TypeAlias = Annotated[
     str, StringConstraints(pattern="^[A-Za-z0-9_-]+$", min_length=4, max_length=64)
 ]
 """
-A URL-compatible string that can be turned into a slug by the hub.
+A URL-compatible string that can be turned into a slug by the Hub.
 
 Can only use alpha-numeric characters, underscores and dashes.
 The string must be at least 4 and at most 64 characters long.

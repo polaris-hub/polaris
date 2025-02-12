@@ -29,6 +29,7 @@ nav:
       - Core:
           - Dataset: api/dataset.md
           - Benchmark: api/benchmark.md
+          - Model: api/model.md
           - Competition: api/competition.md
           - Subset: api/subset.md
           - Evaluation: api/evaluation.md

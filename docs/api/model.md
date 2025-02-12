@@ -1,0 +1,3 @@
+::: polaris.model.Model
+
+---

@@ -3,7 +3,7 @@ import json
 from hashlib import md5
 from itertools import chain
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Literal
+from typing import Any, Callable, ClassVar, Literal, TypeVar, Generic
 
 import fsspec
 import numpy as np
@@ -22,7 +22,7 @@ from polaris.benchmark._split import SplitSpecificationV1Mixin
 from polaris.benchmark._task import PredictiveTaskSpecificationMixin
 from polaris.dataset import DatasetV1, Subset
 from polaris.dataset._base import BaseDataset
-from polaris.evaluate import BenchmarkResults
+from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.mixins import ChecksumMixin
@@ -34,6 +34,9 @@ from polaris.utils.types import (
     IncomingPredictionsType,
     TargetType,
 )
+
+# Type variable for the return type of evaluate
+BenchmarkResultsType = TypeVar("BenchmarkResultsType", BenchmarkResultsV1, BenchmarkResultsV2)
 
 
 class BaseSplitSpecificationMixin(BaseModel):
@@ -73,7 +76,11 @@ class BaseSplitSpecificationMixin(BaseModel):
 
 
 class BenchmarkSpecification(
-    PredictiveTaskSpecificationMixin, BaseArtifactModel, BaseSplitSpecificationMixin, abc.ABC
+    PredictiveTaskSpecificationMixin,
+    BaseArtifactModel,
+    BaseSplitSpecificationMixin,
+    abc.ABC,
+    Generic[BenchmarkResultsType],
 ):
     """This class wraps a dataset with additional data to specify the evaluation logic.
 
@@ -115,7 +122,7 @@ class BenchmarkSpecification(
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
-    For additional meta-data attributes, see the base classes.
+    For additional metadata attributes, see the base classes.
     """
 
     _artifact_type = "benchmark"
@@ -134,6 +141,14 @@ class BenchmarkSpecification(
     ) -> dict[str, Subset]:
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def evaluate(
+        self,
+        y_pred: IncomingPredictionsType | None = None,
+        y_prob: IncomingPredictionsType | None = None,
+    ) -> BenchmarkResultsType:
+        raise NotImplementedError
+
     def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
         """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
         internally to construct the train and test sets."""
@@ -145,64 +160,6 @@ class BenchmarkSpecification(
             hide_targets=hide_targets,
             featurization_fn=featurization_fn,
         )
-
-    def evaluate(
-        self,
-        y_pred: IncomingPredictionsType | None = None,
-        y_prob: IncomingPredictionsType | None = None,
-    ) -> BenchmarkResults:
-        """Execute the evaluation protocol for the benchmark, given a set of predictions.
-
-        info: What about `y_true`?
-            Contrary to other frameworks that you might be familiar with, we opted for a signature that includes just
-            the predictions. This reduces the chance of accidentally using the test targets during training.
-
-        For this method, we make the following assumptions:
-
-        1. There can be one or multiple test set(s);
-        2. There can be one or multiple target(s);
-        3. The metrics are _constant_ across test sets;
-        4. The metrics are _constant_ across targets;
-        5. There can be metrics which measure across tasks.
-
-        Args:
-            y_pred: The predictions for the test set, as NumPy arrays.
-                If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
-                If there are multiple test sets, the predictions should be further wrapped in a dictionary
-                    with the test subset labels as keys.
-            y_prob: The predicted probabilities for the test set, formatted similarly to predictions, based on the
-                number of tasks and test sets.
-
-        Returns:
-            A `BenchmarkResults` object. This object can be directly submitted to the Polaris Hub.
-
-        Examples:
-            1. For regression benchmarks:
-                pred_scores = your_model.predict_score(molecules) # predict continuous score values
-                benchmark.evaluate(y_pred=pred_scores)
-            2. For classification benchmarks:
-                - If `roc_auc` and `pr_auc` are in the metric list, both class probabilities and label predictions are required:
-                    pred_probs = your_model.predict_proba(molecules) # predict probablities
-                    pred_labels = your_model.predict_labels(molecules) # predict class labels
-                    benchmark.evaluate(y_pred=pred_labels, y_prob=pred_probs)
-                - Otherwise:
-                    benchmark.evaluate(y_pred=pred_labels)
-        """
-
-        # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
-        y_true = self._get_test_sets(hide_targets=False)
-
-        scores = evaluate_benchmark(
-            target_cols=list(self.target_cols),
-            test_set_labels=self.test_set_labels,
-            test_set_sizes=self.test_set_sizes,
-            metrics=self.metrics,
-            y_true=y_true,
-            y_pred=y_pred,
-            y_prob=y_prob,
-        )
-
-        return BenchmarkResults(results=scores, benchmark_artifact_id=self.artifact_id)
 
     def upload_to_hub(
         self,
@@ -270,7 +227,9 @@ class BenchmarkSpecification(
 @deprecated(
     "Use BenchmarkV2Specification instead. If you're loading this dataset from the Polaris Hub, you can ignore this warning."
 )
-class BenchmarkV1Specification(SplitSpecificationV1Mixin, ChecksumMixin, BenchmarkSpecification):
+class BenchmarkV1Specification(
+    SplitSpecificationV1Mixin, ChecksumMixin, BenchmarkSpecification[BenchmarkResultsV1]
+):
     _version: ClassVar[Literal[1]] = 1
 
     dataset: DatasetV1 = Field(exclude=True)
@@ -419,6 +378,64 @@ class BenchmarkV1Specification(SplitSpecificationV1Mixin, ChecksumMixin, Benchma
             for target in self.target_cols
             if self.target_types.get(target) == TargetType.CLASSIFICATION
         }
+
+    def evaluate(
+        self,
+        y_pred: IncomingPredictionsType | None = None,
+        y_prob: IncomingPredictionsType | None = None,
+    ) -> BenchmarkResultsV1:
+        """Execute the evaluation protocol for the benchmark, given a set of predictions.
+
+        info: What about `y_true`?
+            Contrary to other frameworks that you might be familiar with, we opted for a signature that includes just
+            the predictions. This reduces the chance of accidentally using the test targets during training.
+
+        For this method, we make the following assumptions:
+
+        1. There can be one or multiple test set(s);
+        2. There can be one or multiple target(s);
+        3. The metrics are _constant_ across test sets;
+        4. The metrics are _constant_ across targets;
+        5. There can be metrics which measure across tasks.
+
+        Args:
+            y_pred: The predictions for the test set, as NumPy arrays.
+                If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
+                If there are multiple test sets, the predictions should be further wrapped in a dictionary
+                    with the test subset labels as keys.
+            y_prob: The predicted probabilities for the test set, formatted similarly to predictions, based on the
+                number of tasks and test sets.
+
+        Returns:
+            A `BenchmarkResultsV1` object. This object can be directly submitted to the Polaris Hub.
+
+        Examples:
+            1. For regression benchmarks:
+                pred_scores = your_model.predict_score(molecules) # predict continuous score values
+                benchmark.evaluate(y_pred=pred_scores)
+            2. For classification benchmarks:
+                - If `roc_auc` and `pr_auc` are in the metric list, both class probabilities and label predictions are required:
+                    pred_probs = your_model.predict_proba(molecules) # predict probablities
+                    pred_labels = your_model.predict_labels(molecules) # predict class labels
+                    benchmark.evaluate(y_pred=pred_labels, y_prob=pred_probs)
+                - Otherwise:
+                    benchmark.evaluate(y_pred=pred_labels)
+        """
+
+        # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
+        y_true = self._get_test_sets(hide_targets=False)
+
+        scores = evaluate_benchmark(
+            target_cols=list(self.target_cols),
+            test_set_labels=self.test_set_labels,
+            test_set_sizes=self.test_set_sizes,
+            metrics=self.metrics,
+            y_true=y_true,
+            y_pred=y_pred,
+            y_prob=y_prob,
+        )
+
+        return BenchmarkResultsV1(results=scores, benchmark_artifact_id=self.artifact_id)
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, BenchmarkSpecification):
