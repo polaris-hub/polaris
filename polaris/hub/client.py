@@ -426,14 +426,14 @@ class PolarisHubClient(OAuth2Client):
     def get_benchmark(
         self,
         owner: str | HubOwner,
-        name: str,
+        slug: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> BenchmarkV1Specification | BenchmarkV2Specification:
         """Load a benchmark from the Polaris Hub.
 
         Args:
             owner: The owner of the benchmark. Can be either a user or organization from the Polaris Hub.
-            name: The name of the benchmark.
+            slug: The slug of the benchmark.
             verify_checksum: Whether to use the checksum to verify the integrity of the benchmark.
 
         Returns:
@@ -441,18 +441,18 @@ class PolarisHubClient(OAuth2Client):
         """
         with track_progress(description="Fetching benchmark", total=1):
             try:
-                return self._get_v1_benchmark(owner, name, verify_checksum)
+                return self._get_v1_benchmark(owner, slug, verify_checksum)
             except PolarisRetrieveArtifactError:
                 # If the v1 benchmark is not found, try to load a v2 benchmark
-                return self._get_v2_benchmark(owner, name)
+                return self._get_v2_benchmark(owner, slug)
 
     def _get_v1_benchmark(
         self,
         owner: str | HubOwner,
-        name: str,
+        slug: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> BenchmarkV1Specification:
-        response = self._base_request_to_hub(url=f"/v1/benchmark/{owner}/{name}", method="GET")
+        response = self._base_request_to_hub(url=f"/v1/benchmark/{owner}/{slug}", method="GET")
         response_data = response.json()
 
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
@@ -480,14 +480,14 @@ class PolarisHubClient(OAuth2Client):
 
         return benchmark
 
-    def _get_v2_benchmark(self, owner: str | HubOwner, name: str) -> BenchmarkV2Specification:
-        response = self._base_request_to_hub(url=f"/v2/benchmark/{owner}/{name}", method="GET")
+    def _get_v2_benchmark(self, owner: str | HubOwner, slug: str) -> BenchmarkV2Specification:
+        response = self._base_request_to_hub(url=f"/v2/benchmark/{owner}/{slug}", method="GET")
         response_data = response.json()
 
         response_data["dataset"] = self.get_dataset(*response_data["dataset"]["artifactId"].split("/"))
 
         # Load the split index sets
-        with StorageSession(self, "read", BenchmarkV2Specification.urn_for(owner, name)) as storage:
+        with StorageSession(self, "read", BenchmarkV2Specification.urn_for(owner, slug)) as storage:
             split = {label: storage.get_file(label) for label in response_data.get("split", {}).keys()}
 
         return BenchmarkV2Specification(**response_data, split=split)
