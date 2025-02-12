@@ -61,9 +61,9 @@ class BaseArtifactModel(BaseModel):
     def _validate_slug(cls, val: Optional[str], info) -> SlugStringType | None:
         # A slug may be None when an artifact is created locally
         if val is None:
-            if "name" in info.data:
+            if info.data.get("name") is not None:
                 return slugify(info.data.get("name"))
-        return val
+            return val
 
     @computed_field
     @property
