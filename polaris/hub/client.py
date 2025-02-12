@@ -742,6 +742,7 @@ class PolarisHubClient(OAuth2Client):
         benchmark: BenchmarkV1Specification | BenchmarkV2Specification,
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
+        upload_as_new_version: bool = False,
     ):
         """Upload the benchmark to the Polaris Hub.
 
@@ -763,10 +764,11 @@ class PolarisHubClient(OAuth2Client):
             benchmark: The benchmark to upload.
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
+            upload_as_new_version: Uploads the benchmark as a new version.
         """
         match benchmark:
             case BenchmarkV1Specification():
-                self._upload_v1_benchmark(benchmark, access, owner)
+                self._upload_v1_benchmark(benchmark, access, owner, upload_as_new_version)
             case BenchmarkV2Specification():
                 self._upload_v2_benchmark(benchmark, access, owner)
 
@@ -775,6 +777,7 @@ class PolarisHubClient(OAuth2Client):
         benchmark: BenchmarkV1Specification,
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
+        upload_as_new_version: bool = False,
     ):
         """Upload a benchmark to the Polaris Hub.
 
@@ -796,6 +799,7 @@ class PolarisHubClient(OAuth2Client):
             benchmark: The benchmark to upload.
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
+            upload_as_new_version: Uploads the benchmark as a new version.
         """
         with track_progress(description="Uploading benchmark", total=1) as (progress, task):
             # Get the serialized data-model
@@ -805,12 +809,14 @@ class PolarisHubClient(OAuth2Client):
             benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
             benchmark_json["access"] = access
 
-            path_params = "/v1/benchmark"
-            url = f"{path_params}/{benchmark.owner}/{benchmark.name}"
-            self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
+            url = f"/v1/benchmark/{benchmark.artifact_id}"
+            response = self._base_request_to_hub(
+                url=url, method="PUT", json={"uploadAsNewVersion": upload_as_new_version, **benchmark_json}
+            )
 
+            benchmark_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
             progress.log(
-                f"[green]Your benchmark has been successfully uploaded to the Hub. View it here: {urljoin(self.settings.hub_url, url)}"
+                f"[green]Your benchmark has been successfully uploaded to the Hub.\nView it here: {benchmark_url}"
             )
 
     def _upload_v2_benchmark(

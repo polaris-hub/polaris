@@ -115,6 +115,8 @@ class BenchmarkSpecification(
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
             If using the Polaris Hub, it is worth noting that this field is more easily edited through the Hub UI
             as it provides a rich text editor for writing markdown.
+        artifact_version: The version of the benchmark.
+        artifact_changelog: A description of the changes made in this benchmark version.
     For additional meta-data attributes, see the base classes.
     """
 
@@ -122,6 +124,10 @@ class BenchmarkSpecification(
 
     dataset: BaseDataset = Field(exclude=True)
     readme: str = ""
+
+    # Version-related fields
+    artifact_version: int = 1
+    artifact_changelog: str | None = None
 
     @computed_field
     @property
