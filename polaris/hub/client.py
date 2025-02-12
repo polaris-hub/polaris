@@ -770,7 +770,7 @@ class PolarisHubClient(OAuth2Client):
             case BenchmarkV1Specification():
                 self._upload_v1_benchmark(benchmark, access, owner, upload_as_new_version)
             case BenchmarkV2Specification():
-                self._upload_v2_benchmark(benchmark, access, owner)
+                self._upload_v2_benchmark(benchmark, access, owner, upload_as_new_version)
 
     def _upload_v1_benchmark(
         self,
@@ -824,6 +824,7 @@ class PolarisHubClient(OAuth2Client):
         benchmark: BenchmarkV2Specification,
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
+        upload_as_new_version: bool = False,
     ):
         with track_progress(description="Uploading benchmark", total=1) as (progress, task):
             # Get the serialized data-model
@@ -836,12 +837,20 @@ class PolarisHubClient(OAuth2Client):
             # 2. Upload each index set bitmap to the Hub storage
 
             # Step 1: Upload meta-data
-            url = f"/v2/benchmark/{benchmark.owner}/{benchmark.name}"
+            url = f"/v2/benchmark/{benchmark.artifact_id}"
             response = self._base_request_to_hub(
                 url=url,
                 method="PUT",
-                json={"access": access, "datasetArtifactId": benchmark.dataset.artifact_id, **benchmark_json},
+                json={
+                    "access": access,
+                    "datasetArtifactId": benchmark.dataset.artifact_id,
+                    "uploadAsNewVersion": upload_as_new_version,
+                    **benchmark_json,
+                },
             )
+
+            uploaded_benchmark = response.json()
+            benchmark.slug = uploaded_benchmark["slug"]
 
             with StorageSession(self, "write", benchmark.urn) as storage:
                 logger.info("Copying the benchmark split to the Hub. This may take a while.")
@@ -857,7 +866,7 @@ class PolarisHubClient(OAuth2Client):
 
             benchmark_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
             progress.log(
-                f"[green]Your benchmark has been successfully uploaded to the Hub. View it here: {benchmark_url}"
+                f"[green]Your benchmark has been successfully uploaded to the Hub.\nView it here: {benchmark_url}"
             )
 
     def get_competition(self, artifact_id: str) -> CompetitionSpecification:
