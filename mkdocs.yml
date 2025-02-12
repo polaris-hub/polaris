@@ -16,16 +16,14 @@ nav:
   - Getting started:
       - Polaris: index.md
       - Quickstart: quickstart.md
+      - Resources: resources.md
   - Tutorials:
-      - Basics: tutorials/basics.ipynb
-      - Data Models: tutorials/custom_dataset_benchmark.ipynb
-      - Creating Datasets:
-          - Zarr Datasets: tutorials/dataset_zarr.ipynb
-          - PDB Datasets: tutorials/dataset_pdb.ipynb
-          - SDF Datasets: tutorials/dataset_sdf.ipynb
-          - Optimization: tutorials/optimization.ipynb
-      - Competitions:
-          - tutorials/competition.participate.ipynb
+      - Submit:      
+        - Submit to a Benchmark: tutorials/submit_to_benchmark.ipynb
+        - Submit to a Competition: tutorials/submit_to_competition.ipynb
+      - Create:
+        - Create a Dataset: tutorials/create_a_dataset.ipynb
+        - Create a Benchmark: tutorials/create_a_benchmark.ipynb
   - API Reference:
       - Load: api/load.md
       - Core:
@@ -37,11 +35,7 @@ nav:
       - Hub:
           - Client: api/hub.client.md
           - External Auth Client: api/hub.external_client.md
-          - PolarisFileSystem: api/hub.polarisfs.md
       - Additional:
-          - Dataset Factory: api/factory.md
-          - Data Converters: api/converters.md
-          - Data Adapters: api/adapters.md
           - Base classes: api/base.md
           - Types: api/utils.types.md
   - Community: https://discord.gg/vBFd8p6H7u

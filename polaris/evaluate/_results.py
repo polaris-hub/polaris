@@ -12,7 +12,7 @@ from pydantic import (
 )
 from pydantic.alias_generators import to_camel
 
-from polaris.evaluate import ResultsMetadata, BenchmarkPredictions
+from polaris.evaluate import ResultsMetadata
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import slugify
 from polaris.utils.types import (
@@ -136,7 +136,8 @@ class EvaluationResult(ResultsMetadata):
 class BenchmarkResults(EvaluationResult):
     """Class specific to results for standard benchmarks.
 
-    This object is returned by [`BenchmarkSpecification.evaluate`][polaris.benchmark.BenchmarkSpecification.evaluate].
+    This object is returned by  `benchmark.evaluate()`.
+
     In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
     the results with the Polaris Hub.
 
@@ -197,18 +198,3 @@ class CompetitionResults(EvaluationResult):
     @property
     def competition_artifact_id(self) -> str:
         return f"{self.competition_owner}/{slugify(self.competition_name)}"
-
-
-class CompetitionPredictions(ResultsMetadata, BenchmarkPredictions):
-    """
-    Predictions for competition benchmarks.
-
-    This object is to be used as input to [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
-    It is used to ensure that the structure of the predictions are compatible with evaluation methods on the Polaris Hub.
-    In addition to the predictions, it contains additional meta-data to create a results object.
-
-    Attributes:
-        access: The access the returned results should have
-    """
-
-    access: AccessType = "private"

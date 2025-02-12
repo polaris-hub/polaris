@@ -1,11 +1,10 @@
 import json
-import ssl
+import logging
 from hashlib import md5
 from io import BytesIO
 from typing import get_args
 from urllib.parse import urljoin
 
-import certifi
 import httpx
 import pandas as pd
 import zarr
@@ -13,28 +12,29 @@ from authlib.integrations.base_client.errors import InvalidTokenError, MissingTo
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2 import OAuth2Error, TokenAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
-from httpx import HTTPStatusError, Response
-from loguru import logger
+from httpx import ConnectError, HTTPStatusError, Response
+from typing_extensions import Self
 
 from polaris.benchmark import (
     BenchmarkV1Specification,
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
+from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
 from polaris.competition import CompetitionSpecification
 from polaris.dataset import Dataset, DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResults, CompetitionPredictions
-from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
 from polaris.hub.storage import StorageSession
-from polaris.utils.context import ProgressIndicator
+from polaris.utils.context import track_progress
 from polaris.utils.errors import (
     InvalidDatasetError,
     PolarisCreateArtifactError,
     PolarisHubError,
     PolarisRetrieveArtifactError,
+    PolarisSSLError,
     PolarisUnauthorizedError,
 )
 from polaris.utils.misc import build_urn
@@ -46,6 +46,8 @@ from polaris.utils.types import (
     TimeoutTypes,
     ZarrConflictResolution,
 )
+
+logger = logging.getLogger(__name__)
 
 _HTTPX_SSL_ERROR_CODE = "[SSL: CERTIFICATE_VERIFY_FAILED]"
 
@@ -121,6 +123,15 @@ class PolarisHubClient(OAuth2Client):
             settings=self.settings, cache_auth_token=cache_auth_token, **kwargs
         )
 
+    def __enter__(self: Self) -> Self:
+        """
+        When used as a context manager, automatically check that authentication is valid.
+        """
+        super().__enter__()
+        if not self.ensure_active_token():
+            raise PolarisUnauthorizedError()
+        return self
+
     @property
     def has_user_password(self) -> bool:
         return bool(self.settings.username and self.settings.password)
@@ -144,16 +155,13 @@ class PolarisHubClient(OAuth2Client):
         """
         Override the active check to trigger a refetch of the token if it is not active.
         """
-        if token is None:
-            # This won't be needed with if we set a lower bound for authlib: >=1.3.2
-            # See https://github.com/lepture/authlib/pull/625
-            # As of now, this latest version is not available on Conda though.
-            token = self.token
-
-        if token:
-            is_active = super().ensure_active_token(token)
-            if is_active:
-                return True
+        # This won't be needed with if we set a lower bound for authlib: >=1.3.2
+        # See https://github.com/lepture/authlib/pull/625
+        # As of now, this latest version is not available on Conda though.
+        token = token or self.token
+        is_active = super().ensure_active_token(token) if token else False
+        if is_active:
+            return True
 
         # Check if external token is still valid, or we're using password auth
         if not (self.has_user_password or self.external_client.ensure_active_token()):
@@ -183,42 +191,31 @@ class PolarisHubClient(OAuth2Client):
 
     def _base_request_to_hub(self, url: str, method: str, **kwargs) -> Response:
         """Utility function since most API methods follow the same pattern"""
-        response = self.request(url=url, method=method, **kwargs)
         try:
+            response = self.request(url=url, method=method, **kwargs)
             response.raise_for_status()
             return response
         except HTTPStatusError as error:
-            response_status_code = response.status_code
-
-            # With an internal server error, we are not sure the custom error-handling code on the hub is reached.
-            if response_status_code == 500:
-                raise
-
-            # If JSON is included in the response body, we retrieve it and format it for output. If not, we fallback to
-            # retrieving plain text from the body. This is important for handling certain errors thrown from the backend
-            # which do not contain JSON in the response.
+            # If JSON is included in the response body, we retrieve it and format it for output. If not, we fall back to
+            # retrieving plain text from the body. 500 errors will not have a JSON response.
             try:
-                response = response.json()
-                response = json.dumps(response, indent=2, sort_keys=True)
+                response_text = error.response.json()
+                response_text = json.dumps(response_text, indent=2, sort_keys=True)
             except (json.JSONDecodeError, TypeError):
-                response = response.text
+                response_text = error.response.text
 
-            # Providing the user a more helpful error message suggesting a re-login when their access
-            # credentials expire.
-            if response_status_code == 401:
-                raise PolarisUnauthorizedError(response=response) from error
-
-            # The below two error cases can happen due to the JWT token containing outdated information.
-            # We therefore throw a custom error with a recommended next step.
-            if response_status_code == 403:
-                # This happens when trying to create an artifact for an owner the user has no access to.
-                raise PolarisCreateArtifactError(response=response) from error
-
-            if response_status_code == 404:
-                # This happens when an artifact doesn't exist _or_ when the user has no access to that artifact.
-                raise PolarisRetrieveArtifactError(response=response) from error
-
-            raise PolarisHubError(response=response) from error
+            match error.response.status_code:
+                case 401:
+                    # Providing the user a more helpful error message suggesting a re-login when their access credentials expire.
+                    raise PolarisUnauthorizedError(response_text=response_text) from error
+                case 403:
+                    # The error can happen due to the JWT token containing outdated information.
+                    raise PolarisCreateArtifactError(response_text=response_text) from error
+                case 404:
+                    # This happens when an artifact doesn't exist _or_ when the user has no access to that artifact.
+                    raise PolarisRetrieveArtifactError(response_text=response_text) from error
+                case _:
+                    raise PolarisHubError(response_text=response_text) from error
 
     def get_metadata_from_response(self, response: Response, key: str) -> str | None:
         """Get custom metadata saved to the R2 object from the headers."""
@@ -229,31 +226,14 @@ class PolarisHubClient(OAuth2Client):
         """Wraps the base request method to handle errors"""
         try:
             return super().request(method, url, withhold_token, auth, **kwargs)
-        except httpx.ConnectError as error:
+        except ConnectError as error:
             # NOTE (cwognum): In the stack trace, the more specific SSLCertVerificationError is raised.
             #   We could use the traceback module to catch this specific error, but that would be overkill here.
-            if _HTTPX_SSL_ERROR_CODE in str(error):
-                raise ssl.SSLCertVerificationError(
-                    "We could not verify the SSL certificate. "
-                    f"Please ensure the installed version ({certifi.__version__}) of the `certifi` package is the latest. "
-                    "If you require the usage of a custom CA bundle, you can set the POLARIS_CA_BUNDLE "
-                    "environment variable to the path of your CA bundle. For debugging, you can temporarily disable "
-                    "SSL verification by setting the POLARIS_CA_BUNDLE environment variable to `false`."
-                ) from error
-            raise error
-        except (MissingTokenError, InvalidTokenError, httpx.HTTPStatusError, OAuthError) as error:
-            if isinstance(error, httpx.HTTPStatusError) and error.response.status_code != 401:
-                raise
-
-            # The `MissingTokenError`, `InvalidTokenError` and `OAuthError` errors from the AuthlibBaseError
-            # class do not hold the `response` attribute. To prevent a misleading `AttributeError` from
-            # being thrown, we conditionally set the error response below based on the error type.
-            if isinstance(error, httpx.HTTPStatusError):
-                error_response = error.response
-            else:
-                error_response = None
-
-            raise PolarisUnauthorizedError(response=error_response) from error
+            error_string = str(error)
+            ExceptionClass = PolarisSSLError if _HTTPX_SSL_ERROR_CODE in error_string else PolarisHubError
+            raise ExceptionClass(error_string) from error
+        except (MissingTokenError, InvalidTokenError, OAuthError) as error:
+            raise PolarisUnauthorizedError() from error
 
     def login(self, overwrite: bool = False, auto_open_browser: bool = True):
         """Login to the Polaris Hub using the OAuth2 protocol.
@@ -270,7 +250,7 @@ class PolarisHubClient(OAuth2Client):
             self.external_client.interactive_login(overwrite=overwrite, auto_open_browser=auto_open_browser)
             self.token = self.fetch_token()
 
-        logger.success("You are successfully logged in to the Polaris Hub.")
+        logger.info("You are successfully logged in to the Polaris Hub.")
 
     # =========================
     #     API Endpoints
@@ -287,11 +267,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A list of dataset names in the format `owner/dataset_name`.
         """
-        with ProgressIndicator(
-            start_msg="Fetching datasets...",
-            success_msg="Fetched datasets.",
-            error_msg="Failed to fetch datasets.",
-        ):
+        with track_progress(description="Fetching datasets", total=1):
             # Step 1: Fetch enough v2 datasets to cover the offset and limit
             v2_json_response = self._base_request_to_hub(
                 url="/v2/dataset", method="GET", params={"limit": limit, "offset": offset}
@@ -340,11 +316,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `Dataset` instance, if it exists.
         """
-        with ProgressIndicator(
-            start_msg="Fetching dataset...",
-            success_msg="Fetched dataset.",
-            error_msg="Failed to fetch dataset.",
-        ):
+        with track_progress(description="Fetching dataset", total=1):
             try:
                 return self._get_v1_dataset(owner, slug, verify_checksum)
             except PolarisRetrieveArtifactError:
@@ -420,11 +392,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A list of benchmark names in the format `owner/benchmark_name`.
         """
-        with ProgressIndicator(
-            start_msg="Fetching benchmarks...",
-            success_msg="Fetched benchmarks.",
-            error_msg="Failed to fetch benchmarks.",
-        ):
+        with track_progress(description="Fetching benchmarks", total=1):
             # Step 1: Fetch enough v2 benchmarks to cover the offset and limit
             v2_json_response = self._base_request_to_hub(
                 url="/v2/benchmark", method="GET", params={"limit": limit, "offset": offset}
@@ -472,11 +440,7 @@ class PolarisHubClient(OAuth2Client):
         Returns:
             A `BenchmarkSpecification` instance, if it exists.
         """
-        with ProgressIndicator(
-            start_msg="Fetching benchmark...",
-            success_msg="Fetched benchmark.",
-            error_msg="Failed to fetch benchmark.",
-        ):
+        with track_progress(description="Fetching benchmark", total=1):
             try:
                 return self._get_v1_benchmark(owner, name, verify_checksum)
             except PolarisRetrieveArtifactError:
@@ -553,11 +517,7 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `results.owner`.
         """
-        with ProgressIndicator(
-            start_msg="Uploading artifact...",
-            success_msg="Uploaded artifact.",
-            error_msg="Failed to upload result.",
-        ) as progress_indicator:
+        with track_progress(description="Uploading results", total=1) as (progress, task):
             # Get the serialized model data-structure
             results.owner = HubOwner.normalize(owner or results.owner)
             result_json = results.model_dump(by_alias=True, exclude_none=True)
@@ -570,8 +530,8 @@ class PolarisHubClient(OAuth2Client):
             # Inform the user about where to find their newly created artifact.
             result_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
 
-            progress_indicator.update_success_msg(
-                f"Your result has been successfully uploaded to the Hub. View it here: {result_url}"
+            progress.log(
+                f"[green]Your result has been successfully uploaded to the Hub. View it here: {result_url}"
             )
 
     def upload_dataset(
@@ -636,11 +596,7 @@ class PolarisHubClient(OAuth2Client):
         Upload a V1 dataset to the Polaris Hub.
         """
 
-        with ProgressIndicator(
-            start_msg="Uploading artifact...",
-            success_msg="Uploaded artifact.",
-            error_msg="Failed to upload dataset.",
-        ) as progress_indicator:
+        with track_progress(description="Uploading dataset", total=1) as (progress, task):
             # Get the serialized data-model
             # We exclude the table as it handled separately
             dataset.owner = HubOwner.normalize(owner or dataset.owner)
@@ -686,31 +642,36 @@ class PolarisHubClient(OAuth2Client):
             dataset.slug = inserted_dataset["slug"]
 
             with StorageSession(self, "write", dataset.urn) as storage:
-                # Step 2: Upload the parquet file
-                logger.info("Copying Parquet file to the Hub. This may take a while.")
-                storage.set_file("root", in_memory_parquet.getvalue())
+                with track_progress(description="Copying Parquet file", total=1) as (progress, task):
+                    # Step 2: Upload the parquet file
+                    progress.log("[yellow]This may take a while.")
+                    storage.set_file("root", in_memory_parquet.getvalue())
 
-                # Step 3: Upload any associated Zarr archive
+                    # Step 3: Upload any associated Zarr archive
                 if dataset.uses_zarr:
-                    logger.info("Copying Zarr archive to the Hub. This may take a while.")
+                    with track_progress(description="Copying Zarr archive", total=1):
+                        destination = storage.store("extension")
 
-                    destination = storage.store("extension")
+                        # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
+                        # metadata based on Zarr developers' recommendations can be tracked at:
+                        # https://github.com/zarr-developers/zarr-python/issues/1731
+                        zarr.consolidate_metadata(dataset.zarr_root.store.store)
+                        zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
+                        destination[".zmetadata"] = zmetadata_content
 
-                    # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
-                    # metadata based on Zarr developers' recommendations can be tracked at:
-                    # https://github.com/zarr-developers/zarr-python/issues/1731
-                    zarr.consolidate_metadata(dataset.zarr_root.store.store)
-                    zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
-                    destination[".zmetadata"] = zmetadata_content
+                        # Copy the Zarr archive to the hub
+                        destination.copy_from_source(
+                            dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
+                        )
 
-                    # Copy the Zarr archive to the hub
-                    destination.copy_from_source(
-                        dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
-                    )
+
+            # progress_indicator.update_success_msg(
+            #     f"Your dataset has been successfully uploaded to the Hub.\nView it here: {dataset_url}"
+            # )
 
             dataset_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
-            progress_indicator.update_success_msg(
-                f"Your dataset has been successfully uploaded to the Hub.\nView it here: {dataset_url}"
+            progress.log(
+                f"[green]Your dataset has been successfully uploaded to the Hub.\nView it here: {dataset_url}"
             )
 
     def _upload_v2_dataset(
@@ -726,11 +687,7 @@ class PolarisHubClient(OAuth2Client):
         Upload a V2 dataset to the Polaris Hub.
         """
 
-        with ProgressIndicator(
-            start_msg="Uploading artifact...",
-            success_msg="Uploaded artifact.",
-            error_msg="Failed to upload dataset.",
-        ) as progress_indicator:
+        with track_progress(description="Uploading dataset", total=1) as (progress, task):
             # Get the serialized data-model
             dataset.owner = HubOwner.normalize(owner or dataset.owner)
             dataset_json = dataset.model_dump(exclude_none=True, by_alias=True)
@@ -756,30 +713,34 @@ class PolarisHubClient(OAuth2Client):
 
             with StorageSession(self, "write", dataset.urn) as storage:
                 # Step 2: Upload the manifest file
-                logger.info("Copying the dataset manifest file to the Hub.")
-                with open(dataset.zarr_manifest_path, "rb") as manifest_file:
-                    storage.set_file("manifest", manifest_file.read())
+                with track_progress(description="Copying manifest file", total=1):
+                    with open(dataset.zarr_manifest_path, "rb") as manifest_file:
+                        storage.set_file("manifest", manifest_file.read())
 
                 # Step 3: Upload the Zarr archive
-                logger.info("Copying Zarr archive to the Hub. This may take a while.")
+                with track_progress(description="Copying Zarr archive", total=1) as (
+                    progress_zarr,
+                    task_zarr,
+                ):
+                    progress_zarr.log("[yellow]This may take a while.")
 
-                destination = storage.store("root")
+                    destination = storage.store("root")
 
-                # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
-                # metadata based on Zarr developers' recommendations can be tracked at:
-                # https://github.com/zarr-developers/zarr-python/issues/1731
-                zarr.consolidate_metadata(dataset.zarr_root.store.store)
-                zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
-                destination[".zmetadata"] = zmetadata_content
+                    # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
+                    # metadata based on Zarr developers' recommendations can be tracked at:
+                    # https://github.com/zarr-developers/zarr-python/issues/1731
+                    zarr.consolidate_metadata(dataset.zarr_root.store.store)
+                    zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
+                    destination[".zmetadata"] = zmetadata_content
 
-                # Copy the Zarr archive to the hub
-                destination.copy_from_source(
-                    dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
-                )
+                    # Copy the Zarr archive to the hub
+                    destination.copy_from_source(
+                        dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
+                    )
 
             dataset_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
-            progress_indicator.update_success_msg(
-                f"Your V2 dataset has been successfully uploaded to the Hub.\nView it here: {dataset_url}"
+            progress.log(
+                f"[green]Your V2 dataset has been successfully uploaded to the Hub.\nView it here: {dataset_url}"
             )
 
     def upload_benchmark(
@@ -842,11 +803,7 @@ class PolarisHubClient(OAuth2Client):
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
         """
-        with ProgressIndicator(
-            start_msg="Uploading artifact...",
-            success_msg="Uploaded artifact.",
-            error_msg="Failed to upload benchmark.",
-        ) as progress_indicator:
+        with track_progress(description="Uploading benchmark", total=1) as (progress, task):
             # Get the serialized data-model
             # We exclude the dataset as we expect it to exist on the hub already.
             benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
@@ -858,9 +815,8 @@ class PolarisHubClient(OAuth2Client):
             url = f"{path_params}/{benchmark.owner}/{benchmark.name}"
             self._base_request_to_hub(url=url, method="PUT", json=benchmark_json)
 
-            progress_indicator.update_success_msg(
-                f"Your benchmark has been successfully uploaded to the Hub. "
-                f"View it here: {urljoin(self.settings.hub_url, url)}"
+            progress.log(
+                f"[green]Your benchmark has been successfully uploaded to the Hub. View it here: {urljoin(self.settings.hub_url, url)}"
             )
 
     def _upload_v2_benchmark(
@@ -869,11 +825,7 @@ class PolarisHubClient(OAuth2Client):
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
     ):
-        with ProgressIndicator(
-            start_msg="Uploading artifact...",
-            success_msg="Uploaded artifact.",
-            error_msg="Failed to upload benchmark.",
-        ) as progress_indicator:
+        with track_progress(description="Uploading benchmark", total=1) as (progress, task):
             # Get the serialized data-model
             # We exclude the dataset as we expect it to exist on the hub already.
             benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
@@ -895,13 +847,17 @@ class PolarisHubClient(OAuth2Client):
                 logger.info("Copying the benchmark split to the Hub. This may take a while.")
 
                 # 2. Upload each index set bitmap
-                for label, index_set in benchmark.split:
-                    logger.info(f"Copying index set {label} to the Hub.")
-                    storage.set_file(label, index_set.serialize())
+                with track_progress(
+                    description="Copying index sets", total=benchmark.split.n_test_sets + 1
+                ) as (progress_index_sets, task_index_sets):
+                    for label, index_set in benchmark.split:
+                        logger.info(f"Copying index set {label} to the Hub.")
+                        storage.set_file(label, index_set.serialize())
+                        progress_index_sets.update(task_index_sets, advance=1, refresh=True)
 
             benchmark_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
-            progress_indicator.update_success_msg(
-                f"Your benchmark has been successfully uploaded to the Hub. View it here: {benchmark_url}"
+            progress.log(
+                f"[green]Your benchmark has been successfully uploaded to the Hub. View it here: {benchmark_url}"
             )
 
     def get_competition(self, artifact_id: str) -> CompetitionSpecification:
@@ -936,12 +892,7 @@ class PolarisHubClient(OAuth2Client):
             competition: The competition to evaluate the predictions for.
             competition_predictions: The predictions and associated metadata to be submitted to the Hub.
         """
-        with ProgressIndicator(
-            start_msg="Submitting competition predictions...",
-            success_msg="Submitted competition predictions.",
-            error_msg="Failed to submit competition predictions.",
-        ) as progress_indicator:
-            #
+        with track_progress(description="Submitting competition predictions", total=1):
             # Prepare prediction payload for submission
             prediction_json = competition_predictions.model_dump(by_alias=True, exclude_none=True)
             prediction_payload = {
@@ -954,10 +905,5 @@ class PolarisHubClient(OAuth2Client):
                 url="/v1/competition-prediction",
                 method="POST",
                 json=prediction_payload,
-            )
-
-            # Log success and return submission response
-            progress_indicator.update_success_msg(
-                "Your competition predictions have been successfully uploaded to the Hub for evaluation."
             )
             return response

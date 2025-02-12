@@ -1,5 +1,6 @@
 import abc
 import json
+import logging
 from os import PathLike
 from pathlib import Path, PurePath
 from typing import Any, Iterable, MutableMapping
@@ -8,7 +9,6 @@ from uuid import uuid4
 import fsspec
 import numpy as np
 import zarr
-from loguru import logger
 from pydantic import (
     Field,
     PrivateAttr,
@@ -25,6 +25,7 @@ from polaris.dataset._column import ColumnAnnotation
 from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.dataset.zarr._utils import check_zarr_codecs, load_zarr_group_to_memory
 from polaris.utils.constants import DEFAULT_CACHE_DIR
+from polaris.utils.context import track_progress
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
@@ -37,6 +38,8 @@ from polaris.utils.types import (
     ZarrConflictResolution,
 )
 
+logger = logging.getLogger(__name__)
+
 # Constants
 _CACHE_SUBDIR = "datasets"
 
@@ -47,8 +50,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     At its core, a dataset in Polaris can _conceptually_ be thought of as tabular data structure that stores data-points
     in a row-wise manner, where each column correspond to a variable associated with that datapoint.
 
-    A Dataset can have multiple modalities or targets, can be sparse and can be part of one or multiple
-     [`BenchmarkSpecification`][polaris.benchmark.BenchmarkSpecification] objects.
+    A Dataset can have multiple modalities or targets, can be sparse and can be part of one or multiple benchmarks.
 
     Attributes:
         default_adapters: The adapters that the Dataset recommends to use by default to change the format of the data
@@ -167,7 +169,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
 
         Note: Different to `zarr_data`
             The `zarr_data` attribute references either to the Zarr archive or to a in-memory copy of the data.
-            See also [`Dataset.load_to_memory`][polaris.dataset.Dataset.load_to_memory].
+            See also `dataset.load_to_memory()`.
         """
 
         from polaris.hub.storage import StorageSession
@@ -377,19 +379,24 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         # Copy over Zarr data to the destination
         self._warn_about_remote_zarr = False
 
-        logger.info(f"Copying Zarr archive to {destination_zarr_root}. This may take a while.")
-        destination_store = zarr.open(str(destination_zarr_root), "w").store
-        source_store = self.zarr_root.store.store
+        with track_progress(description="Copying Zarr archive", total=1) as (
+            progress,
+            task,
+        ):
+            progress.log(f"[green]Copying to destination {destination_zarr_root}")
+            progress.log("[yellow]For large Zarr archives, this may take a while.")
+            destination_store = zarr.open(str(destination_zarr_root), "w").store
+            source_store = self.zarr_root.store.store
 
-        if isinstance(source_store, S3Store):
-            source_store.copy_to_destination(destination_store, if_exists, logger.info)
-        else:
-            zarr.copy_store(
-                source=source_store,
-                dest=destination_store,
-                log=logger.info,
-                if_exists=if_exists,
-            )
-        self.zarr_root_path = str(destination_zarr_root)
-        self._zarr_root = None
-        self._zarr_data = None
+            if isinstance(source_store, S3Store):
+                source_store.copy_to_destination(destination_store, if_exists, logger.info)
+            else:
+                zarr.copy_store(
+                    source=source_store,
+                    dest=destination_store,
+                    log=logger.info,
+                    if_exists=if_exists,
+                )
+            self.zarr_root_path = str(destination_zarr_root)
+            self._zarr_root = None
+            self._zarr_data = None

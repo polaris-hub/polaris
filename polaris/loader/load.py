@@ -4,8 +4,8 @@ import fsspec
 from datamol.utils import fs
 
 from polaris.benchmark import MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
+from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
 from polaris.dataset import DatasetV1, create_dataset_from_file
-from polaris.experimental._benchmark_v2 import BenchmarkV2Specification
 from polaris.hub.client import PolarisHubClient
 from polaris.utils.types import ChecksumStrategy
 
@@ -24,8 +24,7 @@ def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_z
         provide the `owner/name` slug. This can be easily copied from the relevant dataset
         page on the Hub.
     - **Directory**: When loading the dataset from a directory, you should provide the path
-        as returned by [`Dataset.to_json`][polaris.dataset.Dataset.to_json].
-        The path can be local or remote.
+        as returned by `dataset.to_json()`. The path can be local or remote.
     """
 
     extension = fs.get_extension(path)
@@ -34,7 +33,6 @@ def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_z
     if not is_file:
         # Load from the Hub
         with PolarisHubClient() as client:
-            client.ensure_active_token()
             return client.get_dataset(*path.split("/"), verify_checksum=verify_checksum)
 
     # Load from local file
@@ -65,15 +63,13 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
         provide the `owner/name` slug. This can be easily copied from the relevant benchmark
         page on the Hub.
     - **Directory**: When loading the benchmark from a directory, you should provide the path
-        as returned by [`BenchmarkSpecification.to_json`][polaris.benchmark._base.BenchmarkSpecification.to_json].
-        The path can be local or remote.
+        as returned by `benchmmark.to_json()`. The path can be local or remote.
     """
     is_file = fs.is_file(path) or fs.get_extension(path) == "zarr"
 
     if not is_file:
         # Load from the Hub
         with PolarisHubClient() as client:
-            client.ensure_active_token()
             return client.get_benchmark(*path.split("/"), verify_checksum=verify_checksum)
 
     with fsspec.open(path, "r") as fd:

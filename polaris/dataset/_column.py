@@ -23,7 +23,7 @@ KnownContentType: TypeAlias = Literal["chemical/x-smiles", "chemical/x-pdb"]
 
 class ColumnAnnotation(BaseModel):
     """
-    The `ColumnAnnotation` class is used to annotate the columns of the [`Dataset`][polaris.dataset.Dataset] object.
+    The `ColumnAnnotation` class is used to annotate the columns of the  object.
     This mostly just stores meta-data and does not affect the logic. The exception is the `is_pointer` attribute.
 
     Attributes:
@@ -37,7 +37,7 @@ class ColumnAnnotation(BaseModel):
             molecules (e.g. "chemical/x-smiles"), visualization for its content will be activated on the Hub side
     """
 
-    is_pointer: bool = False
+    is_pointer: bool = Field(False, deprecated=True)
     modality: Modality = Modality.UNKNOWN
     description: str | None = None
     user_attributes: dict[str, str] = Field(default_factory=dict)

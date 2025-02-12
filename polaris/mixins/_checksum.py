@@ -1,10 +1,12 @@
 import abc
+import logging
 import re
 
-from loguru import logger
 from pydantic import BaseModel, PrivateAttr, computed_field
 
 from polaris.utils.errors import PolarisChecksumError
+
+logger = logging.getLogger(__name__)
 
 
 class ChecksumMixin(BaseModel, abc.ABC):

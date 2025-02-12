@@ -40,7 +40,6 @@ dependencies = [
     "fastpdb",
     "fsspec[http]",
     "httpx",
-    "loguru",
     "numcodecs[msgpack]>=0.13.1",
     "numpy < 2", # We need to pin numpy to avoid issues with fastpdb/biotite.
     "pandas",
@@ -49,13 +48,12 @@ dependencies = [
     "pydantic-settings >=2",
     "pyroaring",
     "pyyaml",
+    "rich>=13.9.4",
     "scikit-learn",
     "scipy",
     "seaborn",
-    "tqdm",
     "typer",
     "typing-extensions>=4.12.0",
-    "halo",
     "zarr >=2,<3",
 ]
 
@@ -125,10 +123,10 @@ omit = [
     # We cannot yet test the interaction with the Hub.
     # See e.g. https://github.com/polaris-hub/polaris/issues/30
     "polaris/hub/client.py",
-    "polaris/hub/external_auth_client.py",
-    "polaris/hub/oauth2.py",
+    "polaris/hub/external_client.py",
     "polaris/hub/settings.py",
-    "polaris/hub/polarisfs.py",
+    "polaris/hub/oauth.py",
+    "polaris/hub/storage.py",
     "polaris/hub/__init__.py",
 ]
 
@@ -146,3 +144,4 @@ lint.per-file-ignores."__init__.py" = [
 ]
 line-length = 110
 target-version = "py310"
+extend-exclude = ["*.ipynb"]

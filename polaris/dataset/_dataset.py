@@ -10,7 +10,7 @@ import pandas as pd
 import zarr
 from datamol.utils import fs as dmfs
 from pydantic import PrivateAttr, computed_field, field_validator, model_validator
-from typing_extensions import Self
+from typing_extensions import Self, deprecated
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
@@ -29,6 +29,9 @@ _SUPPORTED_TABLE_EXTENSIONS = ["parquet"]
 _INDEX_SEP = "#"
 
 
+@deprecated(
+    "Use DatasetV2 instead. If you're loading this dataset from the Polaris Hub, you can ignore this warning."
+)
 class DatasetV1(BaseDataset, ChecksumMixin):
     """First version of a Polaris Dataset.
 
@@ -332,6 +335,8 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         if verify_checksum:
             self.verify_checksum()
+        else:
+            self._md5sum = None
 
         return str(destination)
 

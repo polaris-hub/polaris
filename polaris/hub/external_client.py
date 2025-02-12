@@ -1,3 +1,4 @@
+import logging
 import webbrowser
 from typing import Literal, Optional, TypeAlias
 
@@ -6,11 +7,12 @@ from authlib.integrations.base_client import OAuthError
 from authlib.integrations.httpx_client import OAuth2Client
 from authlib.oauth2 import OAuth2Error, TokenAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
-from loguru import logger
 
 from polaris.hub.oauth import ExternalCachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
 from polaris.utils.errors import PolarisHubError, PolarisUnauthorizedError
+
+logger = logging.getLogger(__name__)
 
 Scope: TypeAlias = Literal["read", "write"]
 
@@ -78,13 +80,12 @@ class ExternalAuthClient(OAuth2Client):
             ) from error
 
     def ensure_active_token(self, token: OAuth2Token | None = None) -> bool:
-        if token is None:
+        try:
             # This won't be needed with if we set a lower bound for authlib: >=1.3.2
             # See https://github.com/lepture/authlib/pull/625
             # As of now, this latest version is not available on Conda though.
-            token = self.token
-        try:
-            return super().ensure_active_token(token) or False
+            token = token or self.token
+            return super().ensure_active_token(token) if token else False
         except OAuthError:
             # The refresh attempt can fail with this error
             return False
@@ -156,4 +157,4 @@ class ExternalAuthClient(OAuth2Client):
         # Step 3: Exchange authorization code for an access token
         self.fetch_token(code=authorization_code, grant_type="authorization_code")
 
-        logger.success(f"Successfully authenticated to the Polaris Hub as `{self.user_info['email']}`! 🎉")
+        logger.info(f"Successfully authenticated to the Polaris Hub as `{self.user_info['email']}`!")
