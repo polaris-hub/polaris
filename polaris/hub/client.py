@@ -664,11 +664,6 @@ class PolarisHubClient(OAuth2Client):
                             dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
                         )
 
-
-            # progress_indicator.update_success_msg(
-            #     f"Your dataset has been successfully uploaded to the Hub.\nView it here: {dataset_url}"
-            # )
-
             dataset_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
             progress.log(
                 f"[green]Your dataset has been successfully uploaded to the Hub.\nView it here: {dataset_url}"

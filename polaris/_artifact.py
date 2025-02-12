@@ -10,7 +10,7 @@ from pydantic import (
     Field,
     computed_field,
     field_serializer,
-    field_validator
+    field_validator,
 )
 from pydantic.alias_generators import to_camel
 from typing_extensions import Self
