@@ -2,7 +2,13 @@ from typing import Any
 
 import numpy as np
 
-from polaris.utils.types import ListOrArrayType, SlugCompatibleStringType, SlugStringType, ArtifactUrn, HubOwner
+from polaris.utils.types import (
+    ListOrArrayType,
+    SlugCompatibleStringType,
+    SlugStringType,
+    ArtifactUrn,
+    HubOwner,
+)
 
 
 def listit(t: Any):
@@ -34,6 +40,7 @@ def convert_lists_to_arrays(predictions: ListOrArrayType | dict) -> np.ndarray |
             return {k: convert_to_array(v) for k, v in v.items()}
 
     return convert_to_array(predictions)
+
 
 def build_urn(artifact_type: str, owner: str | HubOwner, slug: str) -> ArtifactUrn:
     return f"urn:polaris:{artifact_type}:{owner}:{slug}"
