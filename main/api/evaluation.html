@@ -841,6 +841,27 @@
   
   
     <li class="md-nav__item">
+      <a href="model.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Model
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="competition.html" class="md-nav__link">
         
   
@@ -1008,21 +1029,6 @@
       BenchmarkResults
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="BenchmarkResults">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#polaris.evaluate.BenchmarkResults.upload_to_hub" class="md-nav__link">
-    <span class="md-ellipsis">
-      upload_to_hub
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1502,21 +1508,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="BenchmarkResults">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#polaris.evaluate.BenchmarkResults.upload_to_hub" class="md-nav__link">
-    <span class="md-ellipsis">
-      upload_to_hub
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1878,7 +1869,7 @@ this class normalizes different formats to a single, internal representation.</p
               Bases: <code><a class="autorefs autorefs-internal" title="polaris._artifact.BaseArtifactModel" href="base.html#polaris._artifact.BaseArtifactModel">BaseArtifactModel</a></code></p>
 
 
-        <p>Base class for evaluation results</p>
+        <p>V1 implementation of evaluation results without model field support</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -1926,7 +1917,7 @@ this class normalizes different formats to a single, internal representation.</p
           </tr>
       </tbody>
     </table>
-        <p>For additional meta-data attributes, see the base classes.</p>
+        <p>For additional metadata attributes, see the base classes.</p>
 
 
 
@@ -1968,81 +1959,10 @@ this class normalizes different formats to a single, internal representation.</p
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="polaris.evaluate.ResultsMetadata" href="#polaris.evaluate.ResultsMetadata">ResultsMetadata</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris.evaluate.ResultsMetadataV1" href="#polaris.evaluate.ResultsMetadata">ResultsMetadataV1</a></code>, <code><span title="polaris.evaluate._results.BaseEvaluationResult">BaseEvaluationResult</span></code></p>
 
 
-        <p>Class for saving evaluation results</p>
-<p>The actual results are saved in the <code>results</code> field using the following tabular format:</p>
-<table>
-<thead>
-<tr>
-<th>Test set</th>
-<th>Target label</th>
-<th>Metric</th>
-<th>Score</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>test_iid</td>
-<td>EGFR_WT</td>
-<td>AUC</td>
-<td>0.9</td>
-</tr>
-<tr>
-<td>test_ood</td>
-<td>EGFR_WT</td>
-<td>AUC</td>
-<td>0.75</td>
-</tr>
-<tr>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-</tr>
-<tr>
-<td>test_ood</td>
-<td>EGFR_L858R</td>
-<td>AUC</td>
-<td>0.79</td>
-</tr>
-</tbody>
-</table>
-
-
-<details class="question" open>
-  <summary>Categorizing methods</summary>
-  <p>An open question is how to best categorize a methodology (e.g. a model).
-This is needed since we would like to be able to aggregate results across benchmarks too,
-to say something about which (type of) methods performs best <em>in general</em>.</p>
-</details>
-
-<p><span class="doc-section-title">Attributes:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td><code><span title="polaris.evaluate.EvaluationResult.results">results</span></code></td>
-            <td>
-                  <code><span title="pandas.DataFrame">DataFrame</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Evaluation results are stored directly in a dataframe or in a serialized, JSON compatible dict
-that can be decoded into the associated tabular format.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-        <p>For additional meta-data attributes, see the base classes.</p>
+        <p>V1 implementation of evaluation results without model field support</p>
 
 
 
@@ -2084,20 +2004,10 @@ that can be decoded into the associated tabular format.</p>
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="polaris.evaluate._results.EvaluationResult" href="#polaris.evaluate.EvaluationResult">EvaluationResult</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="polaris.evaluate._results.EvaluationResultV1" href="#polaris.evaluate.EvaluationResult">EvaluationResultV1</a></code>, <code><span title="polaris.evaluate._results.BaseBenchmarkResults">BaseBenchmarkResults</span></code></p>
 
 
-        <p>Class specific to results for standard benchmarks.</p>
-<p>This object is returned by  <code>benchmark.evaluate()</code>.</p>
-<p>In addition to the metrics on the test set, it contains additional meta-data and logic to integrate
-the results with the Polaris Hub.</p>
-
-
-<details class="benchmark_name" open>
-  <summary>The name of the benchmark for which these results were generated.</summary>
-  <p>Together with the benchmark owner, this uniquely identifies the benchmark on the Hub.</p>
-</details>        <p>benchmark_owner: The owner of the benchmark for which these results were generated.
-    Together with the benchmark name, this uniquely identifies the benchmark on the Hub.</p>
+        <p>V1 implementation of benchmark results without model field support</p>
 
 
 
@@ -2116,30 +2026,6 @@ the results with the Polaris Hub.</p>
 
 
 
-
-<div class="doc doc-object doc-function">
-
-
-<h4 id="polaris.evaluate.BenchmarkResults.upload_to_hub" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">upload_to_hub</span>
-
-
-</h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_to_hub</span><span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s2">&quot;private&quot;</span><span class="p">,</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">owner</span><span class="p">:</span> <span class="n">HubOwner</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BenchmarkResults</span>
-</span></code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Very light, convenient wrapper around the
-<a class="autorefs autorefs-internal" href="hub.client.html#polaris.hub.client.PolarisHubClient.upload_results"><code>PolarisHubClient.upload_results</code></a> method.</p>
-
-    </div>
-
-</div>
 
 
 
