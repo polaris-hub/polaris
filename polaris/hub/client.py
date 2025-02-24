@@ -399,7 +399,7 @@ class PolarisHubClient(OAuth2Client):
                 url="/v2/benchmark", method="GET", params={"limit": limit, "offset": offset}
             ).json()
             v2_data = v2_json_response["data"]
-            v2_benchmarks = [f"{HubOwner(**benchmark['owner'])}/{benchmark['name']}" for benchmark in v2_data]
+            v2_benchmarks = [benchmark["artifactId"] for benchmark in v2_data]
 
             # If v2 benchmarks satisfy the limit, return them
             if len(v2_benchmarks) == limit:
@@ -417,7 +417,7 @@ class PolarisHubClient(OAuth2Client):
                 },
             ).json()
             v1_data = v1_json_response["data"]
-            v1_benchmarks = [f"{HubOwner(**benchmark['owner'])}/{benchmark['name']}" for benchmark in v1_data]
+            v1_benchmarks = [benchmark["artifactId"] for benchmark in v1_data]
 
             # Combine the v2 and v1 benchmarks
             combined_benchmarks = v2_benchmarks + v1_benchmarks
