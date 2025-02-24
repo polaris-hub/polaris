@@ -21,7 +21,7 @@ class ResultsMetadataV1(BaseArtifactModel):
 
     # Additional metadata
     github_url: HttpUrlString | None = Field(None, alias="code_url")
-    paper_url: HttpUrlString | None = None
+    paper_url: HttpUrlString | None = Field(None, alias="report_url")
     contributors: list[HubUser] = Field(default_factory=list)
 
     # Private attributes
