@@ -265,7 +265,7 @@ class PolarisHubClient(OAuth2Client):
             offset: The offset from which to start returning datasets.
 
         Returns:
-            A list of dataset names in the format `owner/dataset_name`.
+            A list of dataset names in the format `owner/dataset_slug`.
         """
         with track_progress(description="Fetching datasets", total=1):
             # Step 1: Fetch enough v2 datasets to cover the offset and limit
@@ -383,14 +383,15 @@ class PolarisHubClient(OAuth2Client):
         return dataset
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
-        """List all available benchmarks on the Polaris Hub.
+        """List all available benchmarks (v1 and v2) on the Polaris Hub.
+        We prioritize v2 benchmarks over v1 benchmarks.
 
         Args:
             limit: The maximum number of benchmarks to return.
             offset: The offset from which to start returning benchmarks.
 
         Returns:
-            A list of benchmark names in the format `owner/benchmark_name`.
+            A list of benchmark names in the format `owner/benchmark_slug`.
         """
         with track_progress(description="Fetching benchmarks", total=1):
             # Step 1: Fetch enough v2 benchmarks to cover the offset and limit
