@@ -891,6 +891,24 @@ class PolarisHubClient(OAuth2Client):
             )
             return response
 
+    def list_models(self, limit: int = 100, offset: int = 0) -> list[str]:
+        """List all available models on the Polaris Hub.
+
+        Args:
+            limit: The maximum number of models to return.
+            offset: The offset from which to start returning models.
+
+        Returns:
+            A list of models names in the format `owner/model_slug`.
+        """
+        with track_progress(description="Fetching models", total=1):
+            json_response = self._base_request_to_hub(
+                url="/v2/model", method="GET", params={"limit": limit, "offset": offset}
+            ).json()
+            models = [model["artifactId"] for model in json_response["data"]]
+
+            return models
+
     def get_model(self, artifact_id: str) -> Model:
         url = f"/v2/model/{artifact_id}"
         response = self._base_request_to_hub(url=url, method="GET")
