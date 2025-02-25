@@ -34,7 +34,7 @@ class DatasetV2(BaseDataset):
     Attributes:
         zarr_root_path: Required path to a Zarr archive.
 
-    For additional meta-data attributes, see the base classes.
+    For additional metadata attributes, see the base classes.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.

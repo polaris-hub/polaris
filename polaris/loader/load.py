@@ -8,6 +8,7 @@ from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
 from polaris.dataset import DatasetV1, create_dataset_from_file
 from polaris.hub.client import PolarisHubClient
 from polaris.utils.types import ChecksumStrategy
+from polaris.model import Model
 
 
 def load_dataset(path: str, verify_checksum: ChecksumStrategy = "verify_unless_zarr") -> DatasetV1:
@@ -52,7 +53,7 @@ def load_benchmark(path: str, verify_checksum: ChecksumStrategy = "verify_unless
     """
     Loads a Polaris benchmark.
 
-    In Polaris, a benchmark wraps a dataset with additional meta-data to specify the evaluation logic.
+    In Polaris, a benchmark wraps a dataset with additional metadata to specify the evaluation logic.
 
     The Polaris benchmark can be loaded from the Hub or from a local or remote directory.
 
@@ -109,3 +110,13 @@ def load_competition(artifact_id: str):
     """
     with PolarisHubClient() as client:
         return client.get_competition(artifact_id)
+
+
+def load_model(artifact_id: str) -> Model:
+    """
+    Loads a Polaris model.
+
+    On Polaris, a model centralizes all data about a method and can be attached to different results.
+    """
+    with PolarisHubClient() as client:
+        return client.get_model(artifact_id)

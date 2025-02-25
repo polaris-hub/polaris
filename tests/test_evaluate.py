@@ -13,7 +13,7 @@ from polaris.benchmark import (
 )
 from polaris.dataset import DatasetV1
 from polaris.evaluate._metric import DEFAULT_METRICS, Metric
-from polaris.evaluate._results import BenchmarkResults
+from polaris.evaluate._results import BenchmarkResultsV1
 from polaris.utils.types import HubOwner
 
 
@@ -27,7 +27,7 @@ def test_result_to_json(tmp_path: Path, test_user_owner: HubOwner):
         }
     )
 
-    result = BenchmarkResults(
+    result = BenchmarkResultsV1(
         name="test",
         description="Lorem ipsum!",
         tags=["test"],
@@ -44,7 +44,7 @@ def test_result_to_json(tmp_path: Path, test_user_owner: HubOwner):
     path = str(tmp_path / "result.json")
     result.to_json(path)
 
-    BenchmarkResults.from_json(path)
+    BenchmarkResultsV1.from_json(path)
     assert po.__version__ == result.polaris_version
 
 

@@ -46,7 +46,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         table: The core data-structure, storing data-points in a row-wise manner. Can be specified as either a
             path to a `.parquet` file or a `pandas.DataFrame`.
 
-    For additional meta-data attributes, see the base classes.
+    For additional metadata attributes, see the base classes.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
@@ -114,7 +114,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         This is meant to uniquely identify the dataset and can be used to verify the version.
 
         1. Is not sensitive to the ordering of the columns or rows in the table.
-        2. Purposefully does not include the meta-data (source, description, name, annotations).
+        2. Purposefully does not include the metadata (source, description, name, annotations).
         3. Includes a hash for the Zarr archive.
         """
         hash_fn = md5()

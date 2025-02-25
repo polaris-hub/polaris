@@ -41,7 +41,7 @@ dependencies = [
     "fsspec[http]",
     "httpx",
     "numcodecs[msgpack]>=0.13.1",
-    "numpy < 2", # We need to pin numpy to avoid issues with fastpdb/biotite.
+    "numpy <3",
     "pandas",
     "pyarrow < 18",
     "pydantic >=2",
@@ -62,7 +62,7 @@ dev = [
     "ipywidgets",
     "jupyterlab",
     "moto[s3]>=5.0.14",
-    "pytest",
+    "pytest >=7",
     "pytest-xdist",
     "pytest-cov",
     "ruff",

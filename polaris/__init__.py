@@ -3,9 +3,9 @@ import logging
 from rich.logging import RichHandler
 
 from ._version import __version__
-from .loader import load_benchmark, load_competition, load_dataset
+from .loader import load_benchmark, load_competition, load_dataset, load_model
 
-__all__ = ["load_dataset", "load_benchmark", "load_competition", "__version__"]
+__all__ = ["load_dataset", "load_benchmark", "load_competition", "load_model", "__version__"]
 
 # Polaris specific logger
 logger = logging.getLogger(__name__)

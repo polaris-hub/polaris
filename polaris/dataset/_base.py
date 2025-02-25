@@ -67,7 +67,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         artifact_version: The version of the dataset.
         artifact_changelog: A description of the changes made in this dataset version.
 
-    For additional meta-data attributes, see the base classes.
+    For additional metadata attributes, see the base classes.
 
     Raises:
         InvalidDatasetError: If the dataset does not conform to the Pydantic data-model specification.
@@ -78,7 +78,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     default_adapters: dict[str, Adapter] = Field(default_factory=dict)
     zarr_root_path: str | None = None
 
-    # Additional meta-data
+    # Additional metadata
     readme: str = ""
     annotations: dict[str, ColumnAnnotation] = Field(default_factory=dict)
     source: HttpUrlString | None = None
