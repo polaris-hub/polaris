@@ -946,9 +946,8 @@ class PolarisHubClient(OAuth2Client):
             model_json = model.model_dump(by_alias=True, exclude_none=True)
 
             # Make a request to the Hub
-            response = self._base_request_to_hub(
-                url="/v2/model", method="POST", json={"access": access, **model_json}
-            )
+            url = f"/v2/model/{model.artifact_id}"
+            response = self._base_request_to_hub(url=url, method="PUT", json={"access": access, **model_json})
 
             # Inform the user about where to find their newly created artifact.
             model_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
