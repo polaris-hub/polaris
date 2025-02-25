@@ -638,6 +638,9 @@ class PolarisHubClient(OAuth2Client):
             )
 
             inserted_dataset = response.json()
+
+            # We modify the slug in the server
+            # Update dataset.slug here so dataset.urn is constructed correctly
             dataset.slug = inserted_dataset["slug"]
 
             with StorageSession(self, "write", dataset.urn) as storage:
@@ -703,6 +706,9 @@ class PolarisHubClient(OAuth2Client):
             )
 
             inserted_dataset = response.json()
+
+            # We modify the slug in the server
+            # Update dataset.slug here so dataset.urn is constructed correctly
             dataset.slug = inserted_dataset["slug"]
 
             with StorageSession(self, "write", dataset.urn) as storage:
@@ -744,7 +750,7 @@ class PolarisHubClient(OAuth2Client):
         owner: HubOwner | str | None = None,
         parent_artifact_id: str | None = None,
     ):
-        """Upload the benchmark to the Polaris Hub.
+        """Upload a benchmark to the Polaris Hub.
 
         Info: Owner
             You have to manually specify the owner in the benchmark data model. Because the owner could
@@ -779,27 +785,8 @@ class PolarisHubClient(OAuth2Client):
         owner: HubOwner | str | None = None,
         parent_artifact_id: str | None = None,
     ):
-        """Upload a benchmark to the Polaris Hub.
-
-        Info: Owner
-            You have to manually specify the owner in the benchmark data model. Because the owner could
-            be a user or an organization, we cannot automatically infer this from the logged-in user.
-
-        Note: Required meta-data
-            The Polaris client and hub maintain different requirements as to which meta-data is required.
-            The requirements by the hub are stricter, so when uploading to the hub you might
-            get some errors on missing meta-data. Make sure to fill-in as much of the meta-data as possible
-            before uploading.
-
-        Note: Non-existent datasets
-            The client will _not_ upload the associated dataset to the hub if it does not yet exist.
-            Make sure to specify an existing dataset or upload the dataset first.
-
-        Args:
-            benchmark: The benchmark to upload.
-            access: Grant public or private access to result
-            owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
-            parent_artifact_id: The `owner/slug` of the parent benchmark, if uploading a new version of a benchmark.
+        """
+        Upload a V1 benchmark to the Polaris Hub.
         """
         with track_progress(description="Uploading benchmark", total=1) as (progress, task):
             # Get the serialized data-model
@@ -826,6 +813,9 @@ class PolarisHubClient(OAuth2Client):
         owner: HubOwner | str | None = None,
         parent_artifact_id: str | None = None,
     ):
+        """
+        Upload a V2 benchmark to the Polaris Hub.
+        """
         with track_progress(description="Uploading benchmark", total=1) as (progress, task):
             # Get the serialized data-model
             # We exclude the dataset as we expect it to exist on the hub already.
@@ -849,8 +839,11 @@ class PolarisHubClient(OAuth2Client):
                 },
             )
 
-            uploaded_benchmark = response.json()
-            benchmark.slug = uploaded_benchmark["slug"]
+            inserted_benchmark = response.json()
+
+            # We modify the slug in the server
+            # Update benchmark.slug here so benchmark.urn is constructed correctly
+            benchmark.slug = inserted_benchmark["slug"]
 
             with StorageSession(self, "write", benchmark.urn) as storage:
                 logger.info("Copying the benchmark split to the Hub. This may take a while.")
