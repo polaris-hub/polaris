@@ -565,7 +565,7 @@ class PolarisHubClient(OAuth2Client):
             owner: Which Hub user or organization owns the artifact. Takes precedence over `dataset.owner`.
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
-            parent_artifact_id: The artifact id of the parent dataset, if uploading a new version of a dataset.
+            parent_artifact_id: The `owner/slug` of the parent dataset, if uploading a new version of a dataset.
         """
         # Normalize timeout
         if timeout is None:
@@ -764,7 +764,7 @@ class PolarisHubClient(OAuth2Client):
             benchmark: The benchmark to upload.
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
-            parent_artifact_id: The artifact id of the parent benchmark, if uploading a new version of a benchmark.
+            parent_artifact_id: The `owner/slug` of the parent benchmark, if uploading a new version of a benchmark.
         """
         match benchmark:
             case BenchmarkV1Specification():
@@ -799,7 +799,7 @@ class PolarisHubClient(OAuth2Client):
             benchmark: The benchmark to upload.
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
-            parent_artifact_id: The artifact id of the parent benchmark, if uploading a new version of a benchmark.
+            parent_artifact_id: The `owner/slug` of the parent benchmark, if uploading a new version of a benchmark.
         """
         with track_progress(description="Uploading benchmark", total=1) as (progress, task):
             # Get the serialized data-model
