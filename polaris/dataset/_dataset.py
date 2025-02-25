@@ -218,7 +218,12 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
         return arr
 
-    def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
+    def upload_to_hub(
+        self,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
+    ):
         """
         Very light, convenient wrapper around the
         [`PolarisHubClient.upload_dataset`][polaris.hub.client.PolarisHubClient.upload_dataset] method.
@@ -226,7 +231,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient() as client:
-            client.upload_dataset(self, owner=owner, access=access)
+            client.upload_dataset(self, owner=owner, access=access, parent_artifact_id=parent_artifact_id)
 
     @classmethod
     def from_json(cls, path: str):

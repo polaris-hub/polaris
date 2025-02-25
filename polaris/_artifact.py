@@ -63,7 +63,7 @@ class BaseArtifactModel(BaseModel):
         if val is None:
             if info.data.get("name") is not None:
                 return slugify(info.data.get("name"))
-            return val
+        return val
 
     @computed_field
     @property
