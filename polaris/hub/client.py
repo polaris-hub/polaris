@@ -492,7 +492,7 @@ class PolarisHubClient(OAuth2Client):
         with StorageSession(self, "read", BenchmarkV2Specification.urn_for(owner, name)) as storage:
             split = {label: storage.get_file(label) for label in response_data.get("split", {}).keys()}
 
-        return BenchmarkV2Specification(**response_data, split=split)
+        return BenchmarkV2Specification(**{**response_data, "split": split})
 
     def upload_results(
         self,
