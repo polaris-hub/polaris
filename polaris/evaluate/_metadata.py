@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import Field, PrivateAttr
+from pydantic import Field, PrivateAttr, computed_field
 
 from polaris._artifact import BaseArtifactModel
 from polaris.utils.dict2html import dict2html
@@ -51,6 +51,11 @@ class ResultsMetadataV2(BaseArtifactModel):
 
     # Private attributes
     _created_at: datetime = PrivateAttr(default_factory=datetime.now)
+
+    @computed_field
+    @property
+    def model_artifact_id(self) -> str:
+        return self.model.artifact_id
 
     def _repr_html_(self) -> str:
         return dict2html(self.model_dump())
