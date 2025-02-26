@@ -690,7 +690,7 @@ class PolarisHubClient(OAuth2Client):
             dataset.owner = HubOwner.normalize(owner or dataset.owner)
             dataset_json = dataset.model_dump(exclude_none=True, by_alias=True)
 
-            # Step 1: Upload dataset meta-data
+            # Step 1: Upload dataset metadata
             url = f"/v2/dataset/{dataset.artifact_id}"
             response = self._base_request_to_hub(
                 url=url,
@@ -827,7 +827,7 @@ class PolarisHubClient(OAuth2Client):
             # 1. Upload the benchmark metadata to the Hub and prepare the Hub to receive the data
             # 2. Upload each index set bitmap to the Hub storage
 
-            # Step 1: Upload meta-data
+            # Step 1: Upload metadata
             url = f"/v2/benchmark/{benchmark.artifact_id}"
             response = self._base_request_to_hub(
                 url=url,
