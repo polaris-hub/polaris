@@ -192,7 +192,12 @@ class DatasetV2(BaseDataset):
 
         return arr
 
-    def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
+    def upload_to_hub(
+        self,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
+    ):
         """
         Uploads the dataset to the Polaris Hub.
         """
@@ -200,7 +205,7 @@ class DatasetV2(BaseDataset):
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient() as client:
-            client.upload_dataset(self, owner=owner, access=access)
+            client.upload_dataset(self, owner=owner, access=access, parent_artifact_id=parent_artifact_id)
 
     @classmethod
     def from_json(cls, path: str):

@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import ClassVar, Literal
+from typing import Annotated, ClassVar, Literal, Optional
 
 import fsspec
 from packaging.version import Version
@@ -16,7 +16,7 @@ from pydantic.alias_generators import to_camel
 from typing_extensions import Self
 
 import polaris
-from polaris.utils.misc import slugify
+from polaris.utils.misc import build_urn, slugify
 from polaris.utils.types import ArtifactUrn, HubOwner, SlugCompatibleStringType, SlugStringType
 
 logger = logging.getLogger(__name__)
@@ -55,11 +55,15 @@ class BaseArtifactModel(BaseModel):
     user_attributes: dict[str, str] = Field(default_factory=dict)
     owner: HubOwner | None = None
     polaris_version: str = polaris.__version__
+    slug: Annotated[Optional[SlugStringType], Field(validate_default=True)] = None
 
-    @computed_field
-    @property
-    def slug(self) -> SlugStringType | None:
-        return slugify(self.name) if self.name else None
+    @field_validator("slug")
+    def _validate_slug(cls, val: Optional[str], info) -> SlugStringType | None:
+        # A slug may be None when an artifact is created locally
+        if val is None:
+            if info.data.get("name") is not None:
+                return slugify(info.data.get("name"))
+        return val
 
     @computed_field
     @property
@@ -127,5 +131,5 @@ class BaseArtifactModel(BaseModel):
             f.write(self.model_dump_json())
 
     @classmethod
-    def urn_for(cls, owner: str | HubOwner, name: str) -> ArtifactUrn:
-        return f"urn:polaris:{cls._artifact_type}:{owner}:{slugify(name)}"
+    def urn_for(cls, owner: str | HubOwner, slug: str) -> ArtifactUrn:
+        return build_urn(cls._artifact_type, owner, slug)
