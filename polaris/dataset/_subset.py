@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import copy
 from typing import Callable, Iterable, List, Literal, Sequence
 
 import numpy as np
@@ -225,7 +225,7 @@ class Subset:
 
     def copy(self) -> Self:
         """Returns a copy of the subset."""
-        return deepcopy(self)
+        return copy(self)
 
     def extend_inputs(self, input_cols: Iterable[str] | str) -> Self:
         """
