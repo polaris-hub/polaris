@@ -24,7 +24,7 @@ from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
 from polaris.competition import CompetitionSpecification
 from polaris.model import Model
 from polaris.dataset import Dataset, DatasetV1, DatasetV2
-from polaris.evaluate import BenchmarkResults, CompetitionPredictions
+from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2, CompetitionPredictions
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
@@ -496,7 +496,7 @@ class PolarisHubClient(OAuth2Client):
 
     def upload_results(
         self,
-        results: BenchmarkResults,
+        results: BenchmarkResultsV1 | BenchmarkResultsV2,
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
     ):
