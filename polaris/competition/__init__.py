@@ -219,6 +219,3 @@ class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, Spli
 
     def __repr__(self):
         return self.model_dump_json(exclude={"zarr_manifest_path", "zarr_manifest_md5sum", "split"}, indent=2)
-
-    def __str__(self):
-        return self.__repr__()

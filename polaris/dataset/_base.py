@@ -355,9 +355,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     def __repr__(self):
         return json.dumps(self._repr_dict_(), indent=2)
 
-    def __str__(self):
-        return self.__repr__()
-
     def _cache_zarr(self, destination: str | PathLike, if_exists: ZarrConflictResolution):
         """
         Caches the Zarr archive to a local directory.

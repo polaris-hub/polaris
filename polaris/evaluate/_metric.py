@@ -2,6 +2,7 @@ import json
 from typing import Any, Callable, Literal, TypeAlias
 
 import numpy as np
+from numpy import dtype, ndarray
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -25,7 +26,7 @@ from sklearn.metrics import (
 from typing_extensions import Self
 
 from polaris.dataset._subset import Subset
-from polaris.evaluate._predictions import BenchmarkPredictions
+from polaris.evaluate._predictions import BenchmarkPredictions, prepare_predictions
 from polaris.evaluate.metrics import (
     absolute_average_fold_error,
     average_precision_score,
@@ -37,36 +38,6 @@ from polaris.evaluate.metrics.docking_metrics import rmsd_coverage
 from polaris.utils.types import DirectionType, PredictionKwargs
 
 GroundTruth: TypeAlias = Subset
-
-
-def prepare_predictions(
-    y_pred: BenchmarkPredictions,
-    y_prob: BenchmarkPredictions,
-    y_type: PredictionKwargs,
-) -> BenchmarkPredictions:
-    """
-    Check that the correct type of predictions are passed to the metric.
-
-    Args:
-        y_pred: The predicted target values, if any.
-        y_prob: The predicted target probabilities, if any.
-        y_type: The type of predictions expected by the metric interface
-    """
-
-    if y_pred is None and y_prob is None:
-        raise ValueError("Neither `y_pred` nor `y_prob` is specified.")
-
-    if y_type == "y_pred":
-        if y_pred is None:
-            raise ValueError("Metric requires `y_pred` input.")
-        pred = y_pred
-
-    else:
-        if y_prob is None:
-            raise ValueError("Metric requires `y_prob` input.")
-        pred = y_prob
-
-    return pred
 
 
 def mask_index(input_values):
@@ -94,7 +65,7 @@ def prepare_metric_kwargs(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     y_type: PredictionKwargs,
-) -> BenchmarkPredictions:
+) -> dict[PredictionKwargs | Literal["y_true"], ndarray[tuple[int, ...], dtype[Any] | Any]]:
     """
     Prepare the arguments for the metric function.
 

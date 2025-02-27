@@ -9,6 +9,10 @@ class InvalidBenchmarkError(ValueError):
     pass
 
 
+class InvalidSplitError(ValueError):
+    pass
+
+
 class InvalidCompetitionError(ValueError):
     pass
 
