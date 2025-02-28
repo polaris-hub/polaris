@@ -1,5 +1,7 @@
+import abc
 import logging
 from itertools import chain
+from typing import Any
 
 from pydantic import BaseModel, computed_field, field_serializer, model_validator
 from typing_extensions import Self
@@ -11,7 +13,43 @@ from polaris.utils.types import SplitType
 logger = logging.getLogger(__name__)
 
 
-class SplitSpecificationV1Mixin(BaseModel):
+class BaseSplitSpecificationMixin(BaseModel, abc.ABC):
+    """Base mixin class to add a split field to a benchmark."""
+
+    split: Any
+
+    @property
+    @abc.abstractmethod
+    def test_set_sizes(self) -> dict[str, int]:
+        """The sizes of the test sets."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def n_test_sets(self) -> int:
+        """The number of test sets"""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def n_train_datapoints(self) -> int:
+        """The size of the train set."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def test_set_labels(self) -> list[str]:
+        """The labels of the test sets."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def n_test_datapoints(self) -> dict[str, int]:
+        """The size of (each of) the test set(s)."""
+        raise NotImplementedError
+
+
+class SplitSpecificationV1Mixin(BaseSplitSpecificationMixin):
     """
     Mixin class to add a split field to a benchmark. This is the V1 implementation.
 

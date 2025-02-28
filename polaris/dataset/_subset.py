@@ -1,11 +1,11 @@
 from copy import deepcopy
-from typing import Callable, Iterable, List, Literal, Sequence
+from typing import Callable, Generator, Iterable, Literal, Sequence
 
 import numpy as np
 import pandas as pd
 from typing_extensions import Self
 
-from polaris.dataset import DatasetV1
+from polaris.dataset import DatasetV1, DatasetV2
 from polaris.dataset._adapters import Adapter
 from polaris.utils.errors import TestAccessError
 from polaris.utils.types import DatapointType
@@ -64,7 +64,7 @@ class Subset:
 
     def __init__(
         self,
-        dataset: DatasetV1,
+        dataset: DatasetV1 | DatasetV2,
         indices: list[int | Sequence[int]],
         input_cols: Iterable[str] | str,
         target_cols: Iterable[str] | str,
@@ -87,9 +87,6 @@ class Subset:
                 self._iloc_to_loc = lambda idx: self.dataset.rows[idx]
             case _:
                 self._iloc_to_loc = lambda idx: idx
-
-        # For the iterator implementation
-        self._pointer = 0
 
         # This is a protected attribute to make explicit it should not be changed once set.
         self._hide_targets = hide_targets
@@ -158,7 +155,14 @@ class Subset:
         """Get a single output for a specific data-point and given the benchmark specification."""
         return self._get_single(row, self.target_cols, None)
 
-    def as_array(self, data_type: Literal["x", "y", "xy"]):
+    def as_array(
+        self, data_type: Literal["x", "y", "xy"]
+    ) -> (
+        np.ndarray
+        | tuple[np.ndarray, np.ndarray]
+        | dict[str, np.ndarray]
+        | tuple[dict[str, np.ndarray], dict[str, np.ndarray]]
+    ):
         """
         Scikit-learn style access to the targets and inputs.
         If the dataset is multi-target, this will return a dict of arrays.
@@ -234,24 +238,31 @@ class Subset:
         Args:
             input_cols: The input columns to add.
         """
-        input_cols = [input_cols] if isinstance(input_cols, str) else list(input_cols)
+        match input_cols:
+            case str():
+                input_cols = [input_cols]
+            case _:
+                input_cols = list(input_cols)
         copy = self.copy()
-        copy.input_cols = list(set(self.input_cols + input_cols))
+        copy.input_cols = list(set(copy.input_cols + input_cols))
         return copy
 
-    def filter_targets(self, target_cols: List[str] | str) -> Self:
+    def filter_targets(self, target_cols: Iterable[str] | str) -> Self:
         """
         Filter the subset to only include the specified target columns.
 
         Args:
             target_cols: The target columns to keep.
         """
-        target_cols_subset = target_cols if isinstance(target_cols, list) else [target_cols]
+        match target_cols:
+            case str():
+                target_cols_subset = [target_cols]
+            case _:
+                target_cols_subset = list(target_cols)
 
         # Verify all target columns are in the original subset
         if not all(col in self.target_cols for col in target_cols_subset):
             raise ValueError("All new target columns need to be in the original subset.")
-        target_cols_subset = [c for c in self.target_cols if c in target_cols_subset]
 
         copy = self.copy()
         copy.target_cols = target_cols_subset
@@ -288,19 +299,50 @@ class Subset:
         outs = self._get_single_output(idx)
         return ins, outs
 
-    def __iter__(self):
-        """Iterator implementation"""
-        self._pointer = 0
-        return self
-
-    def __next__(self):
+    def __iter__(self) -> Generator[DatapointType, None, None]:
         """
         Allows for iterator-style access to the dataset, e.g. useful when datasets get large.
         Remember that pointer columns are not loaded into memory yet.
         """
-        if self._pointer >= len(self):
-            raise StopIteration
+        yield from (self[i] for i in range(len(self)))
 
-        item = self[self._pointer]
-        self._pointer += 1
-        return item
+
+class SubsetV2(Subset):
+    def __init__(
+        self,
+        dataset: DatasetV2,
+        indices: Iterable[int],
+        input_cols: Iterable[str] | str,
+        target_cols: Iterable[str] | str,
+        adapters: dict[str, Adapter] | None = None,
+        featurization_fn: Callable | None = None,
+        hide_targets: bool = False,
+    ):
+        super().__init__(dataset, indices, input_cols, target_cols, adapters, featurization_fn, hide_targets)
+
+    def __getitem__(self, item: int) -> DatapointType:
+        """
+        This method always returns an (X, y) tuple
+
+        Some special cases:
+
+        1. It supports multi-input datasets, in which case X is a dict with multiple values.
+        2. It supports multi-task datasets, in which case y is a dict with multiple values.
+        3. In case a dataset has a pointer column (i.e. a path to an external file with the actual data),
+            this method also loads that data to memory.
+        """
+
+        idx = self.indices[item]
+        idx = self._iloc_to_loc(idx)
+
+        # Load the input modalities
+        ins = self._get_single_input(idx)
+
+        if self._hide_targets:
+            # If we are not allowed to access the targets, we return the inputs only.
+            # This is useful to make accidental access to the test set less likely.
+            return ins
+
+        # Retrieve the targets
+        outs = self._get_single_output(idx)
+        return ins, outs

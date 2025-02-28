@@ -1,14 +1,14 @@
 import logging
 from functools import cached_property
 from hashlib import md5
-from typing import Generator, Sequence
+from typing import Sequence
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 from pyroaring import BitMap
 from typing_extensions import Self
 
-from polaris.utils.errors import InvalidBenchmarkError
+from polaris.utils.errors import InvalidSplitError
 
 logger = logging.getLogger(__name__)
 
@@ -57,10 +57,12 @@ class IndexSet(BaseModel):
 
 
 class SplitV2(BaseModel):
-    training: IndexSet
-    test: IndexSet
+    label: str = Field(description="A label for this split")
+    method: str = Field(description="The method used to create this split")
+    train: IndexSet = Field(description="The training index set")
+    test: IndexSet = Field(description="The test index set")
 
-    @field_validator("training", "test", mode="before")
+    @field_validator("train", "test", mode="before")
     @classmethod
     def _parse_index_sets(cls, v: bytes | IndexSet) -> bytes | IndexSet:
         """
@@ -70,15 +72,15 @@ class SplitV2(BaseModel):
             return IndexSet.deserialize(v)
         return v
 
-    @field_validator("training")
+    @field_validator("train")
     @classmethod
-    def _validate_training_set(cls, v: IndexSet) -> IndexSet:
+    def _validate_train_set(cls, v: IndexSet) -> IndexSet:
         """
         Training index set can be empty (zero-shot)
         """
         if v.datapoints == 0:
             logger.info(
-                "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
+                "This split only specifies a test set. It will return an empty train set in `get_train_test_split()`"
             )
         return v
 
@@ -89,7 +91,7 @@ class SplitV2(BaseModel):
         Test index set cannot be empty
         """
         if v.datapoints == 0:
-            raise InvalidBenchmarkError("The predefined split contains empty test partitions")
+            raise InvalidSplitError("This split contains an empty test set")
         return v
 
     @model_validator(mode="after")
@@ -97,8 +99,8 @@ class SplitV2(BaseModel):
         """
         The training and test index sets do not overlap
         """
-        if self.training.intersect(self.test):
-            raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
+        if self.train.intersect(self.test):
+            raise InvalidSplitError("This split specifies overlapping training and test sets")
         return self
 
     @property
@@ -106,71 +108,15 @@ class SplitV2(BaseModel):
         """
         The size of the train set.
         """
-        return self.training.datapoints
+        return self.train.datapoints
 
     @property
-    def n_test_sets(self) -> int:
+    def n_test_datapoints(self) -> int:
         """
-        The number of test sets
+        The size of the test set.
         """
-        # TODO: Until we support multi-test benchmarks
-        return 1
-
-    @property
-    def n_test_datapoints(self) -> dict[str, int]:
-        """
-        The size of (each of) the test set(s).
-        """
-        # TODO: Until we support multi-test benchmarks
-        return {"test": self.test.datapoints}
+        return self.test.datapoints
 
     @property
     def max_index(self) -> int:
-        # TODO: Until we support multi-test benchmarks (need)
         return max(self.training.indices.max(), self.test.indices.max())
-
-    def test_items(self) -> Generator[tuple[str, IndexSet], None, None]:
-        # TODO: Until we support multi-test benchmarks
-        yield "test", self.test
-
-
-class SplitSpecificationV2Mixin(BaseModel):
-    """
-    Mixin class to add a split field to a benchmark. This is the V2 implementation.
-
-    The internal representation for the split is a roaring bitmap,
-    which drastically improves scalability over the V1 implementation.
-
-    Attributes:
-        split: The predefined train-test split to use for evaluation.
-    """
-
-    split: SplitV2
-
-    @computed_field
-    @property
-    def n_train_datapoints(self) -> int:
-        """The size of the train set."""
-        return self.split.n_train_datapoints
-
-    @computed_field
-    @property
-    def n_test_sets(self) -> int:
-        """The number of test sets"""
-        return self.split.n_test_sets
-
-    @computed_field
-    @property
-    def n_test_datapoints(self) -> dict[str, int]:
-        """The size of (each of) the test set(s)."""
-        return self.split.n_test_datapoints
-
-    @computed_field
-    @property
-    def test_set_sizes(self) -> dict[str, int]:
-        return {label: index_set.datapoints for label, index_set in self.split.test_items()}
-
-    @computed_field
-    @property
-    def test_set_labels(self) -> list[str]:
-        return list(label for label, _ in self.split.test_items())

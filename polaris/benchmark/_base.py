@@ -3,12 +3,11 @@ import json
 from hashlib import md5
 from itertools import chain
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Literal, TypeVar, Generic
+from typing import Any, Callable, ClassVar, Literal
 
 import fsspec
 import numpy as np
 from pydantic import (
-    BaseModel,
     Field,
     computed_field,
     field_validator,
@@ -22,11 +21,10 @@ from polaris.benchmark._split import SplitSpecificationV1Mixin
 from polaris.benchmark._task import PredictiveTaskSpecificationMixin
 from polaris.dataset import DatasetV1, Subset
 from polaris.dataset._base import BaseDataset
-from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2
+from polaris.evaluate import BenchmarkResultsV1
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.mixins import ChecksumMixin
-from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import (
     AccessType,
@@ -35,53 +33,8 @@ from polaris.utils.types import (
     TargetType,
 )
 
-# Type variable for the return type of evaluate
-BenchmarkResultsType = TypeVar("BenchmarkResultsType", BenchmarkResultsV1, BenchmarkResultsV2)
 
-
-class BaseSplitSpecificationMixin(BaseModel):
-    """Base mixin class to add a split field to a benchmark."""
-
-    split: Any
-
-    @property
-    @abc.abstractmethod
-    def test_set_sizes(self) -> dict[str, int]:
-        """The sizes of the test sets."""
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def n_test_sets(self) -> int:
-        """The number of test sets"""
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def n_train_datapoints(self) -> int:
-        """The size of the train set."""
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def test_set_labels(self) -> list[str]:
-        """The labels of the test sets."""
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def n_test_datapoints(self) -> dict[str, int]:
-        """The size of (each of) the test set(s)."""
-        raise NotImplementedError
-
-
-class BenchmarkSpecification(
-    PredictiveTaskSpecificationMixin,
-    BaseArtifactModel,
-    BaseSplitSpecificationMixin,
-    abc.ABC,
-    Generic[BenchmarkResultsType],
-):
+class BenchmarkSpecification(PredictiveTaskSpecificationMixin, BaseArtifactModel, abc.ABC):
     """This class wraps a dataset with additional data to specify the evaluation logic.
 
     Specifically, it specifies:
@@ -134,20 +87,6 @@ class BenchmarkSpecification(
     @property
     def dataset_artifact_id(self) -> str:
         return self.dataset.artifact_id
-
-    @abc.abstractmethod
-    def _get_test_sets(
-        self, hide_targets=True, featurization_fn: Callable | None = None
-    ) -> dict[str, Subset]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def evaluate(
-        self,
-        y_pred: IncomingPredictionsType | None = None,
-        y_prob: IncomingPredictionsType | None = None,
-    ) -> BenchmarkResultsType:
-        raise NotImplementedError
 
     def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
         """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
@@ -213,23 +152,11 @@ class BenchmarkSpecification(
         repr_dict["dataset_name"] = self.dataset.name
         return repr_dict
 
-    def _repr_html_(self):
-        """For pretty printing in Jupyter."""
-        return dict2html(self.model_dump())
-
-    def __repr__(self):
-        return self.model_dump_json(indent=2)
-
-    def __str__(self):
-        return self.__repr__()
-
 
 @deprecated(
     "Use BenchmarkV2Specification instead. If you're loading this dataset from the Polaris Hub, you can ignore this warning."
 )
-class BenchmarkV1Specification(
-    SplitSpecificationV1Mixin, ChecksumMixin, BenchmarkSpecification[BenchmarkResultsV1]
-):
+class BenchmarkV1Specification(SplitSpecificationV1Mixin, ChecksumMixin):
     _version: ClassVar[Literal[1]] = 1
 
     dataset: DatasetV1 = Field(exclude=True)
