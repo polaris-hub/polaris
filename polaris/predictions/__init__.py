@@ -25,7 +25,7 @@ class BenchmarkV2Prediction(BaseArtifactModel):
         description="The benchmark specification that these predictions were generated for."
     )
     split_label: str = Field(
-        description="The label of the split specified in the benchmark that these prediction where generated with."
+        description="The label of the split specified in the benchmark that these predictions were generated with."
     )
     predictions: DataFrame = Field(description="A DataFrame with the predictions for each target column.")
 

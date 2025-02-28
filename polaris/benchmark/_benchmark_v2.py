@@ -57,7 +57,7 @@ class BenchmarkV2Specification(BenchmarkSpecification):
         """
         dataset_length = len(self.dataset)
 
-        if max(split.max for split in self.splits) >= dataset_length:
+        if max(split.max_index for split in self.splits) >= dataset_length:
             raise InvalidBenchmarkError("The predefined splits contain invalid indices")
 
         return self
