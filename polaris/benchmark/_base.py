@@ -156,7 +156,7 @@ class BenchmarkSpecification(PredictiveTaskSpecificationMixin, BaseArtifactModel
 @deprecated(
     "Use BenchmarkV2Specification instead. If you're loading this dataset from the Polaris Hub, you can ignore this warning."
 )
-class BenchmarkV1Specification(SplitSpecificationV1Mixin, ChecksumMixin):
+class BenchmarkV1Specification(SplitSpecificationV1Mixin, ChecksumMixin, BenchmarkSpecification):
     _version: ClassVar[Literal[1]] = 1
 
     dataset: DatasetV1 = Field(exclude=True)

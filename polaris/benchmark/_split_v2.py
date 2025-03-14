@@ -100,7 +100,7 @@ class SplitV2(BaseModel):
         The training and test index sets do not overlap
         """
         if self.train.intersect(self.test):
-            raise InvalidSplitError("This split specifies overlapping training and test sets")
+            raise InvalidSplitError(f"The {self.label} split specifies overlapping training and test sets")
         return self
 
     @property
