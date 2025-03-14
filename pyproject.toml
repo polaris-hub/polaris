@@ -82,6 +82,32 @@ codecs = [
     "imagecodecs",
 ]
 
+# PEP 735 Dependency Groups are not well-supported by pip.
+# Duplicate them here with the older syntax.
+[project.optional-dependencies]
+dev = [
+    "ipywidgets",
+    "jupyterlab",
+    "moto[s3]>=5.0.14",
+    "pytest >=7",
+    "pytest-xdist",
+    "pytest-cov",
+    "ruff",
+]
+doc = [
+    "mkdocs",
+    "mkdocs-material >=9.4.7",
+    "mkdocstrings",
+    "mkdocstrings-python",
+    "mkdocs-jupyter",
+    "markdown-include",
+    "mdx_truly_sane_lists",
+    "mike >=1.0.0",
+    "nbconvert",
+]
+codecs = [
+    "imagecodecs",
+]
 
 [project.scripts]
 polaris = "polaris.cli:app"
