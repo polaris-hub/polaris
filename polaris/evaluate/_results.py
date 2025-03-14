@@ -12,7 +12,7 @@ from pydantic import (
 )
 from pydantic.alias_generators import to_camel
 
-from polaris.evaluate import ResultsMetadataV1, ResultsMetadataV2
+from polaris.evaluate import ResultsMetadataV1
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import slugify
 from polaris.utils.types import (
@@ -40,7 +40,7 @@ class ResultRecords(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
 
-class BaseEvaluationResult:
+class BaseEvaluationResult(BaseModel):
     """Base class for saving evaluation results
 
     The actual results are saved in the `results` field using the following tabular format:
@@ -62,6 +62,7 @@ class BaseEvaluationResult:
             that can be decoded into the associated tabular format.
     For additional metadata attributes, see the base classes.
     """
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     # Define the columns of the results table
     RESULTS_COLUMNS: ClassVar[list[str]] = ["Test set", "Target label", "Metric", "Score"]
@@ -139,13 +140,7 @@ class EvaluationResultV1(ResultsMetadataV1, BaseEvaluationResult):
     pass
 
 
-class EvaluationResultV2(ResultsMetadataV2, BaseEvaluationResult):
-    """V2 implementation of evaluation results with model field replacing URLs"""
-
-    pass
-
-
-class BaseBenchmarkResults:
+class BaseBenchmarkResults(BaseModel):
     """Base class for results of standard benchmarks.
 
     This object is returned by  `benchmark.evaluate()`.
@@ -189,12 +184,6 @@ class BaseBenchmarkResults:
 
 class BenchmarkResultsV1(EvaluationResultV1, BaseBenchmarkResults):
     """V1 implementation of benchmark results without model field support"""
-
-    pass
-
-
-class BenchmarkResultsV2(EvaluationResultV2, BaseBenchmarkResults):
-    """V2 implementation of benchmark results with model field replacing URLs"""
 
     pass
 

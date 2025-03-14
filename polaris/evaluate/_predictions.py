@@ -10,7 +10,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from typing_extensions import Self
+from typing_extensions import Self, TypeAlias
 
 from polaris.evaluate import ResultsMetadataV1
 from polaris.utils.misc import convert_lists_to_arrays
@@ -18,9 +18,12 @@ from polaris.utils.types import (
     HttpUrlString,
     HubOwner,
     IncomingPredictionsType,
+    PredictionKwargs,
     PredictionsType,
     SlugCompatibleStringType,
 )
+
+PredictionType: TypeAlias = int | float
 
 
 class BenchmarkPredictions(BaseModel):
@@ -270,8 +273,32 @@ class CompetitionPredictions(BenchmarkPredictions, ResultsMetadataV1):
     owner: HubOwner
     paper_url: HttpUrlString = Field(alias="report_url", serialization_alias="reportUrl")
 
-    def __repr__(self):
-        return self.model_dump_json(by_alias=True, indent=2)
 
-    def __str__(self):
-        return self.__repr__()
+def prepare_predictions(
+    y_pred: BenchmarkPredictions,
+    y_prob: BenchmarkPredictions,
+    y_type: PredictionKwargs,
+) -> BenchmarkPredictions:
+    """
+    Check that the correct type of predictions are passed to the metric.
+
+    Args:
+        y_pred: The predicted target values, if any.
+        y_prob: The predicted target probabilities, if any.
+        y_type: The type of predictions expected by the metric interface
+    """
+
+    if y_pred is None and y_prob is None:
+        raise ValueError("Neither `y_pred` nor `y_prob` is specified.")
+
+    if y_type == "y_pred":
+        if y_pred is None:
+            raise ValueError("Metric requires `y_pred` input.")
+        pred = y_pred
+
+    else:
+        if y_prob is None:
+            raise ValueError("Metric requires `y_prob` input.")
+        pred = y_prob
+
+    return pred
