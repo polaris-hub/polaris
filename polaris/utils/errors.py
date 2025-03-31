@@ -17,6 +17,10 @@ class InvalidResultError(ValueError):
     pass
 
 
+class InvalidModelError(ValueError):
+    pass
+
+
 class TestAccessError(Exception):
     # Prevent pytest to collect this as a test
     __test__ = False
