@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 import httpx
 import pandas as pd
 import zarr
+import onnx
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2 import OAuth2Error, TokenAuth
@@ -945,9 +946,41 @@ class PolarisHubClient(OAuth2Client):
             model.owner = HubOwner.normalize(owner or model.owner)
             model_json = model.model_dump(by_alias=True, exclude_none=True)
 
+            file_content = None
+
+            # If model file is specified, generate file content
+            if model.file_path:
+                in_memory_onnx = BytesIO()
+
+                onnx_model = onnx.load(model.file_path)
+                onnx.save_model(onnx_model, in_memory_onnx)
+                onnx_size = len(in_memory_onnx.getbuffer())
+
+                onnx_md5 = md5(in_memory_onnx.getbuffer()).hexdigest()
+
+                file_content = {
+                    "size": onnx_size,
+                    "fileType": "onnx",
+                    "md5Sum": onnx_md5,
+                }
+
             # Make a request to the Hub
             url = f"/v2/model/{model.artifact_id}"
-            response = self._base_request_to_hub(url=url, method="PUT", json={"access": access, **model_json})
+            response = self._base_request_to_hub(
+                url=url,
+                method="PUT",
+                json={
+                    "access": access,
+                    **({"fileContent": file_content} if file_content else {}),
+                    **model_json,
+                },
+            )
+
+            # If model file is specified, upload it to the Hub
+            if model.file_path:
+                with StorageSession(self, "write", model.urn) as storage:
+                    with track_progress(description="Copying model file", total=1):
+                        storage.set_file("root", in_memory_onnx.getvalue())
 
             # Inform the user about where to find their newly created artifact.
             model_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))

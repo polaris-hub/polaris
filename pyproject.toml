@@ -42,6 +42,7 @@ dependencies = [
     "httpx",
     "numcodecs[msgpack]>=0.13.1",
     "numpy <3",
+    "onnx",
     "pandas",
     "pyarrow < 18",
     "pydantic >=2",
