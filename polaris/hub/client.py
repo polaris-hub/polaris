@@ -953,7 +953,6 @@ class PolarisHubClient(OAuth2Client):
                 in_memory_onnx = BytesIO()
 
                 onnx_model = onnx.load(model.file_path)
-                onnx.checker.check_model(onnx_model)
                 onnx.save_model(onnx_model, in_memory_onnx)
 
                 onnx_size = len(in_memory_onnx.getbuffer())

@@ -1,9 +1,9 @@
 from polaris._artifact import BaseArtifactModel
 from polaris.utils.errors import InvalidModelError
-from polaris.utils.types import HttpUrlString
-from polaris.utils.types import AccessType, HubOwner
+from polaris.utils.types import AccessType, HubOwner, HttpUrlString
 from datamol.utils import fs as dmfs
 from pydantic import field_validator
+import onnx
 
 # Constants
 _SUPPORTED_MODEL_EXTENSIONS = ["onnx"]
@@ -57,6 +57,12 @@ class Model(BaseArtifactModel):
     def _validate_file(cls, v: str | None) -> str | None:
         if isinstance(v, str):
             if not dmfs.is_file(v) or dmfs.get_extension(v) not in _SUPPORTED_MODEL_EXTENSIONS:
+                raise InvalidModelError(f"{v} is not a valid .onnx file.")
+
+            try:
+                onnx_model = onnx.load(v)
+                onnx.checker.check_model(onnx_model)
+            except Exception:
                 raise InvalidModelError(f"{v} is not a valid .onnx file.")
         return v
 
