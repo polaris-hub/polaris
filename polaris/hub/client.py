@@ -970,7 +970,7 @@ class PolarisHubClient(OAuth2Client):
             # If model file is specified, upload it to the Hub
             if model.file_path:
                 with StorageSession(self, "write", model.urn) as storage:
-                    with track_progress(description="Copying model file", total=1):
+                    with track_progress(description="Uploading model file", total=1):
                         with open(model.file_path, "rb") as file:
                             storage.streaming_set_file("root", file)
 
