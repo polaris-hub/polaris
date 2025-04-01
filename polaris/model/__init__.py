@@ -1,12 +1,12 @@
 from polaris._artifact import BaseArtifactModel
+from polaris.dataset.zarr import calculate_file_md5
 from polaris.utils.errors import InvalidModelError
 from polaris.utils.types import AccessType, HubOwner, HttpUrlString
-from datamol.utils import fs as dmfs
-from pydantic import field_validator
-import onnx
+from pathlib import Path
+from pydantic import field_validator, computed_field
 
 # Constants
-_SUPPORTED_MODEL_EXTENSIONS = ["onnx"]
+_SUPPORTED_MODEL_EXTENSIONS = [".onnx"]
 
 
 class Model(BaseArtifactModel):
@@ -56,15 +56,24 @@ class Model(BaseArtifactModel):
     @classmethod
     def _validate_file(cls, v: str | None) -> str | None:
         if isinstance(v, str):
-            if not dmfs.is_file(v) or dmfs.get_extension(v) not in _SUPPORTED_MODEL_EXTENSIONS:
-                raise InvalidModelError(f"{v} is not a valid .onnx file.")
-
-            try:
-                onnx_model = onnx.load(v)
-                onnx.checker.check_model(onnx_model)
-            except Exception:
+            if not Path(v).exists() or Path(v).suffix not in _SUPPORTED_MODEL_EXTENSIONS:
                 raise InvalidModelError(f"{v} is not a valid .onnx file.")
         return v
+
+    @computed_field
+    @property
+    def size(self) -> int | None:
+        if self.file_path:
+            return Path(self.file_path).stat().st_size
+        return None
+
+    @computed_field
+    @property
+    def md5sum(self) -> str | None:
+        if self.file_path:
+            return calculate_file_md5(self.file_path)
+        return None
+
 
     def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
         """
