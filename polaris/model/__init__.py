@@ -74,7 +74,6 @@ class Model(BaseArtifactModel):
             return calculate_file_md5(self.file_path)
         return None
 
-
     def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
         """
         Uploads the model to the Polaris Hub.

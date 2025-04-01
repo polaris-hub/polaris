@@ -584,7 +584,7 @@ class StorageSession(OAuth2Client):
         )
         store[relative_path.name] = value
 
-    def streaming_set_file(self, path: str, value: io.BufferedReader):
+    def streaming_set_file(self, path: str, file_path: str):
         """
         Set a file at the given path, without loading the file into memory.
         """
@@ -593,16 +593,11 @@ class StorageSession(OAuth2Client):
 
         relative_path = self._relative_path(getattr(self.paths, path))
         bucket_name = relative_path.parts[0]
-        key = '/'.join(relative_path.parts[1:])
+        key = "/".join(relative_path.parts[1:])
 
         match relative_path.suffix:
-            case ".parquet":
-                content_type = "application/vnd.apache.parquet"
-            case ".roaring":
-                content_type = "application/vnd.roaringbitmap"
             case _:
                 content_type = "application/octet-stream"
-
 
         storage_data = self.token.extra_data
         store = S3Store(
@@ -614,7 +609,8 @@ class StorageSession(OAuth2Client):
             content_type=content_type,
         )
 
-        store.s3_client.upload_fileobj(value, bucket_name, key, ExtraArgs={"ContentType": content_type})
+        with open(file_path, "rb") as file:
+            store.s3_client.upload_fileobj(file, bucket_name, key, ExtraArgs={"ContentType": content_type})
 
     def get_file(self, path: str) -> bytes | bytearray:
         """
