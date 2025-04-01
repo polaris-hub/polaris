@@ -962,7 +962,7 @@ class PolarisHubClient(OAuth2Client):
                 method="PUT",
                 json={
                     "access": access,
-                    **({"fileContent": file_content} if file_content else {}),
+                    "fileContent": file_content,
                     **model_json,
                 },
             )
