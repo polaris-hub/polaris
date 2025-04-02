@@ -1,9 +1,9 @@
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset.zarr import calculate_file_md5
 from polaris.utils.errors import InvalidModelError
-from polaris.utils.types import AccessType, HubOwner, HttpUrlString
+from polaris.utils.types import AccessType, HubOwner, HttpUrlString, HubUser
 from pathlib import Path
-from pydantic import field_validator, computed_field
+from pydantic import field_validator, computed_field, Field
 
 # Constants
 _SUPPORTED_MODEL_EXTENSIONS = [".onnx"]
@@ -37,6 +37,7 @@ class Model(BaseArtifactModel):
         code_url (HttpUrlString | None): Optional URL pointing to the model's code repository.
         report_url (HttpUrlString | None): Optional URL linking to a report or publication related to the model.
         file_path (str | None): Optional path to a .onnx file containing the model.
+        contributors: The users credited with creating the model.
     Methods:
         upload_to_hub(access: AccessType = "private", owner: HubOwner | str | None = None):
             Uploads the model artifact to the Polaris Hub, associating it with a specified owner and access level.
@@ -51,6 +52,8 @@ class Model(BaseArtifactModel):
     report_url: HttpUrlString | None = None
 
     file_path: str | None = None
+
+    contributors: list[HubUser] = Field(default_factory=list)
 
     @field_validator("file_path")
     @classmethod
