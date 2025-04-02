@@ -1,6 +1,12 @@
 from polaris._artifact import BaseArtifactModel
-from polaris.utils.types import HttpUrlString
-from polaris.utils.types import AccessType, HubOwner
+from polaris.dataset.zarr import calculate_file_md5
+from polaris.utils.errors import InvalidModelError
+from polaris.utils.types import AccessType, HubOwner, HttpUrlString
+from pathlib import Path
+from pydantic import field_validator, computed_field
+
+# Constants
+_SUPPORTED_MODEL_EXTENSIONS = [".onnx"]
 
 
 class Model(BaseArtifactModel):
@@ -30,7 +36,7 @@ class Model(BaseArtifactModel):
         readme (str): A detailed README describing the model.
         code_url (HttpUrlString | None): Optional URL pointing to the model's code repository.
         report_url (HttpUrlString | None): Optional URL linking to a report or publication related to the model.
-
+        file_path (str | None): Optional path to a .onnx file containing the model.
     Methods:
         upload_to_hub(access: AccessType = "private", owner: HubOwner | str | None = None):
             Uploads the model artifact to the Polaris Hub, associating it with a specified owner and access level.
@@ -43,6 +49,30 @@ class Model(BaseArtifactModel):
     readme: str = ""
     code_url: HttpUrlString | None = None
     report_url: HttpUrlString | None = None
+
+    file_path: str | None = None
+
+    @field_validator("file_path")
+    @classmethod
+    def _validate_file(cls, v: str | None) -> str | None:
+        if isinstance(v, str):
+            if not Path(v).exists() or Path(v).suffix not in _SUPPORTED_MODEL_EXTENSIONS:
+                raise InvalidModelError(f"{v} is not a valid .onnx file.")
+        return v
+
+    @computed_field
+    @property
+    def size(self) -> int | None:
+        if self.file_path:
+            return Path(self.file_path).stat().st_size
+        return None
+
+    @computed_field
+    @property
+    def md5sum(self) -> str | None:
+        if self.file_path:
+            return calculate_file_md5(self.file_path)
+        return None
 
     def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
         """

@@ -97,11 +97,15 @@ class BenchmarkV2Paths(ArtifactPaths):
     test_2: int = 0
 
 
+class ModelPaths(ArtifactPaths):
+    model: AnyUrlString = Field(json_schema_extra={"file": True})
+
+
 class StorageTokenData(BaseModel):
     key: str
     secret: str
     endpoint: HttpUrlString
-    paths: DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths = Field(union_mode="smart")
+    paths: DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths | ModelPaths = Field(union_mode="smart")
 
 
 class HubOAuth2Token(BaseModel):

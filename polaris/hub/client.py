@@ -945,9 +945,33 @@ class PolarisHubClient(OAuth2Client):
             model.owner = HubOwner.normalize(owner or model.owner)
             model_json = model.model_dump(by_alias=True, exclude_none=True)
 
+            file_content = None
+
+            # If model file is specified, generate file content
+            if model.file_path:
+                file_content = {
+                    "size": model.size,
+                    "fileType": "onnx",
+                    "md5Sum": model.md5sum,
+                }
+
             # Make a request to the Hub
             url = f"/v2/model/{model.artifact_id}"
-            response = self._base_request_to_hub(url=url, method="PUT", json={"access": access, **model_json})
+            response = self._base_request_to_hub(
+                url=url,
+                method="PUT",
+                json={
+                    "access": access,
+                    "fileContent": file_content,
+                    **model_json,
+                },
+            )
+
+            # If model file is specified, upload it to the Hub
+            if model.file_path:
+                with StorageSession(self, "write", model.urn) as storage:
+                    with track_progress(description="Uploading model file", total=1):
+                        storage.streaming_set_file("model", model.file_path)
 
             # Inform the user about where to find their newly created artifact.
             model_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))

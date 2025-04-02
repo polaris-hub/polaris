@@ -1,3 +1,4 @@
+import io
 import re
 from base64 import b64encode
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -19,7 +20,13 @@ from zarr.context import Context
 from zarr.storage import Store
 from zarr.util import buffer_size
 
-from polaris.hub.oauth import BenchmarkV2Paths, DatasetV1Paths, DatasetV2Paths, HubStorageOAuth2Token
+from polaris.hub.oauth import (
+    BenchmarkV2Paths,
+    DatasetV1Paths,
+    DatasetV2Paths,
+    ModelPaths,
+    HubStorageOAuth2Token,
+)
 from polaris.utils.context import track_progress
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import ArtifactUrn, ZarrConflictResolution
@@ -549,7 +556,7 @@ class StorageSession(OAuth2Client):
         return True
 
     @property
-    def paths(self) -> DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths:
+    def paths(self) -> DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths | ModelPaths:
         return self.token.extra_data.paths
 
     def _relative_path(self, path: str) -> PurePath:
@@ -582,6 +589,34 @@ class StorageSession(OAuth2Client):
             content_type=content_type,
         )
         store[relative_path.name] = value
+
+    def streaming_set_file(self, path: str, file_path: str):
+        """
+        Set a file at the given path, without loading the file into memory.
+        """
+        if path not in self.paths.files:
+            raise NotImplementedError(f"{type(self.paths).__name__} only supports files {self.paths.files}.")
+
+        relative_path = self._relative_path(getattr(self.paths, path))
+        bucket_name = relative_path.parts[0]
+        key = "/".join(relative_path.parts[1:])
+
+        match relative_path.suffix:
+            case _:
+                content_type = "application/octet-stream"
+
+        storage_data = self.token.extra_data
+        store = S3Store(
+            path=relative_path.parent,
+            access_key=storage_data.key,
+            secret_key=storage_data.secret,
+            token=f"jwt/{self.token.access_token}",
+            endpoint_url=storage_data.endpoint,
+            content_type=content_type,
+        )
+
+        with open(file_path, "rb") as file:
+            store.s3_client.upload_fileobj(file, bucket_name, key, ExtraArgs={"ContentType": content_type})
 
     def get_file(self, path: str) -> bytes | bytearray:
         """
