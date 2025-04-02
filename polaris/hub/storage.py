@@ -20,7 +20,13 @@ from zarr.context import Context
 from zarr.storage import Store
 from zarr.util import buffer_size
 
-from polaris.hub.oauth import BenchmarkV2Paths, DatasetV1Paths, DatasetV2Paths, HubStorageOAuth2Token
+from polaris.hub.oauth import (
+    BenchmarkV2Paths,
+    DatasetV1Paths,
+    DatasetV2Paths,
+    ModelPaths,
+    HubStorageOAuth2Token,
+)
 from polaris.utils.context import track_progress
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import ArtifactUrn, ZarrConflictResolution
@@ -550,7 +556,7 @@ class StorageSession(OAuth2Client):
         return True
 
     @property
-    def paths(self) -> DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths:
+    def paths(self) -> DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths | ModelPaths:
         return self.token.extra_data.paths
 
     def _relative_path(self, path: str) -> PurePath:

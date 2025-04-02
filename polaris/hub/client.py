@@ -971,7 +971,7 @@ class PolarisHubClient(OAuth2Client):
             if model.file_path:
                 with StorageSession(self, "write", model.urn) as storage:
                     with track_progress(description="Uploading model file", total=1):
-                        storage.streaming_set_file("root", model.file_path)
+                        storage.streaming_set_file("model", model.file_path)
 
             # Inform the user about where to find their newly created artifact.
             model_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
