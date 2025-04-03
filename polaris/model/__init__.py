@@ -37,7 +37,7 @@ class Model(BaseArtifactModel):
         code_url (HttpUrlString | None): Optional URL pointing to the model's code repository.
         report_url (HttpUrlString | None): Optional URL linking to a report or publication related to the model.
         file_path (str | None): Optional path to a .onnx file containing the model.
-        contributors: The users credited with creating the model.
+        contributors: The users credited with developing the model.
     Methods:
         upload_to_hub(access: AccessType = "private", owner: HubOwner | str | None = None):
             Uploads the model artifact to the Polaris Hub, associating it with a specified owner and access level.
