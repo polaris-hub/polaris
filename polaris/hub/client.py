@@ -844,9 +844,7 @@ class PolarisHubClient(OAuth2Client):
                 f"[green]Your benchmark has been successfully uploaded to the Hub. View it here: {benchmark_url}"
             )
 
-    def get_competition(
-        self, artifact_id: str
-    ) -> PredictionBasedCompetition | ModelBasedCompetition:
+    def get_competition(self, artifact_id: str) -> PredictionBasedCompetition | ModelBasedCompetition:
         """Load a competition from the Polaris Hub.
 
         Args:
@@ -864,11 +862,14 @@ class PolarisHubClient(OAuth2Client):
         ) as storage:
             zarr_root_path = str(storage.paths.root)
 
-        return CompetitionSpecification(zarr_root_path=zarr_root_path, **response_data)
+        if response_data["submissionType"] == "prediction":
+            return PredictionBasedCompetition(zarr_root_path=zarr_root_path, **response_data)
+        else:
+            return ModelBasedCompetition(zarr_root_path=zarr_root_path, **response_data)
 
     def submit_competition_predictions(
         self,
-        competition: CompetitionSpecification,
+        competition: PredictionBasedCompetition,
         competition_predictions: CompetitionPredictions,
     ):
         """Submit predictions for a competition to the Polaris Hub. The Hub will evaluate them against

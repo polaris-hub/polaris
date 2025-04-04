@@ -78,8 +78,11 @@ class CompetitionSpecification(
         return self
 
     @abc.abstractmethod
-    def submit_entry():
-        """Submit to a competition."""
+    def submit_entry(self):
+        """
+        Submit to a competition. Must be implemented by subclasses, as submissions
+        for Prediction Based Competitions and Model Based Competitions differ.
+        """
         raise NotImplementedError
 
     @model_validator(mode="after")
