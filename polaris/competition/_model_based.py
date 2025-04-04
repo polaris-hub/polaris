@@ -7,6 +7,14 @@ from polaris.utils.errors import (
 
 
 class ModelBasedCompetition(CompetitionSpecification):
+    def submit_entry(
+        self,
+        model: Model | SlugStringType,
+        owner: str,
+    ) -> None:
+        """Implementation for the submit_entry abstract method"""
+        self.submit_model(model, owner)
+
     def submit_model(
         self,
         model: Model | SlugStringType,
@@ -25,7 +33,6 @@ class ModelBasedCompetition(CompetitionSpecification):
         # do we need to wrap in a progress indicator?
 
         with PolarisHubClient() as client:
-
             # if artifact id, load model
             if isinstance(model, str):
                 print("this is an artifact id", model)

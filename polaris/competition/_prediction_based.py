@@ -10,6 +10,31 @@ from polaris.utils.types import (
 
 
 class PredictionBasedCompetition(CompetitionSpecification):
+    def submit_entry(
+        self,
+        predictions: IncomingPredictionsType,
+        prediction_name: SlugCompatibleStringType,
+        prediction_owner: str,
+        report_url: HttpUrlString,
+        contributors: list[HubUser] | None = None,
+        github_url: HttpUrlString | None = None,
+        description: str = "",
+        tags: list[str] | None = None,
+        user_attributes: dict[str, str] | None = None,
+    ) -> None:
+        """Implementation for the submit_entry abstract method"""
+        self.submit_predictions(
+            predictions,
+            prediction_name,
+            prediction_owner,
+            report_url,
+            contributors,
+            github_url,
+            description,
+            tags,
+            user_attributes,
+        )
+
     def submit_predictions(
         self,
         predictions: IncomingPredictionsType,

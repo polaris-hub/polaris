@@ -21,7 +21,7 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
-from polaris.competition import CompetitionSpecification
+from polaris.competition import CompetitionSpecification, ModelBasedCompetition, PredictionBasedCompetition
 from polaris.model import Model
 from polaris.dataset import Dataset, DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2, CompetitionPredictions
@@ -844,14 +844,16 @@ class PolarisHubClient(OAuth2Client):
                 f"[green]Your benchmark has been successfully uploaded to the Hub. View it here: {benchmark_url}"
             )
 
-    def get_competition(self, artifact_id: str) -> CompetitionSpecification:
+    def get_competition(
+        self, artifact_id: str
+    ) -> PredictionBasedCompetition | ModelBasedCompetition:
         """Load a competition from the Polaris Hub.
 
         Args:
             artifact_id: The artifact identifier for the competition
 
         Returns:
-            A `CompetitionSpecification` instance, if it exists.
+            A `PredictionBasedCompetition` or `ModelBasedCompetition` instance, if it exists.
         """
         url = f"/v1/competition/{artifact_id}"
         response = self._base_request_to_hub(url=url, method="GET")

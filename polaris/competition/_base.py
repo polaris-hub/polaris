@@ -77,6 +77,11 @@ class CompetitionSpecification(
 
         return self
 
+    @abc.abstractmethod
+    def submit_entry():
+        """Submit to a competition."""
+        raise NotImplementedError
+
     @model_validator(mode="after")
     def _validate_cols_in_dataset(self) -> Self:
         """
