@@ -930,6 +930,26 @@ class PolarisHubClient(OAuth2Client):
 
             return response
 
+    def list_competition_models(self, artifact_id: str, limit: int = 100, offset: int = 0) -> list:
+        """List models submitted to a competition on the Polaris Hub.
+
+        Args:
+            limit: The maximum number of models to return.
+            offset: The offset from which to start returning models.
+
+        Returns:
+            A list of competition model objects.
+        """
+        with track_progress(description="Fetching competition models", total=1):
+            url = f"/v1/competition-model/{artifact_id}"
+            json_response = self._base_request_to_hub(
+                url=url, method="GET", params={"limit": limit, "offset": offset}
+            ).json()
+
+            competition_models = [competition_model for competition_model in json_response["data"]]
+
+            return competition_models
+
     def list_models(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available models on the Polaris Hub.
 
