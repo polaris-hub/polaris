@@ -915,7 +915,7 @@ class PolarisHubClient(OAuth2Client):
 
             # Otherwise, upload model to Hub, then retrieve its artifact id
             else:
-                model_id = self.upload_model(competition_model, owner=creator)
+                model_id = self.upload_model(competition_model)
 
             # Submit payload to Hub
             response = self._base_request_to_hub(
