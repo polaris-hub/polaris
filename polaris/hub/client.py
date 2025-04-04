@@ -895,6 +895,41 @@ class PolarisHubClient(OAuth2Client):
             )
             return response
 
+    def submit_competition_model(
+        self, competition: ModelBasedCompetition, competition_model: Model | str, creator: str
+    ):
+        """Submit a model for a competition to the Polaris Hub. The Hub will evaluate it against
+        the secure test set and store the result.
+
+        Args:
+            competition: The competition to evaluate the predictions for.
+            competition_model: The model to submit. Can either be the artifact id of a model, or a model object.
+            creator: The user submitting the model.
+        """
+
+        with track_progress(description="Submitting competition model", total=1):
+            # If artifact id passed in, fetch model to make sure it exists
+            if isinstance(competition_model, str):
+                model = self.get_model(competition_model)
+                model_id = model.artifact_id
+
+            # Otherwise, upload model to Hub, then retrieve its artifact id
+            else:
+                model_id = self.upload_model(competition_model, owner=creator)
+
+            # Submit payload to Hub
+            response = self._base_request_to_hub(
+                url="/v1/competition-model",
+                method="POST",
+                json={
+                    "creator": creator,
+                    "competitionId": competition.artifact_id,
+                    "modelId": model_id,
+                },
+            )
+
+            return response
+
     def list_models(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available models on the Polaris Hub.
 
@@ -970,6 +1005,8 @@ class PolarisHubClient(OAuth2Client):
                 },
             )
 
+            inserted_model = response.json()
+
             # If model file is specified, upload it to the Hub
             if model.file_path:
                 with StorageSession(self, "write", model.urn) as storage:
@@ -982,3 +1019,6 @@ class PolarisHubClient(OAuth2Client):
             progress.log(
                 f"[green]Your model has been successfully uploaded to the Hub. View it here: {model_url}"
             )
+
+            # We need this artifact_id when uploading a new model as a competition submission
+            return Model(**inserted_model).artifact_id

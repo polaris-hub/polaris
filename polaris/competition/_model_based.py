@@ -7,15 +7,15 @@ class ModelBasedCompetition(CompetitionSpecification):
     def submit_entry(
         self,
         model: Model | SlugStringType,
-        owner: str,
+        creator: str,
     ) -> None:
         """Implementation for the submit_entry abstract method"""
-        self.submit_model(model, owner)
+        self.submit_model(model, creator)
 
     def submit_model(
         self,
         model: Model | SlugStringType,
-        owner: str,
+        creator: str,
     ) -> None:
         """
         Convenient wrapper around the
@@ -23,9 +23,9 @@ class ModelBasedCompetition(CompetitionSpecification):
 
         Args:
             model: The model to submit. Can either be the artifact id of a model, or a model object.
-            owner: The user submitting the model.
+            creator: The user submitting the model.
         """
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient() as client:
-            client.submit_competition_model(competition=self, competition_model=model, owner=owner)
+            client.submit_competition_model(competition=self, competition_model=model, creator=creator)
