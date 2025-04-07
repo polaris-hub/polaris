@@ -997,8 +997,6 @@ class PolarisHubClient(OAuth2Client):
                 },
             )
 
-            inserted_model = response.json()
-
             # If model file is specified, upload it to the Hub
             if model.file_path:
                 with StorageSession(self, "write", model.urn) as storage:
@@ -1011,6 +1009,3 @@ class PolarisHubClient(OAuth2Client):
             progress.log(
                 f"[green]Your model has been successfully uploaded to the Hub. View it here: {model_url}"
             )
-
-            # We need this artifact_id when uploading a new model as a competition submission
-            return Model(**inserted_model).artifact_id
