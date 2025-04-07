@@ -3,7 +3,7 @@ from itertools import chain
 import pytest
 from pydantic import ValidationError
 
-from polaris.competition import CompetitionSpecification
+from polaris.competition import PredictionBasedCompetition
 from polaris.evaluate import Metric
 from polaris.utils.types import TaskType
 
@@ -12,7 +12,7 @@ def test_competition_split_verification(test_competition):
     """Verifies that the split validation works as expected."""
 
     obj = test_competition
-    cls = CompetitionSpecification
+    cls = PredictionBasedCompetition
 
     # By using the fixture as a default, we know it doesn't always fail
     default_kwargs = {
@@ -75,7 +75,7 @@ def test_competition_split_verification(test_competition):
     assert len(train) == 0
 
 
-@pytest.mark.parametrize("cls", [CompetitionSpecification])
+@pytest.mark.parametrize("cls", [PredictionBasedCompetition])
 def test_competition_metrics_verification(test_competition, cls):
     """Verifies that the metric validation works as expected."""
     # By using the fixture as a default, we know it doesn't always fail
@@ -118,14 +118,14 @@ def test_competition_duplicate_metrics(test_competition):
             Metric(label="roc_auc", config={"group_by": "CLASS_expt"}),
         ]
         m["main_metric"] = m["metrics"][0]
-        CompetitionSpecification(**m)
+        PredictionBasedCompetition(**m)
 
     with pytest.raises(ValidationError, match="The metrics of a benchmark need to have unique names."):
         m["metrics"][0].config.group_by = "MULTICLASS_calc"
-        CompetitionSpecification(**m)
+        PredictionBasedCompetition(**m)
 
     m["metrics"][0].custom_name = "custom_name"
-    CompetitionSpecification(**m)
+    PredictionBasedCompetition(**m)
 
 
 def test_competition_metric_deserialization(test_competition):
@@ -135,18 +135,18 @@ def test_competition_metric_deserialization(test_competition):
     # Should work with strings
     m["metrics"] = ["mean_absolute_error", "accuracy"]
     m["main_metric"] = "accuracy"
-    CompetitionSpecification(**m)
+    PredictionBasedCompetition(**m)
 
     # Should work with dictionaries
     m["metrics"] = [
         {"label": "mean_absolute_error", "config": {"group_by": "CLASS_expt"}},
         {"label": "accuracy"},
     ]
-    CompetitionSpecification(**m)
+    PredictionBasedCompetition(**m)
 
 
 def test_competition_train_test_split(test_competition):
-    """Tests that the competition's train/test split can be retrieved through a CompetitionSpecification instance"""
+    """Tests that the competition's train/test split can be retrieved through a PredictionBasedCompetition instance"""
 
     train, test = test_competition.get_train_test_split()
 
@@ -166,6 +166,6 @@ def test_competition_computed_fields(test_competition):
 
 
 def test_competition_interface(test_competition):
-    """Tests that the CompetitionSpecification class doesn't accidentally inherit the evaluate method from the benchmark class"""
+    """Tests that the PredictionBasedCompetition class doesn't accidentally inherit the evaluate method from the benchmark class"""
     with pytest.raises(AttributeError):
         test_competition.evaluate()

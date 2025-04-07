@@ -930,7 +930,6 @@ class PolarisHubClient(OAuth2Client):
 
             return response
 
-
     def list_models(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available models on the Polaris Hub.
 

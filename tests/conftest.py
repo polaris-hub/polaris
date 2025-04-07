@@ -11,7 +11,7 @@ from polaris.benchmark import (
     MultiTaskBenchmarkSpecification,
     SingleTaskBenchmarkSpecification,
 )
-from polaris.competition import CompetitionSpecification
+from polaris.competition import PredictionBasedCompetition
 from polaris.dataset import ColumnAnnotation, DatasetFactory, DatasetV1, DatasetV2
 from polaris.dataset.converters import SDFConverter
 from polaris.utils.types import HubOwner
@@ -321,7 +321,7 @@ def test_multi_task_benchmark_clf(test_dataset, classification_metrics):
 def test_competition(zarr_archive, test_org_owner, regression_metrics, test_dataset_v2):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
-    competition = CompetitionSpecification(
+    competition = PredictionBasedCompetition(
         # Base attributes
         name="test-competition",
         owner=test_org_owner,

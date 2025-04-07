@@ -202,7 +202,7 @@ class BenchmarkResultsV2(EvaluationResultV2, BaseBenchmarkResults):
 class CompetitionResults(EvaluationResultV1):
     """Class specific to results for competition benchmarks.
 
-    This object is returned by [`CompetitionSpecification.evaluate`][polaris.competition.CompetitionSpecification.evaluate].
+    This object is returned by [`PredictionBasedCompetition.evaluate`][polaris.competition.PredictionBasedCompetition.evaluate].
     In addition to the metrics on the test set, it contains additional metadata and logic to integrate
     the results with the Polaris Hub.
 
