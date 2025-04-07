@@ -5,10 +5,6 @@ from polaris.utils.types import HubOwner, SlugStringType
 
 class ModelBasedCompetition(CompetitionSpecification):
     def submit_entry(self, model: Model | SlugStringType, owner: HubOwner | str) -> None:
-        """Implementation for the submit_entry abstract method"""
-        self.submit_model(model, owner)
-
-    def submit_model(self, model: Model | SlugStringType, owner: HubOwner | str) -> None:
         """
         Convenient wrapper around the
         [`PolarisHubClient.submit_competition_model`][polaris.hub.client.PolarisHubClient.submit_competition_model] method.

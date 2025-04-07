@@ -197,28 +197,3 @@ class BenchmarkResultsV2(EvaluationResultV2, BaseBenchmarkResults):
     """V2 implementation of benchmark results with model field replacing URLs"""
 
     pass
-
-
-class CompetitionResults(EvaluationResultV1):
-    """Class specific to results for competition benchmarks.
-
-    This object is returned by [`PredictionBasedCompetition.evaluate`][polaris.competition.PredictionBasedCompetition.evaluate].
-    In addition to the metrics on the test set, it contains additional metadata and logic to integrate
-    the results with the Polaris Hub.
-
-    Attributes:
-        competition_name: The name of the competition for which these results were generated.
-            Together with the competition owner, this uniquely identifies the competition on the Hub.
-        competition_owner: The owner of the competition for which these results were generated.
-            Together with the competition name, this uniquely identifies the competition on the Hub.
-    """
-
-    _artifact_type = "competitionResult"
-
-    competition_name: SlugCompatibleStringType = Field(..., frozen=True)
-    competition_owner: HubOwner | None = Field(None, frozen=True)
-
-    @computed_field
-    @property
-    def competition_artifact_id(self) -> str:
-        return f"{self.competition_owner}/{slugify(self.competition_name)}"

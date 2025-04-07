@@ -907,7 +907,7 @@ class PolarisHubClient(OAuth2Client):
             owner: Which Hub user or organization owns the submission.
         """
 
-        with track_progress(description="Submitting competition model", total=1):
+        with track_progress(description="Submitting competition model entry", total=1):
             # If artifact id passed in, fetch model to make sure it exists
             if isinstance(competition_model, str):
                 model = self.get_model(competition_model)
