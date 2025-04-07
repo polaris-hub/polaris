@@ -42,6 +42,7 @@ from polaris.utils.types import (
     AccessType,
     ChecksumStrategy,
     HubOwner,
+    SlugStringType,
     SupportedLicenseType,
     TimeoutTypes,
     ZarrConflictResolution,
@@ -896,23 +897,18 @@ class PolarisHubClient(OAuth2Client):
             return response
 
     def submit_competition_model(
-        self, competition: ModelBasedCompetition, competition_model: Model | str, owner: HubOwner | str
+        self, competition: ModelBasedCompetition, competition_model: SlugStringType, owner: HubOwner | str
     ):
         """Submit a model for a competition to the Polaris Hub. The Hub will evaluate it against
         the secure test set and store the result.
 
         Args:
             competition: The competition to evaluate the predictions for.
-            competition_model: The model to submit. Can either be the artifact id of an already uploaded model artifact, or a newly created model artifact object.
+            competition_model: The artifact id of the model to submit. The model must already exist in the Hub.
             owner: Which Hub user or organization owns the submission.
         """
 
         with track_progress(description="Submitting competition model entry", total=1):
-            if isinstance(competition_model, str):
-                model_id = competition_model
-            else:
-                model_id = self.upload_model(competition_model)
-
             # Submit payload to Hub
             response = self._base_request_to_hub(
                 url="/v1/competition-model",
@@ -920,7 +916,7 @@ class PolarisHubClient(OAuth2Client):
                 json={
                     "owner": owner,
                     "competitionId": competition.artifact_id,
-                    "modelId": model_id,
+                    "modelId": competition_model,
                 },
             )
 

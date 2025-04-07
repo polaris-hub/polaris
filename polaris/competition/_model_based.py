@@ -1,16 +1,15 @@
 from polaris.competition import CompetitionSpecification
-from polaris.model import Model
 from polaris.utils.types import HubOwner, SlugStringType
 
 
 class ModelBasedCompetition(CompetitionSpecification):
-    def submit_entry(self, model: Model | SlugStringType, owner: HubOwner | str) -> None:
+    def submit_entry(self, model: SlugStringType, owner: HubOwner | str) -> None:
         """
         Convenient wrapper around the
         [`PolarisHubClient.submit_competition_model`][polaris.hub.client.PolarisHubClient.submit_competition_model] method.
 
         Args:
-            model: The model to submit. Can either be the artifact id of an already uploaded model artifact, or a newly created model artifact object.
+            model: The artifact id of the model to submit. The model must already exist in the Hub.
             owner: Which Hub user or organization owns the submission.
         """
         from polaris.hub.client import PolarisHubClient
