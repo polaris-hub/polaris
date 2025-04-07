@@ -10,7 +10,7 @@ class ModelBasedCompetition(CompetitionSpecification):
         [`PolarisHubClient.submit_competition_model`][polaris.hub.client.PolarisHubClient.submit_competition_model] method.
 
         Args:
-            model: The model to submit. Can either be the artifact id of a model, or a model object.
+            model: The model to submit. Can either be the artifact id of an already uploaded model artifact, or a newly created model artifact object.
             owner: Which Hub user or organization owns the submission.
         """
         from polaris.hub.client import PolarisHubClient

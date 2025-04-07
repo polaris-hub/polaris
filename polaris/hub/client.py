@@ -908,12 +908,8 @@ class PolarisHubClient(OAuth2Client):
         """
 
         with track_progress(description="Submitting competition model entry", total=1):
-            # If artifact id passed in, fetch model to make sure it exists
             if isinstance(competition_model, str):
-                model = self.get_model(competition_model)
-                model_id = model.artifact_id
-
-            # Otherwise, upload model to Hub, then retrieve its artifact id
+                model_id = competition_model
             else:
                 model_id = self.upload_model(competition_model)
 

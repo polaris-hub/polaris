@@ -5,7 +5,6 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    computed_field,
     field_serializer,
     field_validator,
     model_validator,
