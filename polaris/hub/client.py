@@ -896,7 +896,7 @@ class PolarisHubClient(OAuth2Client):
             return response
 
     def submit_competition_model(
-        self, competition: ModelBasedCompetition, competition_model: Model | str, creator: str
+        self, competition: ModelBasedCompetition, competition_model: Model | str, owner: HubOwner | str
     ):
         """Submit a model for a competition to the Polaris Hub. The Hub will evaluate it against
         the secure test set and store the result.
@@ -904,7 +904,7 @@ class PolarisHubClient(OAuth2Client):
         Args:
             competition: The competition to evaluate the predictions for.
             competition_model: The model to submit. Can either be the artifact id of a model, or a model object.
-            creator: The user submitting the model.
+            owner: Which Hub user or organization owns the submission.
         """
 
         with track_progress(description="Submitting competition model", total=1):
@@ -922,7 +922,7 @@ class PolarisHubClient(OAuth2Client):
                 url="/v1/competition-model",
                 method="POST",
                 json={
-                    "creator": creator,
+                    "owner": owner,
                     "competitionId": competition.artifact_id,
                     "modelId": model_id,
                 },
@@ -930,25 +930,6 @@ class PolarisHubClient(OAuth2Client):
 
             return response
 
-    def list_competition_models(self, artifact_id: str, limit: int = 100, offset: int = 0) -> list:
-        """List models submitted to a competition on the Polaris Hub.
-
-        Args:
-            limit: The maximum number of models to return.
-            offset: The offset from which to start returning models.
-
-        Returns:
-            A list of competition model objects.
-        """
-        with track_progress(description="Fetching competition models", total=1):
-            url = f"/v1/competition-model/{artifact_id}"
-            json_response = self._base_request_to_hub(
-                url=url, method="GET", params={"limit": limit, "offset": offset}
-            ).json()
-
-            competition_models = [competition_model for competition_model in json_response["data"]]
-
-            return competition_models
 
     def list_models(self, limit: int = 100, offset: int = 0) -> list[str]:
         """List all available models on the Polaris Hub.
