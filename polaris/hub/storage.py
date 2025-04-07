@@ -1,4 +1,3 @@
-import io
 import re
 from base64 import b64encode
 from concurrent.futures import ThreadPoolExecutor, as_completed

@@ -21,7 +21,7 @@ from polaris.benchmark import (
     SingleTaskBenchmarkSpecification,
 )
 from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
-from polaris.competition import CompetitionSpecification
+from polaris.competition import CompetitionSpecification, ModelBasedCompetition, PredictionBasedCompetition
 from polaris.model import Model
 from polaris.dataset import Dataset, DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2, CompetitionPredictions
@@ -42,6 +42,7 @@ from polaris.utils.types import (
     AccessType,
     ChecksumStrategy,
     HubOwner,
+    SlugStringType,
     SupportedLicenseType,
     TimeoutTypes,
     ZarrConflictResolution,
@@ -844,14 +845,14 @@ class PolarisHubClient(OAuth2Client):
                 f"[green]Your benchmark has been successfully uploaded to the Hub. View it here: {benchmark_url}"
             )
 
-    def get_competition(self, artifact_id: str) -> CompetitionSpecification:
+    def get_competition(self, artifact_id: str) -> PredictionBasedCompetition | ModelBasedCompetition:
         """Load a competition from the Polaris Hub.
 
         Args:
             artifact_id: The artifact identifier for the competition
 
         Returns:
-            A `CompetitionSpecification` instance, if it exists.
+            A `PredictionBasedCompetition` or `ModelBasedCompetition` instance, if it exists.
         """
         url = f"/v1/competition/{artifact_id}"
         response = self._base_request_to_hub(url=url, method="GET")
@@ -862,11 +863,14 @@ class PolarisHubClient(OAuth2Client):
         ) as storage:
             zarr_root_path = str(storage.paths.root)
 
-        return CompetitionSpecification(zarr_root_path=zarr_root_path, **response_data)
+        if response_data["submissionType"] == "prediction":
+            return PredictionBasedCompetition(zarr_root_path=zarr_root_path, **response_data)
+        else:
+            return ModelBasedCompetition(zarr_root_path=zarr_root_path, **response_data)
 
     def submit_competition_predictions(
         self,
-        competition: CompetitionSpecification,
+        competition: PredictionBasedCompetition,
         competition_predictions: CompetitionPredictions,
     ):
         """Submit predictions for a competition to the Polaris Hub. The Hub will evaluate them against
@@ -890,6 +894,32 @@ class PolarisHubClient(OAuth2Client):
                 method="POST",
                 json=prediction_payload,
             )
+            return response
+
+    def submit_competition_model(
+        self, competition: ModelBasedCompetition, competition_model: SlugStringType, owner: HubOwner | str
+    ):
+        """Submit a model for a competition to the Polaris Hub. The Hub will evaluate it against
+        the secure test set and store the result.
+
+        Args:
+            competition: The competition to evaluate the predictions for.
+            competition_model: The artifact id of the model to submit. The model must already exist in the Hub.
+            owner: Which Hub user or organization owns the submission.
+        """
+
+        with track_progress(description="Submitting competition model entry", total=1):
+            # Submit payload to Hub
+            response = self._base_request_to_hub(
+                url="/v1/competition-model",
+                method="POST",
+                json={
+                    "owner": owner,
+                    "competitionId": competition.artifact_id,
+                    "modelId": competition_model,
+                },
+            )
+
             return response
 
     def list_models(self, limit: int = 100, offset: int = 0) -> list[str]:
