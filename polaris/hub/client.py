@@ -903,7 +903,7 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             competition: The competition to evaluate the predictions for.
-            competition_model: The model to submit. Can either be the artifact id of a model, or a model object.
+            competition_model: The model to submit. Can either be the artifact id of an already uploaded model artifact, or a newly created model artifact object.
             owner: Which Hub user or organization owns the submission.
         """
 
