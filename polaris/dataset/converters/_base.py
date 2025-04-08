@@ -1,5 +1,5 @@
 import abc
-from typing import Dict, Tuple, TypeAlias
+from typing import TypeAlias
 
 import pandas as pd
 
@@ -7,7 +7,7 @@ from polaris.dataset import ColumnAnnotation
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._dataset import _INDEX_SEP
 
-FactoryProduct: TypeAlias = Tuple[pd.DataFrame, Dict[str, ColumnAnnotation], Dict[str, Adapter]]
+FactoryProduct: TypeAlias = tuple[pd.DataFrame, dict[str, ColumnAnnotation], dict[str, Adapter]]
 
 
 class Converter(abc.ABC):
