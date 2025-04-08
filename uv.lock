@@ -2023,11 +2023,8 @@ wheels = [
 name = "numcodecs"
 version = "0.13.1"
 source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version < '3.11'",
-]
 dependencies = [
-    { name = "numpy", marker = "python_full_version < '3.11'" },
+    { name = "numpy" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/85/56/8895a76abe4ec94ebd01eeb6d74f587bc4cddd46569670e1402852a5da13/numcodecs-0.13.1.tar.gz", hash = "sha256:a3cf37881df0898f3a9c0d4477df88133fe85185bffe57ba31bcc2fa207709bc", size = 5955215 }
 wheels = [
@@ -2047,38 +2044,7 @@ wheels = [
 
 [package.optional-dependencies]
 msgpack = [
-    { name = "msgpack", marker = "python_full_version < '3.11'" },
-]
-
-[[package]]
-name = "numcodecs"
-version = "0.16.0"
-source = { registry = "https://pypi.org/simple" }
-resolution-markers = [
-    "python_full_version >= '3.12'",
-    "python_full_version == '3.11.*'",
-]
-dependencies = [
-    { name = "numpy", marker = "python_full_version >= '3.11'" },
-    { name = "typing-extensions", marker = "python_full_version >= '3.11'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/bd/3d/54b07213c1c3b489f3be23e11f4d2c81d2e682852fc93b2bf37d5efd5664/numcodecs-0.16.0.tar.gz", hash = "sha256:f71229a951c4991ab226df4147f3780c988d1cecf1309e388d9e57bcba827387", size = 6268216 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/68/62/7c5153d09bc73055fc70380eb0caf168b3a1ed92fca8d8c9b3c7004586e6/numcodecs-0.16.0-cp311-cp311-macosx_10_13_x86_64.whl", hash = "sha256:fc95417135c90a353df219c47386dd30f11003ae673a006c869ddb0264430976", size = 1640160 },
-    { url = "https://files.pythonhosted.org/packages/a7/23/fc64c96ec80221f235ca6b2e9fd90da75f6129e4444e2a44881a8dc96338/numcodecs-0.16.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:27aab34e2fc4c3d2f4d504d9f5de154a822657f1950d1ed21801a0780e442a89", size = 1174884 },
-    { url = "https://files.pythonhosted.org/packages/da/df/f3252143587dab354bd279fd60b69dd11a0cdbba6dcc08a2feefa12ca210/numcodecs-0.16.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9924e52cae325faef4b2642f8cc1b88f79c71d97dea028357d7cc5be51f183ad", size = 8255074 },
-    { url = "https://files.pythonhosted.org/packages/a9/1b/ca2684a58de6ba981d549d70c814fa56ddfdd9ed20796daa3365493bf552/numcodecs-0.16.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d7bab983b6eca0803ba678cb1cf00c6d7dfb095ff3041671ff7286555da3c016", size = 8803112 },
-    { url = "https://files.pythonhosted.org/packages/bd/ee/34d119420bd807d96f13d701ced7bc515af493ff1f4fc2b114d827c36b68/numcodecs-0.16.0-cp311-cp311-win_amd64.whl", hash = "sha256:6f2d0e3b7020cf564eca9b442fa136337a71b0cdb1d67467903cde0bf4cf7a4d", size = 818574 },
-    { url = "https://files.pythonhosted.org/packages/aa/80/5574105bb739c13a7e95d8f0a0eeea90a2170e4af8cf2616baf3fc1694cb/numcodecs-0.16.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:8f8c39fa0faf5c9f57270c6fd2dcbfe0549250483b80449cf97dd82eacaf627b", size = 1676208 },
-    { url = "https://files.pythonhosted.org/packages/93/bf/c7b26ae2650e82d0e565c3d18134a63631244a6f0014056433cae2cbea90/numcodecs-0.16.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:357360c14783b954065619da47f0e968bfbafb4c4914348864a6223f88428256", size = 1178856 },
-    { url = "https://files.pythonhosted.org/packages/71/43/6f734e2c0c1f313b2e47c9833279e2b87dfc7c7c623e089f9297a6e0ca41/numcodecs-0.16.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3f4895e6fffe3abcfbec476c7fda59d3255ac5d40d9c3e292cd6a204e75ba9c0", size = 8236239 },
-    { url = "https://files.pythonhosted.org/packages/e1/12/fdf9e90a6e6e30f1dafb26da0a96ed2a0db0fafd499dfa0a11f64e830ec5/numcodecs-0.16.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:83b85cd0a6be21faba23b0d2d6c7ce4c1a48b5a523edf3bef4dee04aaba74a56", size = 8798365 },
-    { url = "https://files.pythonhosted.org/packages/71/1f/8ed7a822c17dd17d63bbb70f74e09a033c9d9a1a85a06ec4a0a29f3e4d1c/numcodecs-0.16.0-cp312-cp312-win_amd64.whl", hash = "sha256:9c28660642466ad6d1e2d5c6fab08c70ff58197cc94f7517e79088142b8f7731", size = 816025 },
-]
-
-[package.optional-dependencies]
-msgpack = [
-    { name = "msgpack", marker = "python_full_version >= '3.11'" },
+    { name = "msgpack" },
 ]
 
 [[package]]
@@ -2300,8 +2266,7 @@ dependencies = [
     { name = "fastpdb" },
     { name = "fsspec", extra = ["http"] },
     { name = "httpx" },
-    { name = "numcodecs", version = "0.13.1", source = { registry = "https://pypi.org/simple" }, extra = ["msgpack"], marker = "python_full_version < '3.11'" },
-    { name = "numcodecs", version = "0.16.0", source = { registry = "https://pypi.org/simple" }, extra = ["msgpack"], marker = "python_full_version >= '3.11'" },
+    { name = "numcodecs", extra = ["msgpack"] },
     { name = "numpy" },
     { name = "pandas" },
     { name = "pyarrow" },
@@ -2390,7 +2355,7 @@ requires-dist = [
     { name = "mkdocstrings-python", marker = "extra == 'doc'" },
     { name = "moto", extras = ["s3"], marker = "extra == 'dev'", specifier = ">=5.0.14" },
     { name = "nbconvert", marker = "extra == 'doc'" },
-    { name = "numcodecs", extras = ["msgpack"], specifier = ">=0.13.1" },
+    { name = "numcodecs", extras = ["msgpack"], specifier = ">=0.13.1,<0.16.0" },
     { name = "numpy", specifier = "<3" },
     { name = "pandas" },
     { name = "pyarrow", specifier = "<18" },
@@ -3702,7 +3667,7 @@ resolution-markers = [
 dependencies = [
     { name = "asciitree", marker = "python_full_version < '3.11'" },
     { name = "fasteners", marker = "python_full_version < '3.11' and sys_platform != 'emscripten'" },
-    { name = "numcodecs", version = "0.13.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numcodecs", marker = "python_full_version < '3.11'" },
     { name = "numpy", marker = "python_full_version < '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/23/c4/187a21ce7cf7c8f00c060dd0e04c2a81139bb7b1ab178bba83f2e1134ce2/zarr-2.18.3.tar.gz", hash = "sha256:2580d8cb6dd84621771a10d31c4d777dca8a27706a1a89b29f42d2d37e2df5ce", size = 3603224 }
@@ -3721,7 +3686,7 @@ resolution-markers = [
 dependencies = [
     { name = "asciitree", marker = "python_full_version >= '3.11'" },
     { name = "fasteners", marker = "python_full_version >= '3.11' and sys_platform != 'emscripten'" },
-    { name = "numcodecs", version = "0.16.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "numcodecs", marker = "python_full_version >= '3.11'" },
     { name = "numpy", marker = "python_full_version >= '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/0f/b2/383d8d613f51452e19337e5ec610d90892aa27f62354d23a68b7539670f3/zarr-2.18.6.tar.gz", hash = "sha256:2e4a6ad1b2ff57b652beba5a3a653b49da774514b28d224d84c5cd8ee72641af", size = 3604382 }
