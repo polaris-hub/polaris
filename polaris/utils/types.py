@@ -109,7 +109,7 @@ AccessType: TypeAlias = Literal["public", "private"]
 Type to specify access to a dataset, benchmark or result in the Hub.
 """
 
-TimeoutTypes = Tuple[int, int] | Literal["timeout", "never"]
+TimeoutTypes = tuple[int, int] | Literal["timeout", "never"]
 """
 Timeout types for specifying maximum wait times.
 """
