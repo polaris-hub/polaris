@@ -1,6 +1,5 @@
 # This script includes docking related evaluation metrics.
 
-from typing import Union, List
 
 import numpy as np
 from rdkit.Chem.rdMolAlign import CalcRMS
@@ -36,7 +35,7 @@ def _rmsd(mol_probe: dm.Mol, mol_ref: dm.Mol) -> float:
     )
 
 
-def rmsd_coverage(y_pred: Union[str, List[dm.Mol]], y_true: Union[str, list[dm.Mol]], max_rsmd: float = 2):
+def rmsd_coverage(y_pred: str | list[dm.Mol], y_true: str | list[dm.Mol], max_rsmd: float = 2):
     """
     Calculate the coverage of molecules with an RMSD less than a threshold (2 Å by default) compared to the reference molecule conformer.
 
