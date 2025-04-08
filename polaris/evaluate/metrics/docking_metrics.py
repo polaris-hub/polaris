@@ -1,6 +1,5 @@
 # This script includes docking related evaluation metrics.
 
-from typing import List
 
 import numpy as np
 from rdkit.Chem.rdMolAlign import CalcRMS
