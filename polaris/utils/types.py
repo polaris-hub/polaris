@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated, Any, Literal, Optional, Tuple
+from typing import Annotated, Any, Literal, Optional
 
 import numpy as np
 from pydantic import (
