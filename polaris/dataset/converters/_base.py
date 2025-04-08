@@ -1,5 +1,5 @@
 import abc
-from typing import Dict, Tuple, TypeAlias, Union
+from typing import Dict, Tuple, TypeAlias
 
 import pandas as pd
 
@@ -17,7 +17,7 @@ class Converter(abc.ABC):
         raise NotImplementedError
 
     @staticmethod
-    def get_pointer(column: str, index: Union[int, slice]) -> str:
+    def get_pointer(column: str, index: int | slice) -> str:
         """
         Creates a pointer.
 

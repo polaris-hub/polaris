@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated, Any, Literal, Optional, Tuple, Union
+from typing import Annotated, Any, Literal, Optional, Tuple
 
 import numpy as np
 from pydantic import (
@@ -19,7 +19,7 @@ SplitIndicesType: TypeAlias = list[int]
 A split is defined by a sequence of integers.
 """
 
-SplitType: TypeAlias = tuple[SplitIndicesType, Union[SplitIndicesType, dict[str, SplitIndicesType]]]
+SplitType: TypeAlias = tuple[SplitIndicesType, SplitIndicesType | dict[str, SplitIndicesType]]
 """
 A split is a pair of which the first item is always assumed to be the train set.
 The second item can either be a single test set or a dictionary with multiple, named test sets.
@@ -47,7 +47,7 @@ variety of representations and normalized into this standard format, a dictionar
 that looks like {"test_set_name": {"target_name": np.ndarray}}.
 """
 
-DatapointPartType = Union[Any, tuple[Any], dict[str, Any]]
+DatapointPartType = Any | tuple[Any] | dict[str, Any]
 DatapointType: TypeAlias = tuple[DatapointPartType, DatapointPartType]
 """
 A datapoint has:
@@ -109,7 +109,7 @@ AccessType: TypeAlias = Literal["public", "private"]
 Type to specify access to a dataset, benchmark or result in the Hub.
 """
 
-TimeoutTypes = Union[Tuple[int, int], Literal["timeout", "never"]]
+TimeoutTypes = Tuple[int, int] | Literal["timeout", "never"]
 """
 Timeout types for specifying maximum wait times.
 """
@@ -150,7 +150,7 @@ To index a dataset using square brackets, we have a few options:
 - A single row, e.g. dataset[0]
 - Specify a specific value, e.g. dataset[0, "col1"]
 
-There are more exciting options we could implement, such as slicing, 
+There are more exciting options we could implement, such as slicing,
 but this gets complex.
 """
 
