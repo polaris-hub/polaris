@@ -64,6 +64,8 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         source: The data source, e.g. a DOI, Github repo or URI.
         license: The dataset license. Polaris only supports some Creative Commons licenses. See [`SupportedLicenseType`][polaris.utils.types.SupportedLicenseType] for accepted ID values.
         curation_reference: A reference to the curation process, e.g. a DOI, Github repo or URI.
+        artifact_version: The version of the dataset.
+        artifact_changelog: A description of the changes made in this dataset version.
 
     For additional metadata attributes, see the base classes.
 
@@ -82,6 +84,10 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     source: HttpUrlString | None = None
     license: SupportedLicenseType | None = None
     curation_reference: HttpUrlString | None = None
+
+    # Version-related fields
+    artifact_version: int = 1
+    artifact_changelog: str | None = None
 
     # Private attributes
     _zarr_root: zarr.Group | None = PrivateAttr(None)
@@ -296,7 +302,12 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
+    def upload_to_hub(
+        self,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
+    ):
         """Uploads the dataset to the Polaris Hub."""
         raise NotImplementedError
 
