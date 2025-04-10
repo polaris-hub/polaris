@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Callable, Iterable, List, Literal, Sequence
+from typing import Callable, Iterable, Literal, Sequence
 
 import numpy as np
 import pandas as pd
@@ -239,7 +239,7 @@ class Subset:
         copy.input_cols = list(set(self.input_cols + input_cols))
         return copy
 
-    def filter_targets(self, target_cols: List[str] | str) -> Self:
+    def filter_targets(self, target_cols: list[str] | str) -> Self:
         """
         Filter the subset to only include the specified target columns.
 

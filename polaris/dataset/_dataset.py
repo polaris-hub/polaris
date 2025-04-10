@@ -2,7 +2,7 @@ import json
 from hashlib import md5
 from os import PathLike
 from pathlib import Path
-from typing import Any, ClassVar, List, Literal
+from typing import Any, ClassVar, Literal
 
 import fsspec
 import numpy as np
@@ -148,7 +148,7 @@ class DatasetV1(BaseDataset, ChecksumMixin):
 
     @computed_field
     @property
-    def zarr_md5sum_manifest(self) -> List[ZarrFileChecksum]:
+    def zarr_md5sum_manifest(self) -> list[ZarrFileChecksum]:
         """
         The Zarr Checksum manifest stores the checksums of all files in a Zarr archive.
         If the dataset doesn't use Zarr, this will simply return an empty list.

@@ -1,4 +1,3 @@
-from typing import Union
 from urllib.parse import urljoin
 
 from pydantic import ValidationInfo, field_validator
@@ -57,7 +56,7 @@ class PolarisHubSettings(BaseSettings):
     client_id: str = "agQP2xVM6JqMHvGc"
 
     # Networking settings
-    ca_bundle: Union[str, bool, None] = None
+    ca_bundle: str | bool | None = None
     default_timeout: TimeoutTypes = (10, 200)
 
     @field_validator("api_url", mode="before")
