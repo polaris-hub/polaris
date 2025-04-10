@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Optional, Sequence
 
 import fastpdb
 import numpy as np
@@ -156,7 +156,7 @@ class PDBConverter(Converter):
         return pdb_dict
 
     def _convert_pdb(
-        self, path: str, factory: "DatasetFactory", pdb_pointer: Union[str, int], append: bool = False
+        self, path: str, factory: "DatasetFactory", pdb_pointer: str | int, append: bool = False
     ) -> FactoryProduct:
         """
         Convert a single pdb to zarr file
