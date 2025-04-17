@@ -1203,6 +1203,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#polaris.hub.client.PolarisHubClient.list_models" class="md-nav__link">
+    <span class="md-ellipsis">
+      list_models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#polaris.hub.client.PolarisHubClient.upload_model" class="md-nav__link">
     <span class="md-ellipsis">
       upload_model
@@ -1544,6 +1553,15 @@
   <a href="#polaris.hub.client.PolarisHubClient.submit_competition_predictions" class="md-nav__link">
     <span class="md-ellipsis">
       submit_competition_predictions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polaris.hub.client.PolarisHubClient.list_models" class="md-nav__link">
+    <span class="md-ellipsis">
+      list_models
     </span>
   </a>
   
@@ -2149,7 +2167,7 @@ We prioritize v2 datasets over v1 datasets.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A list of dataset names in the format <code>owner/dataset_name</code>.</p>
+                <p>A list of dataset names in the format <code>owner/dataset_slug</code>.</p>
               </div>
             </td>
           </tr>
@@ -2290,7 +2308,8 @@ will infer a practical default based on the dataset's storage location.</p>
 
     <div class="doc doc-contents ">
 
-        <p>List all available benchmarks on the Polaris Hub.</p>
+        <p>List all available benchmarks (v1 and v2) on the Polaris Hub.
+We prioritize v2 benchmarks over v1 benchmarks.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2355,7 +2374,7 @@ will infer a practical default based on the dataset's storage location.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A list of benchmark names in the format <code>owner/benchmark_name</code>.</p>
+                <p>A list of benchmark names in the format <code>owner/benchmark_slug</code>.</p>
               </div>
             </td>
           </tr>
@@ -2491,7 +2510,7 @@ will infer a practical default based on the dataset's storage location.</p>
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">upload_results</span><span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">results</span><span class="p">:</span> <span class="n">BenchmarkResults</span><span class="p">,</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">results</span><span class="p">:</span> <span class="n">BenchmarkResultsV1</span> <span class="o">|</span> <span class="n">BenchmarkResultsV2</span><span class="p">,</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">access</span><span class="p">:</span> <span class="n">AccessType</span> <span class="o">=</span> <span class="s2">&quot;private&quot;</span><span class="p">,</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">owner</span><span class="p">:</span> <span class="n">HubOwner</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span>
@@ -2533,7 +2552,7 @@ before uploading.</p>
                 <code>results</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="polaris.evaluate.BenchmarkResults" href="evaluation.html#polaris.evaluate.BenchmarkResults">BenchmarkResults</a></code>
+                  <code><a class="autorefs autorefs-internal" title="polaris.evaluate.BenchmarkResults (polaris.evaluate.BenchmarkResultsV1)" href="evaluation.html#polaris.evaluate.BenchmarkResults">BenchmarkResultsV1</a> | <span title="polaris.evaluate.BenchmarkResultsV2">BenchmarkResultsV2</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3025,6 +3044,96 @@ the secure test set and store the result.</p>
             </td>
             <td>
                 <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.hub.client.PolarisHubClient.list_models" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">list_models</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">list_models</span><span class="p">(</span><span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>List all available models on the Polaris Hub.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>limit</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The maximum number of models to return.</p>
+              </div>
+            </td>
+            <td>
+                  <code>100</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>offset</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The offset from which to start returning models.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A list of models names in the format <code>owner/model_slug</code>.</p>
+              </div>
             </td>
           </tr>
       </tbody>
