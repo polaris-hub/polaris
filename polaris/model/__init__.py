@@ -30,6 +30,8 @@ class Model(BaseArtifactModel):
         readme (str): A detailed README describing the model.
         code_url (HttpUrlString | None): Optional URL pointing to the model's code repository.
         report_url (HttpUrlString | None): Optional URL linking to a report or publication related to the model.
+        artifact_version: The version of the model.
+        artifact_changelog: A description of the changes made in this model version.
 
     Methods:
         upload_to_hub(access: AccessType = "private", owner: HubOwner | str | None = None):
@@ -43,6 +45,10 @@ class Model(BaseArtifactModel):
     readme: str = ""
     code_url: HttpUrlString | None = None
     report_url: HttpUrlString | None = None
+
+    # Version-related fields
+    artifact_version: int = 1
+    artifact_changelog: str | None = None
 
     def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
         """
