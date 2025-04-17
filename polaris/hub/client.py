@@ -24,7 +24,7 @@ from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
 from polaris.competition import CompetitionSpecification
 from polaris.model import Model
 from polaris.dataset import Dataset, DatasetV1, DatasetV2
-from polaris.evaluate import BenchmarkResults, CompetitionPredictions
+from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2, CompetitionPredictions
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
@@ -265,7 +265,7 @@ class PolarisHubClient(OAuth2Client):
             offset: The offset from which to start returning datasets.
 
         Returns:
-            A list of dataset names in the format `owner/dataset_name`.
+            A list of dataset names in the format `owner/dataset_slug`.
         """
         with track_progress(description="Fetching datasets", total=1):
             # Step 1: Fetch enough v2 datasets to cover the offset and limit
@@ -383,14 +383,15 @@ class PolarisHubClient(OAuth2Client):
         return dataset
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
-        """List all available benchmarks on the Polaris Hub.
+        """List all available benchmarks (v1 and v2) on the Polaris Hub.
+        We prioritize v2 benchmarks over v1 benchmarks.
 
         Args:
             limit: The maximum number of benchmarks to return.
             offset: The offset from which to start returning benchmarks.
 
         Returns:
-            A list of benchmark names in the format `owner/benchmark_name`.
+            A list of benchmark names in the format `owner/benchmark_slug`.
         """
         with track_progress(description="Fetching benchmarks", total=1):
             # Step 1: Fetch enough v2 benchmarks to cover the offset and limit
@@ -398,7 +399,7 @@ class PolarisHubClient(OAuth2Client):
                 url="/v2/benchmark", method="GET", params={"limit": limit, "offset": offset}
             ).json()
             v2_data = v2_json_response["data"]
-            v2_benchmarks = [f"{HubOwner(**benchmark['owner'])}/{benchmark['name']}" for benchmark in v2_data]
+            v2_benchmarks = [benchmark["artifactId"] for benchmark in v2_data]
 
             # If v2 benchmarks satisfy the limit, return them
             if len(v2_benchmarks) == limit:
@@ -416,7 +417,7 @@ class PolarisHubClient(OAuth2Client):
                 },
             ).json()
             v1_data = v1_json_response["data"]
-            v1_benchmarks = [f"{HubOwner(**benchmark['owner'])}/{benchmark['name']}" for benchmark in v1_data]
+            v1_benchmarks = [benchmark["artifactId"] for benchmark in v1_data]
 
             # Combine the v2 and v1 benchmarks
             combined_benchmarks = v2_benchmarks + v1_benchmarks
@@ -491,11 +492,11 @@ class PolarisHubClient(OAuth2Client):
         with StorageSession(self, "read", BenchmarkV2Specification.urn_for(owner, slug)) as storage:
             split = {label: storage.get_file(label) for label in response_data.get("split", {}).keys()}
 
-        return BenchmarkV2Specification(**response_data, split=split)
+        return BenchmarkV2Specification(**{**response_data, "split": split})
 
     def upload_results(
         self,
-        results: BenchmarkResults,
+        results: BenchmarkResultsV1 | BenchmarkResultsV2,
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
     ):
@@ -911,6 +912,24 @@ class PolarisHubClient(OAuth2Client):
             )
             return response
 
+    def list_models(self, limit: int = 100, offset: int = 0) -> list[str]:
+        """List all available models on the Polaris Hub.
+
+        Args:
+            limit: The maximum number of models to return.
+            offset: The offset from which to start returning models.
+
+        Returns:
+            A list of models names in the format `owner/model_slug`.
+        """
+        with track_progress(description="Fetching models", total=1):
+            json_response = self._base_request_to_hub(
+                url="/v2/model", method="GET", params={"limit": limit, "offset": offset}
+            ).json()
+            models = [model["artifactId"] for model in json_response["data"]]
+
+            return models
+
     def get_model(self, artifact_id: str) -> Model:
         url = f"/v2/model/{artifact_id}"
         response = self._base_request_to_hub(url=url, method="GET")
@@ -947,9 +966,8 @@ class PolarisHubClient(OAuth2Client):
             model_json = model.model_dump(by_alias=True, exclude_none=True)
 
             # Make a request to the Hub
-            response = self._base_request_to_hub(
-                url="/v2/model", method="POST", json={"access": access, **model_json}
-            )
+            url = f"/v2/model/{model.artifact_id}"
+            response = self._base_request_to_hub(url=url, method="PUT", json={"access": access, **model_json})
 
             # Inform the user about where to find their newly created artifact.
             model_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
