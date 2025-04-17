@@ -50,11 +50,16 @@ class Model(BaseArtifactModel):
     artifact_version: int = 1
     artifact_changelog: str | None = None
 
-    def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
+    def upload_to_hub(
+        self,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
+    ):
         """
         Uploads the model to the Polaris Hub.
         """
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient() as client:
-            client.upload_model(self, owner=owner, access=access)
+            client.upload_model(self, owner=owner, access=access, parent_artifact_id=parent_artifact_id)

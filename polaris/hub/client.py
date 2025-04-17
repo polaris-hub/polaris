@@ -942,6 +942,7 @@ class PolarisHubClient(OAuth2Client):
         model: Model,
         access: AccessType = "private",
         owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
     ):
         """Upload a model to the Polaris Hub.
 
@@ -959,6 +960,7 @@ class PolarisHubClient(OAuth2Client):
             model: The model to upload.
             access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `model.owner`.
+            parent_artifact_id: The `owner/slug` of the parent model, if uploading a new version of a model.
         """
         with track_progress(description="Uploading model", total=1) as (progress, task):
             # Get the serialized model data-structure
@@ -967,11 +969,16 @@ class PolarisHubClient(OAuth2Client):
 
             # Make a request to the Hub
             url = f"/v2/model/{model.artifact_id}"
-            response = self._base_request_to_hub(url=url, method="PUT", json={"access": access, **model_json})
+            response = self._base_request_to_hub(
+                url=url,
+                method="PUT",
+                json={"access": access, "parentArtifactId": parent_artifact_id, **model_json},
+            )
+
+            # NOTE: When we merge in the competition model feature, we will need to update the slug with the inserted model slug to make sure we write to the correct storage location.
 
             # Inform the user about where to find their newly created artifact.
             model_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
-
             progress.log(
                 f"[green]Your model has been successfully uploaded to the Hub. View it here: {model_url}"
             )
