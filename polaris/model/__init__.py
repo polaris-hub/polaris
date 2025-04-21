@@ -1,6 +1,7 @@
 from polaris._artifact import BaseArtifactModel
 from polaris.utils.types import HttpUrlString
 from polaris.utils.types import AccessType, HubOwner
+from pydantic import Field
 
 
 class Model(BaseArtifactModel):
@@ -47,7 +48,7 @@ class Model(BaseArtifactModel):
     report_url: HttpUrlString | None = None
 
     # Version-related fields
-    artifact_version: int = 1
+    artifact_version: int = Field(default=1, frozen=True)
     artifact_changelog: str | None = None
 
     def upload_to_hub(
