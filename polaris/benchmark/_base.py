@@ -133,7 +133,7 @@ class BenchmarkSpecification(
     readme: str = ""
 
     # Version-related fields
-    artifact_version: int = 1
+    artifact_version: int = Field(default=1, frozen=True)
     artifact_changelog: str | None = None
 
     @computed_field

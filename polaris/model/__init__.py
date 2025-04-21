@@ -1,6 +1,7 @@
 from polaris._artifact import BaseArtifactModel
 from polaris.utils.types import HttpUrlString
 from polaris.utils.types import AccessType, HubOwner
+from pydantic import Field
 
 
 class Model(BaseArtifactModel):
@@ -30,6 +31,8 @@ class Model(BaseArtifactModel):
         readme (str): A detailed README describing the model.
         code_url (HttpUrlString | None): Optional URL pointing to the model's code repository.
         report_url (HttpUrlString | None): Optional URL linking to a report or publication related to the model.
+        artifact_version: The version of the model.
+        artifact_changelog: A description of the changes made in this model version.
 
     Methods:
         upload_to_hub(access: AccessType = "private", owner: HubOwner | str | None = None):
@@ -44,11 +47,20 @@ class Model(BaseArtifactModel):
     code_url: HttpUrlString | None = None
     report_url: HttpUrlString | None = None
 
-    def upload_to_hub(self, access: AccessType = "private", owner: HubOwner | str | None = None):
+    # Version-related fields
+    artifact_version: int = Field(default=1, frozen=True)
+    artifact_changelog: str | None = None
+
+    def upload_to_hub(
+        self,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
+    ):
         """
         Uploads the model to the Polaris Hub.
         """
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient() as client:
-            client.upload_model(self, owner=owner, access=access)
+            client.upload_model(self, owner=owner, access=access, parent_artifact_id=parent_artifact_id)

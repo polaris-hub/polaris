@@ -86,7 +86,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
     curation_reference: HttpUrlString | None = None
 
     # Version-related fields
-    artifact_version: int = 1
+    artifact_version: int = Field(default=1, frozen=True)
     artifact_changelog: str | None = None
 
     # Private attributes
