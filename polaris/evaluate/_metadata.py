@@ -55,7 +55,7 @@ class ResultsMetadataV2(BaseArtifactModel):
     @computed_field
     @property
     def model_artifact_id(self) -> str:
-        return self.model.artifact_id
+        return self.model.artifact_id if self.model else None
 
     def _repr_html_(self) -> str:
         return dict2html(self.model_dump())
