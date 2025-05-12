@@ -301,16 +301,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def upload_to_hub(
-        self,
-        access: AccessType = "private",
-        owner: HubOwner | str | None = None,
-        parent_artifact_id: str | None = None,
-    ):
-        """Uploads the dataset to the Polaris Hub."""
-        raise NotImplementedError
-
     @classmethod
     @abc.abstractmethod
     def from_json(cls, path: str):

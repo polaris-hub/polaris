@@ -167,30 +167,6 @@ class BenchmarkSpecification(
             featurization_fn=featurization_fn,
         )
 
-    def upload_to_hub(
-        self,
-        settings: PolarisHubSettings | None = None,
-        cache_auth_token: bool = True,
-        access: AccessType = "private",
-        owner: HubOwner | str | None = None,
-        parent_artifact_id: str | None = None,
-        **kwargs: dict,
-    ):
-        """
-        Very light, convenient wrapper around the
-        [`PolarisHubClient.upload_benchmark`][polaris.hub.client.PolarisHubClient.upload_benchmark] method.
-        """
-        from polaris.hub.client import PolarisHubClient
-
-        with PolarisHubClient(
-            settings=settings,
-            cache_auth_token=cache_auth_token,
-            **kwargs,
-        ) as client:
-            return client.upload_benchmark(
-                self, access=access, owner=owner, parent_artifact_id=parent_artifact_id
-            )
-
     def to_json(self, destination: str) -> str:
         """Save the benchmark to a destination directory as a JSON file.
 
