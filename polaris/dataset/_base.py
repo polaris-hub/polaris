@@ -29,11 +29,9 @@ from polaris.utils.context import track_progress
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
-    AccessType,
     ChecksumStrategy,
     DatasetIndex,
     HttpUrlString,
-    HubOwner,
     SupportedLicenseType,
     ZarrConflictResolution,
 )

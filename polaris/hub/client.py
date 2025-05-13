@@ -1,13 +1,10 @@
 import json
 import logging
-from hashlib import md5
 from io import BytesIO
-from typing import get_args
 from urllib.parse import urljoin
 
 import httpx
 import pandas as pd
-import zarr
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2 import OAuth2Error, TokenAuth
@@ -31,7 +28,6 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.hub.storage import StorageSession
 from polaris.utils.context import track_progress
 from polaris.utils.errors import (
-    InvalidDatasetError,
     PolarisCreateArtifactError,
     PolarisHubError,
     PolarisRetrieveArtifactError,
@@ -42,9 +38,6 @@ from polaris.utils.types import (
     AccessType,
     ChecksumStrategy,
     HubOwner,
-    SupportedLicenseType,
-    TimeoutTypes,
-    ZarrConflictResolution,
 )
 
 logger = logging.getLogger(__name__)

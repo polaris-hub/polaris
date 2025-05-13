@@ -24,13 +24,10 @@ from polaris.dataset import DatasetV1, Subset
 from polaris.dataset._base import BaseDataset
 from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2
 from polaris.evaluate.utils import evaluate_benchmark
-from polaris.hub.settings import PolarisHubSettings
 from polaris.mixins import ChecksumMixin
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import (
-    AccessType,
-    HubOwner,
     IncomingPredictionsType,
     TargetType,
 )
