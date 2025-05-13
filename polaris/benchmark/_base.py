@@ -185,9 +185,7 @@ class BenchmarkSpecification(
             cache_auth_token=cache_auth_token,
             **kwargs,
         ) as client:
-            return client.upload_benchmark(
-                self, owner=owner, parent_artifact_id=parent_artifact_id
-            )
+            return client.upload_benchmark(self, owner=owner, parent_artifact_id=parent_artifact_id)
 
     def to_json(self, destination: str) -> str:
         """Save the benchmark to a destination directory as a JSON file.
