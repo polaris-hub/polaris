@@ -21,9 +21,6 @@ nav:
       - Submit:      
         - Submit to a Benchmark: tutorials/submit_to_benchmark.ipynb
         - Submit to a Competition: tutorials/submit_to_competition.ipynb
-      - Create:
-        - Create a Dataset: tutorials/create_a_dataset.ipynb
-        - Create a Benchmark: tutorials/create_a_benchmark.ipynb
   - API Reference:
       - Load: api/load.md
       - Core:
