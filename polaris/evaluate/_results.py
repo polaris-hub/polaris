@@ -16,7 +16,6 @@ from polaris.evaluate import ResultsMetadataV1, ResultsMetadataV2
 from polaris.utils.errors import InvalidResultError
 from polaris.utils.misc import slugify
 from polaris.utils.types import (
-    AccessType,
     HubOwner,
     SlugCompatibleStringType,
 )
@@ -173,7 +172,6 @@ class BaseBenchmarkResults:
 
     def upload_to_hub(
         self,
-        access: AccessType = "private",
         owner: HubOwner | str | None = None,
         **kwargs: dict,
     ):
@@ -184,7 +182,7 @@ class BaseBenchmarkResults:
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient(**kwargs) as client:
-            return client.upload_results(self, access=access, owner=owner)
+            return client.upload_results(self, owner=owner)
 
 
 class BenchmarkResultsV1(EvaluationResultV1, BaseBenchmarkResults):

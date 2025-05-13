@@ -1,6 +1,6 @@
 from polaris._artifact import BaseArtifactModel
 from polaris.utils.types import HttpUrlString
-from polaris.utils.types import AccessType, HubOwner
+from polaris.utils.types import HubOwner
 from pydantic import Field
 
 
@@ -35,8 +35,8 @@ class Model(BaseArtifactModel):
         artifact_changelog: A description of the changes made in this model version.
 
     Methods:
-        upload_to_hub(access: AccessType = "private", owner: HubOwner | str | None = None):
-            Uploads the model artifact to the Polaris Hub, associating it with a specified owner and access level.
+        upload_to_hub(owner: HubOwner | str | None = None):
+            Uploads the model artifact to the Polaris Hub, associating it with a specified owner.
 
     For additional metadata attributes, see the base class.
     """
@@ -53,7 +53,6 @@ class Model(BaseArtifactModel):
 
     def upload_to_hub(
         self,
-        access: AccessType = "private",
         owner: HubOwner | str | None = None,
         parent_artifact_id: str | None = None,
     ):
@@ -63,4 +62,4 @@ class Model(BaseArtifactModel):
         from polaris.hub.client import PolarisHubClient
 
         with PolarisHubClient() as client:
-            client.upload_model(self, owner=owner, access=access, parent_artifact_id=parent_artifact_id)
+            client.upload_model(self, owner=owner, parent_artifact_id=parent_artifact_id)

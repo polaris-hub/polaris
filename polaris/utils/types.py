@@ -104,11 +104,6 @@ The direction of any variable to be sorted.
 This can be used to sort the metric score, indicate the optmization direction of endpoint.
 """
 
-AccessType: TypeAlias = Literal["public", "private"]
-"""
-Type to specify access to a dataset, benchmark or result in the Hub.
-"""
-
 TimeoutTypes = tuple[int, int] | Literal["timeout", "never"]
 """
 Timeout types for specifying maximum wait times.

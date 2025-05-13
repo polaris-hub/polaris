@@ -29,7 +29,6 @@ from polaris.mixins import ChecksumMixin
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import (
-    AccessType,
     HubOwner,
     IncomingPredictionsType,
     TargetType,
@@ -171,7 +170,6 @@ class BenchmarkSpecification(
         self,
         settings: PolarisHubSettings | None = None,
         cache_auth_token: bool = True,
-        access: AccessType = "private",
         owner: HubOwner | str | None = None,
         parent_artifact_id: str | None = None,
         **kwargs: dict,
@@ -188,7 +186,7 @@ class BenchmarkSpecification(
             **kwargs,
         ) as client:
             return client.upload_benchmark(
-                self, access=access, owner=owner, parent_artifact_id=parent_artifact_id
+                self, owner=owner, parent_artifact_id=parent_artifact_id
             )
 
     def to_json(self, destination: str) -> str:
