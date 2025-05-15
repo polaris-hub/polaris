@@ -1,13 +1,10 @@
 import json
 import logging
-from hashlib import md5
 from io import BytesIO
-from typing import get_args
 from urllib.parse import urljoin
 
 import httpx
 import pandas as pd
-import zarr
 from authlib.integrations.base_client.errors import InvalidTokenError, MissingTokenError
 from authlib.integrations.httpx_client import OAuth2Client, OAuthError
 from authlib.oauth2 import OAuth2Error, TokenAuth
@@ -31,17 +28,16 @@ from polaris.hub.settings import PolarisHubSettings
 from polaris.hub.storage import StorageSession
 from polaris.utils.context import track_progress
 from polaris.utils.errors import (
-    InvalidDatasetError,
     PolarisCreateArtifactError,
     PolarisHubError,
     PolarisRetrieveArtifactError,
     PolarisSSLError,
     PolarisUnauthorizedError,
+    PolarisDeprecatedError,
 )
 from polaris.utils.types import (
     ChecksumStrategy,
     HubOwner,
-    SupportedLicenseType,
     TimeoutTypes,
     ZarrConflictResolution,
 )
@@ -530,6 +526,8 @@ class PolarisHubClient(OAuth2Client):
                 f"[green]Your result has been successfully uploaded to the Hub. View it here: {result_url}"
             )
 
+    # Note: Unused parameters are included in signature for backwards compatibility.
+    # Removing these parameters results in a TypeError before the PolarisDeprecatedError is raised.
     def upload_dataset(
         self,
         dataset: DatasetV1 | DatasetV2,
@@ -539,6 +537,8 @@ class PolarisHubClient(OAuth2Client):
         parent_artifact_id: str | None = None,
     ):
         """Upload a dataset to the Polaris Hub.
+
+        This functionality has been deprecated.
 
         Info: Owner
             You have to manually specify the owner in the dataset data model. Because the owner could
@@ -562,178 +562,10 @@ class PolarisHubClient(OAuth2Client):
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
             parent_artifact_id: The `owner/slug` of the parent dataset, if uploading a new version of a dataset.
         """
-        # Normalize timeout
-        if timeout is None:
-            timeout = self.settings.default_timeout
+        raise PolarisDeprecatedError("dataset uploading")
 
-        # Check if a dataset license was specified prior to upload
-        if not dataset.license:
-            raise InvalidDatasetError(
-                f"\nPlease specify a supported license for this dataset prior to uploading to the Polaris Hub.\nOnly some licenses are supported - {get_args(SupportedLicenseType)}."
-            )
-
-        if isinstance(dataset, DatasetV1):
-            self._upload_v1_dataset(dataset, timeout, owner, if_exists, parent_artifact_id)
-        elif isinstance(dataset, DatasetV2):
-            self._upload_v2_dataset(dataset, timeout, owner, if_exists, parent_artifact_id)
-
-    def _upload_v1_dataset(
-        self,
-        dataset: DatasetV1,
-        timeout: TimeoutTypes,
-        owner: HubOwner | str | None,
-        if_exists: ZarrConflictResolution,
-        parent_artifact_id: str | None,
-    ):
-        """
-        Upload a V1 dataset to the Polaris Hub.
-        """
-
-        with track_progress(description="Uploading dataset", total=1) as (progress, task):
-            # Get the serialized data-model
-            # We exclude the table as it handled separately
-            dataset.owner = HubOwner.normalize(owner or dataset.owner)
-            dataset_json = dataset.model_dump(exclude={"table"}, exclude_none=True, by_alias=True)
-
-            # If the dataset uses Zarr, we will save the Zarr archive to the Hub as well
-            if dataset.uses_zarr:
-                dataset_json["zarrRootPath"] = f"{StorageSession.polaris_protocol}://data.zarr"
-
-            # Uploading a dataset is a three-step process.
-            # 1. Upload the dataset metadata to the Hub and prepare the Hub to receive the data
-            # 2. Upload the parquet file to Hub storage
-            # 3. Upload the associated Zarr archive to Hub storage
-
-            # Prepare the parquet file
-            in_memory_parquet = BytesIO()
-            dataset.table.to_parquet(in_memory_parquet)
-            parquet_size = len(in_memory_parquet.getbuffer())
-            parquet_md5 = md5(in_memory_parquet.getbuffer()).hexdigest()
-
-            # Step 1: Upload metadata
-            # Instead of directly uploading the data, we announce to the Hub that we intend to upload it.
-            # We do so separately for the Zarr archive and Parquet file.
-            url = f"/v1/dataset/{dataset.artifact_id}"
-            response = self._base_request_to_hub(
-                url=url,
-                method="PUT",
-                json={
-                    "tableContent": {
-                        "size": parquet_size,
-                        "fileType": "parquet",
-                        "md5Sum": parquet_md5,
-                    },
-                    "zarrContent": [md5sum.model_dump() for md5sum in dataset._zarr_md5sum_manifest],
-                    "parentArtifactId": parent_artifact_id,
-                    **dataset_json,
-                },
-                timeout=timeout,
-            )
-
-            inserted_dataset = response.json()
-
-            # We modify the slug in the server
-            # Update dataset.slug here so dataset.urn is constructed correctly
-            dataset.slug = inserted_dataset["slug"]
-
-            with StorageSession(self, "write", dataset.urn) as storage:
-                with track_progress(description="Copying Parquet file", total=1) as (progress, task):
-                    # Step 2: Upload the parquet file
-                    progress.log("[yellow]This may take a while.")
-                    storage.set_file("root", in_memory_parquet.getvalue())
-
-                    # Step 3: Upload any associated Zarr archive
-                if dataset.uses_zarr:
-                    with track_progress(description="Copying Zarr archive", total=1):
-                        destination = storage.store("extension")
-
-                        # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
-                        # metadata based on Zarr developers' recommendations can be tracked at:
-                        # https://github.com/zarr-developers/zarr-python/issues/1731
-                        zarr.consolidate_metadata(dataset.zarr_root.store.store)
-                        zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
-                        destination[".zmetadata"] = zmetadata_content
-
-                        # Copy the Zarr archive to the Hub
-                        destination.copy_from_source(
-                            dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
-                        )
-
-            dataset_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
-            progress.log(
-                f"[green]Your dataset has been successfully uploaded to the Hub.\nView it here: {dataset_url}"
-            )
-
-    def _upload_v2_dataset(
-        self,
-        dataset: DatasetV2,
-        timeout: TimeoutTypes,
-        owner: HubOwner | str | None,
-        if_exists: ZarrConflictResolution,
-        parent_artifact_id: str | None,
-    ):
-        """
-        Upload a V2 dataset to the Polaris Hub.
-        """
-
-        with track_progress(description="Uploading dataset", total=1) as (progress, task):
-            # Get the serialized data-model
-            dataset.owner = HubOwner.normalize(owner or dataset.owner)
-            dataset_json = dataset.model_dump(exclude_none=True, by_alias=True)
-
-            # Step 1: Upload dataset metadata
-            url = f"/v2/dataset/{dataset.artifact_id}"
-            response = self._base_request_to_hub(
-                url=url,
-                method="PUT",
-                json={
-                    "zarrManifestFileContent": {
-                        "md5Sum": dataset.zarr_manifest_md5sum,
-                    },
-                    "parentArtifactId": parent_artifact_id,
-                    **dataset_json,
-                },
-                timeout=timeout,
-            )
-
-            inserted_dataset = response.json()
-
-            # We modify the slug in the server
-            # Update dataset.slug here so dataset.urn is constructed correctly
-            dataset.slug = inserted_dataset["slug"]
-
-            with StorageSession(self, "write", dataset.urn) as storage:
-                # Step 2: Upload the manifest file
-                with track_progress(description="Copying manifest file", total=1):
-                    with open(dataset.zarr_manifest_path, "rb") as manifest_file:
-                        storage.set_file("manifest", manifest_file.read())
-
-                # Step 3: Upload the Zarr archive
-                with track_progress(description="Copying Zarr archive", total=1) as (
-                    progress_zarr,
-                    task_zarr,
-                ):
-                    progress_zarr.log("[yellow]This may take a while.")
-
-                    destination = storage.store("root")
-
-                    # Locally consolidate Zarr archive metadata. Future updates on handling consolidated
-                    # metadata based on Zarr developers' recommendations can be tracked at:
-                    # https://github.com/zarr-developers/zarr-python/issues/1731
-                    zarr.consolidate_metadata(dataset.zarr_root.store.store)
-                    zmetadata_content = dataset.zarr_root.store.store[".zmetadata"]
-                    destination[".zmetadata"] = zmetadata_content
-
-                    # Copy the Zarr archive to the Hub
-                    destination.copy_from_source(
-                        dataset.zarr_root.store.store, if_exists=if_exists, log=logger.info
-                    )
-
-            dataset_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
-            progress.log(
-                f"[green]Your V2 dataset has been successfully uploaded to the Hub.\nView it here: {dataset_url}"
-            )
-
+    # Note: Unused parameters are included in signature for backwards compatibility.
+    # Removing these parameters results in a TypeError before the PolarisDeprecatedError is raised.
     def upload_benchmark(
         self,
         benchmark: BenchmarkV1Specification | BenchmarkV2Specification,
@@ -741,6 +573,8 @@ class PolarisHubClient(OAuth2Client):
         parent_artifact_id: str | None = None,
     ):
         """Upload a benchmark to the Polaris Hub.
+
+        This functionality has been deprecated.
 
         Info: Owner
             You have to manually specify the owner in the benchmark data model. Because the owner could
@@ -761,91 +595,7 @@ class PolarisHubClient(OAuth2Client):
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
             parent_artifact_id: The `owner/slug` of the parent benchmark, if uploading a new version of a benchmark.
         """
-        match benchmark:
-            case BenchmarkV1Specification():
-                self._upload_v1_benchmark(benchmark, owner, parent_artifact_id)
-            case BenchmarkV2Specification():
-                self._upload_v2_benchmark(benchmark, owner, parent_artifact_id)
-
-    def _upload_v1_benchmark(
-        self,
-        benchmark: BenchmarkV1Specification,
-        owner: HubOwner | str | None = None,
-        parent_artifact_id: str | None = None,
-    ):
-        """
-        Upload a V1 benchmark to the Polaris Hub.
-        """
-        with track_progress(description="Uploading benchmark", total=1) as (progress, task):
-            # Get the serialized data-model
-            # We exclude the dataset as we expect it to exist on the Hub already.
-            benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
-            benchmark_json = benchmark.model_dump(exclude={"dataset"}, exclude_none=True, by_alias=True)
-            benchmark_json["datasetArtifactId"] = benchmark.dataset.artifact_id
-
-            url = f"/v1/benchmark/{benchmark.artifact_id}"
-            response = self._base_request_to_hub(
-                url=url, method="PUT", json={"parentArtifactId": parent_artifact_id, **benchmark_json}
-            )
-
-            benchmark_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
-            progress.log(
-                f"[green]Your benchmark has been successfully uploaded to the Hub.\nView it here: {benchmark_url}"
-            )
-
-    def _upload_v2_benchmark(
-        self,
-        benchmark: BenchmarkV2Specification,
-        owner: HubOwner | str | None = None,
-        parent_artifact_id: str | None = None,
-    ):
-        """
-        Upload a V2 benchmark to the Polaris Hub.
-        """
-        with track_progress(description="Uploading benchmark", total=1) as (progress, task):
-            # Get the serialized data-model
-            # We exclude the dataset as we expect it to exist on the Hub already.
-            benchmark.owner = HubOwner.normalize(owner or benchmark.owner)
-            benchmark_json = benchmark.model_dump(exclude_none=True, by_alias=True)
-
-            # Uploading a V2 benchmark is a multistep process.
-            # 1. Upload the benchmark metadata to the Hub and prepare the Hub to receive the data
-            # 2. Upload each index set bitmap to the Hub storage
-
-            # Step 1: Upload metadata
-            url = f"/v2/benchmark/{benchmark.artifact_id}"
-            response = self._base_request_to_hub(
-                url=url,
-                method="PUT",
-                json={
-                    "datasetArtifactId": benchmark.dataset.artifact_id,
-                    "parentArtifactId": parent_artifact_id,
-                    **benchmark_json,
-                },
-            )
-
-            inserted_benchmark = response.json()
-
-            # We modify the slug in the server
-            # Update benchmark.slug here so benchmark.urn is constructed correctly
-            benchmark.slug = inserted_benchmark["slug"]
-
-            with StorageSession(self, "write", benchmark.urn) as storage:
-                logger.info("Copying the benchmark split to the Hub. This may take a while.")
-
-                # 2. Upload each index set bitmap
-                with track_progress(
-                    description="Copying index sets", total=benchmark.split.n_test_sets + 1
-                ) as (progress_index_sets, task_index_sets):
-                    for label, index_set in benchmark.split:
-                        logger.info(f"Copying index set {label} to the Hub.")
-                        storage.set_file(label, index_set.serialize())
-                        progress_index_sets.update(task_index_sets, advance=1, refresh=True)
-
-            benchmark_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
-            progress.log(
-                f"[green]Your benchmark has been successfully uploaded to the Hub.\nView it here: {benchmark_url}"
-            )
+        raise PolarisDeprecatedError("benchmark uploading")
 
     def get_competition(self, artifact_id: str) -> CompetitionSpecification:
         """Load a competition from the Polaris Hub.

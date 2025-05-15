@@ -30,7 +30,6 @@ This library is a Python client to interact with the [Polaris Hub](https://polar
 
 - Download Polaris datasets and benchmarks.
 - Evaluate a custom method against a Polaris benchmark.
-- Create and upload new datasets and benchmarks.
 
 ## Quick API Tour
 
