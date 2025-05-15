@@ -36,7 +36,6 @@ from polaris.utils.errors import (
     PolarisDeprecatedError,
 )
 from polaris.utils.types import (
-    AccessType,
     ChecksumStrategy,
     HubOwner,
     TimeoutTypes,
@@ -493,7 +492,6 @@ class PolarisHubClient(OAuth2Client):
     def upload_results(
         self,
         results: BenchmarkResultsV1 | BenchmarkResultsV2,
-        access: AccessType = "private",
         owner: HubOwner | str | None = None,
     ):
         """Upload the results to the Polaris Hub.
@@ -511,7 +509,6 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             results: The results to upload.
-            access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `results.owner`.
         """
         with track_progress(description="Uploading results", total=1) as (progress, task):
@@ -520,9 +517,7 @@ class PolarisHubClient(OAuth2Client):
             result_json = results.model_dump(by_alias=True, exclude_none=True)
 
             # Make a request to the Hub
-            response = self._base_request_to_hub(
-                url="/v2/result", method="POST", json={"access": access, **result_json}
-            )
+            response = self._base_request_to_hub(url="/v2/result", method="POST", json=result_json)
 
             # Inform the user about where to find their newly created artifact.
             result_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
@@ -536,7 +531,6 @@ class PolarisHubClient(OAuth2Client):
     def upload_dataset(
         self,
         dataset: DatasetV1 | DatasetV2,
-        access: AccessType = "private",
         timeout: TimeoutTypes = (10, 200),
         owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
@@ -558,7 +552,6 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             dataset: The dataset to upload.
-            access: Grant public or private access to result
             timeout: Request timeout values. User can modify the value when uploading large dataset as needed.
                 This can be a single value with the timeout in seconds for all IO operations, or a more granular
                 tuple with (connect_timeout, write_timeout). The type of the the timout parameter comes from `httpx`.
@@ -576,7 +569,6 @@ class PolarisHubClient(OAuth2Client):
     def upload_benchmark(
         self,
         benchmark: BenchmarkV1Specification | BenchmarkV2Specification,
-        access: AccessType = "private",
         owner: HubOwner | str | None = None,
         parent_artifact_id: str | None = None,
     ):
@@ -600,7 +592,6 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             benchmark: The benchmark to upload.
-            access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
             parent_artifact_id: The `owner/slug` of the parent benchmark, if uploading a new version of a benchmark.
         """
@@ -682,7 +673,6 @@ class PolarisHubClient(OAuth2Client):
     def upload_model(
         self,
         model: Model,
-        access: AccessType = "private",
         owner: HubOwner | str | None = None,
         parent_artifact_id: str | None = None,
     ):
@@ -700,7 +690,6 @@ class PolarisHubClient(OAuth2Client):
 
         Args:
             model: The model to upload.
-            access: Grant public or private access to result
             owner: Which Hub user or organization owns the artifact. Takes precedence over `model.owner`.
             parent_artifact_id: The `owner/slug` of the parent model, if uploading a new version of a model.
         """
@@ -714,7 +703,7 @@ class PolarisHubClient(OAuth2Client):
             response = self._base_request_to_hub(
                 url=url,
                 method="PUT",
-                json={"access": access, "parentArtifactId": parent_artifact_id, **model_json},
+                json={"parentArtifactId": parent_artifact_id, **model_json},
             )
 
             # NOTE: When we merge in the competition model feature, we will need to update the slug with the inserted model slug to make sure we write to the correct storage location.
