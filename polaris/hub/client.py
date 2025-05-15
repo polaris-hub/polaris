@@ -542,6 +542,33 @@ class PolarisHubClient(OAuth2Client):
         if_exists: ZarrConflictResolution = "replace",
         parent_artifact_id: str | None = None,
     ):
+        """Upload a dataset to the Polaris Hub.
+
+        This functionality has been deprecated.
+
+        Info: Owner
+            You have to manually specify the owner in the dataset data model. Because the owner could
+            be a user or an organization, we cannot automatically infer this from just the logged-in user.
+
+        Note: Required metadata
+            The Polaris client and Hub maintain different requirements as to which metadata is required.
+            The requirements by the Hub are stricter, so when uploading to the Hub you might
+            get some errors on missing metadata. Make sure to fill-in as much of the metadata as possible
+            before uploading.
+
+        Args:
+            dataset: The dataset to upload.
+            access: Grant public or private access to result
+            timeout: Request timeout values. User can modify the value when uploading large dataset as needed.
+                This can be a single value with the timeout in seconds for all IO operations, or a more granular
+                tuple with (connect_timeout, write_timeout). The type of the the timout parameter comes from `httpx`.
+                Since datasets can get large, it might be needed to increase the write timeout for larger datasets.
+                See also: https://www.python-httpx.org/advanced/#timeout-configuration
+            owner: Which Hub user or organization owns the artifact. Takes precedence over `dataset.owner`.
+            if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
+                an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
+            parent_artifact_id: The `owner/slug` of the parent dataset, if uploading a new version of a dataset.
+        """
         raise PolarisDeprecatedError("dataset uploading")
 
     # Note: Unused parameters are included in signature for backwards compatibility.
@@ -553,6 +580,30 @@ class PolarisHubClient(OAuth2Client):
         owner: HubOwner | str | None = None,
         parent_artifact_id: str | None = None,
     ):
+        """Upload a benchmark to the Polaris Hub.
+
+        This functionality has been deprecated.
+
+        Info: Owner
+            You have to manually specify the owner in the benchmark data model. Because the owner could
+            be a user or an organization, we cannot automatically infer this from the logged-in user.
+
+        Note: Required metadata
+            The Polaris client and Hub maintain different requirements as to which metadata is required.
+            The requirements by the Hub are stricter, so when uploading to the Hub you might
+            get some errors on missing metadata. Make sure to fill-in as much of the metadata as possible
+            before uploading.
+
+        Note: Non-existent datasets
+            The client will _not_ upload the associated dataset to the Hub if it does not yet exist.
+            Make sure to specify an existing dataset or upload the dataset first.
+
+        Args:
+            benchmark: The benchmark to upload.
+            access: Grant public or private access to result
+            owner: Which Hub user or organization owns the artifact. Takes precedence over `benchmark.owner`.
+            parent_artifact_id: The `owner/slug` of the parent benchmark, if uploading a new version of a benchmark.
+        """
         raise PolarisDeprecatedError("benchmark uploading")
 
     def get_competition(self, artifact_id: str) -> CompetitionSpecification:

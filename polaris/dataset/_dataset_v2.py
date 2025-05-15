@@ -191,7 +191,7 @@ class DatasetV2(BaseDataset):
             arr = adapter(arr)
 
         return arr
-    
+
     def upload_to_hub(
         self,
         access: AccessType = "private",
