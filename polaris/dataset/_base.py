@@ -29,9 +29,11 @@ from polaris.utils.context import track_progress
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
+    AccessType,
     ChecksumStrategy,
     DatasetIndex,
     HttpUrlString,
+    HubOwner,
     SupportedLicenseType,
     ZarrConflictResolution,
 )
@@ -297,6 +299,16 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             A numpy array with the data at the specified indices. If the column is a pointer column,
                 the content of the referenced file is loaded to memory.
         """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def upload_to_hub(
+        self,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
+    ):
+        """Uploads the dataset to the Polaris Hub."""
         raise NotImplementedError
 
     @classmethod

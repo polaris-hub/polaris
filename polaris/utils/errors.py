@@ -98,3 +98,12 @@ class PolarisSSLError(PolarisHubError):
             "SSL verification by setting the POLARIS_CA_BUNDLE environment variable to `false`."
         )
         super().__init__(message, response_text)
+
+
+class PolarisDeprecatedError(PolarisHubError):
+    def __init__(self, feature: str, response_text: str = ""):
+        message = (
+            f"The '{feature}' feature has been deprecated and is no longer supported. "
+            "Please contact the Polaris team for more information about alternative approaches."
+        )
+        super().__init__(message, response_text)

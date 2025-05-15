@@ -24,10 +24,13 @@ from polaris.dataset import DatasetV1, Subset
 from polaris.dataset._base import BaseDataset
 from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2
 from polaris.evaluate.utils import evaluate_benchmark
+from polaris.hub.settings import PolarisHubSettings
 from polaris.mixins import ChecksumMixin
 from polaris.utils.dict2html import dict2html
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import (
+    AccessType,
+    HubOwner,
     IncomingPredictionsType,
     TargetType,
 )
@@ -163,6 +166,30 @@ class BenchmarkSpecification(
             hide_targets=hide_targets,
             featurization_fn=featurization_fn,
         )
+
+    def upload_to_hub(
+        self,
+        settings: PolarisHubSettings | None = None,
+        cache_auth_token: bool = True,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
+        **kwargs: dict,
+    ):
+        """
+        Very light, convenient wrapper around the
+        [`PolarisHubClient.upload_benchmark`][polaris.hub.client.PolarisHubClient.upload_benchmark] method.
+        """
+        from polaris.hub.client import PolarisHubClient
+
+        with PolarisHubClient(
+            settings=settings,
+            cache_auth_token=cache_auth_token,
+            **kwargs,
+        ) as client:
+            return client.upload_benchmark(
+                self, access=access, owner=owner, parent_artifact_id=parent_artifact_id
+            )
 
     def to_json(self, destination: str) -> str:
         """Save the benchmark to a destination directory as a JSON file.

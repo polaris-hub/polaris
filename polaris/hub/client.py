@@ -33,11 +33,14 @@ from polaris.utils.errors import (
     PolarisRetrieveArtifactError,
     PolarisSSLError,
     PolarisUnauthorizedError,
+    PolarisDeprecatedError,
 )
 from polaris.utils.types import (
     AccessType,
     ChecksumStrategy,
     HubOwner,
+    TimeoutTypes,
+    ZarrConflictResolution,
 )
 
 logger = logging.getLogger(__name__)
@@ -527,6 +530,30 @@ class PolarisHubClient(OAuth2Client):
             progress.log(
                 f"[green]Your result has been successfully uploaded to the Hub. View it here: {result_url}"
             )
+
+    # Note: Unused parameters are included in signature for backwards compatibility.
+    # Removing these parameters results in a TypeError before the PolarisDeprecatedError is raised.
+    def upload_dataset(
+        self,
+        dataset: DatasetV1 | DatasetV2,
+        access: AccessType = "private",
+        timeout: TimeoutTypes = (10, 200),
+        owner: HubOwner | str | None = None,
+        if_exists: ZarrConflictResolution = "replace",
+        parent_artifact_id: str | None = None,
+    ):
+        raise PolarisDeprecatedError("dataset uploading")
+
+    # Note: Unused parameters are included in signature for backwards compatibility.
+    # Removing these parameters results in a TypeError before the PolarisDeprecatedError is raised.
+    def upload_benchmark(
+        self,
+        benchmark: BenchmarkV1Specification | BenchmarkV2Specification,
+        access: AccessType = "private",
+        owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
+    ):
+        raise PolarisDeprecatedError("benchmark uploading")
 
     def get_competition(self, artifact_id: str) -> CompetitionSpecification:
         """Load a competition from the Polaris Hub.
