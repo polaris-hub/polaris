@@ -117,7 +117,6 @@ class DatasetV2(BaseDataset):
         """
         Loads a Zarr archive from the Hub.
         """
-        from polaris.hub.client import PolarisHubClient
         from polaris.hub.storage import StorageSession
         import zarr
 

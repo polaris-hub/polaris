@@ -7,7 +7,6 @@ from typing import Any, ClassVar, Literal
 import fsspec
 import numpy as np
 import pandas as pd
-import zarr
 from datamol.utils import fs as dmfs
 from pydantic import PrivateAttr, computed_field, field_validator, model_validator
 from typing_extensions import Self, deprecated
@@ -138,7 +137,6 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         """
         Loads a Zarr archive from the Hub.
         """
-        from polaris.hub.client import PolarisHubClient
         from polaris.hub.storage import StorageSession
         import zarr
 
