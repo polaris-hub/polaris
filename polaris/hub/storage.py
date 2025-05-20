@@ -478,7 +478,7 @@ class StorageSession(OAuth2Client):
     A context manager for managing a storage session, with token exchange and token refresh capabilities.
     Each session is associated with a specific scope and resource.
     The `mode` parameter controls whether authentication is required:
-        - For 'read' mode, if a public_artifact_url is set, authentication is skipped.
+        - For 'read' mode, authentication is optional. 
         - For 'write' mode, authentication is always required.
     """
 
@@ -501,7 +501,7 @@ class StorageSession(OAuth2Client):
             cert=hub_client.settings.ca_bundle,
         )
 
-    def __enter__(self) -> Self:        # Only skip authentication for reads with a public URL
+    def __enter__(self) -> Self:
         if not (self.mode == "read"):
             self.ensure_active_token()
         return self
