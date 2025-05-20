@@ -140,10 +140,10 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         """
         from polaris.hub.client import PolarisHubClient
         from polaris.hub.storage import StorageSession
+        import zarr
 
-        with PolarisHubClient() as client:
-            with StorageSession(client, "read", self.urn) as storage:
-                return zarr.open_consolidated(store=storage.store("extension"))
+        store = StorageSession.store(self.zarr_root_path)
+        return zarr.open_consolidated(store=store)
 
     @computed_field
     @property

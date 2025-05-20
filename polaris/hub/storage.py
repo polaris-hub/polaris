@@ -18,6 +18,7 @@ from zarr import CopyError
 from zarr.context import Context
 from zarr.storage import Store
 from zarr.util import buffer_size
+import fsspec
 
 from polaris.hub.oauth import BenchmarkV2Paths, DatasetV1Paths, DatasetV2Paths, HubStorageOAuth2Token
 from polaris.utils.context import track_progress
@@ -476,15 +477,19 @@ class StorageSession(OAuth2Client):
     """
     A context manager for managing a storage session, with token exchange and token refresh capabilities.
     Each session is associated with a specific scope and resource.
+    The `mode` parameter controls whether authentication is required:
+        - For 'read' mode, if a public_artifact_url is set, authentication is skipped.
+        - For 'write' mode, authentication is always required.
     """
 
     polaris_protocol = "polarisfs"
 
     token_auth_class = StorageTokenAuth
 
-    def __init__(self, hub_client, scope: Scope, resource: ArtifactUrn):
+    def __init__(self, hub_client, scope: Scope, resource: ArtifactUrn, mode: str = "read"):
         self.hub_client = hub_client
         self.resource = resource
+        self.mode = mode
 
         super().__init__(
             # OAuth2Client
@@ -496,8 +501,9 @@ class StorageSession(OAuth2Client):
             cert=hub_client.settings.ca_bundle,
         )
 
-    def __enter__(self) -> Self:
-        self.ensure_active_token()
+    def __enter__(self) -> Self:        # Only skip authentication for reads with a public URL
+        if not (self.mode == "read"):
+            self.ensure_active_token()
         return self
 
     def _prepare_token_endpoint_body(self, body, grant_type, **kwargs) -> str:
@@ -581,42 +587,20 @@ class StorageSession(OAuth2Client):
             endpoint_url=storage_data.endpoint,
             content_type=content_type,
         )
-        store[relative_path.name] = value
+        # Use StorageSession with mode='write' for write operations
+        with StorageSession(self.hub_client, "write", self.resource, mode="write"):
+            store[relative_path.name] = value
 
     def get_file(self, path: str) -> bytes | bytearray:
         """
         Get the value at the given path.
         """
-        if path not in self.paths.files:
-            raise NotImplementedError(
-                f"{type(self.paths).__name__} only supports these files: {self.paths.files}."
-            )
+        # The path is now a full URL, so we use it directly
+        with fsspec.open(path, mode='rb') as f:
+            return f.read()
 
-        relative_path = self._relative_path(getattr(self.paths, path))
-
-        storage_data = self.token.extra_data
-        store = S3Store(
-            path=relative_path.parent,
-            access_key=storage_data.key,
-            secret_key=storage_data.secret,
-            token=f"jwt/{self.token.access_token}",
-            endpoint_url=storage_data.endpoint,
-        )
-        return store[relative_path.name]
-
-    def store(self, path: str) -> S3Store:
-        if path not in self.paths.stores:
-            raise NotImplementedError(
-                f"{type(self.paths).__name__} only supports these stores: {self.paths.stores}."
-            )
-
-        relative_path = self._relative_path(getattr(self.paths, path))
-
-        storage_data = self.token.extra_data
-        return S3Store(
-            path=relative_path,
-            access_key=storage_data.key,
-            secret_key=storage_data.secret,
-            token=f"jwt/{self.token.access_token}",
-            endpoint_url=storage_data.endpoint,
-        )
+    def store(self, path: str):
+        """
+        Return a fsspec mapper for the given path, using the provided path as a full URL.
+        """
+        return fsspec.get_mapper(path)

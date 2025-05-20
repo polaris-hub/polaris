@@ -119,10 +119,10 @@ class DatasetV2(BaseDataset):
         """
         from polaris.hub.client import PolarisHubClient
         from polaris.hub.storage import StorageSession
+        import zarr
 
-        with PolarisHubClient() as client:
-            with StorageSession(client, "read", self.urn) as storage:
-                return zarr.open_consolidated(store=storage.store("root"))
+        store = StorageSession.store(self.zarr_root_path)
+        return zarr.open_consolidated(store=store)
 
     @property
     def zarr_manifest_path(self) -> str:
