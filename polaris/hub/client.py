@@ -258,7 +258,12 @@ class PolarisHubClient(OAuth2Client):
             A list of dataset names in the format `owner/dataset_slug`.
         """
         with track_progress(description="Fetching datasets", total=1):
-            v2_json_response = self._base_request_to_hub(url="/v2/dataset", method="GET", withhold_token=True, params={"limit": limit, "offset": offset}).json()
+            v2_json_response = self._base_request_to_hub(
+                url="/v2/dataset",
+                method="GET",
+                withhold_token=True,
+                params={"limit": limit, "offset": offset},
+            ).json()
             v2_data = v2_json_response["data"]
             v2_datasets = [dataset["artifactId"] for dataset in v2_data]
 
@@ -341,7 +346,7 @@ class PolarisHubClient(OAuth2Client):
         # Load the dataset table and optional Zarr archive
         with StorageSession(self, "read", Dataset.urn_for(owner, slug)) as storage:
             table = pd.read_parquet(BytesIO(storage.get_file(table_path)))
-            
+
         dataset = DatasetV1(table=table, zarr_root_path=zarr_path, **response_data)
         md5sum = response_data["md5Sum"]
 
@@ -379,7 +384,12 @@ class PolarisHubClient(OAuth2Client):
         """
         with track_progress(description="Fetching benchmarks", total=1):
             # Step 1: Fetch enough v2 benchmarks to cover the offset and limit
-            v2_json_response = self._base_request_to_hub(url="/v2/benchmark", method="GET", withhold_token=True, params={"limit": limit, "offset": offset}).json()
+            v2_json_response = self._base_request_to_hub(
+                url="/v2/benchmark",
+                method="GET",
+                withhold_token=True,
+                params={"limit": limit, "offset": offset},
+            ).json()
             v2_data = v2_json_response["data"]
             v2_benchmarks = [benchmark["artifactId"] for benchmark in v2_data]
 
@@ -436,7 +446,9 @@ class PolarisHubClient(OAuth2Client):
         slug: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> BenchmarkV1Specification:
-        response = self._base_request_to_hub(url=f"/v1/benchmark/{owner}/{slug}", method="GET", withhold_token=True)
+        response = self._base_request_to_hub(
+            url=f"/v1/benchmark/{owner}/{slug}", method="GET", withhold_token=True
+        )
         response_data = response.json()
 
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
@@ -465,7 +477,9 @@ class PolarisHubClient(OAuth2Client):
         return benchmark
 
     def _get_v2_benchmark(self, owner: str | HubOwner, slug: str) -> BenchmarkV2Specification:
-        response = self._base_request_to_hub(url=f"/v2/benchmark/{owner}/{slug}", method="GET", withhold_token=True)
+        response = self._base_request_to_hub(
+            url=f"/v2/benchmark/{owner}/{slug}", method="GET", withhold_token=True
+        )
         response_data = response.json()
 
         response_data["dataset"] = self.get_dataset(*response_data["dataset"]["artifactId"].split("/"))

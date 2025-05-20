@@ -478,7 +478,7 @@ class StorageSession(OAuth2Client):
     A context manager for managing a storage session, with token exchange and token refresh capabilities.
     Each session is associated with a specific scope and resource.
     The `mode` parameter controls whether authentication is required:
-        - For 'read' mode, authentication is optional. 
+        - For 'read' mode, authentication is optional.
         - For 'write' mode, authentication is always required.
     """
 
@@ -596,7 +596,7 @@ class StorageSession(OAuth2Client):
         Get the value at the given path.
         """
         # The path is now a full URL, so we use it directly
-        with fsspec.open(path, mode='rb') as f:
+        with fsspec.open(path, mode="rb") as f:
             return f.read()
 
     def store(self):
