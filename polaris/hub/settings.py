@@ -30,7 +30,6 @@ class PolarisHubSettings(BaseSettings):
             A default value is generated based on the Hub URL, and this should not need to be overridden.
         username: The username for the Polaris Hub, for the optional password-based authentication.
         password: The password for the specified username.
-        public_artifact_url: The base URL for directly accessing public artifacts without authentication.
     """
 
     # Configuration of the pydantic model
@@ -42,7 +41,6 @@ class PolarisHubSettings(BaseSettings):
     hub_url: HttpUrlString = "https://polarishub.io/"
     api_url: HttpUrlString | None = None
     custom_metadata_prefix: str = "X-Amz-Meta-"
-    public_artifact_url: HttpUrlString = "https://data.polarishub.io/"
 
     # Hub authentication settings
     hub_token_url: HttpUrlString | None = None
