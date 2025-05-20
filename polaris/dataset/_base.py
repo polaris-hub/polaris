@@ -179,10 +179,8 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         if self.zarr_root_path is None:
             return None
 
-        print(f"zarr_root_path: {self.zarr_root_path}")
         parsed = urlparse(self.zarr_root_path)
-        saved_on_hub = parsed.scheme in ("http", "https", "s3", "gs")
-        print(f"saved_on_hub: {saved_on_hub}")
+        saved_on_hub = parsed.scheme == "https"
 
         if self._warn_about_remote_zarr and saved_on_hub:
             # TODO (cwognum): The user now has no easy way of knowing whether the dataset is "small enough".
