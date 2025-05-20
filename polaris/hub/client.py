@@ -179,10 +179,10 @@ class PolarisHubClient(OAuth2Client):
                 message=f"Could not obtain a token to access the Hub. Error was: {error.error} - {error.description}"
             ) from error
 
-    def _base_request_to_hub(self, url: str, method: str, **kwargs) -> Response:
-        """Utility function since most API methods follow the same pattern"""
+    def _base_request_to_hub(self, url: str, method: str, withhold_token: bool = False, **kwargs) -> Response:
+        """Utility function for making requests to the Hub with consistent error handling."""
         try:
-            response = self.request(url=url, method=method, **kwargs)
+            response = self.request(url=url, method=method, withhold_token=withhold_token, **kwargs)
             response.raise_for_status()
             return response
         except HTTPStatusError as error:
@@ -258,7 +258,7 @@ class PolarisHubClient(OAuth2Client):
             A list of dataset names in the format `owner/dataset_slug`.
         """
         with track_progress(description="Fetching datasets", total=1):
-            v2_json_response = self.request(url="/v2/dataset", method="GET", withhold_token=True, params={"limit": limit, "offset": offset}).json()
+            v2_json_response = self._base_request_to_hub(url="/v2/dataset", method="GET", withhold_token=True, params={"limit": limit, "offset": offset}).json()
             v2_data = v2_json_response["data"]
             v2_datasets = [dataset["artifactId"] for dataset in v2_data]
 
@@ -269,7 +269,7 @@ class PolarisHubClient(OAuth2Client):
             # Step 2: Calculate the remaining limit and fetch v1 datasets
             remaining_limit = max(0, limit - len(v2_datasets))
 
-            v1_json_response = self.request(
+            v1_json_response = self._base_request_to_hub(
                 url="/v1/dataset",
                 method="GET",
                 withhold_token=True,
@@ -328,7 +328,7 @@ class PolarisHubClient(OAuth2Client):
             A `Dataset` instance, if it exists.
         """
         url = f"/v1/dataset/{owner}/{slug}"
-        response = self.request(url=url, method="GET", withhold_token=True)
+        response = self._base_request_to_hub(url=url, method="GET", withhold_token=True)
         response_data = response.json()
 
         # Prefer table_path and zarr_path from response metadata if available
@@ -353,7 +353,7 @@ class PolarisHubClient(OAuth2Client):
     def _get_v2_dataset(self, owner: str | HubOwner, slug: str) -> DatasetV2:
         """"""
         url = f"/v2/dataset/{owner}/{slug}"
-        response = self.request(url=url, method="GET", withhold_token=True)
+        response = self._base_request_to_hub(url=url, method="GET", withhold_token=True)
         response_data = response.json()
 
         metadata = response_data.get("metadata", {})
@@ -376,7 +376,7 @@ class PolarisHubClient(OAuth2Client):
         """
         with track_progress(description="Fetching benchmarks", total=1):
             # Step 1: Fetch enough v2 benchmarks to cover the offset and limit
-            v2_json_response = self.request(url="/v2/benchmark", method="GET", withhold_token=True, params={"limit": limit, "offset": offset}).json()
+            v2_json_response = self._base_request_to_hub(url="/v2/benchmark", method="GET", withhold_token=True, params={"limit": limit, "offset": offset}).json()
             v2_data = v2_json_response["data"]
             v2_benchmarks = [benchmark["artifactId"] for benchmark in v2_data]
 
@@ -386,7 +386,7 @@ class PolarisHubClient(OAuth2Client):
 
             # Step 2: Calculate the remaining limit and fetch v1 benchmarks
             remaining_limit = max(0, limit - len(v2_benchmarks))
-            v1_json_response = self.request(
+            v1_json_response = self._base_request_to_hub(
                 url="/v1/benchmark",
                 method="GET",
                 withhold_token=True,
@@ -433,7 +433,7 @@ class PolarisHubClient(OAuth2Client):
         slug: str,
         verify_checksum: ChecksumStrategy = "verify_unless_zarr",
     ) -> BenchmarkV1Specification:
-        response = self.request(url=f"/v1/benchmark/{owner}/{slug}", method="GET", withhold_token=True)
+        response = self._base_request_to_hub(url=f"/v1/benchmark/{owner}/{slug}", method="GET", withhold_token=True)
         response_data = response.json()
 
         # TODO (jstlaurent): response["dataset"]["artifactId"] is the owner/name unique identifier,
@@ -462,7 +462,7 @@ class PolarisHubClient(OAuth2Client):
         return benchmark
 
     def _get_v2_benchmark(self, owner: str | HubOwner, slug: str) -> BenchmarkV2Specification:
-        response = self.request(url=f"/v2/benchmark/{owner}/{slug}", method="GET", withhold_token=True)
+        response = self._base_request_to_hub(url=f"/v2/benchmark/{owner}/{slug}", method="GET", withhold_token=True)
         response_data = response.json()
 
         response_data["dataset"] = self.get_dataset(*response_data["dataset"]["artifactId"].split("/"))
@@ -593,7 +593,7 @@ class PolarisHubClient(OAuth2Client):
             A `CompetitionSpecification` instance, if it exists.
         """
         url = f"/v1/competition/{artifact_id}"
-        response = self.request(url=url, method="GET", withhold_token=True)
+        response = self._base_request_to_hub(url=url, method="GET", withhold_token=True)
         response_data = response.json()
 
         metadata = response_data.get("metadata", {})
@@ -640,7 +640,7 @@ class PolarisHubClient(OAuth2Client):
             A list of models names in the format `owner/model_slug`.
         """
         with track_progress(description="Fetching models", total=1):
-            json_response = self.request(
+            json_response = self._base_request_to_hub(
                 url="/v2/model", method="GET", withhold_token=True, params={"limit": limit, "offset": offset}
             ).json()
             models = [model["artifactId"] for model in json_response["data"]]
@@ -649,7 +649,7 @@ class PolarisHubClient(OAuth2Client):
 
     def get_model(self, artifact_id: str) -> Model:
         url = f"/v2/model/{artifact_id}"
-        response = self.request(url=url, method="GET", withhold_token=True)
+        response = self._base_request_to_hub(url=url, method="GET", withhold_token=True)
         response_data = response.json()
 
         return Model(**response_data)
