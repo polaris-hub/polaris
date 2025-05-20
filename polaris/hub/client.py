@@ -330,6 +330,8 @@ class PolarisHubClient(OAuth2Client):
         url = f"/v1/dataset/{owner}/{slug}"
         response = self._base_request_to_hub(url=url, method="GET", withhold_token=True)
         response_data = response.json()
+        response_data.pop("zarr_root_path", None)
+        response_data.pop("zarrRootPath", None)
 
         # Prefer table_path and zarr_path from response metadata if available
         metadata = response_data.get("metadata", {})
@@ -355,11 +357,12 @@ class PolarisHubClient(OAuth2Client):
         url = f"/v2/dataset/{owner}/{slug}"
         response = self._base_request_to_hub(url=url, method="GET", withhold_token=True)
         response_data = response.json()
+        response_data.pop("zarr_root_path", None)
+        response_data.pop("zarrRootPath", None)
 
         metadata = response_data.get("metadata", {})
         zarr_path = metadata.get("zarr_path")
         # For v2 datasets, the zarr_path always exists
-
         dataset = DatasetV2(zarr_root_path=zarr_path, **response_data)
         return dataset
 

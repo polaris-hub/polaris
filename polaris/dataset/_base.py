@@ -171,7 +171,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             See also `dataset.load_to_memory()`.
         """
 
-        from polaris.hub.storage import StorageSession
+        from urllib.parse import urlparse
 
         if self._zarr_root is not None:
             return self._zarr_root
@@ -179,7 +179,10 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         if self.zarr_root_path is None:
             return None
 
-        saved_on_hub = self.zarr_root_path.startswith(StorageSession.polaris_protocol)
+        print(f"zarr_root_path: {self.zarr_root_path}")
+        parsed = urlparse(self.zarr_root_path)
+        saved_on_hub = parsed.scheme in ("http", "https", "s3", "gs")
+        print(f"saved_on_hub: {saved_on_hub}")
 
         if self._warn_about_remote_zarr and saved_on_hub:
             # TODO (cwognum): The user now has no easy way of knowing whether the dataset is "small enough".

@@ -120,7 +120,7 @@ class DatasetV2(BaseDataset):
         from polaris.hub.storage import StorageSession
         import zarr
 
-        store = StorageSession.store(self.zarr_root_path)
+        store = StorageSession.store(self)
         return zarr.open_consolidated(store=store)
 
     @property

@@ -599,8 +599,9 @@ class StorageSession(OAuth2Client):
         with fsspec.open(path, mode='rb') as f:
             return f.read()
 
-    def store(self, path: str):
+    def store(self):
         """
         Return a fsspec mapper for the given path, using the provided path as a full URL.
         """
+        path = self.zarr_root_path
         return fsspec.get_mapper(path)
