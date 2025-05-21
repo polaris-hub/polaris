@@ -335,19 +335,17 @@ class PolarisHubClient(OAuth2Client):
         url = f"/v1/dataset/{owner}/{slug}"
         response = self._base_request_to_hub(url=url, method="GET", withhold_token=True)
         response_data = response.json()
-        response_data.pop("zarr_root_path", None)
         response_data.pop("zarrRootPath", None)
+        response_data.pop("zarr_root_path", None)
 
-        # Prefer table_path and zarr_path from response metadata if available
-        metadata = response_data.get("metadata", {})
-        table_path = metadata.get("table_path")
-        zarr_path = metadata.get("zarr_path")
+        root_url = response_data.get("root")
+        extension_url = response_data.get("extension")
 
         # Load the dataset table and optional Zarr archive
         with StorageSession(self, "read", Dataset.urn_for(owner, slug)) as storage:
-            table = pd.read_parquet(BytesIO(storage.get_file(table_path)))
+            table = pd.read_parquet(BytesIO(storage.get_file(root_url)))
 
-        dataset = DatasetV1(table=table, zarr_root_path=zarr_path, **response_data)
+        dataset = DatasetV1(table=table, zarr_root_path=extension_url, **response_data)
         md5sum = response_data["md5Sum"]
 
         if dataset.should_verify_checksum(verify_checksum):
@@ -362,13 +360,13 @@ class PolarisHubClient(OAuth2Client):
         url = f"/v2/dataset/{owner}/{slug}"
         response = self._base_request_to_hub(url=url, method="GET", withhold_token=True)
         response_data = response.json()
-        response_data.pop("zarr_root_path", None)
         response_data.pop("zarrRootPath", None)
+        response_data.pop("zarr_root_path", None)
 
-        metadata = response_data.get("metadata", {})
-        zarr_path = metadata.get("zarr_path")
+        root_url = response_data.get("root")
+        print(f"Root URL: {root_url}")
         # For v2 datasets, the zarr_path always exists
-        dataset = DatasetV2(zarr_root_path=zarr_path, **response_data)
+        dataset = DatasetV2(zarr_root_path=root_url, **response_data)
         return dataset
 
     def list_benchmarks(self, limit: int = 100, offset: int = 0) -> list[str]:
@@ -613,10 +611,9 @@ class PolarisHubClient(OAuth2Client):
         response = self._base_request_to_hub(url=url, method="GET", withhold_token=True)
         response_data = response.json()
 
-        metadata = response_data.get("metadata", {})
-        zarr_path = metadata.get("zarr_path")
+        root_url = response_data.get("root")
 
-        return CompetitionSpecification(zarr_root_path=zarr_path, **response_data)
+        return CompetitionSpecification(zarr_root_path=root_url, **response_data)
 
     def submit_competition_predictions(
         self,
