@@ -36,6 +36,7 @@ from polaris.utils.types import (
     SupportedLicenseType,
     ZarrConflictResolution,
 )
+from polaris.hub.settings import PolarisHubSettings
 
 logger = logging.getLogger(__name__)
 
@@ -179,8 +180,8 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         if self.zarr_root_path is None:
             return None
 
-        parsed = urlparse(self.zarr_root_path)
-        saved_on_hub = parsed.scheme == "https"
+        settings = PolarisHubSettings()
+        saved_on_hub = self.zarr_root_path and self.zarr_root_path.startswith(settings.bucket_url)
 
         if self._warn_about_remote_zarr and saved_on_hub:
             # TODO (cwognum): The user now has no easy way of knowing whether the dataset is "small enough".
