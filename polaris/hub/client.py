@@ -179,8 +179,11 @@ class PolarisHubClient(OAuth2Client):
                 message=f"Could not obtain a token to access the Hub. Error was: {error.error} - {error.description}"
             ) from error
 
-    def _base_request_to_hub(self, url: str, method: str, withhold_token: bool = False, **kwargs) -> Response:
+    def _base_request_to_hub(self, url: str, method: str, withhold_token: bool, **kwargs) -> Response:
         """Utility function for making requests to the Hub with consistent error handling."""
+        if not withhold_token:
+            if not self.ensure_active_token():
+                raise PolarisUnauthorizedError()
         try:
             response = self.request(url=url, method=method, withhold_token=withhold_token, **kwargs)
             response.raise_for_status()
@@ -336,7 +339,6 @@ class PolarisHubClient(OAuth2Client):
         response = self._base_request_to_hub(url=url, method="GET", withhold_token=True)
         response_data = response.json()
         response_data.pop("zarrRootPath", None)
-        response_data.pop("zarr_root_path", None)
 
         root_url = response_data.get("root")
         extension_url = response_data.get("extension")
@@ -361,10 +363,8 @@ class PolarisHubClient(OAuth2Client):
         response = self._base_request_to_hub(url=url, method="GET", withhold_token=True)
         response_data = response.json()
         response_data.pop("zarrRootPath", None)
-        response_data.pop("zarr_root_path", None)
 
         root_url = response_data.get("root")
-        print(f"Root URL: {root_url}")
         # For v2 datasets, the zarr_path always exists
         dataset = DatasetV2(zarr_root_path=root_url, **response_data)
         return dataset
@@ -510,15 +510,13 @@ class PolarisHubClient(OAuth2Client):
             results: The results to upload.
             owner: Which Hub user or organization owns the artifact. Takes precedence over `results.owner`.
         """
-        if not self.ensure_active_token():
-            raise PolarisUnauthorizedError()
         with track_progress(description="Uploading results", total=1) as (progress, task):
             # Get the serialized model data-structure
             results.owner = HubOwner.normalize(owner or results.owner)
             result_json = results.model_dump(by_alias=True, exclude_none=True)
 
             # Make a request to the Hub
-            response = self._base_request_to_hub(url="/v2/result", method="POST", json=result_json)
+            response = self._base_request_to_hub(url="/v2/result", method="POST", withhold_token=False, json=result_json)
 
             # Inform the user about where to find their newly created artifact.
             result_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
@@ -639,6 +637,7 @@ class PolarisHubClient(OAuth2Client):
             response = self._base_request_to_hub(
                 url="/v1/competition-prediction",
                 method="POST",
+                withhold_token=False,
                 json=prediction_payload,
             )
             return response
@@ -691,8 +690,6 @@ class PolarisHubClient(OAuth2Client):
             owner: Which Hub user or organization owns the artifact. Takes precedence over `model.owner`.
             parent_artifact_id: The `owner/slug` of the parent model, if uploading a new version of a model.
         """
-        if not self.ensure_active_token():
-            raise PolarisUnauthorizedError()
         with track_progress(description="Uploading model", total=1) as (progress, task):
             # Get the serialized model data-structure
             model.owner = HubOwner.normalize(owner or model.owner)
@@ -703,6 +700,7 @@ class PolarisHubClient(OAuth2Client):
             response = self._base_request_to_hub(
                 url=url,
                 method="PUT",
+                withhold_token=False,
                 json={"parentArtifactId": parent_artifact_id, **model_json},
             )
 

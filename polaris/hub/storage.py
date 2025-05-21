@@ -588,8 +588,7 @@ class StorageSession(OAuth2Client):
             content_type=content_type,
         )
         # Use StorageSession with mode='write' for write operations
-        with StorageSession(self.hub_client, "write", self.resource, mode="write"):
-            store[relative_path.name] = value
+        store[relative_path.name] = value
 
     def get_file(self, path: str) -> bytes | bytearray:
         """
@@ -598,10 +597,3 @@ class StorageSession(OAuth2Client):
         # The path is now a full URL, so we use it directly
         with fsspec.open(path, mode="rb") as f:
             return f.read()
-
-    def store(self):
-        """
-        Return a fsspec mapper for the given path, using the provided path as a full URL.
-        """
-        path = self.zarr_root_path
-        return fsspec.get_mapper(path)
