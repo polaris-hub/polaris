@@ -59,9 +59,6 @@ class PolarisHubSettings(BaseSettings):
     ca_bundle: str | bool | None = None
     default_timeout: TimeoutTypes = (10, 200)
 
-    # Bucket settings
-    bucket_url: str = "https://data.polarishub.io"
-
     @field_validator("api_url", mode="before")
     def validate_api_url(cls, v, info: ValidationInfo):
         if v is None:
