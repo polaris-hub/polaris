@@ -345,7 +345,7 @@ class PolarisHubClient(OAuth2Client):
         extension_url = response_data.get("extension")
 
         # Load the dataset table and optional Zarr archive
-        with fsspec.open(root_url, mode='rb') as f:
+        with fsspec.open(root_url, mode="rb") as f:
             table = pd.read_parquet(f)
 
         dataset = DatasetV1(table=table, zarr_root_path=extension_url, **response_data)
@@ -487,7 +487,7 @@ class PolarisHubClient(OAuth2Client):
         for label, url in response_data.get("split", {}).items():
             with fsspec.open(url, mode="rb") as f:
                 split[label] = f.read()
-                
+
         return BenchmarkV2Specification(**{**response_data, "split": split})
 
     def upload_results(

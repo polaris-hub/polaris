@@ -181,8 +181,8 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             return None
 
         fs, _ = fsspec.url_to_fs(self.zarr_root_path)
-        remote = 'local' in fs.protocol
-        
+        remote = "local" in fs.protocol
+
         if self._warn_about_remote_zarr and remote:
             # TODO (cwognum): The user now has no easy way of knowing whether the dataset is "small enough".
             logger.warning(
