@@ -25,7 +25,7 @@ Polaris explicitly distinguished **datasets** and **benchmarks**.
 One dataset can therefore be associated with multiple benchmarks. 
 
 ## Login
-To interact with the [Polaris Hub](https://polarishub.io/) from the client, you must first authenticate yourself. If you don't have an account yet, you can create one [here](https://polarishub.io/sign-up).
+To submit or upload artifacts to the [Polaris Hub](https://polarishub.io/) from the client, you must first authenticate yourself. If you don't have an account yet, you can create one [here](https://polarishub.io/sign-up).
 
 You can do this via the following command in your terminal:
 
@@ -66,7 +66,7 @@ predictions = [0.0 for x in test]
 results = benchmark.evaluate(predictions)
 
 # Submit your results
-results.upload_to_hub(owner="dummy-user", access="public")
+results.upload_to_hub(owner="dummy-user")
 ```
 
 Through immutable datasets and standardized benchmarks, Polaris aims to serve as a source of truth for machine learning in drug discovery. The limited flexibility might differ from your typical experience, but this is by design to improve reproducibility. Learn more [here](https://polarishub.io/blog/reproducible-machine-learning-in-drug-discovery-how-polaris-serves-as-a-single-source-of-truth).
