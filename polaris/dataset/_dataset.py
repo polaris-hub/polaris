@@ -6,6 +6,7 @@ from typing import Any, ClassVar, Literal
 
 import fsspec
 import numpy as np
+import zarr
 import pandas as pd
 from datamol.utils import fs as dmfs
 from pydantic import PrivateAttr, computed_field, field_validator, model_validator
@@ -137,8 +138,6 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         """
         Loads a Zarr archive from the Hub.
         """
-        from polaris.hub.storage import StorageSession
-        import zarr
 
         store = fsspec.get_mapper(self.zarr_root_path)
         return zarr.open_consolidated(store=store)

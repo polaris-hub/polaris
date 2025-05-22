@@ -180,10 +180,10 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
         if self.zarr_root_path is None:
             return None
 
-        settings = PolarisHubSettings()
-        saved_on_hub = self.zarr_root_path and self.zarr_root_path.startswith(settings.bucket_url)
-
-        if self._warn_about_remote_zarr and saved_on_hub:
+        fs, _ = fsspec.url_to_fs(self.zarr_root_path)
+        remote = 'local' in fs.protocol
+        
+        if self._warn_about_remote_zarr and remote:
             # TODO (cwognum): The user now has no easy way of knowing whether the dataset is "small enough".
             logger.warning(
                 f"You're loading data from a remote location. "
@@ -193,7 +193,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             self._warn_about_remote_zarr = False
 
         try:
-            if saved_on_hub:
+            if remote:
                 self._zarr_root = self.load_zarr_root_from_hub()
             else:
                 self._zarr_root = self.load_zarr_root_from_local()

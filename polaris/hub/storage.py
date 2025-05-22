@@ -475,11 +475,8 @@ class StorageTokenAuth:
 
 class StorageSession(OAuth2Client):
     """
-    A context manager for managing a storage session, with token exchange and token refresh capabilities.
+    A context manager for managing a storage session for upload/write operations, with token exchange and token refresh capabilities.
     Each session is associated with a specific scope and resource.
-    The `mode` parameter controls whether authentication is required:
-        - For 'read' mode, authentication is optional.
-        - For 'write' mode, authentication is always required.
     """
 
     polaris_protocol = "polarisfs"
@@ -589,11 +586,3 @@ class StorageSession(OAuth2Client):
         )
         # Use StorageSession with mode='write' for write operations
         store[relative_path.name] = value
-
-    def get_file(self, path: str) -> bytes | bytearray:
-        """
-        Get the value at the given path.
-        """
-        # The path is now a full URL, so we use it directly
-        with fsspec.open(path, mode="rb") as f:
-            return f.read()

@@ -11,6 +11,7 @@ from authlib.oauth2 import OAuth2Error, TokenAuth
 from authlib.oauth2.rfc6749 import OAuth2Token
 from httpx import ConnectError, HTTPStatusError, Response
 from typing_extensions import Self
+import fsspec
 
 from polaris.benchmark import (
     BenchmarkV1Specification,
@@ -344,8 +345,8 @@ class PolarisHubClient(OAuth2Client):
         extension_url = response_data.get("extension")
 
         # Load the dataset table and optional Zarr archive
-        with StorageSession(self, "read", Dataset.urn_for(owner, slug)) as storage:
-            table = pd.read_parquet(BytesIO(storage.get_file(root_url)))
+        with fsspec.open(root_url, mode='rb') as f:
+            table = pd.read_parquet(f)
 
         dataset = DatasetV1(table=table, zarr_root_path=extension_url, **response_data)
         md5sum = response_data["md5Sum"]
@@ -482,10 +483,11 @@ class PolarisHubClient(OAuth2Client):
 
         response_data["dataset"] = self.get_dataset(*response_data["dataset"]["artifactId"].split("/"))
 
-        # Load the split index sets
-        with StorageSession(self, "read", BenchmarkV2Specification.urn_for(owner, slug)) as storage:
-            split = {label: storage.get_file(label) for label in response_data.get("split", {}).keys()}
-
+        split = {}
+        for label, url in response_data.get("split", {}).items():
+            with fsspec.open(url, mode="rb") as f:
+                split[label] = f.read()
+                
         return BenchmarkV2Specification(**{**response_data, "split": split})
 
     def upload_results(
