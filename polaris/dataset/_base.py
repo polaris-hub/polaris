@@ -171,17 +171,18 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             See also `dataset.load_to_memory()`.
         """
 
-        from polaris.hub.storage import StorageSession
-
         if self._zarr_root is not None:
             return self._zarr_root
 
         if self.zarr_root_path is None:
             return None
 
-        saved_on_hub = self.zarr_root_path.startswith(StorageSession.polaris_protocol)
+        fs, _ = fsspec.url_to_fs(self.zarr_root_path)
+        remote = not (
+            fs.protocol == "file" or (isinstance(fs.protocol, (list, tuple)) and fs.protocol[0] == "file")
+        )
 
-        if self._warn_about_remote_zarr and saved_on_hub:
+        if self._warn_about_remote_zarr and remote:
             # TODO (cwognum): The user now has no easy way of knowing whether the dataset is "small enough".
             logger.warning(
                 f"You're loading data from a remote location. "
@@ -191,7 +192,7 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             self._warn_about_remote_zarr = False
 
         try:
-            if saved_on_hub:
+            if remote:
                 self._zarr_root = self.load_zarr_root_from_hub()
             else:
                 self._zarr_root = self.load_zarr_root_from_local()

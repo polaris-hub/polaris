@@ -6,8 +6,8 @@ from typing import Any, ClassVar, Literal
 
 import fsspec
 import numpy as np
-import pandas as pd
 import zarr
+import pandas as pd
 from datamol.utils import fs as dmfs
 from pydantic import PrivateAttr, computed_field, field_validator, model_validator
 from typing_extensions import Self, deprecated
@@ -138,12 +138,9 @@ class DatasetV1(BaseDataset, ChecksumMixin):
         """
         Loads a Zarr archive from the Hub.
         """
-        from polaris.hub.client import PolarisHubClient
-        from polaris.hub.storage import StorageSession
 
-        with PolarisHubClient() as client:
-            with StorageSession(client, "read", self.urn) as storage:
-                return zarr.open_consolidated(store=storage.store("extension"))
+        store = fsspec.get_mapper(self.zarr_root_path)
+        return zarr.open_consolidated(store=store)
 
     @computed_field
     @property

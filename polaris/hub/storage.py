@@ -474,7 +474,7 @@ class StorageTokenAuth:
 
 class StorageSession(OAuth2Client):
     """
-    A context manager for managing a storage session, with token exchange and token refresh capabilities.
+    A context manager for managing a storage session for upload/write operations, with token exchange and token refresh capabilities.
     Each session is associated with a specific scope and resource.
     """
 
@@ -581,42 +581,5 @@ class StorageSession(OAuth2Client):
             endpoint_url=storage_data.endpoint,
             content_type=content_type,
         )
+
         store[relative_path.name] = value
-
-    def get_file(self, path: str) -> bytes | bytearray:
-        """
-        Get the value at the given path.
-        """
-        if path not in self.paths.files:
-            raise NotImplementedError(
-                f"{type(self.paths).__name__} only supports these files: {self.paths.files}."
-            )
-
-        relative_path = self._relative_path(getattr(self.paths, path))
-
-        storage_data = self.token.extra_data
-        store = S3Store(
-            path=relative_path.parent,
-            access_key=storage_data.key,
-            secret_key=storage_data.secret,
-            token=f"jwt/{self.token.access_token}",
-            endpoint_url=storage_data.endpoint,
-        )
-        return store[relative_path.name]
-
-    def store(self, path: str) -> S3Store:
-        if path not in self.paths.stores:
-            raise NotImplementedError(
-                f"{type(self.paths).__name__} only supports these stores: {self.paths.stores}."
-            )
-
-        relative_path = self._relative_path(getattr(self.paths, path))
-
-        storage_data = self.token.extra_data
-        return S3Store(
-            path=relative_path,
-            access_key=storage_data.key,
-            secret_key=storage_data.secret,
-            token=f"jwt/{self.token.access_token}",
-            endpoint_url=storage_data.endpoint,
-        )
