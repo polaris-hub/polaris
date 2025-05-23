@@ -1345,7 +1345,7 @@
 </ul>
 <p>One dataset can therefore be associated with multiple benchmarks. </p>
 <h2 id="login">Login</h2>
-<p>To interact with the <a href="https://polarishub.io/">Polaris Hub</a> from the client, you must first authenticate yourself. If you don't have an account yet, you can create one <a href="https://polarishub.io/sign-up">here</a>.</p>
+<p>To submit or upload artifacts to the <a href="https://polarishub.io/">Polaris Hub</a> from the client, you must first authenticate yourself. If you don't have an account yet, you can create one <a href="https://polarishub.io/sign-up">here</a>.</p>
 <p>You can do this via the following command in your terminal:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>polaris<span class="w"> </span>login
 </span></code></pre></div>
@@ -1378,7 +1378,7 @@
 </span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="n">results</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
 </span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
 </span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="c1"># Submit your results</span>
-</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="n">results</span><span class="o">.</span><span class="n">upload_to_hub</span><span class="p">(</span><span class="n">owner</span><span class="o">=</span><span class="s2">&quot;dummy-user&quot;</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="s2">&quot;public&quot;</span><span class="p">)</span>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="n">results</span><span class="o">.</span><span class="n">upload_to_hub</span><span class="p">(</span><span class="n">owner</span><span class="o">=</span><span class="s2">&quot;dummy-user&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <p>Through immutable datasets and standardized benchmarks, Polaris aims to serve as a source of truth for machine learning in drug discovery. The limited flexibility might differ from your typical experience, but this is by design to improve reproducibility. Learn more <a href="https://polarishub.io/blog/reproducible-machine-learning-in-drug-discovery-how-polaris-serves-as-a-single-source-of-truth">here</a>.</p>
 <h2 id="dataset-api">Dataset API</h2>
