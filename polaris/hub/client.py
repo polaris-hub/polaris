@@ -342,11 +342,6 @@ class PolarisHubClient(OAuth2Client):
         root_url = response_data.get("root")
         extension_url = response_data.get("extension")
 
-        if root_url is not None:
-            root_url = root_url.strip('"')
-        if extension_url is not None:
-            extension_url = extension_url.strip('"')
-
         # Load the dataset table and optional Zarr archive
         with fsspec.open(root_url, mode="rb") as f:
             table = pd.read_parquet(f)
@@ -370,8 +365,6 @@ class PolarisHubClient(OAuth2Client):
 
         root_url = response_data.get("root")
 
-        if root_url is not None:
-            root_url = root_url.strip('"')
         # For v2 datasets, the zarr_path always exists
         dataset = DatasetV2(zarr_root_path=root_url, **response_data)
         return dataset
@@ -620,9 +613,6 @@ class PolarisHubClient(OAuth2Client):
         response_data = response.json()
 
         root_url = response_data.get("root")
-
-        if root_url is not None:
-            root_url = root_url.strip('"')
 
         return CompetitionSpecification(zarr_root_path=root_url, **response_data)
 
