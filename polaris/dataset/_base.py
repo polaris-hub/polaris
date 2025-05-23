@@ -36,7 +36,6 @@ from polaris.utils.types import (
     SupportedLicenseType,
     ZarrConflictResolution,
 )
-from polaris.hub.settings import PolarisHubSettings
 
 logger = logging.getLogger(__name__)
 
@@ -171,8 +170,6 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             The `zarr_data` attribute references either to the Zarr archive or to a in-memory copy of the data.
             See also `dataset.load_to_memory()`.
         """
-
-        from urllib.parse import urlparse
 
         if self._zarr_root is not None:
             return self._zarr_root

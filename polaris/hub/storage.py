@@ -18,7 +18,6 @@ from zarr import CopyError
 from zarr.context import Context
 from zarr.storage import Store
 from zarr.util import buffer_size
-import fsspec
 
 from polaris.hub.oauth import BenchmarkV2Paths, DatasetV1Paths, DatasetV2Paths, HubStorageOAuth2Token
 from polaris.utils.context import track_progress
@@ -483,10 +482,9 @@ class StorageSession(OAuth2Client):
 
     token_auth_class = StorageTokenAuth
 
-    def __init__(self, hub_client, scope: Scope, resource: ArtifactUrn, mode: str = "read"):
+    def __init__(self, hub_client, scope: Scope, resource: ArtifactUrn):
         self.hub_client = hub_client
         self.resource = resource
-        self.mode = mode
 
         super().__init__(
             # OAuth2Client
@@ -499,8 +497,7 @@ class StorageSession(OAuth2Client):
         )
 
     def __enter__(self) -> Self:
-        if not (self.mode == "read"):
-            self.ensure_active_token()
+        self.ensure_active_token()
         return self
 
     def _prepare_token_endpoint_body(self, body, grant_type, **kwargs) -> str:
@@ -584,5 +581,5 @@ class StorageSession(OAuth2Client):
             endpoint_url=storage_data.endpoint,
             content_type=content_type,
         )
-        # Use StorageSession with mode='write' for write operations
+
         store[relative_path.name] = value

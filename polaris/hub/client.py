@@ -1,6 +1,5 @@
 import json
 import logging
-from io import BytesIO
 from urllib.parse import urljoin
 
 import httpx
@@ -21,12 +20,11 @@ from polaris.benchmark import (
 from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
 from polaris.competition import CompetitionSpecification
 from polaris.model import Model
-from polaris.dataset import Dataset, DatasetV1, DatasetV2
+from polaris.dataset import DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2, CompetitionPredictions
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
-from polaris.hub.storage import StorageSession
 from polaris.utils.context import track_progress
 from polaris.utils.errors import (
     PolarisCreateArtifactError,
