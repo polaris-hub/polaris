@@ -29,4 +29,5 @@ __all__ = [
     "evaluate_benchmark",
     "CompetitionPredictions",
     "BenchmarkPredictions",
+    "Predictions",
 ]

@@ -1,29 +1,25 @@
-from collections import defaultdict
+import logging
+import re
+from typing import Any
 
 import numpy as np
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Field,
-    TypeAdapter,
-    field_serializer,
-    field_validator,
-    model_validator,
-)
-from typing_extensions import Self
+import zarr
+from pydantic import model_validator
+from pydantic import TypeAdapter
 
-from polaris.evaluate import ResultsMetadataV1
-from polaris.utils.misc import convert_lists_to_arrays
-from polaris.utils.types import (
-    HttpUrlString,
-    HubOwner,
-    IncomingPredictionsType,
-    PredictionsType,
-    SlugCompatibleStringType,
-)
+from polaris._artifact import BaseArtifactModel
+from polaris.model import Model
+from polaris.utils.types import HubOwner
+from polaris.dataset.zarr._manifest import generate_zarr_manifest
+from polaris.utils.misc import calculate_file_md5
+from polaris.hub.client import PolarisHubClient
+
+logger = logging.getLogger(__name__)
+
+_INDEX_ARRAY_KEY = "__index__"
 
 
-class BenchmarkPredictions(BaseModel):
+class BenchmarkPredictions:
     """
     Base model to represent predictions in the Polaris code base.
 
@@ -37,15 +33,18 @@ class BenchmarkPredictions(BaseModel):
         test_set_sizes: The number of rows in each test set for the associated benchmark.
     """
 
-    predictions: PredictionsType
+    predictions: dict
     target_labels: list[str]
     test_set_labels: list[str]
     test_set_sizes: dict[str, int]
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    def __init__(self, predictions, target_labels, test_set_labels, test_set_sizes):
+        self.predictions = predictions
+        self.target_labels = target_labels
+        self.test_set_labels = test_set_labels
+        self.test_set_sizes = test_set_sizes
 
-    @field_serializer("predictions")
-    def _serialize_predictions(self, predictions: PredictionsType):
+    def _serialize_predictions(self, predictions):
         """
         Recursively converts all numpy values in the predictions dictionary to lists
         so they can be serialized.
@@ -59,16 +58,12 @@ class BenchmarkPredictions(BaseModel):
 
         return convert_to_list(predictions)
 
-    @field_validator("target_labels", "test_set_labels")
-    @classmethod
-    def _validate_labels(cls, v: list[str]) -> list[str]:
+    def _validate_labels(self, v: list[str]) -> list[str]:
         if len(set(v)) != len(v):
             raise ValueError("The predictions contain duplicate columns")
         return v
 
-    @model_validator(mode="before")
-    @classmethod
-    def _validate_predictions(cls, data: dict) -> dict:
+    def _validate_predictions(self, data: dict) -> dict:
         """Normalizes the predictions format to a standard representation we use internally"""
 
         # This model validator runs before any Pydantic internal validation.
@@ -76,20 +71,17 @@ class BenchmarkPredictions(BaseModel):
         # However, this implies that the fields can theoretically be any type.
 
         # Ensure the type of the incoming predictions is correct
-        validator = TypeAdapter(IncomingPredictionsType, config={"arbitrary_types_allowed": True})
-        predictions = validator.validate_python(data.get("predictions"))
+        predictions = data.get("predictions")
 
         # Ensure the type of the target_labels and test_set_labels is correct
-        validator = TypeAdapter(list[str])
-        target_labels = validator.validate_python(data.get("target_labels"))
-        test_set_labels = validator.validate_python(data.get("test_set_labels"))
+        target_labels = data.get("target_labels")
+        test_set_labels = data.get("test_set_labels")
 
         validator = TypeAdapter(dict[str, int])
         test_set_sizes = validator.validate_python(data.get("test_set_sizes"))
 
         # Normalize the predictions to a standard representation
-        predictions = convert_lists_to_arrays(predictions)
-        predictions = cls._normalize_predictions(predictions, target_labels, test_set_labels)
+        predictions = self._normalize_predictions(predictions, target_labels, test_set_labels)
 
         # Update class data with the normalized fields. Use of the `update()` method
         # is required to prevent overwriting class data when this class is inherited.
@@ -104,8 +96,7 @@ class BenchmarkPredictions(BaseModel):
 
         return data
 
-    @model_validator(mode="after")
-    def check_test_set_size(self) -> Self:
+    def check_test_set_size(self):
         """Verify that the size of all predictions"""
         for test_set_label, test_set in self.predictions.items():
             for target in test_set.values():
@@ -119,17 +110,14 @@ class BenchmarkPredictions(BaseModel):
                     )
         return self
 
-    @classmethod
-    def _normalize_predictions(
-        cls, predictions: IncomingPredictionsType, target_labels: list[str], test_set_labels: list[str]
-    ) -> PredictionsType:
+    def _normalize_predictions(self, predictions, target_labels, test_set_labels):
         """
         Normalizes  the predictions to a standard representation we use internally.
         This standard representation is a nested, two-level dictionary:
         `{test_set_name: {target_column: np.ndarray}}`
         """
         # (1) If the predictions are already fully specified, no need to do anything
-        if cls._is_fully_specified(predictions, target_labels, test_set_labels):
+        if self._is_fully_specified(predictions, target_labels, test_set_labels):
             return predictions
 
         # If not fully specified, we distinguish 4 cases based on the type of benchmark.
@@ -172,10 +160,7 @@ class BenchmarkPredictions(BaseModel):
 
         return predictions
 
-    @classmethod
-    def _is_fully_specified(
-        cls, predictions: IncomingPredictionsType, target_labels: list[str], test_set_labels: list[str]
-    ) -> bool:
+    def _is_fully_specified(self, predictions, target_labels, test_set_labels):
         """
         Check if the predictions are fully specified for the target columns and test set names.
         """
@@ -196,9 +181,7 @@ class BenchmarkPredictions(BaseModel):
 
         return True
 
-    def get_subset(
-        self, test_set_subset: list[str] | None = None, target_subset: list[str] | None = None
-    ) -> "BenchmarkPredictions":
+    def get_subset(self, test_set_subset: list[str] | None = None, target_subset: list[str] | None = None):
         """Return a subset of the original predictions"""
 
         if test_set_subset is None and target_subset is None:
@@ -209,7 +192,7 @@ class BenchmarkPredictions(BaseModel):
         if target_subset is None:
             target_subset = self.target_labels
 
-        predictions = defaultdict(dict)
+        predictions = {}
         for test_set_name in self.predictions.keys():
             if test_set_name not in test_set_subset:
                 continue
@@ -218,7 +201,7 @@ class BenchmarkPredictions(BaseModel):
                 if target_name not in target_subset:
                     continue
 
-                predictions[test_set_name][target_name] = target
+                predictions[test_set_name] = {target_name: target}
 
         test_set_sizes = {k: v for k, v in self.test_set_sizes.items() if k in predictions.keys()}
         return BenchmarkPredictions(
@@ -228,15 +211,13 @@ class BenchmarkPredictions(BaseModel):
             test_set_sizes=test_set_sizes,
         )
 
-    def get_size(
-        self, test_set_subset: list[str] | None = None, target_subset: list[str] | None = None
-    ) -> int:
+    def get_size(self, test_set_subset: list[str] | None = None, target_subset: list[str] | None = None):
         """Return the total number of predictions, allowing for filtering by test set and target"""
         if test_set_subset is None and target_subset is None:
             return sum(self.test_set_sizes.values()) * len(self.target_labels)
         return len(self.get_subset(test_set_subset, target_subset))
 
-    def flatten(self) -> np.ndarray:
+    def flatten(self):
         """Return the predictions as a single, flat numpy array"""
         if len(self.test_set_labels) != 1 and len(self.target_labels) != 1:
             raise ValueError(
@@ -244,12 +225,12 @@ class BenchmarkPredictions(BaseModel):
             )
         return self.predictions[self.test_set_labels[0]][self.target_labels[0]]
 
-    def __len__(self) -> int:
+    def __len__(self):
         """Return the total number of predictions"""
         return self.get_size()
 
 
-class CompetitionPredictions(BenchmarkPredictions, ResultsMetadataV1):
+class CompetitionPredictions(BenchmarkPredictions):
     """
     Predictions for competition benchmarks.
 
@@ -266,10 +247,187 @@ class CompetitionPredictions(BenchmarkPredictions, ResultsMetadataV1):
 
     _artifact_type = "competition-prediction"
 
-    name: SlugCompatibleStringType
-    owner: HubOwner
-    paper_url: HttpUrlString = Field(alias="report_url", serialization_alias="reportUrl")
+    name: str
+    owner: str
+    paper_url: str
 
+    def __repr__(self):
+        return self.model_dump_json(by_alias=True, indent=2)
+
+    def __str__(self):
+        return self.__repr__()
+
+
+class Predictions(BaseArtifactModel):
+    """
+    Prediction artifact for uploading predictions to a Benchmark V2.
+    Stores predictions as a Zarr archive, with manifest and metadata for reproducibility and integrity.
+
+    Attributes:
+        benchmark_artifact_id: The artifact ID of the associated benchmark.
+        model: (Optional) The Model artifact used to generate these predictions.
+        zarr_root_path: Path to the Zarr archive containing the predictions.
+        column_types: (Optional) A dictionary mapping column names to expected types.
+    """
+
+    _artifact_type = "prediction"
+
+    benchmark_artifact_id: str
+    model: Model | None = None
+    zarr_root_path: str
+    _zarr_manifest_path: str | None = None
+    _zarr_manifest_md5sum: str | None = None
+    column_types: dict[str, type] = {}
+
+    # =====================
+    # Validators
+    # =====================
+    @model_validator(mode="after")
+    def _validate_predictions_zarr_structure(self):
+        """
+        Ensures the Zarr archive for predictions is well-formed:
+        - All arrays/groups at the root have the same length.
+        - Each group has an __index__ array, its length matches the group size (excluding the index), and all keys in the index exist in the group.
+        """
+        # Check group index arrays
+        for group in self.zarr_root.group_keys():
+            if _INDEX_ARRAY_KEY not in self.zarr_root[group].array_keys():
+                raise ValueError(f"Group {group} does not have an index array (__index__).")
+            index_arr = self.zarr_root[group][_INDEX_ARRAY_KEY]
+            if len(index_arr) != len(self.zarr_root[group]) - 1:
+                raise ValueError(
+                    f"Length of index array for group {group} does not match the size of the group (excluding index)."
+                )
+            if any(x not in self.zarr_root[group] for x in index_arr):
+                raise ValueError(f"Keys of index array for group {group} do not match the group members.")
+        # Check all arrays/groups at root have the same length
+        lengths = {len(self.zarr_root[k]) for k in self.zarr_root.array_keys()}
+        lengths.update({len(self.zarr_root[k][_INDEX_ARRAY_KEY]) for k in self.zarr_root.group_keys()})
+        if len(lengths) > 1:
+            raise ValueError(
+                f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
+            )
+        return self
+
+    # =====================
+    # Properties
+    # =====================
+    @property
+    def columns(self):
+        return list(self.zarr_root.keys())
+
+    @property
+    def dtypes(self):
+        dtypes = {}
+        for arr in self.zarr_root.array_keys():
+            dtypes[arr] = self.zarr_root[arr].dtype
+        for group in self.zarr_root.group_keys():
+            dtypes[group] = object
+        return dtypes
+
+    @property
+    def n_rows(self):
+        cols = self.columns
+        if not cols:
+            raise ValueError("No columns found in predictions archive.")
+        example = self.zarr_root[cols[0]]
+        if isinstance(example, zarr.Group):
+            return len(example)
+        return len(example)
+
+    @property
+    def rows(self):
+        return range(self.n_rows)
+
+    @property
+    def zarr_manifest_path(self):
+        if self._zarr_manifest_path is None:
+            zarr_manifest_path = generate_zarr_manifest(
+                self.zarr_root_path, getattr(self, "_cache_dir", None)
+            )
+            self._zarr_manifest_path = zarr_manifest_path
+        return self._zarr_manifest_path
+
+    @property
+    def zarr_manifest_md5sum(self):
+        if not self.has_zarr_manifest_md5sum:
+            logger.info("Computing the checksum. This can be slow for large predictions archives.")
+            self.zarr_manifest_md5sum = calculate_file_md5(self.zarr_manifest_path)
+        return self._zarr_manifest_md5sum
+
+    @zarr_manifest_md5sum.setter
+    def zarr_manifest_md5sum(self, value: str):
+        if not re.fullmatch(r"^[a-f0-9]{32}$", value):
+            raise ValueError("The checksum should be the 32-character hexdigest of a 128 bit MD5 hash.")
+        self._zarr_manifest_md5sum = value
+
+    @property
+    def has_zarr_manifest_md5sum(self):
+        return self._zarr_manifest_md5sum is not None
+
+    # =====================
+    # Main API Methods
+    # =====================
+    def set_prediction_value(self, column: str, row: int, value: Any):
+        """
+        Set a prediction value for a given column and row in the Zarr archive.
+        Validates the column exists and, if column_types is set, checks the value type.
+        """
+        if column not in self.columns:
+            raise KeyError(f"Column '{column}' not defined in predictions.")
+        expected_type = self.column_types.get(column)
+        if expected_type and not isinstance(value, expected_type):
+            raise TypeError(f"Value for column '{column}' must be of type {expected_type}, got {type(value)}")
+        self.zarr_root[column][row] = value
+
+    def get_prediction_value(self, column: str, row: int):
+        """
+        Get a prediction value for a given column and row from the Zarr archive.
+        """
+        if column not in self.columns:
+            raise KeyError(f"Column '{column}' not defined in predictions.")
+        return self.zarr_root[column][row]
+
+    @classmethod
+    def create_zarr_from_dict(
+        cls, path: str, data: dict[str, Any], column_types: dict[str, type] | None = None, **zarr_kwargs
+    ):
+        """
+        Create a Zarr archive at the given path from a dict mapping column names to arrays or lists.
+        Uses dtype=object for columns with complex types.
+        Returns the path to the created Zarr archive.
+        """
+        store = zarr.DirectoryStore(path)
+        root = zarr.group(store=store)
+        column_types = column_types or {}
+        for col, arr in data.items():
+            dtype = (
+                object
+                if column_types.get(col) not in (float, int, str, bool, bytes, None)
+                else getattr(arr, "dtype", None) or type(arr[0])
+            )
+            root.create_dataset(col, data=arr, dtype=dtype, **zarr_kwargs)
+        zarr.consolidate_metadata(store)
+        return path
+
+    def upload_to_hub(
+        self,
+        owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
+        model: Model | None = None,
+    ):
+        """
+        Uploads the predictions artifact to the Polaris Hub.
+        Optionally sets or overrides the model before upload.
+        """
+        if model is not None:
+            self.model = model
+        with PolarisHubClient() as client:
+            client.upload_prediction(self, owner=owner, parent_artifact_id=parent_artifact_id)
+
+    # =====================
+    # Representation
+    # =====================
     def __repr__(self):
         return self.model_dump_json(by_alias=True, indent=2)
 
