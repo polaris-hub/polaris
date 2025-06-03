@@ -729,9 +729,6 @@ class PolarisHubClient(OAuth2Client):
         """
         Upload a Predictions artifact (with Zarr archive) to the Polaris Hub.
         """
-
-        logger = logging.getLogger(__name__)
-
         # Set owner
         prediction.owner = HubOwner.normalize(owner or prediction.owner)
         prediction_json = prediction.model_dump(by_alias=True, exclude_none=True)
@@ -746,7 +743,6 @@ class PolarisHubClient(OAuth2Client):
                     "zarrManifestFileContent": {
                         "md5Sum": prediction.zarr_manifest_md5sum,
                     },
-                    "parentArtifactId": parent_artifact_id,
                     **prediction_json,
                 },
                 timeout=timeout,
@@ -772,9 +768,9 @@ class PolarisHubClient(OAuth2Client):
                 destination[".zmetadata"] = zmetadata_content
                 # Copy the Zarr archive
                 destination.copy_from_source(
-                    prediction.zarr_root.store.store, if_exists=if_exists, log=logger.info
+                    prediction.zarr_root.store.store, if_exists=if_exists,  if_exists=if_exists, log=progress_zarr.log
                 )
 
-        print(
+        progress.log(
             f"[green]Your prediction has been successfully uploaded to the Hub. View it here: {prediction_url}"
         )
