@@ -768,7 +768,7 @@ class PolarisHubClient(OAuth2Client):
                 destination[".zmetadata"] = zmetadata_content
                 # Copy the Zarr archive
                 destination.copy_from_source(
-                    prediction.zarr_root.store.store, if_exists=if_exists,  if_exists=if_exists, log=progress_zarr.log
+                    prediction.zarr_root.store.store, if_exists=if_exists, log=progress_zarr.log
                 )
 
         progress.log(
