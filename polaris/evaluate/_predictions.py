@@ -1,15 +1,32 @@
+from collections import defaultdict
 import logging
 import re
 from typing import Any
 
 import numpy as np
 import zarr
-from pydantic import model_validator
-from pydantic import TypeAdapter
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    TypeAdapter,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
+from typing_extensions import Self
 
 from polaris._artifact import BaseArtifactModel
+from polaris.evaluate import ResultsMetadataV1
 from polaris.model import Model
-from polaris.utils.types import HubOwner
+from polaris.utils.misc import convert_lists_to_arrays
+from polaris.utils.types import (
+    HttpUrlString,
+    HubOwner,
+    IncomingPredictionsType,
+    PredictionsType,
+    SlugCompatibleStringType,
+)
 from polaris.dataset.zarr._manifest import generate_zarr_manifest, calculate_file_md5
 
 logger = logging.getLogger(__name__)
@@ -17,7 +34,7 @@ logger = logging.getLogger(__name__)
 _INDEX_ARRAY_KEY = "__index__"
 
 
-class BenchmarkPredictions:
+class BenchmarkPredictions(BaseModel):
     """
     Base model to represent predictions in the Polaris code base.
 
@@ -31,18 +48,15 @@ class BenchmarkPredictions:
         test_set_sizes: The number of rows in each test set for the associated benchmark.
     """
 
-    predictions: dict
+    predictions: PredictionsType
     target_labels: list[str]
     test_set_labels: list[str]
     test_set_sizes: dict[str, int]
 
-    def __init__(self, predictions, target_labels, test_set_labels, test_set_sizes):
-        self.predictions = predictions
-        self.target_labels = target_labels
-        self.test_set_labels = test_set_labels
-        self.test_set_sizes = test_set_sizes
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def _serialize_predictions(self, predictions):
+    @field_serializer("predictions")
+    def _serialize_predictions(self, predictions: PredictionsType):
         """
         Recursively converts all numpy values in the predictions dictionary to lists
         so they can be serialized.
@@ -56,12 +70,16 @@ class BenchmarkPredictions:
 
         return convert_to_list(predictions)
 
-    def _validate_labels(self, v: list[str]) -> list[str]:
+    @field_validator("target_labels", "test_set_labels")
+    @classmethod
+    def _validate_labels(cls, v: list[str]) -> list[str]:
         if len(set(v)) != len(v):
             raise ValueError("The predictions contain duplicate columns")
         return v
 
-    def _validate_predictions(self, data: dict) -> dict:
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_predictions(cls, data: dict) -> dict:
         """Normalizes the predictions format to a standard representation we use internally"""
 
         # This model validator runs before any Pydantic internal validation.
@@ -69,17 +87,20 @@ class BenchmarkPredictions:
         # However, this implies that the fields can theoretically be any type.
 
         # Ensure the type of the incoming predictions is correct
-        predictions = data.get("predictions")
+        validator = TypeAdapter(IncomingPredictionsType, config={"arbitrary_types_allowed": True})
+        predictions = validator.validate_python(data.get("predictions"))
 
         # Ensure the type of the target_labels and test_set_labels is correct
-        target_labels = data.get("target_labels")
-        test_set_labels = data.get("test_set_labels")
+        validator = TypeAdapter(list[str])
+        target_labels = validator.validate_python(data.get("target_labels"))
+        test_set_labels = validator.validate_python(data.get("test_set_labels"))
 
         validator = TypeAdapter(dict[str, int])
         test_set_sizes = validator.validate_python(data.get("test_set_sizes"))
 
         # Normalize the predictions to a standard representation
-        predictions = self._normalize_predictions(predictions, target_labels, test_set_labels)
+        predictions = convert_lists_to_arrays(predictions)
+        predictions = cls._normalize_predictions(predictions, target_labels, test_set_labels)
 
         # Update class data with the normalized fields. Use of the `update()` method
         # is required to prevent overwriting class data when this class is inherited.
@@ -94,7 +115,8 @@ class BenchmarkPredictions:
 
         return data
 
-    def check_test_set_size(self):
+    @model_validator(mode="after")
+    def check_test_set_size(self) -> Self:
         """Verify that the size of all predictions"""
         for test_set_label, test_set in self.predictions.items():
             for target in test_set.values():
@@ -108,14 +130,17 @@ class BenchmarkPredictions:
                     )
         return self
 
-    def _normalize_predictions(self, predictions, target_labels, test_set_labels):
+    @classmethod
+    def _normalize_predictions(
+        cls, predictions: IncomingPredictionsType, target_labels: list[str], test_set_labels: list[str]
+    ) -> PredictionsType:
         """
         Normalizes  the predictions to a standard representation we use internally.
         This standard representation is a nested, two-level dictionary:
         `{test_set_name: {target_column: np.ndarray}}`
         """
         # (1) If the predictions are already fully specified, no need to do anything
-        if self._is_fully_specified(predictions, target_labels, test_set_labels):
+        if cls._is_fully_specified(predictions, target_labels, test_set_labels):
             return predictions
 
         # If not fully specified, we distinguish 4 cases based on the type of benchmark.
@@ -158,7 +183,10 @@ class BenchmarkPredictions:
 
         return predictions
 
-    def _is_fully_specified(self, predictions, target_labels, test_set_labels):
+    @classmethod
+    def _is_fully_specified(
+        cls, predictions: IncomingPredictionsType, target_labels: list[str], test_set_labels: list[str]
+    ) -> bool:
         """
         Check if the predictions are fully specified for the target columns and test set names.
         """
@@ -179,7 +207,9 @@ class BenchmarkPredictions:
 
         return True
 
-    def get_subset(self, test_set_subset: list[str] | None = None, target_subset: list[str] | None = None):
+    def get_subset(
+        self, test_set_subset: list[str] | None = None, target_subset: list[str] | None = None
+    ) -> "BenchmarkPredictions":
         """Return a subset of the original predictions"""
 
         if test_set_subset is None and target_subset is None:
@@ -190,7 +220,7 @@ class BenchmarkPredictions:
         if target_subset is None:
             target_subset = self.target_labels
 
-        predictions = {}
+        predictions = defaultdict(dict)
         for test_set_name in self.predictions.keys():
             if test_set_name not in test_set_subset:
                 continue
@@ -199,7 +229,7 @@ class BenchmarkPredictions:
                 if target_name not in target_subset:
                     continue
 
-                predictions[test_set_name] = {target_name: target}
+                predictions[test_set_name][target_name] = target
 
         test_set_sizes = {k: v for k, v in self.test_set_sizes.items() if k in predictions.keys()}
         return BenchmarkPredictions(
@@ -209,13 +239,15 @@ class BenchmarkPredictions:
             test_set_sizes=test_set_sizes,
         )
 
-    def get_size(self, test_set_subset: list[str] | None = None, target_subset: list[str] | None = None):
+    def get_size(
+        self, test_set_subset: list[str] | None = None, target_subset: list[str] | None = None
+    ) -> int:
         """Return the total number of predictions, allowing for filtering by test set and target"""
         if test_set_subset is None and target_subset is None:
             return sum(self.test_set_sizes.values()) * len(self.target_labels)
         return len(self.get_subset(test_set_subset, target_subset))
 
-    def flatten(self):
+    def flatten(self) -> np.ndarray:
         """Return the predictions as a single, flat numpy array"""
         if len(self.test_set_labels) != 1 and len(self.target_labels) != 1:
             raise ValueError(
@@ -223,12 +255,12 @@ class BenchmarkPredictions:
             )
         return self.predictions[self.test_set_labels[0]][self.target_labels[0]]
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return the total number of predictions"""
         return self.get_size()
 
 
-class CompetitionPredictions(BenchmarkPredictions):
+class CompetitionPredictions(BenchmarkPredictions, ResultsMetadataV1):
     """
     Predictions for competition benchmarks.
 
@@ -245,9 +277,9 @@ class CompetitionPredictions(BenchmarkPredictions):
 
     _artifact_type = "competition-prediction"
 
-    name: str
-    owner: str
-    paper_url: str
+    name: SlugCompatibleStringType
+    owner: HubOwner
+    paper_url: HttpUrlString = Field(alias="report_url", serialization_alias="reportUrl")
 
     def __repr__(self):
         return self.model_dump_json(by_alias=True, indent=2)
@@ -260,7 +292,6 @@ class Predictions(BaseArtifactModel):
     """
     Prediction artifact for uploading predictions to a Benchmark V2.
     Stores predictions as a Zarr archive, with manifest and metadata for reproducibility and integrity.
-
     Attributes:
         benchmark_artifact_id: The artifact ID of the associated benchmark.
         model: (Optional) The Model artifact used to generate these predictions.
@@ -277,9 +308,6 @@ class Predictions(BaseArtifactModel):
     _zarr_manifest_md5sum: str | None = None
     column_types: dict[str, type] = {}
 
-    # =====================
-    # Validators
-    # =====================
     @model_validator(mode="after")
     def _validate_predictions_zarr_structure(self):
         """
@@ -307,9 +335,6 @@ class Predictions(BaseArtifactModel):
             )
         return self
 
-    # =====================
-    # Properties
-    # =====================
     @property
     def columns(self):
         return list(self.zarr_root.keys())
@@ -363,9 +388,6 @@ class Predictions(BaseArtifactModel):
     def has_zarr_manifest_md5sum(self):
         return self._zarr_manifest_md5sum is not None
 
-    # =====================
-    # Main API Methods
-    # =====================
     def set_prediction_value(self, column: str, row: int, value: Any):
         """
         Set a prediction value for a given column and row in the Zarr archive.
@@ -419,15 +441,12 @@ class Predictions(BaseArtifactModel):
         Optionally sets or overrides the model before upload.
         """
         from polaris.hub.client import PolarisHubClient
-        
+
         if model is not None:
             self.model = model
         with PolarisHubClient() as client:
             client.upload_prediction(self, owner=owner, parent_artifact_id=parent_artifact_id)
 
-    # =====================
-    # Representation
-    # =====================
     def __repr__(self):
         return self.model_dump_json(by_alias=True, indent=2)
 
