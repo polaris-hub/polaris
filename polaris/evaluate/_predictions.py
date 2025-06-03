@@ -10,8 +10,7 @@ from pydantic import TypeAdapter
 from polaris._artifact import BaseArtifactModel
 from polaris.model import Model
 from polaris.utils.types import HubOwner
-from polaris.dataset.zarr._manifest import generate_zarr_manifest
-from polaris.utils.misc import calculate_file_md5
+from polaris.dataset.zarr._manifest import generate_zarr_manifest, calculate_file_md5
 from polaris.hub.client import PolarisHubClient
 
 logger = logging.getLogger(__name__)
