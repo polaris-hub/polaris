@@ -23,7 +23,7 @@ from polaris.competition import CompetitionSpecification
 from polaris.model import Model
 from polaris.dataset import DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2, CompetitionPredictions
-from polaris.evaluate._predictions import Prediction
+from polaris.evaluate._predictions import Predictions
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
@@ -720,7 +720,7 @@ class PolarisHubClient(OAuth2Client):
 
     def upload_prediction(
         self,
-        prediction: Prediction,
+        prediction: Predictions,
         timeout: TimeoutTypes = (10, 200),
         owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
