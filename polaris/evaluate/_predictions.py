@@ -11,7 +11,6 @@ from polaris._artifact import BaseArtifactModel
 from polaris.model import Model
 from polaris.utils.types import HubOwner
 from polaris.dataset.zarr._manifest import generate_zarr_manifest, calculate_file_md5
-from polaris.hub.client import PolarisHubClient
 
 logger = logging.getLogger(__name__)
 
@@ -419,6 +418,8 @@ class Predictions(BaseArtifactModel):
         Uploads the predictions artifact to the Polaris Hub.
         Optionally sets or overrides the model before upload.
         """
+        from polaris.hub.client import PolarisHubClient
+        
         if model is not None:
             self.model = model
         with PolarisHubClient() as client:
