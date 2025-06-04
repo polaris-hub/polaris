@@ -762,11 +762,6 @@ class PolarisHubClient(OAuth2Client):
             with track_progress(description="Copying Zarr archive", total=1) as (progress_zarr, task_zarr):
                 progress_zarr.log("[yellow]This may take a while.")
                 destination = storage.store("root")
-                # Consolidate Zarr metadata and upload .zmetadata
-                zarr.consolidate_metadata(prediction.zarr_root.store.store)
-                zmetadata_content = prediction.zarr_root.store.store[".zmetadata"]
-                destination[".zmetadata"] = zmetadata_content
-                # Copy the Zarr archive
                 destination.copy_from_source(
                     prediction.zarr_root.store.store, if_exists=if_exists, log=progress_zarr.log
                 )
