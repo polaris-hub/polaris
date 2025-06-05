@@ -119,7 +119,7 @@ class Predictions(BaseArtifactModel):
 
         # The Zarr archive was created during initialization from predictions
         store = zarr.DirectoryStore(self.zarr_root_path)
-        self._zarr_root = zarr.open_consolidated(store, mode="r+")
+        self._zarr_root = zarr.open_group(store, mode="r+")
         return self._zarr_root
 
     @property
