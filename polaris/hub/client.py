@@ -11,7 +11,6 @@ from authlib.oauth2.rfc6749 import OAuth2Token
 from httpx import ConnectError, HTTPStatusError, Response
 from typing_extensions import Self
 import fsspec
-import zarr
 
 from polaris.benchmark import (
     BenchmarkV1Specification,
@@ -23,7 +22,7 @@ from polaris.competition import CompetitionSpecification
 from polaris.model import Model
 from polaris.dataset import DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2, CompetitionPredictions
-from polaris.evaluate._predictions import Predictions
+from polaris.prediction._predictions_v2 import Predictions
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
@@ -718,13 +717,12 @@ class PolarisHubClient(OAuth2Client):
                 f"[green]Your model has been successfully uploaded to the Hub. View it here: {model_url}"
             )
 
-    def upload_prediction(
+    def upload_predictions(
         self,
         prediction: Predictions,
         timeout: TimeoutTypes = (10, 200),
         owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
-        parent_artifact_id: str | None = None,
     ):
         """
         Upload a Predictions artifact (with Zarr archive) to the Polaris Hub.

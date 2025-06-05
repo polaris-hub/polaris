@@ -11,7 +11,6 @@ from polaris.evaluate._results import (
     EvaluationResultV1,
     EvaluationResultV2,
 )
-from polaris.evaluate._predictions import Predictions
 from polaris.evaluate.utils import evaluate_benchmark
 
 __all__ = [
@@ -30,5 +29,4 @@ __all__ = [
     "evaluate_benchmark",
     "CompetitionPredictions",
     "BenchmarkPredictions",
-    "Predictions",
 ]

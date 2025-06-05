@@ -1,10 +1,7 @@
 from collections import defaultdict
 import logging
-import re
-from typing import Any
 
 import numpy as np
-import zarr
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -16,9 +13,7 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-from polaris._artifact import BaseArtifactModel
 from polaris.evaluate import ResultsMetadataV1
-from polaris.model import Model
 from polaris.utils.misc import convert_lists_to_arrays
 from polaris.utils.types import (
     HttpUrlString,
@@ -27,11 +22,8 @@ from polaris.utils.types import (
     PredictionsType,
     SlugCompatibleStringType,
 )
-from polaris.dataset.zarr._manifest import generate_zarr_manifest, calculate_file_md5
 
 logger = logging.getLogger(__name__)
-
-_INDEX_ARRAY_KEY = "__index__"
 
 
 class BenchmarkPredictions(BaseModel):
@@ -280,172 +272,6 @@ class CompetitionPredictions(BenchmarkPredictions, ResultsMetadataV1):
     name: SlugCompatibleStringType
     owner: HubOwner
     paper_url: HttpUrlString = Field(alias="report_url", serialization_alias="reportUrl")
-
-    def __repr__(self):
-        return self.model_dump_json(by_alias=True, indent=2)
-
-    def __str__(self):
-        return self.__repr__()
-
-
-class Predictions(BaseArtifactModel):
-    """
-    Prediction artifact for uploading predictions to a Benchmark V2.
-    Stores predictions as a Zarr archive, with manifest and metadata for reproducibility and integrity.
-    Attributes:
-        benchmark_artifact_id: The artifact ID of the associated benchmark.
-        model: (Optional) The Model artifact used to generate these predictions.
-        zarr_root_path: Path to the Zarr archive containing the predictions.
-        column_types: (Optional) A dictionary mapping column names to expected types.
-    """
-
-    _artifact_type = "prediction"
-
-    benchmark_artifact_id: str
-    model: Model | None = None
-    zarr_root_path: str
-    _zarr_manifest_path: str | None = None
-    _zarr_manifest_md5sum: str | None = None
-    column_types: dict[str, type] = {}
-
-    @model_validator(mode="after")
-    def _validate_predictions_zarr_structure(self):
-        """
-        Ensures the Zarr archive for predictions is well-formed:
-        - All arrays/groups at the root have the same length.
-        - Each group has an __index__ array, its length matches the group size (excluding the index), and all keys in the index exist in the group.
-        """
-        # Check group index arrays
-        for group in self.zarr_root.group_keys():
-            if _INDEX_ARRAY_KEY not in self.zarr_root[group].array_keys():
-                raise ValueError(f"Group {group} does not have an index array (__index__).")
-            index_arr = self.zarr_root[group][_INDEX_ARRAY_KEY]
-            if len(index_arr) != len(self.zarr_root[group]) - 1:
-                raise ValueError(
-                    f"Length of index array for group {group} does not match the size of the group (excluding index)."
-                )
-            if any(x not in self.zarr_root[group] for x in index_arr):
-                raise ValueError(f"Keys of index array for group {group} do not match the group members.")
-        # Check all arrays/groups at root have the same length
-        lengths = {len(self.zarr_root[k]) for k in self.zarr_root.array_keys()}
-        lengths.update({len(self.zarr_root[k][_INDEX_ARRAY_KEY]) for k in self.zarr_root.group_keys()})
-        if len(lengths) > 1:
-            raise ValueError(
-                f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
-            )
-        return self
-
-    @property
-    def columns(self):
-        return list(self.zarr_root.keys())
-
-    @property
-    def dtypes(self):
-        dtypes = {}
-        for arr in self.zarr_root.array_keys():
-            dtypes[arr] = self.zarr_root[arr].dtype
-        for group in self.zarr_root.group_keys():
-            dtypes[group] = object
-        return dtypes
-
-    @property
-    def n_rows(self):
-        cols = self.columns
-        if not cols:
-            raise ValueError("No columns found in predictions archive.")
-        example = self.zarr_root[cols[0]]
-        if isinstance(example, zarr.Group):
-            return len(example)
-        return len(example)
-
-    @property
-    def rows(self):
-        return range(self.n_rows)
-
-    @property
-    def zarr_manifest_path(self):
-        if self._zarr_manifest_path is None:
-            zarr_manifest_path = generate_zarr_manifest(
-                self.zarr_root_path, getattr(self, "_cache_dir", None)
-            )
-            self._zarr_manifest_path = zarr_manifest_path
-        return self._zarr_manifest_path
-
-    @property
-    def zarr_manifest_md5sum(self):
-        if not self.has_zarr_manifest_md5sum:
-            logger.info("Computing the checksum. This can be slow for large predictions archives.")
-            self.zarr_manifest_md5sum = calculate_file_md5(self.zarr_manifest_path)
-        return self._zarr_manifest_md5sum
-
-    @zarr_manifest_md5sum.setter
-    def zarr_manifest_md5sum(self, value: str):
-        if not re.fullmatch(r"^[a-f0-9]{32}$", value):
-            raise ValueError("The checksum should be the 32-character hexdigest of a 128 bit MD5 hash.")
-        self._zarr_manifest_md5sum = value
-
-    @property
-    def has_zarr_manifest_md5sum(self):
-        return self._zarr_manifest_md5sum is not None
-
-    def set_prediction_value(self, column: str, row: int, value: Any):
-        """
-        Set a prediction value for a given column and row in the Zarr archive.
-        Validates the column exists and, if column_types is set, checks the value type.
-        """
-        if column not in self.columns:
-            raise KeyError(f"Column '{column}' not defined in predictions.")
-        expected_type = self.column_types.get(column)
-        if expected_type and not isinstance(value, expected_type):
-            raise TypeError(f"Value for column '{column}' must be of type {expected_type}, got {type(value)}")
-        self.zarr_root[column][row] = value
-
-    def get_prediction_value(self, column: str, row: int):
-        """
-        Get a prediction value for a given column and row from the Zarr archive.
-        """
-        if column not in self.columns:
-            raise KeyError(f"Column '{column}' not defined in predictions.")
-        return self.zarr_root[column][row]
-
-    @classmethod
-    def create_zarr_from_dict(
-        cls, path: str, data: dict[str, Any], column_types: dict[str, type] | None = None, **zarr_kwargs
-    ):
-        """
-        Create a Zarr archive at the given path from a dict mapping column names to arrays or lists.
-        Uses dtype=object for columns with complex types.
-        Returns the path to the created Zarr archive.
-        """
-        store = zarr.DirectoryStore(path)
-        root = zarr.group(store=store)
-        column_types = column_types or {}
-        for col, arr in data.items():
-            dtype = (
-                object
-                if column_types.get(col) not in (float, int, str, bool, bytes, None)
-                else getattr(arr, "dtype", None) or type(arr[0])
-            )
-            root.create_dataset(col, data=arr, dtype=dtype, **zarr_kwargs)
-        zarr.consolidate_metadata(store)
-        return path
-
-    def upload_to_hub(
-        self,
-        owner: HubOwner | str | None = None,
-        parent_artifact_id: str | None = None,
-        model: Model | None = None,
-    ):
-        """
-        Uploads the predictions artifact to the Polaris Hub.
-        Optionally sets or overrides the model before upload.
-        """
-        from polaris.hub.client import PolarisHubClient
-
-        if model is not None:
-            self.model = model
-        with PolarisHubClient() as client:
-            client.upload_prediction(self, owner=owner, parent_artifact_id=parent_artifact_id)
 
     def __repr__(self):
         return self.model_dump_json(by_alias=True, indent=2)
