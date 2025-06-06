@@ -1,6 +1,8 @@
 import logging
 import re
 import os
+from pathlib import Path
+from uuid import uuid4
 
 import numpy as np
 import zarr
@@ -20,9 +22,11 @@ from polaris.utils.types import (
 from polaris.dataset.zarr._manifest import generate_zarr_manifest, calculate_file_md5
 from polaris.benchmark import BenchmarkV2Specification
 from polaris.dataset.zarr.codecs import RDKitMolCodec, AtomArrayCodec
+from polaris.utils.constants import DEFAULT_CACHE_DIR
 
 logger = logging.getLogger(__name__)
 
+_CACHE_SUBDIR = "predictions"
 
 class Predictions(BaseArtifactModel):
     """
@@ -33,26 +37,38 @@ class Predictions(BaseArtifactModel):
         benchmark: The BenchmarkV2Specification instance this prediction is for.
         model: (Optional) The Model artifact used to generate these predictions.
         predictions: A dictionary mapping column names to prediction arrays/lists.
-        zarr_root_path: Required path to a Zarr archive containing the predictions.
     """
 
     _artifact_type = "prediction"
     benchmark: BenchmarkV2Specification
     model: Model | None = Field(None, exclude=True)
     predictions: dict[str, list | np.ndarray | list[object]] = Field(exclude=True)
-    zarr_root_path: str
 
+    _zarr_root_path: str | None = PrivateAttr(None)
     _zarr_manifest_path: str | None = PrivateAttr(None)
     _zarr_manifest_md5sum: str | None = PrivateAttr(None)
     _zarr_root: zarr.Group | None = PrivateAttr(None)
+    _cache_dir: str | None = PrivateAttr(None)
 
     @model_validator(mode="after")
-    def _initialize_zarr_from_predictions(self) -> Self:
-        """Initialize Zarr archive from predictions."""
+    def _initialize_cache_and_zarr(self) -> Self:
+        """Set up the cache directory and initialize Zarr archive from predictions."""
+        # Set up cache dir if not already set
+        if self._cache_dir is None:
+            cache_root = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR
+            cache_root.mkdir(parents=True, exist_ok=True)
+            self._cache_dir = str(cache_root / str(uuid4()))
+            Path(self._cache_dir).mkdir(parents=True, exist_ok=True)
+        # Set zarr_root_path if not already set
+        if self._zarr_root_path is None:
+            self._zarr_root_path = str(Path(self._cache_dir) / "predictions.zarr")
         # Create the Zarr archive with predictions at the specified zarr_root_path
         self._create_zarr_from_predictions()
-
         return self
+
+    @property
+    def zarr_root_path(self) -> str:
+        return self._zarr_root_path
 
     def _create_zarr_from_predictions(self):
         """Create a Zarr archive from the predictions dictionary."""
@@ -108,6 +124,11 @@ class Predictions(BaseArtifactModel):
 
     @computed_field
     @property
+    def benchmark_artifact_id(self) -> str:
+        return self.benchmark.artifact_id if self.benchmark else None
+
+    @computed_field
+    @property
     def model_artifact_id(self) -> str:
         return self.model.artifact_id if self.model else None
 
@@ -143,9 +164,8 @@ class Predictions(BaseArtifactModel):
     @property
     def zarr_manifest_path(self):
         if self._zarr_manifest_path is None:
-            # Use the parent directory of the zarr root as the output directory
-            output_dir = os.path.dirname(self.zarr_root_path)
-            zarr_manifest_path = generate_zarr_manifest(self.zarr_root_path, output_dir)
+            # Use the cache directory as the output directory
+            zarr_manifest_path = generate_zarr_manifest(self.zarr_root_path, self._cache_dir)
             self._zarr_manifest_path = zarr_manifest_path
         return self._zarr_manifest_path
 
