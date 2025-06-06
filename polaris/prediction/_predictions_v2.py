@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 _CACHE_SUBDIR = "predictions"
 
+
 class Predictions(BaseArtifactModel):
     """
     Prediction artifact for uploading predictions to a Benchmark V2.
