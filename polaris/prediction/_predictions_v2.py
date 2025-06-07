@@ -121,7 +121,15 @@ class Predictions(BaseArtifactModel):
                             codec_kwargs["dtype"] = object
 
             # Create the array in the Zarr archive
-            root.create_array(col, data=data, **codec_kwargs)
+            if 'object_codec' in codec_kwargs:
+                # For object codecs, we need to create a numpy object array first
+                # Use np.empty to avoid numpy trying to convert AtomArrays to numpy arrays
+                data_array = np.empty(len(data), dtype=object)
+                for i, item in enumerate(data):
+                    data_array[i] = item
+                root.array(col, data=data_array, **codec_kwargs)
+            else:
+                root.array(col, data=data, **codec_kwargs)
 
     @computed_field
     @property

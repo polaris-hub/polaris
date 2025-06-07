@@ -730,15 +730,18 @@ class PolarisHubClient(OAuth2Client):
         # Set owner
         prediction.owner = HubOwner.normalize(owner or prediction.owner)
         prediction_json = prediction.model_dump(by_alias=True, exclude_none=True)
-        prediction_json["modelArtifactId"] = prediction.model_artifact_id
+        
+        # Only include modelArtifactId if there's actually a model
+        if prediction.model_artifact_id:
+            prediction_json["modelArtifactId"] = prediction.model_artifact_id
         prediction_json["benchmarkArtifactId"] = prediction.benchmark_artifact_id
 
         # Step 1: Upload metadata to Hub
-        url = f"/v2/prediction/{prediction.artifact_id}"
         with track_progress(description="Uploading prediction metadata", total=1) as (progress, task):
             response = self._base_request_to_hub(
-                url=url,
+                url=f"/v2/prediction/{prediction.artifact_id}",
                 method="PUT",
+                withhold_token=False,
                 json={
                     "zarrManifestFileContent": {
                         "md5Sum": prediction.zarr_manifest_md5sum,
