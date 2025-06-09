@@ -20,6 +20,7 @@ from polaris.utils.types import (
     HubOwner,
 )
 from polaris.dataset.zarr._manifest import generate_zarr_manifest, calculate_file_md5
+from polaris.dataset.zarr import MemoryMappedDirectoryStore
 from polaris.benchmark import BenchmarkV2Specification
 from polaris.dataset.zarr.codecs import RDKitMolCodec, AtomArrayCodec
 from polaris.utils.constants import DEFAULT_CACHE_DIR
@@ -148,7 +149,7 @@ class Predictions(BaseArtifactModel):
             return self._zarr_root
 
         # The Zarr archive was created during initialization from predictions
-        store = zarr.DirectoryStore(self.zarr_root_path)
+        store = MemoryMappedDirectoryStore(self.zarr_root_path)
         self._zarr_root = zarr.open_group(store, mode="r+")
         return self._zarr_root
 

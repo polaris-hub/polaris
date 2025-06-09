@@ -766,7 +766,7 @@ class PolarisHubClient(OAuth2Client):
                 progress_zarr.log("[yellow]This may take a while.")
                 destination = storage.store("root")
                 destination.copy_from_source(
-                    prediction.zarr_root.store.store, if_exists=if_exists, log=progress_zarr.log
+                    prediction.zarr_root.store, if_exists=if_exists, log=progress_zarr.log
                 )
 
         progress.log(

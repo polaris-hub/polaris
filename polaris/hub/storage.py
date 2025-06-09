@@ -583,3 +583,24 @@ class StorageSession(OAuth2Client):
         )
 
         store[relative_path.name] = value
+    
+    def store(self, path: str) -> S3Store:
+        """
+        Create an S3Store for the specified path.
+        """
+        if path not in self.paths.stores:
+            raise NotImplementedError(
+                f"{type(self.paths).__name__} only supports these stores: {self.paths.stores}."
+            )
+
+        relative_path = self._relative_path(getattr(self.paths, path))
+
+        storage_data = self.token.extra_data
+        print(f"[store] JWT: {self.token.access_token}")
+        return S3Store(
+            path=relative_path,
+            access_key=storage_data.key,
+            secret_key=storage_data.secret,
+            token=f"jwt/{self.token.access_token}",
+            endpoint_url=storage_data.endpoint,
+        )
