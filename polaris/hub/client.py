@@ -730,7 +730,7 @@ class PolarisHubClient(OAuth2Client):
         # Set owner
         prediction.owner = HubOwner.normalize(owner or prediction.owner)
         prediction_json = prediction.model_dump(by_alias=True, exclude_none=True)
-        
+
         # Only include modelArtifactId if there's actually a model
         if prediction.model_artifact_id:
             prediction_json["modelArtifactId"] = prediction.model_artifact_id

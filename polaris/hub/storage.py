@@ -19,7 +19,13 @@ from zarr.context import Context
 from zarr.storage import Store
 from zarr.util import buffer_size
 
-from polaris.hub.oauth import BenchmarkV2Paths, DatasetV1Paths, DatasetV2Paths, HubStorageOAuth2Token, PredictionPaths
+from polaris.hub.oauth import (
+    BenchmarkV2Paths,
+    DatasetV1Paths,
+    DatasetV2Paths,
+    HubStorageOAuth2Token,
+    PredictionPaths,
+)
 from polaris.utils.context import track_progress
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import ArtifactUrn, ZarrConflictResolution
@@ -583,7 +589,7 @@ class StorageSession(OAuth2Client):
         )
 
         store[relative_path.name] = value
-    
+
     def store(self, path: str) -> S3Store:
         """
         Create an S3Store for the specified path.

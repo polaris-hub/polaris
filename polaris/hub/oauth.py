@@ -103,6 +103,7 @@ class PredictionPaths(ArtifactPaths):
     root: AnyUrlString = Field(json_schema_extra={"store": True})
     manifest: AnyUrlString = Field(json_schema_extra={"file": True})
 
+
 class StorageTokenData(BaseModel):
     key: str
     secret: str
