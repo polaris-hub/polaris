@@ -22,9 +22,11 @@ from polaris.competition import CompetitionSpecification
 from polaris.model import Model
 from polaris.dataset import DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2, CompetitionPredictions
+from polaris.prediction._predictions_v2 import Predictions
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
+from polaris.hub.storage import StorageSession
 from polaris.utils.context import track_progress
 from polaris.utils.errors import (
     PolarisCreateArtifactError,
@@ -714,3 +716,59 @@ class PolarisHubClient(OAuth2Client):
             progress.log(
                 f"[green]Your model has been successfully uploaded to the Hub. View it here: {model_url}"
             )
+
+    def upload_predictions(
+        self,
+        prediction: Predictions,
+        timeout: TimeoutTypes = (10, 200),
+        owner: HubOwner | str | None = None,
+        if_exists: ZarrConflictResolution = "replace",
+    ):
+        """
+        Upload a Predictions artifact (with Zarr archive) to the Polaris Hub.
+        """
+        # Set owner
+        prediction.owner = HubOwner.normalize(owner or prediction.owner)
+        prediction_json = prediction.model_dump(by_alias=True, exclude_none=True)
+
+        # Only include modelArtifactId if there's actually a model
+        if prediction.model_artifact_id:
+            prediction_json["modelArtifactId"] = prediction.model_artifact_id
+        prediction_json["benchmarkArtifactId"] = prediction.benchmark_artifact_id
+
+        # Step 1: Upload metadata to Hub
+        with track_progress(description="Uploading prediction metadata", total=1) as (progress, task):
+            response = self._base_request_to_hub(
+                url=f"/v2/prediction/{prediction.artifact_id}",
+                method="PUT",
+                withhold_token=False,
+                json={
+                    "zarrManifestFileContent": {
+                        "md5Sum": prediction.zarr_manifest_md5sum,
+                    },
+                    **prediction_json,
+                },
+                timeout=timeout,
+            )
+            inserted = response.json()
+            prediction.slug = inserted["slug"]
+            prediction_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
+            progress.log(f"[green]Prediction metadata uploaded. View it here: {prediction_url}")
+
+        # Step 2: Upload manifest file
+        with StorageSession(self, "write", prediction.urn) as storage:
+            with track_progress(description="Copying manifest file", total=1):
+                with open(prediction.zarr_manifest_path, "rb") as manifest_file:
+                    storage.set_file("manifest", manifest_file.read())
+
+            # Step 3: Upload Zarr archive
+            with track_progress(description="Copying Zarr archive", total=1) as (progress_zarr, task_zarr):
+                progress_zarr.log("[yellow]This may take a while.")
+                destination = storage.store("root")
+                destination.copy_from_source(
+                    prediction.zarr_root.store, if_exists=if_exists, log=progress_zarr.log
+                )
+
+        progress.log(
+            f"[green]Your prediction has been successfully uploaded to the Hub. View it here: {prediction_url}"
+        )
