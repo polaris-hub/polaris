@@ -112,7 +112,7 @@ class Predictions(BaseArtifactModel):
                         if sample_type_name == "Mol" and "rdkit" in str(type(sample_value).__module__):
                             codec_kwargs["object_codec"] = RDKitMolCodec()
                             codec_kwargs["dtype"] = object
-                        elif sample_type_name == "AtomArray" and "struc" in str(
+                        elif sample_type_name == "AtomArray" and "biotite" in str(
                             type(sample_value).__module__
                         ):
                             codec_kwargs["object_codec"] = AtomArrayCodec()
