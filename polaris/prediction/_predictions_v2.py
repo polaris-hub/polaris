@@ -135,7 +135,7 @@ class Predictions(BaseArtifactModel):
     @computed_field
     @property
     def benchmark_artifact_id(self) -> str:
-        return self.benchmark.artifact_id if self.benchmark else None
+        return self.benchmark.artifact_id
 
     @computed_field
     @property
@@ -163,8 +163,6 @@ class Predictions(BaseArtifactModel):
         if not cols:
             raise ValueError("No columns found in predictions archive.")
         example = self.zarr_root[cols[0]]
-        if isinstance(example, zarr.Group):
-            return len(example)
         return len(example)
 
     @property

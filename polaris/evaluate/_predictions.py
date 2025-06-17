@@ -1,5 +1,4 @@
 from collections import defaultdict
-import logging
 
 import numpy as np
 from pydantic import (
@@ -22,8 +21,6 @@ from polaris.utils.types import (
     PredictionsType,
     SlugCompatibleStringType,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class BenchmarkPredictions(BaseModel):

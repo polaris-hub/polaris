@@ -602,7 +602,6 @@ class StorageSession(OAuth2Client):
         relative_path = self._relative_path(getattr(self.paths, path))
 
         storage_data = self.token.extra_data
-        print(f"[store] JWT: {self.token.access_token}")
         return S3Store(
             path=relative_path,
             access_key=storage_data.key,
