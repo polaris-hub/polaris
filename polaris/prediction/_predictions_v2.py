@@ -3,6 +3,7 @@ import re
 import os
 from pathlib import Path
 from uuid import uuid4
+import tempfile
 
 import numpy as np
 import zarr
@@ -14,26 +15,22 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-from polaris._artifact import BaseArtifactModel
-from polaris.model import Model
-from polaris.utils.types import (
-    HubOwner,
-)
-from polaris.dataset.zarr._manifest import generate_zarr_manifest, calculate_file_md5
-from polaris.dataset.zarr import MemoryMappedDirectoryStore
+from polaris.utils.types import HubOwner, IncomingPredictionsType
 from polaris.benchmark import BenchmarkV2Specification
-from polaris.dataset.zarr.codecs import RDKitMolCodec, AtomArrayCodec
-from polaris.utils.constants import DEFAULT_CACHE_DIR
+from polaris.utils.zarr._manifest import generate_zarr_manifest, calculate_file_md5
+from polaris.utils.zarr.codecs import RDKitMolCodec, AtomArrayCodec  # Required for codec registration
+from polaris.evaluate import ResultsMetadataV2
+from pydantic import TypeAdapter
 
 logger = logging.getLogger(__name__)
 
-_CACHE_SUBDIR = "predictions"
 
-
-class Predictions(BaseArtifactModel):
+class Predictions(ResultsMetadataV2):
     """
     Prediction artifact for uploading predictions to a Benchmark V2.
     Stores predictions as a Zarr archive, with manifest and metadata for reproducibility and integrity.
+    In addition to the predictions data, it contains metadata that describes how these predictions
+    were generated, including the model used and contributors involved.
 
     Attributes:
         benchmark: The BenchmarkV2Specification instance this prediction is for.
@@ -43,115 +40,102 @@ class Predictions(BaseArtifactModel):
 
     _artifact_type = "prediction"
     benchmark: BenchmarkV2Specification
-    model: Model | None = Field(None, exclude=True)
     predictions: dict[str, list | np.ndarray | list[object]] = Field(exclude=True)
 
     _zarr_root_path: str | None = PrivateAttr(None)
     _zarr_manifest_path: str | None = PrivateAttr(None)
     _zarr_manifest_md5sum: str | None = PrivateAttr(None)
     _zarr_root: zarr.Group | None = PrivateAttr(None)
-    _cache_dir: str | None = PrivateAttr(None)
+    _temp_dir: str | None = PrivateAttr(None)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_predictions(cls, data: dict) -> dict:
+        """Validate and standardize the predictions format."""
+        if "predictions" not in data or "benchmark" not in data:
+            return data
+
+        # Ensure the type of the incoming predictions is correct
+        validator = TypeAdapter(IncomingPredictionsType, config={"arbitrary_types_allowed": True})
+        predictions = validator.validate_python(data["predictions"])
+
+        # Get benchmark and dataset info
+        benchmark = data["benchmark"]
+        dataset_root = benchmark.dataset.zarr_root
+        
+        # Get expected size from test split
+        _, test = benchmark.get_train_test_split()
+        expected_size = len(test)
+        
+        # Validate predictions against benchmark target columns
+        target_cols = list(benchmark.target_cols)
+        if not isinstance(predictions, dict) or set(predictions.keys()) != set(target_cols):
+            raise ValueError(
+                "The predictions should be a dictionary with the target columns as keys. "
+                f"Expected columns: {target_cols}, got: {list(predictions.keys()) if isinstance(predictions, dict) else type(predictions)}"
+            )
+
+        # Process each column's predictions
+        processed_predictions = {}
+        for col, preds in predictions.items():
+            # Get the array configuration from the dataset
+            dataset_array = dataset_root[col]
+            
+            # Validate length
+            if len(preds) != expected_size:
+                raise ValueError(
+                    f"Predictions size mismatch: Column '{col}' has {len(preds)} predictions, "
+                    f"but test set has size {expected_size}"
+                )
+            
+            # Convert to array matching dataset's dtype
+            if dataset_array.dtype == np.dtype(object):
+                arr = np.empty(len(preds), dtype=object)
+                for i, item in enumerate(preds):
+                    arr[i] = item
+            else:
+                arr = np.asarray(preds, dtype=dataset_array.dtype)
+            
+            processed_predictions[col] = arr
+
+        data["predictions"] = processed_predictions
+        return data
 
     @model_validator(mode="after")
-    def _initialize_cache_and_zarr(self) -> Self:
-        """Set up the cache directory and initialize Zarr archive from predictions."""
-        # Set up cache dir if not already set
-        if self._cache_dir is None:
-            cache_root = Path(DEFAULT_CACHE_DIR) / _CACHE_SUBDIR
-            cache_root.mkdir(parents=True, exist_ok=True)
-            self._cache_dir = str(cache_root / str(uuid4()))
-            Path(self._cache_dir).mkdir(parents=True, exist_ok=True)
-        # Set zarr_root_path if not already set
-        if self._zarr_root_path is None:
-            self._zarr_root_path = str(Path(self._cache_dir) / "predictions.zarr")
-        # Create the Zarr archive with predictions at the specified zarr_root_path
-        self._create_zarr_from_predictions()
+    def _create_zarr_from_predictions(self) -> Self:
+        """Create a Zarr archive from the predictions dictionary."""
+        root = self.zarr_root
+        dataset_root = self.benchmark.dataset.zarr_root
+
+        for col, data in self.predictions.items():
+            # Copy array configuration from dataset
+            dataset_array = dataset_root[col]
+            root.array(col, data=data, **dataset_array.attrs.asdict())
+
         return self
+    
+    @property
+    def zarr_root(self) -> zarr.Group:
+        """Get the zarr Group object corresponding to the root, creating it if it doesn't exist."""
+        if self._zarr_root is None:
+            store = zarr.DirectoryStore(self.zarr_root_path)
+            self._zarr_root = zarr.group(store=store)
+        return self._zarr_root
 
     @property
     def zarr_root_path(self) -> str:
+        """Get the path to the Zarr archive root."""
+        if self._zarr_root_path is None:
+            # Create a temporary directory if not already set
+            if self._temp_dir is None:
+                self._temp_dir = tempfile.mkdtemp(prefix="polaris_predictions_")
+            self._zarr_root_path = str(Path(self._temp_dir) / "predictions.zarr")
         return self._zarr_root_path
-
-    def _create_zarr_from_predictions(self):
-        """Create a Zarr archive from the predictions dictionary."""
-        # Ensure parent directory exists
-        os.makedirs(os.path.dirname(self.zarr_root_path), exist_ok=True)
-
-        store = zarr.DirectoryStore(self.zarr_root_path)
-        root = zarr.group(store=store)
-
-        # Get target columns from benchmark
-        target_cols = list(self.benchmark.target_cols)
-
-        for col in target_cols:
-            if col not in self.predictions:
-                raise ValueError(f"Predictions for target column '{col}' not provided")
-
-            data = self.predictions[col]
-
-            # Determine the appropriate codec based on the dataset column annotation
-            codec_kwargs = {}
-            if hasattr(self.benchmark.dataset, "annotations") and col in self.benchmark.dataset.annotations:
-                annotation = self.benchmark.dataset.annotations[col]
-
-                # Check if this column contains complex objects that need special codecs
-                if len(data) > 0:
-                    # Extract a sample value to determine the type
-                    if isinstance(data, (list, tuple)):
-                        sample_value = data[0]
-                    elif hasattr(data, "__getitem__"):
-                        try:
-                            sample_value = data[0]
-                        except (IndexError, TypeError):
-                            sample_value = None
-                    else:
-                        sample_value = None
-
-                    if sample_value is not None:
-                        sample_type_name = type(sample_value).__name__
-                        if sample_type_name == "Mol" and "rdkit" in str(type(sample_value).__module__):
-                            codec_kwargs["object_codec"] = RDKitMolCodec()
-                            codec_kwargs["dtype"] = object
-                        elif sample_type_name == "AtomArray" and "biotite" in str(
-                            type(sample_value).__module__
-                        ):
-                            codec_kwargs["object_codec"] = AtomArrayCodec()
-                            codec_kwargs["dtype"] = object
-                        elif annotation.dtype == np.dtype(object):
-                            # For other object types, use object dtype
-                            codec_kwargs["dtype"] = object
-
-            # Create the array in the Zarr archive
-            if "object_codec" in codec_kwargs:
-                # For object codecs, we need to create a numpy object array first
-                # Use np.empty to avoid numpy trying to convert AtomArrays to numpy arrays
-                data_array = np.empty(len(data), dtype=object)
-                for i, item in enumerate(data):
-                    data_array[i] = item
-                root.array(col, data=data_array, **codec_kwargs)
-            else:
-                root.array(col, data=data, **codec_kwargs)
 
     @computed_field
     @property
     def benchmark_artifact_id(self) -> str:
         return self.benchmark.artifact_id
-
-    @computed_field
-    @property
-    def model_artifact_id(self) -> str:
-        return self.model.artifact_id if self.model else None
-
-    @property
-    def zarr_root(self) -> zarr.Group:
-        """Get the zarr Group object corresponding to the root."""
-        if self._zarr_root is not None:
-            return self._zarr_root
-
-        # The Zarr archive was created during initialization from predictions
-        store = MemoryMappedDirectoryStore(self.zarr_root_path)
-        self._zarr_root = zarr.open_group(store, mode="r+")
-        return self._zarr_root
 
     @property
     def columns(self):
@@ -172,8 +156,8 @@ class Predictions(BaseArtifactModel):
     @property
     def zarr_manifest_path(self):
         if self._zarr_manifest_path is None:
-            # Use the cache directory as the output directory
-            zarr_manifest_path = generate_zarr_manifest(self.zarr_root_path, self._cache_dir)
+            # Use the temp directory as the output directory
+            zarr_manifest_path = generate_zarr_manifest(self.zarr_root_path, self._temp_dir)
             self._zarr_manifest_path = zarr_manifest_path
         return self._zarr_manifest_path
 

@@ -16,8 +16,3 @@
 
 ---
 
-::: polaris.dataset.zarr
-    options:
-        filters: ["!^_"]
-
---- 

@@ -727,14 +727,16 @@ class PolarisHubClient(OAuth2Client):
         """
         Upload a Predictions artifact (with Zarr archive) to the Polaris Hub.
         """
+        # Validate that the benchmark is a V2 specification
+        if not isinstance(prediction.benchmark, BenchmarkV2Specification):
+            raise ValueError(
+                "Predictions can only be uploaded for BenchmarkV2 specifications. "
+                "Please ensure you are using a V2 benchmark before uploading predictions."
+            )
+
         # Set owner
         prediction.owner = HubOwner.normalize(owner or prediction.owner)
         prediction_json = prediction.model_dump(by_alias=True, exclude_none=True)
-
-        # Only include modelArtifactId if there's actually a model
-        if prediction.model_artifact_id:
-            prediction_json["modelArtifactId"] = prediction.model_artifact_id
-        prediction_json["benchmarkArtifactId"] = prediction.benchmark_artifact_id
 
         # Step 1: Upload metadata to Hub
         with track_progress(description="Uploading prediction metadata", total=1) as (progress, task):
@@ -752,8 +754,6 @@ class PolarisHubClient(OAuth2Client):
             )
             inserted = response.json()
             prediction.slug = inserted["slug"]
-            prediction_url = urljoin(self.settings.hub_url, response.headers.get("Content-Location"))
-            progress.log(f"[green]Prediction metadata uploaded. View it here: {prediction_url}")
 
         # Step 2: Upload manifest file
         with StorageSession(self, "write", prediction.urn) as storage:
@@ -770,5 +770,5 @@ class PolarisHubClient(OAuth2Client):
                 )
 
         progress.log(
-            f"[green]Your prediction has been successfully uploaded to the Hub. View it here: {prediction_url}"
+            f"[green]Your prediction has been successfully uploaded to the Hub."
         )

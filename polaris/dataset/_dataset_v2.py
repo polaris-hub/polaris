@@ -13,7 +13,7 @@ from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
-from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
+from polaris.utils.zarr._manifest import calculate_file_md5, generate_zarr_manifest
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import ChecksumStrategy, HubOwner, ZarrConflictResolution
 
@@ -53,8 +53,9 @@ class DatasetV2(BaseDataset):
     def _validate_v2_dataset_model(self) -> Self:
         """Verifies some dependencies between properties"""
 
-        if len(list(self.zarr_root.group_keys())) > 0:
-            raise InvalidDatasetError("Datasets can't have subgroups")
+        group_keys = list(self.zarr_root.group_keys())
+        if len(group_keys) > 0:
+            raise InvalidDatasetError(f"The Zarr archive of a Dataset can't have any subgroups. Found {group_keys}.")
         # Check all arrays at root have the same length
         lengths = {len(self.zarr_root[k]) for k in self.zarr_root.array_keys()}
         if len(lengths) > 1:

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from polaris.dataset import DatasetFactory
 
 
-@deprecated("Please use the custom codecs in `polaris.dataset.zarr.codecs` instead.")
+@deprecated("Please use the custom codecs in `polaris.utils.zarr.codecs` instead.")
 class ZarrConverter(Converter):
     """Parse a [.zarr](https://zarr.readthedocs.io/en/stable/index.html) archive into a Polaris `Dataset`.
 

@@ -9,7 +9,7 @@ import zarr
 from pydantic import ValidationError
 
 from polaris.dataset import DatasetV2, Subset
-from polaris.dataset.zarr._manifest import generate_zarr_manifest
+from polaris.utils.zarr._manifest import generate_zarr_manifest
 
 
 def test_dataset_v2_get_columns(test_dataset_v2):

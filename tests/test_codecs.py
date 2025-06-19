@@ -1,7 +1,7 @@
 import datamol as dm
 import zarr
 
-from polaris.dataset.zarr.codecs import RDKitMolCodec
+from polaris.utils.zarr.codecs import RDKitMolCodec
 
 
 def test_rdkit_mol_codec():
