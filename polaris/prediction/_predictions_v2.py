@@ -175,19 +175,6 @@ class Predictions(ResultsMetadataV2):
     def has_zarr_manifest_md5sum(self):
         return self._zarr_manifest_md5sum is not None
 
-    def upload_to_hub(
-        self,
-        owner: HubOwner | str | None = None,
-        **kwargs: dict,
-    ):
-        """
-        Wrapper around PolarisHubClient.upload_predictions
-        """
-        from polaris.hub.client import PolarisHubClient
-
-        with PolarisHubClient(**kwargs) as client:
-            return client.upload_predictions(self, owner=owner)
-
     def __repr__(self):
         return self.model_dump_json(by_alias=True, indent=2)
 

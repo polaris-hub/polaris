@@ -5,13 +5,14 @@ from typing_extensions import Self
 
 from polaris.benchmark import BenchmarkSpecification
 from polaris.evaluate.utils import evaluate_benchmark
-from polaris.utils.types import IncomingPredictionsType
+from polaris.utils.types import IncomingPredictionsType, HubOwner, SlugCompatibleStringType, HttpUrlString, HubUser
 
 from polaris.evaluate import BenchmarkResultsV2
 from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
 from polaris.dataset import DatasetV2, Subset
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName
+from polaris.prediction import Predictions
 
 
 class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification[BenchmarkResultsV2]):
@@ -154,3 +155,46 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
         )
 
         return BenchmarkResultsV2(results=scores, benchmark_artifact_id=self.artifact_id)
+
+    def submit_predictions(
+        self,
+        predictions: IncomingPredictionsType,
+        prediction_name: SlugCompatibleStringType,
+        prediction_owner: str,
+        contributors: list[HubUser] | None = None,
+        model=None,
+        description: str = "",
+        tags: list[str] | None = None,
+        user_attributes: dict[str, str] | None = None,
+    ) -> None:
+        """
+        Convenient wrapper around the
+        [`PolarisHubClient.upload_predictions`][polaris.hub.client.PolarisHubClient.upload_predictions] method.
+        It handles the creation of a standardized Predictions object, which is expected by the Hub, automatically.
+
+        Args:
+            prediction_name: The name of the prediction.
+            prediction_owner: The slug of the user/organization which owns the prediction.
+            predictions: The predictions for each test set defined in the benchmark.
+            contributors: The users credited with generating these predictions.
+            model: (Optional) The Model artifact used to generate these predictions.
+            description: An optional and short description of the predictions.
+            tags: An optional list of tags to categorize the prediction by.
+            user_attributes: An optional dict with additional, textual user attributes.
+        """
+        from polaris.hub.client import PolarisHubClient
+
+        standardized_predictions = Predictions(
+            name=prediction_name,
+            owner=HubOwner(slug=prediction_owner),
+            benchmark=self,
+            predictions=predictions,
+            contributors=contributors or [],
+            model=model,
+            description=description,
+            tags=tags or [],
+            user_attributes=user_attributes or {},
+        )
+
+        with PolarisHubClient() as client:
+            client.upload_predictions(prediction=standardized_predictions, owner=prediction_owner)
