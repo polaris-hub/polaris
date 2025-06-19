@@ -59,11 +59,11 @@ class Predictions(ResultsMetadataV2):
         # Get benchmark and dataset info
         benchmark = data["benchmark"]
         dataset_root = benchmark.dataset.zarr_root
-        
+
         # Get expected size from test split
         _, test = benchmark.get_train_test_split()
         expected_size = len(test)
-        
+
         # Validate predictions against benchmark target columns
         target_cols = list(benchmark.target_cols)
         if not isinstance(predictions, dict) or set(predictions.keys()) != set(target_cols):
@@ -77,14 +77,14 @@ class Predictions(ResultsMetadataV2):
         for col, preds in predictions.items():
             # Get the array configuration from the dataset
             dataset_array = dataset_root[col]
-            
+
             # Validate length
             if len(preds) != expected_size:
                 raise ValueError(
                     f"Predictions size mismatch: Column '{col}' has {len(preds)} predictions, "
                     f"but test set has size {expected_size}"
                 )
-            
+
             # Convert to array matching dataset's dtype
             if dataset_array.dtype == np.dtype(object):
                 arr = np.empty(len(preds), dtype=object)
@@ -92,7 +92,7 @@ class Predictions(ResultsMetadataV2):
                     arr[i] = item
             else:
                 arr = np.asarray(preds, dtype=dataset_array.dtype)
-            
+
             processed_predictions[col] = arr
 
         data["predictions"] = processed_predictions
@@ -110,7 +110,7 @@ class Predictions(ResultsMetadataV2):
             root.array(col, data=data, **dataset_array.attrs.asdict())
 
         return self
-    
+
     @property
     def zarr_root(self) -> zarr.Group:
         """Get the zarr Group object corresponding to the root, creating it if it doesn't exist."""
