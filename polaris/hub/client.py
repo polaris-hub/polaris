@@ -769,6 +769,4 @@ class PolarisHubClient(OAuth2Client):
                     prediction.zarr_root.store, if_exists=if_exists, log=progress_zarr.log
                 )
 
-        progress.log(
-            f"[green]Your prediction has been successfully uploaded to the Hub."
-        )
+        progress.log("[green]Your prediction has been successfully uploaded to the Hub.")
