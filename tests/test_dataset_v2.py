@@ -112,7 +112,10 @@ def test_dataset_v2_subgroup_validation(zarr_archive):
     zarr.consolidate_metadata(zarr_archive)
 
     # Creating the dataset should fail due to subgroups not being supported
-    with pytest.raises(ValidationError, match="Datasets can't have subgroups"):
+    with pytest.raises(
+        ValidationError,
+        match="The Zarr archive of a Dataset can't have any subgroups. Found \\['subgroup'\\]",
+    ):
         DatasetV2(zarr_root_path=zarr_archive)
 
 
