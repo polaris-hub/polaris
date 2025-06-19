@@ -55,9 +55,7 @@ class DatasetV2(BaseDataset):
 
         group_keys = list(self.zarr_root.group_keys())
         if len(group_keys) > 0:
-            raise InvalidDatasetError(
-                f"The Zarr archive of a Dataset can't have any subgroups. Found {group_keys}."
-            )
+            raise InvalidDatasetError("Datasets can't have subgroups")
         # Check all arrays at root have the same length
         lengths = {len(self.zarr_root[k]) for k in self.zarr_root.array_keys()}
         if len(lengths) > 1:

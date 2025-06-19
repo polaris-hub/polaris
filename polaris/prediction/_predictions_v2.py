@@ -2,6 +2,7 @@ import logging
 import re
 from pathlib import Path
 import tempfile
+from typing import TYPE_CHECKING
 
 import numpy as np
 import zarr
@@ -13,11 +14,13 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-from polaris.utils.types import HubOwner, IncomingPredictionsType
-from polaris.benchmark import BenchmarkV2Specification
+from polaris.utils.types import IncomingPredictionsType
 from polaris.utils.zarr._manifest import generate_zarr_manifest, calculate_file_md5
 from polaris.evaluate import ResultsMetadataV2
 from pydantic import TypeAdapter
+
+if TYPE_CHECKING:
+    from polaris.benchmark import BenchmarkV2Specification
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +39,7 @@ class Predictions(ResultsMetadataV2):
     """
 
     _artifact_type = "prediction"
-    benchmark: BenchmarkV2Specification
+    benchmark: "BenchmarkV2Specification"
     predictions: dict[str, list | np.ndarray | list[object]] = Field(exclude=True)
 
     _zarr_root_path: str | None = PrivateAttr(None)

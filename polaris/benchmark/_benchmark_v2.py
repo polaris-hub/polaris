@@ -5,7 +5,12 @@ from typing_extensions import Self
 
 from polaris.benchmark import BenchmarkSpecification
 from polaris.evaluate.utils import evaluate_benchmark
-from polaris.utils.types import IncomingPredictionsType, HubOwner, SlugCompatibleStringType, HttpUrlString, HubUser
+from polaris.utils.types import (
+    IncomingPredictionsType,
+    HubOwner,
+    SlugCompatibleStringType,
+    HubUser,
+)
 
 from polaris.evaluate import BenchmarkResultsV2
 from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
