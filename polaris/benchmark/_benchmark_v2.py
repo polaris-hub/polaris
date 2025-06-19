@@ -18,6 +18,7 @@ from polaris.dataset import DatasetV2, Subset
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName
 from polaris.prediction import Predictions
+from polaris.model import Model
 
 
 class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification[BenchmarkResultsV2]):
@@ -167,7 +168,7 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
         prediction_name: SlugCompatibleStringType,
         prediction_owner: str,
         contributors: list[HubUser] | None = None,
-        model=None,
+        model: Model | None = None,
         description: str = "",
         tags: list[str] | None = None,
         user_attributes: dict[str, str] | None = None,
