@@ -1,8 +1,6 @@
 import logging
 import re
-import os
 from pathlib import Path
-from uuid import uuid4
 import tempfile
 
 import numpy as np
@@ -18,7 +16,6 @@ from typing_extensions import Self
 from polaris.utils.types import HubOwner, IncomingPredictionsType
 from polaris.benchmark import BenchmarkV2Specification
 from polaris.utils.zarr._manifest import generate_zarr_manifest, calculate_file_md5
-from polaris.utils.zarr.codecs import RDKitMolCodec, AtomArrayCodec  # Required for codec registration
 from polaris.evaluate import ResultsMetadataV2
 from pydantic import TypeAdapter
 
