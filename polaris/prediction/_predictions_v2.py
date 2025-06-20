@@ -12,7 +12,6 @@ from pydantic import (
     computed_field,
     model_validator,
 )
-from typing_extensions import Self
 
 from polaris.utils.types import IncomingPredictionsType
 from polaris.utils.zarr._manifest import generate_zarr_manifest, calculate_file_md5
@@ -101,18 +100,39 @@ class Predictions(ResultsMetadataV2):
         data["predictions"] = processed_predictions
         return data
 
-    @model_validator(mode="after")
-    def _create_zarr_from_predictions(self) -> Self:
-        """Create a Zarr archive from the predictions dictionary."""
+    def write_zarr_predictions(self) -> None:
+        """Create a Zarr archive from the predictions dictionary.
+        
+        This method should be called explicitly when ready to write predictions to disk.
+        """
         root = self.zarr_root
         dataset_root = self.benchmark.dataset.zarr_root
 
-        for col, data in self.predictions.items():
-            # Copy array configuration from dataset
-            dataset_array = dataset_root[col]
-            root.array(col, data=data, **dataset_array.attrs.asdict())
+        # Validate columns
+        expected = set(self.benchmark.target_cols)
+        provided = set(self.predictions)
+        missing = expected - provided
+        if missing:
+            raise ValueError(f"Missing prediction columns: {sorted(missing)}")
+        
+        # Overwrite any existing data
+        for col in expected:
+            if col in root:
+                del root[col]
 
-        return self
+        # Copy each array exactly
+        for col in expected:
+            data = self.predictions[col]
+            template = dataset_root[col]
+            root.array(
+                name=col,
+                data=data,
+                dtype=template.dtype,
+                compressor=template.compressor,
+                filters=template.filters,
+                chunks=template.chunks,
+                object_codec=getattr(template, "object_codec", None),
+            )
 
     @property
     def zarr_root(self) -> zarr.Group:

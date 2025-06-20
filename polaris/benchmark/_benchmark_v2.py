@@ -202,5 +202,8 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
             user_attributes=user_attributes or {},
         )
 
+        # Write predictions to Zarr archive before uploading
+        standardized_predictions.write_zarr_predictions()
+
         with PolarisHubClient() as client:
             client.upload_predictions(prediction=standardized_predictions, owner=prediction_owner)
