@@ -13,7 +13,7 @@ from typing_extensions import Self
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
-from polaris.dataset.zarr._manifest import calculate_file_md5, generate_zarr_manifest
+from polaris.utils.zarr._manifest import calculate_file_md5, generate_zarr_manifest
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import ChecksumStrategy, HubOwner, ZarrConflictResolution
 
@@ -53,31 +53,17 @@ class DatasetV2(BaseDataset):
     def _validate_v2_dataset_model(self) -> Self:
         """Verifies some dependencies between properties"""
 
-        # Since the keys for subgroups are not ordered, we have no easy way to index these groups.
-        # Any subgroup should therefore have a special array that defines the index for that group.
-        for group in self.zarr_root.group_keys():
-            if _INDEX_ARRAY_KEY not in self.zarr_root[group].array_keys():
-                raise InvalidDatasetError(f"Group {group} does not have an index array.")
-
-            index_arr = self.zarr_root[group][_INDEX_ARRAY_KEY]
-            if len(index_arr) != len(self.zarr_root[group]) - 1:
-                raise InvalidDatasetError(
-                    f"Length of index array for group {group} does not match the size of the group."
-                )
-            if any(x not in self.zarr_root[group] for x in index_arr):
-                raise InvalidDatasetError(
-                    f"Keys of index array for group {group} does not match the group members."
-                )
-
-        # Check the structure of the Zarr archive
-        # All arrays or groups in the root should have the same length.
+        group_keys = list(self.zarr_root.group_keys())
+        if len(group_keys) > 0:
+            raise InvalidDatasetError(
+                f"The Zarr archive of a Dataset can't have any subgroups. Found {group_keys}."
+            )
+        # Check all arrays at root have the same length
         lengths = {len(self.zarr_root[k]) for k in self.zarr_root.array_keys()}
-        lengths.update({len(self.zarr_root[k][_INDEX_ARRAY_KEY]) for k in self.zarr_root.group_keys()})
         if len(lengths) > 1:
             raise InvalidDatasetError(
-                f"All arrays or groups in the root should have the same length, found the following lengths: {lengths}"
+                f"All arrays at root should have the same length, found the following lengths: {lengths}"
             )
-
         return self
 
     @property

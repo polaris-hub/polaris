@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from polaris.dataset import DatasetFactory
 
 
-@deprecated("Please use the custom codecs in `polaris.dataset.zarr.codecs` instead.")
+@deprecated("Please use the custom codecs in `polaris.utils.zarr.codecs` instead.")
 class SDFConverter(Converter):
     """
     Converts a SDF file into a Polaris dataset.

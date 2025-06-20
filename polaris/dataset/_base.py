@@ -22,8 +22,8 @@ from typing_extensions import Self
 from polaris._artifact import BaseArtifactModel
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._column import ColumnAnnotation
-from polaris.dataset.zarr import MemoryMappedDirectoryStore
-from polaris.dataset.zarr._utils import check_zarr_codecs, load_zarr_group_to_memory
+from polaris.utils.zarr import MemoryMappedDirectoryStore
+from polaris.utils.zarr._utils import check_zarr_codecs, load_zarr_group_to_memory
 from polaris.utils.constants import DEFAULT_CACHE_DIR
 from polaris.utils.context import track_progress
 from polaris.utils.dict2html import dict2html

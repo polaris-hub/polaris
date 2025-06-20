@@ -11,7 +11,7 @@ from typing_extensions import deprecated
 from polaris.dataset import ColumnAnnotation, Modality
 from polaris.dataset._adapters import Adapter
 from polaris.dataset.converters._base import Converter, FactoryProduct
-from polaris.dataset.zarr._utils import load_zarr_group_to_memory
+from polaris.utils.zarr._utils import load_zarr_group_to_memory
 
 if TYPE_CHECKING:
     from polaris.dataset import DatasetFactory
@@ -77,7 +77,7 @@ def zarr_to_pdb(atom_dict: zarr.Group):
     return struc.array(atom_array)
 
 
-@deprecated("Please use the custom codecs in `polaris.dataset.zarr.codecs` instead.")
+@deprecated("Please use the custom codecs in `polaris.utils.zarr.codecs` instead.")
 class PDBConverter(Converter):
     """
     Converts PDB files into a Polaris dataset based on fastpdb.

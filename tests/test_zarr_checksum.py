@@ -38,7 +38,7 @@ from shutil import copytree, rmtree
 import pytest
 import zarr
 
-from polaris.dataset.zarr._checksum import (
+from polaris.utils.zarr._checksum import (
     EMPTY_CHECKSUM,
     InvalidZarrChecksum,
     _ZarrChecksum,

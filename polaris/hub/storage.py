@@ -19,7 +19,13 @@ from zarr.context import Context
 from zarr.storage import Store
 from zarr.util import buffer_size
 
-from polaris.hub.oauth import BenchmarkV2Paths, DatasetV1Paths, DatasetV2Paths, HubStorageOAuth2Token
+from polaris.hub.oauth import (
+    BenchmarkV2Paths,
+    DatasetV1Paths,
+    DatasetV2Paths,
+    HubStorageOAuth2Token,
+    PredictionPaths,
+)
 from polaris.utils.context import track_progress
 from polaris.utils.errors import PolarisHubError
 from polaris.utils.types import ArtifactUrn, ZarrConflictResolution
@@ -549,7 +555,7 @@ class StorageSession(OAuth2Client):
         return True
 
     @property
-    def paths(self) -> DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths:
+    def paths(self) -> DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths | PredictionPaths:
         return self.token.extra_data.paths
 
     def _relative_path(self, path: str) -> PurePath:
@@ -583,3 +589,23 @@ class StorageSession(OAuth2Client):
         )
 
         store[relative_path.name] = value
+
+    def store(self, path: str) -> S3Store:
+        """
+        Create an S3Store for the specified path.
+        """
+        if path not in self.paths.stores:
+            raise NotImplementedError(
+                f"{type(self.paths).__name__} only supports these stores: {self.paths.stores}."
+            )
+
+        relative_path = self._relative_path(getattr(self.paths, path))
+
+        storage_data = self.token.extra_data
+        return S3Store(
+            path=relative_path,
+            access_key=storage_data.key,
+            secret_key=storage_data.secret,
+            token=f"jwt/{self.token.access_token}",
+            endpoint_url=storage_data.endpoint,
+        )

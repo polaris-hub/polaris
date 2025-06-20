@@ -14,7 +14,7 @@ from typing_extensions import Self, deprecated
 
 from polaris.dataset._adapters import Adapter
 from polaris.dataset._base import BaseDataset
-from polaris.dataset.zarr import ZarrFileChecksum, compute_zarr_checksum
+from polaris.utils.zarr import ZarrFileChecksum, compute_zarr_checksum
 from polaris.mixins._checksum import ChecksumMixin
 from polaris.utils.errors import InvalidDatasetError
 from polaris.utils.types import (
