@@ -102,7 +102,7 @@ class Predictions(ResultsMetadataV2):
 
     def write_zarr_predictions(self) -> None:
         """Create a Zarr archive from the predictions dictionary.
-        
+
         This method should be called explicitly when ready to write predictions to disk.
         """
         root = self.zarr_root
@@ -114,7 +114,7 @@ class Predictions(ResultsMetadataV2):
         missing = expected - provided
         if missing:
             raise ValueError(f"Missing prediction columns: {sorted(missing)}")
-        
+
         # Overwrite any existing data
         for col in expected:
             if col in root:
