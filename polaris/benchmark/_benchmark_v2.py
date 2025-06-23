@@ -17,7 +17,7 @@ from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
 from polaris.dataset import DatasetV2, Subset
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName
-from polaris.prediction import Predictions
+from polaris.prediction import BenchmarkPredictionsV2
 from polaris.model import Model
 
 
@@ -175,13 +175,13 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
     ) -> None:
         """
         Convenient wrapper around the
-        [`PolarisHubClient.upload_predictions`][polaris.hub.client.PolarisHubClient.upload_predictions] method.
+        [`PolarisHubClient.submit_benchmark_predictions`][polaris.hub.client.PolarisHubClient.submit_benchmark_predictions] method.
         It handles the creation of a standardized Predictions object, which is expected by the Hub, automatically.
 
         Args:
+            predictions: The predictions for each test set defined in the benchmark.
             prediction_name: The name of the prediction.
             prediction_owner: The slug of the user/organization which owns the prediction.
-            predictions: The predictions for each test set defined in the benchmark.
             contributors: The users credited with generating these predictions.
             model: (Optional) The Model artifact used to generate these predictions.
             description: An optional and short description of the predictions.
@@ -190,7 +190,7 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
         """
         from polaris.hub.client import PolarisHubClient
 
-        standardized_predictions = Predictions(
+        standardized_predictions = BenchmarkPredictionsV2(
             name=prediction_name,
             owner=HubOwner(slug=prediction_owner),
             benchmark=self,
@@ -203,7 +203,7 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
         )
 
         # Write predictions to Zarr archive before uploading
-        standardized_predictions.write_zarr_predictions()
+        standardized_predictions.to_zarr()
 
         with PolarisHubClient() as client:
-            client.upload_predictions(prediction=standardized_predictions, owner=prediction_owner)
+            client.submit_benchmark_predictions(prediction=standardized_predictions, owner=prediction_owner)

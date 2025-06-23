@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 from pathlib import Path
 import tempfile
@@ -13,10 +14,10 @@ from pydantic import (
     model_validator,
 )
 
-from polaris.utils.types import IncomingPredictionsType
 from polaris.utils.zarr._manifest import generate_zarr_manifest, calculate_file_md5
 from polaris.evaluate import ResultsMetadataV2
-from pydantic import TypeAdapter
+from polaris.evaluate._predictions import BenchmarkPredictions
+from polaris.dataset import Subset
 
 if TYPE_CHECKING:
     from polaris.benchmark import BenchmarkV2Specification
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Predictions(ResultsMetadataV2):
+class BenchmarkPredictionsV2(ResultsMetadataV2):
     """
     Prediction artifact for uploading predictions to a Benchmark V2.
     Stores predictions as a Zarr archive, with manifest and metadata for reproducibility and integrity.
@@ -52,55 +53,55 @@ class Predictions(ResultsMetadataV2):
     def _validate_predictions(cls, data: dict) -> dict:
         """Validate and standardize the predictions format."""
         if "predictions" not in data or "benchmark" not in data:
-            return data
+            raise ValueError("Both 'predictions' and 'benchmark' fields are required")
 
-        # Ensure the type of the incoming predictions is correct
-        validator = TypeAdapter(IncomingPredictionsType, config={"arbitrary_types_allowed": True})
-        predictions = validator.validate_python(data["predictions"])
-
-        # Get benchmark and dataset info
         benchmark = data["benchmark"]
+        benchmark = BenchmarkV2Specification(**benchmark)
         dataset_root = benchmark.dataset.zarr_root
 
-        # Get expected size from test split
-        _, test = benchmark.get_train_test_split()
-        expected_size = len(test)
-
-        # Validate predictions against benchmark target columns
         target_cols = list(benchmark.target_cols)
-        if not isinstance(predictions, dict) or set(predictions.keys()) != set(target_cols):
-            raise ValueError(
-                "The predictions should be a dictionary with the target columns as keys. "
-                f"Expected columns: {target_cols}, got: {list(predictions.keys()) if isinstance(predictions, dict) else type(predictions)}"
-            )
+        test_set_labels = (
+            list(benchmark.test_set_labels) if hasattr(benchmark, "test_set_labels") else ["test"]
+        )
 
-        # Process each column's predictions
+        # Get test set sizes from the benchmark's test split
+        _, test_splits = benchmark.get_train_test_split()
+        if isinstance(test_splits, Subset):
+            test_set_sizes = {test_set_labels[0]: len(test_splits)}
+        else:
+            test_set_sizes = {label: len(split) for label, split in test_splits.items()}
+
+        temp_data = {
+            "predictions": data["predictions"],
+            "target_labels": target_cols,
+            "test_set_labels": test_set_labels,
+            "test_set_sizes": test_set_sizes,
+        }
+
+        normalized_data = BenchmarkPredictions._validate_predictions(temp_data)
+        normalized_predictions = normalized_data["predictions"]
+
         processed_predictions = {}
-        for col, preds in predictions.items():
-            # Get the array configuration from the dataset
-            dataset_array = dataset_root[col]
 
-            # Validate length
-            if len(preds) != expected_size:
-                raise ValueError(
-                    f"Predictions size mismatch: Column '{col}' has {len(preds)} predictions, "
-                    f"but test set has size {expected_size}"
-                )
+        for test_set_label, test_set_predictions in normalized_predictions.items():
+            processed_predictions[test_set_label] = {}
 
-            # Convert to array matching dataset's dtype
-            if dataset_array.dtype == np.dtype(object):
-                arr = np.empty(len(preds), dtype=object)
-                for i, item in enumerate(preds):
-                    arr[i] = item
-            else:
-                arr = np.asarray(preds, dtype=dataset_array.dtype)
+            for col, preds in test_set_predictions.items():
+                dataset_array = dataset_root[col]
 
-            processed_predictions[col] = arr
+                if dataset_array.dtype == np.dtype(object):
+                    arr = np.empty(len(preds), dtype=object)
+                    for i, item in enumerate(preds):
+                        arr[i] = item
+                else:
+                    arr = np.asarray(preds, dtype=dataset_array.dtype)
+
+                processed_predictions[test_set_label][col] = arr
 
         data["predictions"] = processed_predictions
         return data
 
-    def write_zarr_predictions(self) -> None:
+    def to_zarr(self) -> Path:
         """Create a Zarr archive from the predictions dictionary.
 
         This method should be called explicitly when ready to write predictions to disk.
@@ -108,20 +109,8 @@ class Predictions(ResultsMetadataV2):
         root = self.zarr_root
         dataset_root = self.benchmark.dataset.zarr_root
 
-        # Validate columns
-        expected = set(self.benchmark.target_cols)
-        provided = set(self.predictions)
-        missing = expected - provided
-        if missing:
-            raise ValueError(f"Missing prediction columns: {sorted(missing)}")
-
-        # Overwrite any existing data
-        for col in expected:
-            if col in root:
-                del root[col]
-
         # Copy each array exactly
-        for col in expected:
+        for col in self.benchmark.target_cols:
             data = self.predictions[col]
             template = dataset_root[col]
             root.array(
@@ -132,7 +121,10 @@ class Predictions(ResultsMetadataV2):
                 filters=template.filters,
                 chunks=template.chunks,
                 object_codec=getattr(template, "object_codec", None),
+                overwrite=True,
             )
+
+        return Path(self.zarr_root_path)
 
     @property
     def zarr_root(self) -> zarr.Group:
@@ -203,3 +195,7 @@ class Predictions(ResultsMetadataV2):
 
     def __str__(self):
         return self.__repr__()
+
+    def __del__(self) -> None:
+        if self._temp_dir and os.path.exists(self._temp_dir):
+            os.remove(self._temp_dir)

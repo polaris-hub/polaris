@@ -22,7 +22,7 @@ from polaris.competition import CompetitionSpecification
 from polaris.model import Model
 from polaris.dataset import DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2, CompetitionPredictions
-from polaris.prediction._predictions_v2 import Predictions
+from polaris.prediction._predictions_v2 import BenchmarkPredictionsV2
 from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
@@ -717,15 +717,27 @@ class PolarisHubClient(OAuth2Client):
                 f"[green]Your model has been successfully uploaded to the Hub. View it here: {model_url}"
             )
 
-    def upload_predictions(
+    def submit_benchmark_predictions(
         self,
-        prediction: Predictions,
+        prediction: BenchmarkPredictionsV2,
         timeout: TimeoutTypes = (10, 200),
         owner: HubOwner | str | None = None,
         if_exists: ZarrConflictResolution = "replace",
     ):
-        """
-        Upload a Predictions artifact (with Zarr archive) to the Polaris Hub.
+        """Submit predictions for a benchmark to the Polaris Hub.
+
+        This method handles uploading predictions for a benchmark to the Hub. The predictions must be
+        provided as a BenchmarkPredictionsV2 object, which ensures proper validation and formatting.
+
+        Args:
+            prediction: A BenchmarkPredictionsV2 instance containing the predictions and metadata.
+                The predictions should match the benchmark's target columns and test set structure.
+                For single test set benchmarks, predictions should be a dictionary mapping target
+                column names to numpy arrays of predictions.
+
+        Info: Owner
+            The owner of the predictions will automatically be inferred from the prediction object.
+            You can override this by passing an explicit owner to this method.
         """
         # Validate that the benchmark is a V2 specification
         if not isinstance(prediction.benchmark, BenchmarkV2Specification):

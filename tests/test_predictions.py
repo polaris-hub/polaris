@@ -5,7 +5,7 @@ import zarr
 import numcodecs
 from unittest.mock import Mock
 
-from polaris.prediction import Predictions
+from polaris.prediction import BenchmarkPredictionsV2
 from polaris.benchmark import BenchmarkV2Specification
 from polaris.dataset import DatasetV2
 from polaris.utils.types import HubOwner
@@ -277,12 +277,12 @@ def test_predictions_metadata_structure():
     expected_fields = ["name", "description", "benchmark", "predictions"]
 
     # Check that Predictions class has expected structure
-    assert hasattr(Predictions, "_artifact_type")
-    assert Predictions._artifact_type == expected_artifact_type
+    assert hasattr(BenchmarkPredictionsV2, "_artifact_type")
+    assert BenchmarkPredictionsV2._artifact_type == expected_artifact_type
 
     # Check that required fields are defined
     for field in expected_fields:
-        assert field in Predictions.model_fields or field in Predictions.__annotations__
+        assert field in BenchmarkPredictionsV2.model_fields or field in BenchmarkPredictionsV2.__annotations__
 
 
 def test_object_array_edge_cases():

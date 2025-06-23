@@ -1,4 +1,3 @@
-from ._predictions_v2 import Predictions
-from polaris.utils.zarr.codecs import RDKitMolCodec, AtomArrayCodec  # Registers codecs
+from ._predictions_v2 import BenchmarkPredictionsV2
 
-__all__ = ["Predictions"]
+__all__ = ["BenchmarkPredictionsV2"]
