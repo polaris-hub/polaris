@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import zarr
 from pydantic import (
-    Field,
     PrivateAttr,
     computed_field,
     model_validator,
@@ -17,7 +16,7 @@ from pydantic import (
 from polaris.utils.zarr._manifest import generate_zarr_manifest, calculate_file_md5
 from polaris.evaluate import ResultsMetadataV2
 from polaris.evaluate._predictions import BenchmarkPredictions
-from polaris.dataset import Subset
+from polaris.benchmark import BenchmarkV2Specification
 
 if TYPE_CHECKING:
     from polaris.benchmark import BenchmarkV2Specification
@@ -25,7 +24,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class BenchmarkPredictionsV2(ResultsMetadataV2):
+class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
     """
     Prediction artifact for uploading predictions to a Benchmark V2.
     Stores predictions as a Zarr archive, with manifest and metadata for reproducibility and integrity.
@@ -33,73 +32,30 @@ class BenchmarkPredictionsV2(ResultsMetadataV2):
     were generated, including the model used and contributors involved.
 
     Attributes:
-        benchmark: The BenchmarkV2Specification instance this prediction is for.
-        model: (Optional) The Model artifact used to generate these predictions.
-        predictions: A dictionary mapping column names to prediction arrays/lists.
+        Inherits from BenchmarkPredictions and ResultsMetadataV2.
     """
 
+    benchmark: BenchmarkV2Specification
     _artifact_type = "prediction"
-    benchmark: "BenchmarkV2Specification"
-    predictions: dict[str, list | np.ndarray | list[object]] = Field(exclude=True)
-
     _zarr_root_path: str | None = PrivateAttr(None)
     _zarr_manifest_path: str | None = PrivateAttr(None)
     _zarr_manifest_md5sum: str | None = PrivateAttr(None)
     _zarr_root: zarr.Group | None = PrivateAttr(None)
     _temp_dir: str | None = PrivateAttr(None)
 
-    @model_validator(mode="before")
-    @classmethod
-    def _validate_predictions(cls, data: dict) -> dict:
-        """Validate and standardize the predictions format."""
-        if "predictions" not in data or "benchmark" not in data:
-            raise ValueError("Both 'predictions' and 'benchmark' fields are required")
-
-        benchmark = data["benchmark"]
-        benchmark = BenchmarkV2Specification(**benchmark)
-        dataset_root = benchmark.dataset.zarr_root
-
-        target_cols = list(benchmark.target_cols)
-        test_set_labels = (
-            list(benchmark.test_set_labels) if hasattr(benchmark, "test_set_labels") else ["test"]
-        )
-
-        # Get test set sizes from the benchmark's test split
-        _, test_splits = benchmark.get_train_test_split()
-        if isinstance(test_splits, Subset):
-            test_set_sizes = {test_set_labels[0]: len(test_splits)}
-        else:
-            test_set_sizes = {label: len(split) for label, split in test_splits.items()}
-
-        temp_data = {
-            "predictions": data["predictions"],
-            "target_labels": target_cols,
-            "test_set_labels": test_set_labels,
-            "test_set_sizes": test_set_sizes,
-        }
-
-        normalized_data = BenchmarkPredictions._validate_predictions(temp_data)
-        normalized_predictions = normalized_data["predictions"]
-
-        processed_predictions = {}
-
-        for test_set_label, test_set_predictions in normalized_predictions.items():
-            processed_predictions[test_set_label] = {}
-
+    @model_validator(mode="after")
+    def check_prediction_dtypes(self):
+        dataset_root = self.benchmark.dataset.zarr_root
+        for test_set_label, test_set_predictions in self.predictions.items():
             for col, preds in test_set_predictions.items():
                 dataset_array = dataset_root[col]
-
-                if dataset_array.dtype == np.dtype(object):
-                    arr = np.empty(len(preds), dtype=object)
-                    for i, item in enumerate(preds):
-                        arr[i] = item
-                else:
-                    arr = np.asarray(preds, dtype=dataset_array.dtype)
-
-                processed_predictions[test_set_label][col] = arr
-
-        data["predictions"] = processed_predictions
-        return data
+                arr = np.asarray(preds)
+                if arr.dtype != dataset_array.dtype:
+                    raise ValueError(
+                        f"Dtype mismatch for column '{col}' in test set '{test_set_label}': "
+                        f"predictions dtype {arr.dtype} != dataset dtype {dataset_array.dtype}"
+                    )
+        return self
 
     def to_zarr(self) -> Path:
         """Create a Zarr archive from the predictions dictionary.
@@ -109,20 +65,22 @@ class BenchmarkPredictionsV2(ResultsMetadataV2):
         root = self.zarr_root
         dataset_root = self.benchmark.dataset.zarr_root
 
-        # Copy each array exactly
-        for col in self.benchmark.target_cols:
-            data = self.predictions[col]
-            template = dataset_root[col]
-            root.array(
-                name=col,
-                data=data,
-                dtype=template.dtype,
-                compressor=template.compressor,
-                filters=template.filters,
-                chunks=template.chunks,
-                object_codec=getattr(template, "object_codec", None),
-                overwrite=True,
-            )
+        for test_set_label, test_set_predictions in self.predictions.items():
+            # Create a group for each test set
+            test_set_group = root.require_group(test_set_label)
+            for col in self.benchmark.target_cols:
+                data = test_set_predictions[col]
+                template = dataset_root[col]
+                test_set_group.array(
+                    name=col,
+                    data=data,
+                    dtype=template.dtype,
+                    compressor=template.compressor,
+                    filters=template.filters,
+                    chunks=template.chunks,
+                    object_codec=getattr(template, "object_codec", None),
+                    overwrite=True,
+                )
 
         return Path(self.zarr_root_path)
 
