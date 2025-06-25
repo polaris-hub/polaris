@@ -17,7 +17,6 @@ from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
 from polaris.dataset import DatasetV2, Subset
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName
-from polaris.prediction import BenchmarkPredictionsV2
 from polaris.model import Model
 
 
@@ -189,6 +188,7 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
             user_attributes: An optional dict with additional, textual user attributes.
         """
         from polaris.hub.client import PolarisHubClient
+        from polaris.prediction import BenchmarkPredictionsV2
 
         standardized_predictions = BenchmarkPredictionsV2(
             name=prediction_name,
