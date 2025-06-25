@@ -8,6 +8,7 @@ import zarr
 from polaris.dataset import DatasetV2, ColumnAnnotation
 from polaris.benchmark._split_v2 import SplitV2, IndexSet
 from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
+from fastpdb import struc
 
 
 def assert_deep_equal(result, expected):
@@ -97,7 +98,6 @@ def v2_benchmark_with_float_dtype(tmp_path, test_org_owner):
 
 
 def test_v2_normalization_and_object_dtype(v2_benchmark_with_object_dtype):
-    # Create a list of rdkit.Chem.Mol objects
     mols = [dm.to_mol("CCO"), dm.to_mol("CCN")]
     preds = {"test": {"expt": mols}}
     bp = BenchmarkPredictionsV2(
@@ -110,6 +110,14 @@ def test_v2_normalization_and_object_dtype(v2_benchmark_with_object_dtype):
     assert isinstance(bp.predictions["test"]["expt"], np.ndarray)
     assert bp.predictions["test"]["expt"].dtype == object
     assert_deep_equal(bp.predictions, {"test": {"expt": np.array(mols, dtype=object)}})
+    # Check Zarr archive
+    zarr_path = bp.to_zarr()
+    assert zarr_path.exists()
+    root = zarr.open(str(zarr_path), mode="r")
+    arr = root["test"]["expt"][:]
+    arr_smiles = [Chem.MolToSmiles(m) for m in arr]
+    mols_smiles = [Chem.MolToSmiles(m) for m in mols]
+    assert arr_smiles == mols_smiles
 
 
 def test_v2_fastpdb_object_dtype(v2_benchmark_with_object_dtype, pdbs_structs):
@@ -125,6 +133,14 @@ def test_v2_fastpdb_object_dtype(v2_benchmark_with_object_dtype, pdbs_structs):
     assert isinstance(bp.predictions["test"]["expt"], np.ndarray)
     assert bp.predictions["test"]["expt"].dtype == object
     assert_deep_equal(bp.predictions, {"test": {"expt": np.array(pdbs_structs[:2], dtype=object)}})
+    # Check Zarr archive (dtype and shape only)
+    zarr_path = bp.to_zarr()
+    assert zarr_path.exists()
+    root = zarr.open(str(zarr_path), mode="r")
+    arr = root["test"]["expt"][:]
+    assert arr.dtype == object
+    assert arr.shape == (2,)
+    assert all(isinstance(x, struc.AtomArray) for x in arr)
 
 
 def test_v2_dtype_mismatch_raises(v2_benchmark_with_float_dtype):
@@ -139,25 +155,3 @@ def test_v2_dtype_mismatch_raises(v2_benchmark_with_float_dtype):
             test_set_labels=["test"],
             test_set_sizes={"test": 2},
         )
-
-
-def test_to_zarr_creates_archive(v2_benchmark_with_object_dtype):
-    mols = [dm.to_mol("CCO"), dm.to_mol("CCN")]
-    preds = {"test": {"expt": mols}}
-    bp = BenchmarkPredictionsV2(
-        predictions=preds,
-        benchmark=v2_benchmark_with_object_dtype,
-        target_labels=["expt"],
-        test_set_labels=["test"],
-        test_set_sizes={"test": 2},
-    )
-    zarr_path = bp.to_zarr()
-    assert zarr_path.exists()
-    root = zarr.open(str(zarr_path), mode="r")
-    assert "test" in root
-    assert "expt" in root["test"]
-    arr = root["test"]["expt"][:]
-    assert arr.dtype == object
-    arr_smiles = [Chem.MolToSmiles(m) for m in arr]
-    mols_smiles = [Chem.MolToSmiles(m) for m in mols]
-    assert arr_smiles == mols_smiles
