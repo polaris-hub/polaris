@@ -729,15 +729,16 @@ class PolarisHubClient(OAuth2Client):
         This method handles uploading predictions for a benchmark to the Hub. The predictions must be
         provided as a BenchmarkPredictionsV2 object, which ensures proper validation and formatting.
 
-        Args:
-            prediction: A BenchmarkPredictionsV2 instance containing the predictions and metadata.
-                The predictions should match the benchmark's target columns and test set structure.
-                For single test set benchmarks, predictions should be a dictionary mapping target
-                column names to numpy arrays of predictions.
-
         Info: Owner
             The owner of the predictions will automatically be inferred from the prediction object.
             You can override this by passing an explicit owner to this method.
+
+        Args:
+            prediction: A BenchmarkPredictionsV2 instance containing the predictions and metadata.
+            owner: Which Hub user or organization owns the artifact.
+            timeout: Request timeout values. User can modify the value when uploading large dataset as needed.
+            if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
+                an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
         """
         # Validate that the benchmark is a V2 specification
         if not isinstance(prediction.benchmark, BenchmarkV2Specification):

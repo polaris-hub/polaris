@@ -32,7 +32,19 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
     were generated, including the model used and contributors involved.
 
     Attributes:
-        Inherits from BenchmarkPredictions and ResultsMetadataV2.
+        benchmark (BenchmarkV2Specification): The benchmark specification associated with these predictions.
+        _artifact_type (str): The type of artifact (always 'prediction').
+        _zarr_root_path (str | None): Path to the root of the Zarr archive.
+        _zarr_manifest_path (str | None): Path to the Zarr manifest file.
+        _zarr_manifest_md5sum (str | None): MD5 checksum of the Zarr manifest file.
+        _zarr_root (zarr.Group | None): The Zarr group object for the archive root.
+        _temp_dir (str | None): Temporary directory used for storing the Zarr archive.
+        predictions (dict): The predictions data, organized by test set and column.
+        contributors (list): List of contributors involved in generating the predictions.
+        model: The model used to generate the predictions.
+        description (str): Description of the predictions.
+        tags (list): Tags associated with the predictions.
+        user_attributes (dict): Additional user attributes for the predictions.
     """
 
     benchmark: BenchmarkV2Specification
