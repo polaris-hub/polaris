@@ -1,8 +1,5 @@
 from polaris.prediction._predictions_v2 import BenchmarkPredictionsV2
 from rdkit import Chem
-
-BenchmarkPredictionsV2.model_rebuild()
-
 import numpy as np
 import pytest
 import datamol as dm
@@ -11,6 +8,7 @@ import zarr
 from polaris.dataset import DatasetV2, ColumnAnnotation
 from polaris.benchmark._split_v2 import SplitV2, IndexSet
 from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
+
 
 def assert_deep_equal(result, expected):
     assert isinstance(result, type(expected)), f"Types differ: {type(result)} != {type(expected)}"
@@ -22,6 +20,7 @@ def assert_deep_equal(result, expected):
         assert np.array_equal(result, expected)
     else:
         assert result == expected
+
 
 @pytest.fixture(scope="function")
 def v2_benchmark_with_object_dtype(tmp_path, test_org_owner):
@@ -115,7 +114,7 @@ def test_v2_normalization_and_object_dtype(v2_benchmark_with_object_dtype):
 
 def test_v2_fastpdb_object_dtype(v2_benchmark_with_object_dtype, pdbs_structs):
     # Use fastpdb.AtomArray objects
-    preds = {"test": {"expt": np.array(pdbs_structs[:2], dtype=object)}}    
+    preds = {"test": {"expt": np.array(pdbs_structs[:2], dtype=object)}}
     bp = BenchmarkPredictionsV2(
         predictions=preds,
         benchmark=v2_benchmark_with_object_dtype,
