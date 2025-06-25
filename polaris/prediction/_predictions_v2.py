@@ -1,25 +1,20 @@
 import logging
 import os
 import re
+import shutil
 from pathlib import Path
 import tempfile
-from typing import TYPE_CHECKING
 
 import numpy as np
 import zarr
 from pydantic import (
     PrivateAttr,
-    computed_field,
     model_validator,
 )
 
 from polaris.utils.zarr._manifest import generate_zarr_manifest, calculate_file_md5
 from polaris.evaluate import ResultsMetadataV2
 from polaris.evaluate._predictions import BenchmarkPredictions
-from polaris.benchmark import BenchmarkV2Specification
-
-if TYPE_CHECKING:
-    from polaris.benchmark import BenchmarkV2Specification
 
 logger = logging.getLogger(__name__)
 
@@ -32,22 +27,14 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
     were generated, including the model used and contributors involved.
 
     Attributes:
-        benchmark (BenchmarkV2Specification): The benchmark specification associated with these predictions.
-        _artifact_type (str): The type of artifact (always 'prediction').
-        _zarr_root_path (str | None): Path to the root of the Zarr archive.
-        _zarr_manifest_path (str | None): Path to the Zarr manifest file.
-        _zarr_manifest_md5sum (str | None): MD5 checksum of the Zarr manifest file.
-        _zarr_root (zarr.Group | None): The Zarr group object for the archive root.
-        _temp_dir (str | None): Temporary directory used for storing the Zarr archive.
-        predictions (dict): The predictions data, organized by test set and column.
-        contributors (list): List of contributors involved in generating the predictions.
-        model: The model used to generate the predictions.
-        description (str): Description of the predictions.
-        tags (list): Tags associated with the predictions.
-        user_attributes (dict): Additional user attributes for the predictions.
+        dataset_zarr_root: The zarr root of the dataset, used for dtype validation and as template for zarr arrays.
+        benchmark_artifact_id: The artifact ID of the benchmark these predictions are for.
+
+    For additional metadata attributes, see the base classes.
     """
 
-    benchmark: BenchmarkV2Specification
+    dataset_zarr_root: zarr.Group
+    benchmark_artifact_id: str
     _artifact_type = "prediction"
     _zarr_root_path: str | None = PrivateAttr(None)
     _zarr_manifest_path: str | None = PrivateAttr(None)
@@ -57,7 +44,7 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
 
     @model_validator(mode="after")
     def check_prediction_dtypes(self):
-        dataset_root = self.benchmark.dataset.zarr_root
+        dataset_root = self.dataset_zarr_root
         for test_set_label, test_set_predictions in self.predictions.items():
             for col, preds in test_set_predictions.items():
                 dataset_array = dataset_root[col]
@@ -75,12 +62,12 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
         This method should be called explicitly when ready to write predictions to disk.
         """
         root = self.zarr_root
-        dataset_root = self.benchmark.dataset.zarr_root
+        dataset_root = self.dataset_zarr_root
 
         for test_set_label, test_set_predictions in self.predictions.items():
             # Create a group for each test set
             test_set_group = root.require_group(test_set_label)
-            for col in self.benchmark.target_cols:
+            for col in self.target_labels:
                 data = test_set_predictions[col]
                 template = dataset_root[col]
                 test_set_group.array(
@@ -90,7 +77,6 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
                     compressor=template.compressor,
                     filters=template.filters,
                     chunks=template.chunks,
-                    object_codec=getattr(template, "object_codec", None),
                     overwrite=True,
                 )
 
@@ -113,11 +99,6 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
                 self._temp_dir = tempfile.mkdtemp(prefix="polaris_predictions_")
             self._zarr_root_path = str(Path(self._temp_dir) / "predictions.zarr")
         return self._zarr_root_path
-
-    @computed_field
-    @property
-    def benchmark_artifact_id(self) -> str:
-        return self.benchmark.artifact_id
 
     @property
     def columns(self):
@@ -167,5 +148,5 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
         return self.__repr__()
 
     def __del__(self) -> None:
-        if self._temp_dir and os.path.exists(self._temp_dir):
-            os.remove(self._temp_dir)
+        if hasattr(self, "_temp_dir") and self._temp_dir and os.path.exists(self._temp_dir):
+            shutil.rmtree(self._temp_dir)

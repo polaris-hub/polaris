@@ -740,12 +740,8 @@ class PolarisHubClient(OAuth2Client):
             if_exists: Action for handling existing files in the Zarr archive. Options are 'raise' to throw
                 an error, 'replace' to overwrite, or 'skip' to proceed without altering the existing files.
         """
-        # Validate that the benchmark is a V2 specification
-        if not isinstance(prediction.benchmark, BenchmarkV2Specification):
-            raise ValueError(
-                "Predictions can only be uploaded for BenchmarkV2 specifications. "
-                "Please ensure you are using a V2 benchmark before uploading predictions."
-            )
+        # Ensure Zarr archive is created
+        prediction.to_zarr()
 
         # Set owner
         prediction.owner = HubOwner.normalize(owner or prediction.owner)

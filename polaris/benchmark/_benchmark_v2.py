@@ -193,17 +193,18 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
         standardized_predictions = BenchmarkPredictionsV2(
             name=prediction_name,
             owner=HubOwner(slug=prediction_owner),
-            benchmark=self,
+            dataset_zarr_root=self.dataset.zarr_root,
+            benchmark_artifact_id=self.artifact_id,
             predictions=predictions,
+            target_labels=list(self.target_cols),
+            test_set_labels=self.test_set_labels,
+            test_set_sizes=self.test_set_sizes,
             contributors=contributors or [],
             model=model,
             description=description,
             tags=tags or [],
             user_attributes=user_attributes or {},
         )
-
-        # Write predictions to Zarr archive before uploading
-        standardized_predictions.to_zarr()
 
         with PolarisHubClient() as client:
             client.submit_benchmark_predictions(prediction=standardized_predictions, owner=prediction_owner)
