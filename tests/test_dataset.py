@@ -9,7 +9,7 @@ from numcodecs.abc import Codec
 from numcodecs.registry import codec_registry, register_codec
 
 from polaris.dataset import DatasetV1, Subset, create_dataset_from_file
-from polaris.dataset.zarr._utils import check_zarr_codecs
+from polaris.utils.zarr._utils import check_zarr_codecs
 from polaris.loader import load_dataset
 from polaris.utils.errors import InvalidZarrCodec
 

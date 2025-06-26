@@ -87,6 +87,8 @@ class DatasetV1Paths(ArtifactPaths):
 
 
 class DatasetV2Paths(ArtifactPaths):
+    # Discriminator field used to identify this as a dataset-v2 type when deserializing paths
+    type: Literal["dataset-v2"] = "dataset-v2"
     root: AnyUrlString = Field(json_schema_extra={"store": True})
     manifest: AnyUrlString = Field(json_schema_extra={"file": True})
 
@@ -97,11 +99,18 @@ class BenchmarkV2Paths(ArtifactPaths):
     test_2: int = 0
 
 
+class PredictionPaths(ArtifactPaths):
+    # Discriminator field used to identify this as a prediction type when deserializing paths
+    type: Literal["prediction"] = "prediction"
+    root: AnyUrlString = Field(json_schema_extra={"store": True})
+    manifest: AnyUrlString = Field(json_schema_extra={"file": True})
+
+
 class StorageTokenData(BaseModel):
     key: str
     secret: str
     endpoint: HttpUrlString
-    paths: DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths = Field(union_mode="smart")
+    paths: DatasetV1Paths | DatasetV2Paths | BenchmarkV2Paths | PredictionPaths = Field(union_mode="smart")
 
 
 class HubOAuth2Token(BaseModel):

@@ -15,6 +15,8 @@ from polaris.competition import CompetitionSpecification
 from polaris.dataset import ColumnAnnotation, DatasetFactory, DatasetV1, DatasetV2
 from polaris.dataset.converters import SDFConverter
 from polaris.utils.types import HubOwner
+from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
+from polaris.benchmark._split_v2 import SplitV2, IndexSet
 
 
 def check_version(artifact):
@@ -391,4 +393,102 @@ def test_docking_benchmark(test_docking_dataset):
         input_cols=["smiles"],
     )
     check_version(benchmark)
+    return benchmark
+
+
+@pytest.fixture(scope="function")
+def test_benchmark_v2(test_dataset_v2, test_org_owner):
+    train_indices = [0]
+    test_indices = [1]
+    split = SplitV2(training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices))
+    benchmark = BenchmarkV2Specification(
+        name="v2-benchmark-float-dtype",
+        owner=test_org_owner,
+        dataset=test_dataset_v2,
+        metrics=["mean_absolute_error"],
+        main_metric="mean_absolute_error",
+        split=split,
+        target_cols=["A"],
+        input_cols=["B"],
+    )
+    return benchmark
+
+
+@pytest.fixture(scope="function")
+def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
+    from polaris.utils.zarr.codecs import RDKitMolCodec
+
+    zarr_path = tmp_path / "test_rdkit_object_dtype.zarr"
+    root = zarr.open(str(zarr_path), mode="w")
+    root.array(
+        "expt",
+        data=np.empty(2, dtype=object),
+        dtype=object,
+        object_codec=RDKitMolCodec(),
+    )
+    zarr.consolidate_metadata(root.store)
+    dataset = DatasetV2(
+        name="test-dataset-v2-rdkit-object",
+        source="https://www.example.com",
+        annotations={"expt": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
+        tags=["tagA", "tagB"],
+        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        owner=test_org_owner,
+        license="CC-BY-4.0",
+        curation_reference="https://www.example.com",
+        zarr_root_path=str(zarr_path),
+    )
+    train_indices = [0]
+    test_indices = [1]
+    split = SplitV2(training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices))
+    benchmark = BenchmarkV2Specification(
+        name="v2-benchmark-rdkit-object-dtype",
+        owner=test_org_owner,
+        dataset=dataset,
+        metrics=["mean_absolute_error"],
+        main_metric="mean_absolute_error",
+        split=split,
+        target_cols=["expt"],
+        input_cols=["smiles"],
+    )
+    return benchmark
+
+
+@pytest.fixture(scope="function")
+def v2_benchmark_with_atomarray_object_dtype(tmp_path, test_org_owner):
+    from polaris.utils.zarr.codecs import AtomArrayCodec
+
+    zarr_path = tmp_path / "test_atomarray_object_dtype.zarr"
+    root = zarr.open(str(zarr_path), mode="w")
+    root.array(
+        "expt",
+        data=np.empty(2, dtype=object),
+        dtype=object,
+        object_codec=AtomArrayCodec(),
+    )
+    zarr.consolidate_metadata(root.store)
+    dataset = DatasetV2(
+        name="test-dataset-v2-atomarray-object",
+        source="https://www.example.com",
+        annotations={"expt": ColumnAnnotation(user_attributes={"unit": "kcal/mol"})},
+        tags=["tagA", "tagB"],
+        user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
+        owner=test_org_owner,
+        license="CC-BY-4.0",
+        curation_reference="https://www.example.com",
+        zarr_root_path=str(zarr_path),
+    )
+    train_indices = [0]
+    test_indices = [1]
+    split = SplitV2(training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices))
+    benchmark = BenchmarkV2Specification(
+        name="v2-benchmark-atomarray-object-dtype",
+        owner=test_org_owner,
+        dataset=dataset,
+        metrics=["mean_absolute_error"],
+        main_metric="mean_absolute_error",
+        split=split,
+        target_cols=["expt"],
+        input_cols=["smiles"],
+    )
     return benchmark
