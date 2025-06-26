@@ -846,6 +846,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#polaris.benchmark.BenchmarkV2Specification.submit_predictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      submit_predictions
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1296,6 +1305,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#polaris.benchmark.BenchmarkV2Specification.submit_predictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      submit_predictions
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1604,6 +1622,195 @@ number of tasks and test sets.</p>
 </ul>
 </li>
 </ol>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="polaris.benchmark.BenchmarkV2Specification.submit_predictions" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">submit_predictions</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">submit_predictions</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">predictions</span><span class="p">:</span> <span class="n">IncomingPredictionsType</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">prediction_name</span><span class="p">:</span> <span class="n">SlugCompatibleStringType</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">prediction_owner</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">contributors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">HubUser</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">model</span><span class="p">:</span> <span class="n">Model</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">user_attributes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Convenient wrapper around the
+<a class="autorefs autorefs-internal" title="submit_benchmark_predictions" href="hub.client.html#polaris.hub.client.PolarisHubClient.submit_benchmark_predictions"><code>PolarisHubClient.submit_benchmark_predictions</code></a> method.
+It handles the creation of a standardized Predictions object, which is expected by the Hub, automatically.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>predictions</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IncomingPredictionsType
+
+
+  
+      module-attribute
+   (polaris.utils.types.IncomingPredictionsType)" href="utils.types.html#polaris.utils.types.IncomingPredictionsType">IncomingPredictionsType</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The predictions for each test set defined in the benchmark.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>prediction_name</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="SlugCompatibleStringType
+
+
+  
+      module-attribute
+   (polaris.utils.types.SlugCompatibleStringType)" href="utils.types.html#polaris.utils.types.SlugCompatibleStringType">SlugCompatibleStringType</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The name of the prediction.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>prediction_owner</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The slug of the user/organization which owns the prediction.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>contributors</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="HubUser
+
+
+  
+      module-attribute
+   (polaris.utils.types.HubUser)" href="utils.types.html#polaris.utils.types.HubUser">HubUser</a>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The users credited with generating these predictions.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>model</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="polaris.model.Model" href="model.html#polaris.model.Model">Model</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(Optional) The Model artifact used to generate these predictions.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>description</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An optional and short description of the predictions.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>tags</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span>[<span title="str">str</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An optional list of tags to categorize the prediction by.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>user_attributes</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An optional dict with additional, textual user attributes.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
