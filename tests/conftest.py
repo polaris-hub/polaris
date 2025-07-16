@@ -405,8 +405,6 @@ def test_benchmark_v2(test_dataset_v2, test_org_owner):
         name="v2-benchmark-float-dtype",
         owner=test_org_owner,
         dataset=test_dataset_v2,
-        metrics=["mean_absolute_error"],
-        main_metric="mean_absolute_error",
         split=split,
         target_cols=["A"],
         input_cols=["B"],
@@ -426,6 +424,7 @@ def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
         dtype=object,
         object_codec=RDKitMolCodec(),
     )
+    root.array("smiles", data=np.array(["CCO", "CCC"]))  # Add smiles column
     zarr.consolidate_metadata(root.store)
     dataset = DatasetV2(
         name="test-dataset-v2-rdkit-object",
@@ -445,8 +444,6 @@ def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
         name="v2-benchmark-rdkit-object-dtype",
         owner=test_org_owner,
         dataset=dataset,
-        metrics=["mean_absolute_error"],
-        main_metric="mean_absolute_error",
         split=split,
         target_cols=["expt"],
         input_cols=["smiles"],
@@ -466,6 +463,7 @@ def v2_benchmark_with_atomarray_object_dtype(tmp_path, test_org_owner):
         dtype=object,
         object_codec=AtomArrayCodec(),
     )
+    root.array("smiles", data=np.array(["CCO", "CCC"]))  # Add smiles column
     zarr.consolidate_metadata(root.store)
     dataset = DatasetV2(
         name="test-dataset-v2-atomarray-object",
@@ -485,8 +483,6 @@ def v2_benchmark_with_atomarray_object_dtype(tmp_path, test_org_owner):
         name="v2-benchmark-atomarray-object-dtype",
         owner=test_org_owner,
         dataset=dataset,
-        metrics=["mean_absolute_error"],
-        main_metric="mean_absolute_error",
         split=split,
         target_cols=["expt"],
         input_cols=["smiles"],

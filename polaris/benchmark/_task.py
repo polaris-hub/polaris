@@ -16,21 +16,20 @@ from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName, TargetType, TaskType
 
 
-class PredictiveTaskSpecificationMixin(BaseModel):
-    """A mixin for predictive task benchmarks.
+class TaskSpecificationMixin(BaseModel):
+    """A mixin for task benchmarks without metrics.
+
+    This mixin provides the basic task specification fields without metrics,
+    primarily used for BenchmarkV2 where evaluation happens server-side.
 
     Attributes:
         target_cols: The column(s) of the original dataset that should be used as the target.
         input_cols: The column(s) of the original dataset that should be used as input.
-        metrics: The metrics to use for evaluating performance.
-        main_metric: The main metric used to rank methods. If `None`, this defaults to the first of the `metrics` field.
         target_types: A dictionary that maps target columns to their type. If not specified, this is automatically inferred.
     """
 
     target_cols: set[ColumnName] = Field(min_length=1)
     input_cols: set[ColumnName] = Field(min_length=1)
-    metrics: set[Metric] = Field(min_length=1)
-    main_metric: Metric | str
     target_types: dict[ColumnName, TargetType] = Field(default_factory=dict, validate_default=True)
 
     @field_validator("target_cols", "input_cols", mode="before")
@@ -58,6 +57,51 @@ class PredictiveTaskSpecificationMixin(BaseModel):
             for target, val in v.items()
             if val is not None
         }
+
+    @model_validator(mode="after")
+    def _validate_target_types(self) -> Self:
+        """
+        Verifies that all target types are for benchmark targets.
+        """
+        columns = set(self.target_types.keys())
+        if not columns.issubset(self.target_cols):
+            raise InvalidBenchmarkError(
+                f"Not all specified target types were found in the target columns. {columns} - {self.target_cols}"
+            )
+        return self
+
+    @field_serializer("target_types")
+    def _serialize_target_types(self, target_types):
+        """
+        Convert from enum to string to make sure it's serializable
+        """
+        return {k: v.value for k, v in target_types.items()}
+
+    @field_serializer("target_cols", "input_cols")
+    def _serialize_columns(self, v: set[str]) -> list[str]:
+        return list(v)
+
+    @computed_field
+    @property
+    def task_type(self) -> str:
+        """The high-level task type of the benchmark."""
+        v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
+        return v.value
+
+
+class PredictiveTaskSpecificationMixin(TaskSpecificationMixin):
+    """A mixin for predictive task benchmarks with metrics.
+
+    This mixin extends TaskSpecificationMixin to include metrics,
+    primarily used for BenchmarkV1 where evaluation happens client-side.
+
+    Attributes:
+        metrics: The metrics to use for evaluating performance.
+        main_metric: The main metric used to rank methods. If `None`, this defaults to the first of the `metrics` field.
+    """
+
+    metrics: set[Metric] = Field(min_length=1)
+    main_metric: Metric | str
 
     @field_validator("metrics", mode="before")
     @classmethod
@@ -114,39 +158,9 @@ class PredictiveTaskSpecificationMixin(BaseModel):
         """
         return list(value)
 
-    @model_validator(mode="after")
-    def _validate_target_types(self) -> Self:
-        """
-        Verifies that all target types are for benchmark targets.
-        """
-        columns = set(self.target_types.keys())
-        if not columns.issubset(self.target_cols):
-            raise InvalidBenchmarkError(
-                f"Not all specified target types were found in the target columns. {columns} - {self.target_cols}"
-            )
-        return self
-
     @field_serializer("main_metric")
-    def _serialize_main_metric(value: Metric) -> str:
+    def _serialize_main_metric(self, value: Metric) -> str:
         """
         Convert the Metric to it's name
         """
         return value.name
-
-    @field_serializer("target_types")
-    def _serialize_target_types(self, target_types):
-        """
-        Convert from enum to string to make sure it's serializable
-        """
-        return {k: v.value for k, v in target_types.items()}
-
-    @field_serializer("target_cols", "input_cols")
-    def _serialize_columns(self, v: set[str]) -> list[str]:
-        return list(v)
-
-    @computed_field
-    @property
-    def task_type(self) -> str:
-        """The high-level task type of the benchmark."""
-        v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
-        return v.value
