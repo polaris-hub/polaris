@@ -19,7 +19,7 @@ from typing_extensions import Self, deprecated
 
 from polaris._artifact import BaseArtifactModel
 from polaris.benchmark._split import SplitSpecificationV1Mixin
-from polaris.benchmark._task import PredictiveTaskSpecificationMixin
+from polaris.benchmark._task import PredictiveTaskSpecificationMixinWithMetrics
 from polaris.dataset import DatasetV1, Subset
 from polaris.dataset._base import BaseDataset
 from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2
@@ -75,7 +75,7 @@ class BaseSplitSpecificationMixin(BaseModel):
 
 
 class BenchmarkSpecification(
-    PredictiveTaskSpecificationMixin,
+    PredictiveTaskSpecificationMixinWithMetrics,
     BaseArtifactModel,
     BaseSplitSpecificationMixin,
     abc.ABC,

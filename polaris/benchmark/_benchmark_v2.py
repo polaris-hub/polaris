@@ -3,7 +3,7 @@ from typing import Any, Callable, ClassVar, Literal
 from pydantic import Field, field_validator, model_validator, computed_field
 from typing_extensions import Self
 
-from polaris.benchmark._task import TaskSpecificationMixin
+from polaris.benchmark._task import PredictiveTaskSpecificationMixin
 from polaris._artifact import BaseArtifactModel
 from polaris.utils.types import (
     IncomingPredictionsType,
@@ -20,7 +20,9 @@ from polaris.model import Model
 from polaris.hub.settings import PolarisHubSettings
 
 
-class BenchmarkV2Specification(TaskSpecificationMixin, BaseArtifactModel, SplitSpecificationV2Mixin):
+class BenchmarkV2Specification(
+    PredictiveTaskSpecificationMixin, BaseArtifactModel, SplitSpecificationV2Mixin
+):
     """This class wraps a dataset with additional data to specify the evaluation logic for V2 benchmarks.
 
     Unlike V1 benchmarks, V2 benchmarks do not require metrics to be specified client-side

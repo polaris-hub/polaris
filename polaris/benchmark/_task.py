@@ -16,7 +16,7 @@ from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName, TargetType, TaskType
 
 
-class TaskSpecificationMixin(BaseModel):
+class PredictiveTaskSpecificationMixin(BaseModel):
     """A mixin for task benchmarks without metrics.
 
     This mixin provides the basic task specification fields without metrics,
@@ -89,10 +89,10 @@ class TaskSpecificationMixin(BaseModel):
         return v.value
 
 
-class PredictiveTaskSpecificationMixin(TaskSpecificationMixin):
+class PredictiveTaskSpecificationMixinWithMetrics(PredictiveTaskSpecificationMixin):
     """A mixin for predictive task benchmarks with metrics.
 
-    This mixin extends TaskSpecificationMixin to include metrics,
+    This mixin extends PredictiveTaskSpecificationMixin to include metrics,
     primarily used for BenchmarkV1 where evaluation happens client-side.
 
     Attributes:
