@@ -71,6 +71,7 @@ def test_competition_split_verification(test_competition):
     train, _ = competition.get_train_test_split()
     assert len(train) == 0
 
+
 def test_competition_metric_deserialization(test_competition):
     """Tests that passing metrics as a list of strings or dictionaries works as expected"""
     m = test_competition.model_dump()
