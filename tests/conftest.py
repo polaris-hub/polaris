@@ -320,7 +320,7 @@ def test_multi_task_benchmark_clf(test_dataset, classification_metrics):
 
 
 @pytest.fixture(scope="function")
-def test_competition(zarr_archive, test_org_owner, regression_metrics, test_dataset_v2):
+def test_competition(zarr_archive, test_org_owner):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     competition = CompetitionSpecification(
@@ -330,8 +330,6 @@ def test_competition(zarr_archive, test_org_owner, regression_metrics, test_data
         tags=["tagA", "tagB"],
         user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
         # Benchmark attributes
-        metrics=regression_metrics,
-        main_metric="mean_absolute_error",
         split=(train_indices, test_indices),
         input_cols=["A"],
         target_cols=["B"],

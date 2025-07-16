@@ -431,7 +431,7 @@ class PolarisHubClient(OAuth2Client):
             verify_checksum: Whether to use the checksum to verify the integrity of the benchmark.
 
         Returns:
-            A `BenchmarkSpecification` instance, if it exists.
+            A `BenchmarkV1Specification` or `BenchmarkV2Specification` instance, if it exists.
         """
         with track_progress(description="Fetching benchmark", total=1):
             try:

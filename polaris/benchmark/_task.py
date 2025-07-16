@@ -1,4 +1,4 @@
-from typing import Collection, Sequence
+from typing import Sequence
 
 from pydantic import (
     BaseModel,
@@ -11,7 +11,6 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-from polaris.evaluate import Metric
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName, TargetType, TaskType
 
@@ -87,80 +86,3 @@ class PredictiveTaskSpecificationMixin(BaseModel):
         """The high-level task type of the benchmark."""
         v = TaskType.MULTI_TASK if len(self.target_cols) > 1 else TaskType.SINGLE_TASK
         return v.value
-
-
-class PredictiveTaskSpecificationMixinWithMetrics(PredictiveTaskSpecificationMixin):
-    """A mixin for predictive task benchmarks with metrics.
-
-    This mixin extends PredictiveTaskSpecificationMixin to include metrics,
-    primarily used for BenchmarkV1 where evaluation happens client-side.
-
-    Attributes:
-        metrics: The metrics to use for evaluating performance.
-        main_metric: The main metric used to rank methods. If `None`, this defaults to the first of the `metrics` field.
-    """
-
-    metrics: set[Metric] = Field(min_length=1)
-    main_metric: Metric | str
-
-    @field_validator("metrics", mode="before")
-    @classmethod
-    def _validate_metrics(cls, v: str | Metric | Collection[str | Metric]) -> set[Metric]:
-        """
-        Verifies all specified metrics are either a Metric object or a valid metric name.
-        Also verifies there are no duplicate metrics.
-
-        If there are multiple test sets, it is assumed the same metrics are used across test sets.
-        """
-        if isinstance(v, str):
-            v = {"label": v}
-        if not isinstance(v, Collection):
-            v = [v]
-
-        def _convert(m: str | dict | Metric) -> Metric:
-            if isinstance(m, str):
-                return Metric(label=m)
-            if isinstance(m, dict):
-                return Metric(**m)
-            return m
-
-        v = [_convert(m) for m in v]
-
-        unique_metrics = set(v)
-
-        if len(unique_metrics) != len(v):
-            raise InvalidBenchmarkError("The benchmark specifies duplicate metrics.")
-
-        unique_names = {m.name for m in unique_metrics}
-        if len(unique_names) != len(unique_metrics):
-            raise InvalidBenchmarkError(
-                "The metrics of a benchmark need to have unique names. Specify a custom name with Metric(custom_name=...)"
-            )
-
-        return unique_metrics
-
-    @model_validator(mode="after")
-    def _validate_main_metric_is_in_metrics(self) -> Self:
-        if isinstance(self.main_metric, str):
-            for m in self.metrics:
-                if m.name == self.main_metric:
-                    self.main_metric = m
-                    break
-        if self.main_metric not in self.metrics:
-            raise InvalidBenchmarkError("The main metric should be one of the specified metrics")
-        return self
-
-    @field_serializer("metrics")
-    def _serialize_metrics(self, value: set[Metric]) -> list[Metric]:
-        """
-        Convert the set to a list. Since metrics are models and will be converted to dict,
-        they will not be hashable members of a set.
-        """
-        return list(value)
-
-    @field_serializer("main_metric")
-    def _serialize_main_metric(self, value: Metric) -> str:
-        """
-        Convert the Metric to it's name
-        """
-        return value.name

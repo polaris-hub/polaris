@@ -1,28 +1,25 @@
-import abc
 import json
 from hashlib import md5
 from itertools import chain
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Literal, TypeVar, Generic
+from typing import Any, Callable, ClassVar, Literal, Collection
 
 import fsspec
 import numpy as np
 from pydantic import (
-    BaseModel,
     Field,
     computed_field,
     field_validator,
     model_validator,
+    field_serializer,
 )
 from sklearn.utils.multiclass import type_of_target
-from typing_extensions import Self, deprecated
 
 from polaris._artifact import BaseArtifactModel
 from polaris.benchmark._split import SplitSpecificationV1Mixin
-from polaris.benchmark._task import PredictiveTaskSpecificationMixinWithMetrics
+from polaris.benchmark._task import PredictiveTaskSpecificationMixin
 from polaris.dataset import DatasetV1, Subset
-from polaris.dataset._base import BaseDataset
-from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2
+from polaris.evaluate import BenchmarkResultsV1, Metric
 from polaris.evaluate.utils import evaluate_benchmark
 from polaris.hub.settings import PolarisHubSettings
 from polaris.mixins import ChecksumMixin
@@ -34,52 +31,12 @@ from polaris.utils.types import (
     TargetType,
 )
 
-# Type variable for the return type of evaluate
-BenchmarkResultsType = TypeVar("BenchmarkResultsType", BenchmarkResultsV1, BenchmarkResultsV2)
 
-
-class BaseSplitSpecificationMixin(BaseModel):
-    """Base mixin class to add a split field to a benchmark."""
-
-    split: Any
-
-    @property
-    @abc.abstractmethod
-    def test_set_sizes(self) -> dict[str, int]:
-        """The sizes of the test sets."""
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def n_test_sets(self) -> int:
-        """The number of test sets"""
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def n_train_datapoints(self) -> int:
-        """The size of the train set."""
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def test_set_labels(self) -> list[str]:
-        """The labels of the test sets."""
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def n_test_datapoints(self) -> dict[str, int]:
-        """The size of (each of) the test set(s)."""
-        raise NotImplementedError
-
-
-class BenchmarkSpecification(
-    PredictiveTaskSpecificationMixinWithMetrics,
+class BenchmarkV1Specification(
+    PredictiveTaskSpecificationMixin,
     BaseArtifactModel,
-    BaseSplitSpecificationMixin,
-    abc.ABC,
-    Generic[BenchmarkResultsType],
+    SplitSpecificationV1Mixin,
+    ChecksumMixin,
 ):
     """This class wraps a dataset with additional data to specify the evaluation logic.
 
@@ -123,121 +80,91 @@ class BenchmarkSpecification(
             as it provides a rich text editor for writing markdown.
         artifact_version: The version of the benchmark.
         artifact_changelog: A description of the changes made in this benchmark version.
+        metrics: The metrics to use for evaluation.
+        main_metric: The main metric to use for evaluation.
     For additional metadata attributes, see the base classes.
     """
 
     _artifact_type = "benchmark"
+    _version: ClassVar[Literal[1]] = 1
 
-    dataset: BaseDataset = Field(exclude=True)
+    dataset: DatasetV1 = Field(exclude=True)
     readme: str = ""
 
     # Version-related fields
     artifact_version: int = Field(default=1, frozen=True)
     artifact_changelog: str | None = None
 
+    # Metric-related attributes
+    metrics: set[Metric] = Field(min_length=1)
+    main_metric: Metric | str
+
     @computed_field
     @property
     def dataset_artifact_id(self) -> str:
         return self.dataset.artifact_id
 
-    @abc.abstractmethod
-    def _get_test_sets(
-        self, hide_targets=True, featurization_fn: Callable | None = None
-    ) -> dict[str, Subset]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def evaluate(
-        self,
-        y_pred: IncomingPredictionsType | None = None,
-        y_prob: IncomingPredictionsType | None = None,
-    ) -> BenchmarkResultsType:
-        raise NotImplementedError
-
-    def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
-        """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
-        internally to construct the train and test sets."""
-        return Subset(
-            dataset=self.dataset,
-            indices=indices,
-            input_cols=self.input_cols,
-            target_cols=self.target_cols,
-            hide_targets=hide_targets,
-            featurization_fn=featurization_fn,
-        )
-
-    def upload_to_hub(
-        self,
-        settings: PolarisHubSettings | None = None,
-        cache_auth_token: bool = True,
-        owner: HubOwner | str | None = None,
-        parent_artifact_id: str | None = None,
-        **kwargs: dict,
-    ):
+    @field_validator("metrics", mode="before")
+    @classmethod
+    def _validate_metrics(cls, v: str | Metric | Collection[str | Metric]) -> set[Metric]:
         """
-        Very light, convenient wrapper around the
-        [`PolarisHubClient.upload_benchmark`][polaris.hub.client.PolarisHubClient.upload_benchmark] method.
+        Verifies all specified metrics are either a Metric object or a valid metric name.
+        Also verifies there are no duplicate metrics.
+
+        If there are multiple test sets, it is assumed the same metrics are used across test sets.
         """
-        from polaris.hub.client import PolarisHubClient
+        if isinstance(v, str):
+            v = {"label": v}
+        if not isinstance(v, Collection):
+            v = [v]
 
-        with PolarisHubClient(
-            settings=settings,
-            cache_auth_token=cache_auth_token,
-            **kwargs,
-        ) as client:
-            return client.upload_benchmark(self, owner=owner, parent_artifact_id=parent_artifact_id)
+        def _convert(m: str | dict | Metric) -> Metric:
+            if isinstance(m, str):
+                return Metric(label=m)
+            if isinstance(m, dict):
+                return Metric(**m)
+            return m
 
-    def to_json(self, destination: str) -> str:
-        """Save the benchmark to a destination directory as a JSON file.
+        v = [_convert(m) for m in v]
 
-        Warning: Multiple files
-            Perhaps unintuitive, this method creates multiple files in the destination directory as it also saves
-            the dataset it is based on to the specified destination.
+        unique_metrics = set(v)
 
-        Args:
-            destination: The _directory_ to save the associated data to.
+        if len(unique_metrics) != len(v):
+            raise InvalidBenchmarkError("The benchmark specifies duplicate metrics.")
 
-        Returns:
-            The path to the JSON file.
+        unique_names = {m.name for m in unique_metrics}
+        if len(unique_names) != len(unique_metrics):
+            raise InvalidBenchmarkError(
+                "The metrics of a benchmark need to have unique names. Specify a custom name with Metric(custom_name=...)"
+            )
+
+        return unique_metrics
+
+    @model_validator(mode="after")
+    def _validate_main_metric_is_in_metrics(self) -> "BenchmarkV1Specification":
+        if isinstance(self.main_metric, str):
+            for m in self.metrics:
+                if m.name == self.main_metric:
+                    self.main_metric = m
+                    break
+        if self.main_metric not in self.metrics:
+            raise InvalidBenchmarkError("The main metric should be one of the specified metrics")
+        return self
+
+    @field_serializer("metrics")
+    def _serialize_metrics(self, value: set[Metric]) -> list[Metric]:
         """
-        dest = Path(destination)
-        dest.mkdir(parents=True, exist_ok=True)
+        Convert the set to a list. Since metrics are models and will be converted to dict,
+        they will not be hashable members of a set.
+        """
+        return list(value)
 
-        data = self.model_dump()
-        data["dataset"] = self.dataset.to_json(destination)
-
-        path = dest / "benchmark.json"
-        with fsspec.open(str(path), "w") as f:
-            json.dump(data, f)
-
-        return str(path)
-
-    def _repr_dict_(self) -> dict:
-        """Utility function for pretty-printing to the command line and jupyter notebooks"""
-        repr_dict = self.model_dump()
-        repr_dict["dataset_name"] = self.dataset.name
-        return repr_dict
-
-    def _repr_html_(self):
-        """For pretty printing in Jupyter."""
-        return dict2html(self.model_dump())
-
-    def __repr__(self):
-        return self.model_dump_json(indent=2)
-
-    def __str__(self):
-        return self.__repr__()
-
-
-@deprecated(
-    "Use BenchmarkV2Specification instead. If you're loading this dataset from the Polaris Hub, you can ignore this warning."
-)
-class BenchmarkV1Specification(
-    SplitSpecificationV1Mixin, ChecksumMixin, BenchmarkSpecification[BenchmarkResultsV1]
-):
-    _version: ClassVar[Literal[1]] = 1
-
-    dataset: DatasetV1 = Field(exclude=True)
+    @field_serializer("main_metric")
+    def _serialize_main_metric(self, value: Metric) -> str:
+        """
+        Convert the Metric to it's name
+        """
+        return value.name
 
     @field_validator("dataset", mode="before")
     @classmethod
@@ -254,7 +181,7 @@ class BenchmarkV1Specification(
                 return v
 
     @model_validator(mode="after")
-    def _infer_target_types(self) -> Self:
+    def _infer_target_types(self) -> "BenchmarkV1Specification":
         """Try to automatically infer the target types if not already set"""
 
         for target in filter(lambda target: target not in self.target_types, self.target_cols):
@@ -283,7 +210,7 @@ class BenchmarkV1Specification(
         return self
 
     @model_validator(mode="after")
-    def _validate_split_in_dataset(self) -> Self:
+    def _validate_split_in_dataset(self) -> "BenchmarkV1Specification":
         # All indices are valid given the dataset. We check the len of `self` here because a
         # competition entity includes both the dataset and benchmark in one artifact.
         max_i = len(self.dataset)
@@ -293,7 +220,7 @@ class BenchmarkV1Specification(
         return self
 
     @model_validator(mode="after")
-    def _validate_cols_in_dataset(self) -> Self:
+    def _validate_cols_in_dataset(self) -> "BenchmarkV1Specification":
         """
         Verifies that all specified columns are present in the dataset.
         """
@@ -331,6 +258,18 @@ class BenchmarkV1Specification(
 
         checksum = hash_fn.hexdigest()
         return checksum
+
+    def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
+        """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
+        internally to construct the train and test sets."""
+        return Subset(
+            dataset=self.dataset,
+            indices=indices,
+            input_cols=self.input_cols,
+            target_cols=self.target_cols,
+            hide_targets=hide_targets,
+            featurization_fn=featurization_fn,
+        )
 
     def _get_test_sets(
         self, hide_targets=True, featurization_fn: Callable | None = None
@@ -442,7 +381,69 @@ class BenchmarkV1Specification(
 
         return BenchmarkResultsV1(results=scores, benchmark_artifact_id=self.artifact_id)
 
+    def upload_to_hub(
+        self,
+        settings: PolarisHubSettings | None = None,
+        cache_auth_token: bool = True,
+        owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
+        **kwargs: dict,
+    ):
+        """
+        Very light, convenient wrapper around the
+        [`PolarisHubClient.upload_benchmark`][polaris.hub.client.PolarisHubClient.upload_benchmark] method.
+        """
+        from polaris.hub.client import PolarisHubClient
+
+        with PolarisHubClient(
+            settings=settings,
+            cache_auth_token=cache_auth_token,
+            **kwargs,
+        ) as client:
+            return client.upload_benchmark(self, owner=owner, parent_artifact_id=parent_artifact_id)
+
+    def to_json(self, destination: str) -> str:
+        """Save the benchmark to a destination directory as a JSON file.
+
+        Warning: Multiple files
+            Perhaps unintuitive, this method creates multiple files in the destination directory as it also saves
+            the dataset it is based on to the specified destination.
+
+        Args:
+            destination: The _directory_ to save the associated data to.
+
+        Returns:
+            The path to the JSON file.
+        """
+        dest = Path(destination)
+        dest.mkdir(parents=True, exist_ok=True)
+
+        data = self.model_dump()
+        data["dataset"] = self.dataset.to_json(destination)
+
+        path = dest / "benchmark.json"
+        with fsspec.open(str(path), "w") as f:
+            json.dump(data, f)
+
+        return str(path)
+
+    def _repr_dict_(self) -> dict:
+        """Utility function for pretty-printing to the command line and jupyter notebooks"""
+        repr_dict = self.model_dump()
+        repr_dict["dataset_name"] = self.dataset.name
+        return repr_dict
+
+    def _repr_html_(self):
+        """For pretty printing in Jupyter."""
+        return dict2html(self.model_dump())
+
+    def __repr__(self):
+        return self.model_dump_json(indent=2)
+
+    def __str__(self):
+        return self.__repr__()
+
     def __eq__(self, other) -> bool:
-        if not isinstance(other, BenchmarkSpecification):
+        if not isinstance(other, BenchmarkV1Specification):
             return False
         return self.md5sum == other.md5sum

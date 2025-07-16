@@ -1,5 +1,5 @@
 import polaris as po
-from polaris.benchmark._base import BenchmarkSpecification
+from polaris.benchmark._base import BenchmarkV1Specification
 from polaris.dataset._base import BaseDataset
 from polaris.hub.settings import PolarisHubSettings
 
@@ -13,4 +13,4 @@ def test_load_dataset_flow():
 
 def test_load_benchmark_flow():
     benchmark = po.load_benchmark("polaris/hello-world-benchmark")
-    assert isinstance(benchmark, BenchmarkSpecification)
+    assert isinstance(benchmark, BenchmarkV1Specification)

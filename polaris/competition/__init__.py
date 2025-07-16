@@ -7,7 +7,7 @@ from pydantic import Field, computed_field, model_validator
 from typing_extensions import Self
 
 from polaris.benchmark._split import SplitSpecificationV1Mixin
-from polaris.benchmark._task import PredictiveTaskSpecificationMixinWithMetrics
+from polaris.benchmark._task import PredictiveTaskSpecificationMixin
 from polaris.dataset import DatasetV2, Subset
 from polaris.evaluate import CompetitionPredictions
 from polaris.utils.dict2html import dict2html
@@ -22,9 +22,7 @@ from polaris.utils.types import (
 )
 
 
-class CompetitionSpecification(
-    DatasetV2, PredictiveTaskSpecificationMixinWithMetrics, SplitSpecificationV1Mixin
-):
+class CompetitionSpecification(DatasetV2, PredictiveTaskSpecificationMixin, SplitSpecificationV1Mixin):
     """An instance of this class represents a Polaris competition.
 
     Examples:

@@ -16,7 +16,7 @@ class Subset:
 
     Info: No need to create this class manually
         You should not have to create this class manually. In most use-cases, you can create a `Subset` through the
-        `get_train_test_split` method of a `BenchmarkSpecification` object.
+        `get_train_test_split` method of a `BenchmarkV1Specification` object.
 
     Tip: Featurize your inputs
         Not all datasets are already featurized. For example, a small-molecule task might simply provide the SMILES string.
