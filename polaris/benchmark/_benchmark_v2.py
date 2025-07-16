@@ -219,3 +219,50 @@ class BenchmarkV2Specification(
 
         with PolarisHubClient() as client:
             client.submit_benchmark_predictions(prediction=standardized_predictions, owner=prediction_owner)
+
+    def to_json(self, destination: str) -> str:
+        """Save the benchmark to a destination directory as a JSON file.
+
+        Warning: Multiple files
+            Perhaps unintuitive, this method creates multiple files in the destination directory as it also saves
+            the dataset it is based on to the specified destination.
+
+        Args:
+            destination: The _directory_ to save the associated data to.
+
+        Returns:
+            The path to the JSON file.
+        """
+        from pathlib import Path
+        import json
+        import fsspec
+
+        dest = Path(destination)
+        dest.mkdir(parents=True, exist_ok=True)
+
+        data = self.model_dump()
+        data["dataset"] = self.dataset.to_json(destination)
+
+        path = dest / "benchmark.json"
+        with fsspec.open(str(path), "w") as f:
+            json.dump(data, f)
+
+        return str(path)
+
+    def _repr_dict_(self) -> dict:
+        """Utility function for pretty-printing to the command line and jupyter notebooks"""
+        repr_dict = self.model_dump()
+        repr_dict["dataset_name"] = self.dataset.name
+        return repr_dict
+
+    def _repr_html_(self):
+        """For pretty printing in Jupyter."""
+        from polaris.utils.dict2html import dict2html
+
+        return dict2html(self.model_dump())
+
+    def __repr__(self):
+        return self.model_dump_json(indent=2)
+
+    def __str__(self):
+        return self.__repr__()
