@@ -320,7 +320,7 @@ def test_multi_task_benchmark_clf(test_dataset, classification_metrics):
 
 
 @pytest.fixture(scope="function")
-def test_competition(zarr_archive, test_org_owner, regression_metrics, test_dataset_v2):
+def test_competition(zarr_archive, test_org_owner):
     train_indices = list(range(90))
     test_indices = list(range(90, 100))
     competition = CompetitionSpecification(
@@ -330,8 +330,6 @@ def test_competition(zarr_archive, test_org_owner, regression_metrics, test_data
         tags=["tagA", "tagB"],
         user_attributes={"attributeA": "valueA", "attributeB": "valueB"},
         # Benchmark attributes
-        metrics=regression_metrics,
-        main_metric="mean_absolute_error",
         split=(train_indices, test_indices),
         input_cols=["A"],
         target_cols=["B"],
@@ -405,8 +403,6 @@ def test_benchmark_v2(test_dataset_v2, test_org_owner):
         name="v2-benchmark-float-dtype",
         owner=test_org_owner,
         dataset=test_dataset_v2,
-        metrics=["mean_absolute_error"],
-        main_metric="mean_absolute_error",
         split=split,
         target_cols=["A"],
         input_cols=["B"],
@@ -426,6 +422,7 @@ def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
         dtype=object,
         object_codec=RDKitMolCodec(),
     )
+    root.array("smiles", data=np.array(["CCO", "CCC"]))  # Add smiles column
     zarr.consolidate_metadata(root.store)
     dataset = DatasetV2(
         name="test-dataset-v2-rdkit-object",
@@ -445,8 +442,6 @@ def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
         name="v2-benchmark-rdkit-object-dtype",
         owner=test_org_owner,
         dataset=dataset,
-        metrics=["mean_absolute_error"],
-        main_metric="mean_absolute_error",
         split=split,
         target_cols=["expt"],
         input_cols=["smiles"],
@@ -466,6 +461,7 @@ def v2_benchmark_with_atomarray_object_dtype(tmp_path, test_org_owner):
         dtype=object,
         object_codec=AtomArrayCodec(),
     )
+    root.array("smiles", data=np.array(["CCO", "CCC"]))  # Add smiles column
     zarr.consolidate_metadata(root.store)
     dataset = DatasetV2(
         name="test-dataset-v2-atomarray-object",
@@ -485,8 +481,6 @@ def v2_benchmark_with_atomarray_object_dtype(tmp_path, test_org_owner):
         name="v2-benchmark-atomarray-object-dtype",
         owner=test_org_owner,
         dataset=dataset,
-        metrics=["mean_absolute_error"],
-        main_metric="mean_absolute_error",
         split=split,
         target_cols=["expt"],
         input_cols=["smiles"],

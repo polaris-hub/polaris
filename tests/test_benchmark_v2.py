@@ -87,8 +87,6 @@ def test_benchmark_v2_specification(valid_split, test_dataset_v2, tmp_path):
         "split": valid_split,
         "target_cols": ["B"],
         "input_cols": ["A"],
-        "metrics": ["accuracy", "r2"],
-        "main_metric": "accuracy",
         "n_classes": {"B": 2},
         "name": "test_benchmark",
     }
@@ -105,8 +103,6 @@ def test_benchmark_v2_specification(valid_split, test_dataset_v2, tmp_path):
         "split": valid_split,
         "target_cols": ["B"],
         "input_cols": ["A"],
-        "metrics": ["accuracy", "r2"],
-        "main_metric": "accuracy",
         "n_classes": {"B": 2},
         "name": "test_benchmark",
     }

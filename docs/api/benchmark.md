@@ -3,7 +3,7 @@
         filters: ["!^_", "!md5sum", "!get_cache_path"]
 
 
-::: polaris.benchmark.BenchmarkSpecification
+::: polaris.benchmark.BenchmarkV1Specification
     options:
         filters: ["!^_", "!md5sum", "!get_cache_path"]
 

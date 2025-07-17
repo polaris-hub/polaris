@@ -1,4 +1,7 @@
-from polaris.benchmark._base import BenchmarkSpecification, BenchmarkV1Specification
+from polaris.benchmark._base import (
+    BenchmarkV1Specification,
+    BenchmarkV1Specification as BenchmarkSpecification,
+)
 from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
 from polaris.benchmark._definitions import MultiTaskBenchmarkSpecification, SingleTaskBenchmarkSpecification
 

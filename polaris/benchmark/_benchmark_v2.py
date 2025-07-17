@@ -1,10 +1,10 @@
 from typing import Any, Callable, ClassVar, Literal
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator, computed_field
 from typing_extensions import Self
 
-from polaris.benchmark import BenchmarkSpecification
-from polaris.evaluate.utils import evaluate_benchmark
+from polaris.benchmark._task import PredictiveTaskSpecificationMixin
+from polaris._artifact import BaseArtifactModel
 from polaris.utils.types import (
     IncomingPredictionsType,
     HubOwner,
@@ -12,19 +12,43 @@ from polaris.utils.types import (
     HubUser,
 )
 
-from polaris.evaluate import BenchmarkResultsV2
 from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
 from polaris.dataset import DatasetV2, Subset
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName
 from polaris.model import Model
+from polaris.hub.settings import PolarisHubSettings
 
 
-class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification[BenchmarkResultsV2]):
+class BenchmarkV2Specification(
+    PredictiveTaskSpecificationMixin, BaseArtifactModel, SplitSpecificationV2Mixin
+):
+    """This class wraps a dataset with additional data to specify the evaluation logic for V2 benchmarks.
+
+    Unlike V1 benchmarks, V2 benchmarks do not require metrics to be specified client-side
+    as evaluation happens server-side.
+
+    Attributes:
+        dataset: The dataset the benchmark specification is based on.
+        n_classes: The number of classes for each of the target columns.
+        readme: Markdown text that can be used to provide a formatted description of the benchmark.
+        artifact_version: The version of the benchmark.
+        artifact_changelog: A description of the changes made in this benchmark version.
+    """
+
+    _artifact_type = "benchmark"
     _version: ClassVar[Literal[2]] = 2
 
     dataset: DatasetV2 = Field(exclude=True)
     n_classes: dict[ColumnName, int] = Field(default_factory=dict)
+    readme: str = ""
+    artifact_version: int = Field(default=1, frozen=True)
+    artifact_changelog: str | None = None
+
+    @computed_field
+    @property
+    def dataset_artifact_id(self) -> str:
+        return self.dataset.artifact_id
 
     @field_validator("dataset", mode="before")
     @classmethod
@@ -66,6 +90,18 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
 
         return self
 
+    @model_validator(mode="after")
+    def _validate_cols_in_dataset(self) -> Self:
+        """
+        Verifies that all specified columns are present in the dataset.
+        """
+        columns = self.target_cols | self.input_cols
+        dataset_columns = set(self.dataset.columns)
+        if not columns.issubset(dataset_columns):
+            raise InvalidBenchmarkError("Not all target or input columns were found in the dataset.")
+
+        return self
+
     def _get_test_sets(
         self, hide_targets=True, featurization_fn: Callable | None = None
     ) -> dict[str, Subset]:
@@ -78,6 +114,18 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
             label: self._get_subset(index_set.indices, hide_targets, featurization_fn)
             for label, index_set in self.split.test_items()
         }
+
+    def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
+        """Returns a [`Subset`][polaris.dataset.Subset] using the given indices. Used
+        internally to construct the train and test sets."""
+        return Subset(
+            dataset=self.dataset,
+            indices=indices,
+            input_cols=self.input_cols,
+            target_cols=self.target_cols,
+            hide_targets=hide_targets,
+            featurization_fn=featurization_fn,
+        )
 
     def get_train_test_split(
         self, featurization_fn: Callable | None = None
@@ -103,63 +151,26 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
         test = self._get_test_sets(hide_targets=True, featurization_fn=featurization_fn)
         return train, test
 
-    def evaluate(
+    def upload_to_hub(
         self,
-        y_pred: IncomingPredictionsType | None = None,
-        y_prob: IncomingPredictionsType | None = None,
-    ) -> BenchmarkResultsV2:
-        """Execute the evaluation protocol for the benchmark, given a set of predictions.
-
-        info: What about `y_true`?
-            Contrary to other frameworks that you might be familiar with, we opted for a signature that includes just
-            the predictions. This reduces the chance of accidentally using the test targets during training.
-
-        For this method, we make the following assumptions:
-
-        1. There can be one or multiple test set(s);
-        2. There can be one or multiple target(s);
-        3. The metrics are _constant_ across test sets;
-        4. The metrics are _constant_ across targets;
-        5. There can be metrics which measure across tasks.
-
-        Args:
-            y_pred: The predictions for the test set, as NumPy arrays.
-                If there are multiple targets, the predictions should be wrapped in a dictionary with the target labels as keys.
-                If there are multiple test sets, the predictions should be further wrapped in a dictionary
-                    with the test subset labels as keys.
-            y_prob: The predicted probabilities for the test set, formatted similarly to predictions, based on the
-                number of tasks and test sets.
-
-        Returns:
-            A `BenchmarkResultsV2` object. This object can be directly submitted to the Polaris Hub.
-
-        Examples:
-            1. For regression benchmarks:
-                pred_scores = your_model.predict_score(molecules) # predict continuous score values
-                benchmark.evaluate(y_pred=pred_scores)
-            2. For classification benchmarks:
-                - If `roc_auc` and `pr_auc` are in the metric list, both class probabilities and label predictions are required:
-                    pred_probs = your_model.predict_proba(molecules) # predict probablities
-                    pred_labels = your_model.predict_labels(molecules) # predict class labels
-                    benchmark.evaluate(y_pred=pred_labels, y_prob=pred_probs)
-                - Otherwise:
-                    benchmark.evaluate(y_pred=pred_labels)
+        settings: PolarisHubSettings | None = None,
+        cache_auth_token: bool = True,
+        owner: HubOwner | str | None = None,
+        parent_artifact_id: str | None = None,
+        **kwargs: dict,
+    ):
         """
+        Very light, convenient wrapper around the
+        [`PolarisHubClient.upload_benchmark`][polaris.hub.client.PolarisHubClient.upload_benchmark] method.
+        """
+        from polaris.hub.client import PolarisHubClient
 
-        # Instead of having the user pass the ground truth, we extract it from the benchmark spec ourselves.
-        y_true = self._get_test_sets(hide_targets=False)
-
-        scores = evaluate_benchmark(
-            target_cols=list(self.target_cols),
-            test_set_labels=self.test_set_labels,
-            test_set_sizes=self.test_set_sizes,
-            metrics=self.metrics,
-            y_true=y_true,
-            y_pred=y_pred,
-            y_prob=y_prob,
-        )
-
-        return BenchmarkResultsV2(results=scores, benchmark_artifact_id=self.artifact_id)
+        with PolarisHubClient(
+            settings=settings,
+            cache_auth_token=cache_auth_token,
+            **kwargs,
+        ) as client:
+            return client.upload_benchmark(self, owner=owner, parent_artifact_id=parent_artifact_id)
 
     def submit_predictions(
         self,
@@ -208,3 +219,50 @@ class BenchmarkV2Specification(SplitSpecificationV2Mixin, BenchmarkSpecification
 
         with PolarisHubClient() as client:
             client.submit_benchmark_predictions(prediction=standardized_predictions, owner=prediction_owner)
+
+    def to_json(self, destination: str) -> str:
+        """Save the benchmark to a destination directory as a JSON file.
+
+        Warning: Multiple files
+            Perhaps unintuitive, this method creates multiple files in the destination directory as it also saves
+            the dataset it is based on to the specified destination.
+
+        Args:
+            destination: The _directory_ to save the associated data to.
+
+        Returns:
+            The path to the JSON file.
+        """
+        from pathlib import Path
+        import json
+        import fsspec
+
+        dest = Path(destination)
+        dest.mkdir(parents=True, exist_ok=True)
+
+        data = self.model_dump()
+        data["dataset"] = self.dataset.to_json(destination)
+
+        path = dest / "benchmark.json"
+        with fsspec.open(str(path), "w") as f:
+            json.dump(data, f)
+
+        return str(path)
+
+    def _repr_dict_(self) -> dict:
+        """Utility function for pretty-printing to the command line and jupyter notebooks"""
+        repr_dict = self.model_dump()
+        repr_dict["dataset_name"] = self.dataset.name
+        return repr_dict
+
+    def _repr_html_(self):
+        """For pretty printing in Jupyter."""
+        from polaris.utils.dict2html import dict2html
+
+        return dict2html(self.model_dump())
+
+    def __repr__(self):
+        return self.model_dump_json(indent=2)
+
+    def __str__(self):
+        return self.__repr__()

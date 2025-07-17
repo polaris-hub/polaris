@@ -4,7 +4,6 @@ import pytest
 from pydantic import ValidationError
 
 from polaris.competition import CompetitionSpecification
-from polaris.evaluate import Metric
 from polaris.utils.types import TaskType
 
 
@@ -18,8 +17,6 @@ def test_competition_split_verification(test_competition):
     default_kwargs = {
         "target_cols": obj.target_cols,
         "input_cols": obj.input_cols,
-        "metrics": obj.metrics,
-        "main_metric": obj.main_metric,
         "name": obj.name,
         "zarr_root_path": obj.zarr_root_path,
         "readme": obj.readme,
@@ -73,59 +70,6 @@ def test_competition_split_verification(test_competition):
     competition = cls(split=([], test_split), **default_kwargs)
     train, _ = competition.get_train_test_split()
     assert len(train) == 0
-
-
-@pytest.mark.parametrize("cls", [CompetitionSpecification])
-def test_competition_metrics_verification(test_competition, cls):
-    """Verifies that the metric validation works as expected."""
-    # By using the fixture as a default, we know it doesn't always fail
-    base = test_competition
-
-    default_kwargs = {
-        "target_cols": base.target_cols,
-        "input_cols": base.input_cols,
-        "main_metric": base.main_metric,
-        "name": base.name,
-        "zarr_root_path": base.zarr_root_path,
-        "readme": base.readme,
-        "start_time": base.start_time,
-        "end_time": base.end_time,
-        "n_test_sets": base.n_test_sets,
-        "n_test_datapoints": base.n_test_datapoints,
-        "n_classes": base.n_classes,
-    }
-
-    # Invalid metric
-    with pytest.raises(ValidationError):
-        cls(metrics=["invalid"], **default_kwargs)
-    with pytest.raises(ValidationError):
-        cls(metrics="invalid", **default_kwargs)
-    with pytest.raises(ValidationError):
-        metrics_list = list(base.metrics)
-        cls(
-            metrics=metrics_list + [metrics_list[0]],
-            **default_kwargs,
-        )
-
-
-def test_competition_duplicate_metrics(test_competition):
-    """Tests that passing duplicate metrics will raise a validation error"""
-    m = test_competition.model_dump()
-
-    with pytest.raises(ValidationError, match="The benchmark specifies duplicate metric"):
-        m["metrics"] = [
-            Metric(label="roc_auc", config={"group_by": "CLASS_expt"}),
-            Metric(label="roc_auc", config={"group_by": "CLASS_expt"}),
-        ]
-        m["main_metric"] = m["metrics"][0]
-        CompetitionSpecification(**m)
-
-    with pytest.raises(ValidationError, match="The metrics of a benchmark need to have unique names."):
-        m["metrics"][0].config.group_by = "MULTICLASS_calc"
-        CompetitionSpecification(**m)
-
-    m["metrics"][0].custom_name = "custom_name"
-    CompetitionSpecification(**m)
 
 
 def test_competition_metric_deserialization(test_competition):
