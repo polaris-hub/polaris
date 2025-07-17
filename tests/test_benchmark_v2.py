@@ -151,7 +151,7 @@ def test_benchmark_v2_n_classes_validation(test_dataset_v2):
 
 def test_benchmark_v2_multiple_test_sets(test_dataset_v2, test_org_owner):
     """Test BenchmarkV2 with multiple test sets functionality"""
-    
+
     # Create split with multiple test sets
     split = SplitV2(
         training=IndexSet(indices=BitMap([0, 1, 2, 3, 4])),
@@ -159,9 +159,9 @@ def test_benchmark_v2_multiple_test_sets(test_dataset_v2, test_org_owner):
             "test_set_1": IndexSet(indices=BitMap([5, 6, 7])),
             "test_set_2": IndexSet(indices=BitMap([8, 9])),
             "test_set_3": IndexSet(indices=BitMap([10, 11, 12, 13])),
-        }
+        },
     )
-    
+
     benchmark = BenchmarkV2Specification(
         name="test-benchmark-multiple-test-sets",
         owner=test_org_owner,
@@ -172,14 +172,14 @@ def test_benchmark_v2_multiple_test_sets(test_dataset_v2, test_org_owner):
         metrics=["mean_absolute_error"],
         main_metric="mean_absolute_error",
     )
-    
+
     # Test split properties
     assert benchmark.n_train_datapoints == 5
     assert benchmark.n_test_sets == 3
     assert benchmark.n_test_datapoints == {"test_set_1": 3, "test_set_2": 2, "test_set_3": 4}
     assert set(benchmark.test_set_labels) == {"test_set_1", "test_set_2", "test_set_3"}
     assert benchmark.test_set_sizes == {"test_set_1": 3, "test_set_2": 2, "test_set_3": 4}
-    
+
     # Test train-test split
     train, test = benchmark.get_train_test_split()
     assert len(train) == 5
@@ -188,10 +188,10 @@ def test_benchmark_v2_multiple_test_sets(test_dataset_v2, test_org_owner):
     assert len(test["test_set_1"]) == 3
     assert len(test["test_set_2"]) == 2
     assert len(test["test_set_3"]) == 4
-    
+
     # Test backward compatibility - accessing .test property should work
     assert split.test.datapoints > 0  # Should return first test set or combined
-    
+
     # Test test_items() generator
     test_items = list(split.test_items())
     assert len(test_items) == 3
@@ -201,25 +201,25 @@ def test_benchmark_v2_multiple_test_sets(test_dataset_v2, test_org_owner):
 
 def test_split_v2_backward_compatibility():
     """Test that SplitV2 maintains backward compatibility with single test field"""
-    
+
     # Test creating split with old 'test' field format
     split_data = {
         "training": IndexSet(indices=BitMap([0, 1, 2])),
-        "test": IndexSet(indices=BitMap([3, 4, 5]))
+        "test": IndexSet(indices=BitMap([3, 4, 5])),
     }
-    
+
     split = SplitV2(**split_data)
-    
+
     # Should convert single test to test_sets format
     assert split.n_test_sets == 1
     assert "test" in split.test_sets
     assert split.test_sets["test"].datapoints == 3
     assert split.test.datapoints == 3  # Backward compatibility property
-    
+
     # Test with serialized data
     test_serialized = IndexSet(indices=BitMap([6, 7, 8])).serialize()
     training_serialized = IndexSet(indices=BitMap([0, 1, 2])).serialize()
-    
+
     split2 = SplitV2(training=training_serialized, test=test_serialized)
     assert split2.n_test_sets == 1
     assert split2.test.datapoints == 3
@@ -227,35 +227,29 @@ def test_split_v2_backward_compatibility():
 
 def test_split_v2_validation_multiple_test_sets():
     """Test validation rules for multiple test sets"""
-    
+
     # Test empty test sets should fail
     with pytest.raises(ValidationError):
-        SplitV2(
-            training=IndexSet(indices=BitMap([0, 1])),
-            test_sets={}
-        )
-    
+        SplitV2(training=IndexSet(indices=BitMap([0, 1])), test_sets={})
+
     # Test empty individual test set should fail
     with pytest.raises(ValidationError):
-        SplitV2(
-            training=IndexSet(indices=BitMap([0, 1])),
-            test_sets={"test1": IndexSet(indices=BitMap([]))}
-        )
-    
+        SplitV2(training=IndexSet(indices=BitMap([0, 1])), test_sets={"test1": IndexSet(indices=BitMap([]))})
+
     # Test overlapping train and test sets should fail
     with pytest.raises(ValidationError):
         SplitV2(
             training=IndexSet(indices=BitMap([0, 1, 2])),
-            test_sets={"test1": IndexSet(indices=BitMap([2, 3, 4]))}  # 2 overlaps
+            test_sets={"test1": IndexSet(indices=BitMap([2, 3, 4]))},  # 2 overlaps
         )
-    
+
     # Test valid multiple test sets should pass
     split = SplitV2(
         training=IndexSet(indices=BitMap([0, 1, 2])),
         test_sets={
             "test1": IndexSet(indices=BitMap([3, 4])),
             "test2": IndexSet(indices=BitMap([5, 6, 7])),
-        }
+        },
     )
     assert split.n_test_sets == 2
     assert split.max_index == 7

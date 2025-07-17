@@ -74,7 +74,7 @@ class SplitV2(BaseModel):
         """Parse test sets from bytes or IndexSet objects"""
         if not isinstance(v, dict):
             return {}
-        
+
         parsed_sets = {}
         for label, index_set in v.items():
             if isinstance(index_set, bytes):
@@ -109,7 +109,7 @@ class SplitV2(BaseModel):
         """Test index sets cannot be empty"""
         if not v:
             raise InvalidBenchmarkError("At least one test set must be specified")
-        
+
         for label, index_set in v.items():
             if index_set.datapoints == 0:
                 raise InvalidBenchmarkError(f"Test set '{label}' contains empty test partitions")
@@ -120,7 +120,9 @@ class SplitV2(BaseModel):
         """The training and test index sets do not overlap"""
         for label, test_set in self.test_sets.items():
             if self.training.intersect(test_set):
-                raise InvalidBenchmarkError(f"The predefined split specifies overlapping train and test sets for test set '{label}'")
+                raise InvalidBenchmarkError(
+                    f"The predefined split specifies overlapping train and test sets for test set '{label}'"
+                )
         return self
 
     @property
