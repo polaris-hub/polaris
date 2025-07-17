@@ -58,80 +58,108 @@ class IndexSet(BaseModel):
 
 class SplitV2(BaseModel):
     training: IndexSet
-    test: IndexSet
+    test_sets: dict[str, IndexSet] = Field(default_factory=dict)
 
-    @field_validator("training", "test", mode="before")
+    @field_validator("training", mode="before")
     @classmethod
-    def _parse_index_sets(cls, v: bytes | IndexSet) -> bytes | IndexSet:
-        """
-        Accepted a binary serialized IndexSet
-        """
+    def _parse_training_set(cls, v: bytes | IndexSet) -> IndexSet:
+        """Accepted a binary serialized IndexSet"""
         if isinstance(v, bytes):
             return IndexSet.deserialize(v)
         return v
 
+    @field_validator("test_sets", mode="before")
+    @classmethod
+    def _parse_test_index_sets(cls, v: dict[str, bytes | IndexSet]) -> dict[str, IndexSet]:
+        """Parse test sets from bytes or IndexSet objects"""
+        if not isinstance(v, dict):
+            return {}
+        
+        parsed_sets = {}
+        for label, index_set in v.items():
+            if isinstance(index_set, bytes):
+                parsed_sets[label] = IndexSet.deserialize(index_set)
+            else:
+                parsed_sets[label] = index_set
+        return parsed_sets
+
+    @model_validator(mode="before")
+    @classmethod
+    def _handle_backward_compatibility(cls, data):
+        """Handle backward compatibility with single 'test' field"""
+        if isinstance(data, dict) and "test" in data and "test_sets" not in data:
+            # Convert single test field to test_sets format
+            test_value = data.pop("test")
+            data["test_sets"] = {"test": test_value}
+        return data
+
     @field_validator("training")
     @classmethod
     def _validate_training_set(cls, v: IndexSet) -> IndexSet:
-        """
-        Training index set can be empty (zero-shot)
-        """
+        """Training index set can be empty (zero-shot)"""
         if v.datapoints == 0:
             logger.info(
                 "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
             )
         return v
 
-    @field_validator("test")
+    @field_validator("test_sets")
     @classmethod
-    def _validate_test_set(cls, v: IndexSet) -> IndexSet:
-        """
-        Test index set cannot be empty
-        """
-        if v.datapoints == 0:
-            raise InvalidBenchmarkError("The predefined split contains empty test partitions")
+    def _validate_test_sets(cls, v: dict[str, IndexSet]) -> dict[str, IndexSet]:
+        """Test index sets cannot be empty"""
+        if not v:
+            raise InvalidBenchmarkError("At least one test set must be specified")
+        
+        for label, index_set in v.items():
+            if index_set.datapoints == 0:
+                raise InvalidBenchmarkError(f"Test set '{label}' contains empty test partitions")
         return v
 
     @model_validator(mode="after")
     def validate_set_overlap(self) -> Self:
-        """
-        The training and test index sets do not overlap
-        """
-        if self.training.intersect(self.test):
-            raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
+        """The training and test index sets do not overlap"""
+        for label, test_set in self.test_sets.items():
+            if self.training.intersect(test_set):
+                raise InvalidBenchmarkError(f"The predefined split specifies overlapping train and test sets for test set '{label}'")
         return self
 
     @property
     def n_train_datapoints(self) -> int:
-        """
-        The size of the train set.
-        """
+        """The size of the train set."""
         return self.training.datapoints
 
     @property
     def n_test_sets(self) -> int:
-        """
-        The number of test sets
-        """
-        # TODO: Until we support multi-test benchmarks
-        return 1
+        """The number of test sets"""
+        return len(self.test_sets)
 
     @property
     def n_test_datapoints(self) -> dict[str, int]:
-        """
-        The size of (each of) the test set(s).
-        """
-        # TODO: Until we support multi-test benchmarks
-        return {"test": self.test.datapoints}
+        """The size of (each of) the test set(s)."""
+        return {label: index_set.datapoints for label, index_set in self.test_sets.items()}
 
     @property
     def max_index(self) -> int:
-        # TODO: Until we support multi-test benchmarks (need)
-        return max(self.training.indices.max(), self.test.indices.max())
+        """Maximum index across all sets"""
+        all_indices = [self.training.indices.max()]
+        all_indices.extend(test_set.indices.max() for test_set in self.test_sets.values())
+        return max(all_indices)
 
     def test_items(self) -> Generator[tuple[str, IndexSet], None, None]:
-        # TODO: Until we support multi-test benchmarks
-        yield "test", self.test
+        """Yield all test sets with their labels"""
+        for label, index_set in self.test_sets.items():
+            yield label, index_set
+
+    # Backward compatibility property
+    @property
+    def test(self) -> IndexSet:
+        """Backward compatibility: return the 'test' set if it exists, otherwise the first test set"""
+        if "test" in self.test_sets:
+            return self.test_sets["test"]
+        elif self.test_sets:
+            return next(iter(self.test_sets.values()))
+        else:
+            raise InvalidBenchmarkError("No test sets available")
 
 
 class SplitSpecificationV2Mixin(BaseModel):

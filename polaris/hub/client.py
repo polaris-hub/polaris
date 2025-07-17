@@ -484,11 +484,27 @@ class PolarisHubClient(OAuth2Client):
 
         response_data["dataset"] = self.get_dataset(*response_data["dataset"]["artifactId"].split("/"))
 
+        # Handle multiple test sets in split data
+        split_data = response_data.get("split", {})
+        
+        # Separate training and test sets
         split = {}
-        for label, url in response_data.get("split", {}).items():
+        test_sets = {}
+        
+        for label, url in split_data.items():
             with fsspec.open(url, mode="rb") as f:
-                split[label] = f.read()
-
+                data = f.read()
+                
+            if label == "training":
+                split["training"] = data
+            else:
+                # All other labels are test sets
+                test_sets[label] = data
+        
+        # Structure the split data properly
+        if test_sets:
+            split["test_sets"] = test_sets
+        
         return BenchmarkV2Specification(**{**response_data, "split": split})
 
     def upload_results(
