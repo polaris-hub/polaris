@@ -3,7 +3,7 @@ from hashlib import md5
 from itertools import chain
 from pathlib import Path
 from typing import Any, Callable, ClassVar, Literal, Collection
-from typing_extensions import deprecated
+from typing_extensions import deprecated, Self
 
 import fsspec
 import numpy as np
@@ -145,7 +145,7 @@ class BenchmarkV1Specification(
         return unique_metrics
 
     @model_validator(mode="after")
-    def _validate_main_metric_is_in_metrics(self) -> "BenchmarkV1Specification":
+    def _validate_main_metric_is_in_metrics(self) -> Self:
         if isinstance(self.main_metric, str):
             for m in self.metrics:
                 if m.name == self.main_metric:
@@ -185,7 +185,7 @@ class BenchmarkV1Specification(
                 return v
 
     @model_validator(mode="after")
-    def _infer_target_types(self) -> "BenchmarkV1Specification":
+    def _infer_target_types(self) -> Self:
         """Try to automatically infer the target types if not already set"""
 
         for target in filter(lambda target: target not in self.target_types, self.target_cols):
@@ -214,7 +214,7 @@ class BenchmarkV1Specification(
         return self
 
     @model_validator(mode="after")
-    def _validate_split_in_dataset(self) -> "BenchmarkV1Specification":
+    def _validate_split_in_dataset(self) -> Self:
         # All indices are valid given the dataset. We check the len of `self` here because a
         # competition entity includes both the dataset and benchmark in one artifact.
         max_i = len(self.dataset)
@@ -224,7 +224,7 @@ class BenchmarkV1Specification(
         return self
 
     @model_validator(mode="after")
-    def _validate_cols_in_dataset(self) -> "BenchmarkV1Specification":
+    def _validate_cols_in_dataset(self) -> Self:
         """
         Verifies that all specified columns are present in the dataset.
         """
