@@ -3,6 +3,7 @@ from hashlib import md5
 from itertools import chain
 from pathlib import Path
 from typing import Any, Callable, ClassVar, Literal, Collection
+from typing_extensions import deprecated
 
 import fsspec
 import numpy as np
@@ -32,6 +33,9 @@ from polaris.utils.types import (
 )
 
 
+@deprecated(
+    "Use BenchmarkV2Specification instead. If you're loading this dataset from the Polaris Hub, you can ignore this warning."
+)
 class BenchmarkV1Specification(
     PredictiveTaskSpecificationMixin,
     BaseArtifactModel,

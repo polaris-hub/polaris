@@ -18,9 +18,6 @@ from polaris.utils.types import ColumnName, TargetType, TaskType
 class PredictiveTaskSpecificationMixin(BaseModel):
     """A mixin for task benchmarks without metrics.
 
-    This mixin provides the basic task specification fields without metrics,
-    primarily used for BenchmarkV2 where evaluation happens server-side.
-
     Attributes:
         target_cols: The column(s) of the original dataset that should be used as the target.
         input_cols: The column(s) of the original dataset that should be used as input.
