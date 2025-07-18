@@ -411,6 +411,29 @@ def test_benchmark_v2(test_dataset_v2, test_org_owner):
 
 
 @pytest.fixture(scope="function")
+def test_benchmark_v2_multiple_test_sets(test_dataset_v2, test_org_owner):
+    """Fixture for BenchmarkV2 with multiple test sets"""
+    train_indices = [0, 1, 2, 3, 4]
+    test_sets = {
+        "test_set_1": IndexSet(indices=[5, 6, 7]),
+        "test_set_2": IndexSet(indices=[8, 9]),
+        "test_set_3": IndexSet(indices=[10, 11, 12, 13]),
+    }
+    split = SplitV2(training=IndexSet(indices=train_indices), test_sets=test_sets)
+    benchmark = BenchmarkV2Specification(
+        name="v2-benchmark-multiple-test-sets",
+        owner=test_org_owner,
+        dataset=test_dataset_v2,
+        metrics=["mean_absolute_error"],
+        main_metric="mean_absolute_error",
+        split=split,
+        target_cols=["A"],
+        input_cols=["B"],
+    )
+    return benchmark
+
+
+@pytest.fixture(scope="function")
 def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
     from polaris.utils.zarr.codecs import RDKitMolCodec
 
