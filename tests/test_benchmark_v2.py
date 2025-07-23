@@ -169,8 +169,9 @@ def test_benchmark_v2_with_multiple_test_sets(test_benchmark_v2_multiple_test_se
     assert len(test["test_set_2"]) == 2
     assert len(test["test_set_3"]) == 4
 
-    # Test backward compatibility - accessing .test property should work
-    assert benchmark.split.test.datapoints > 0  # Should return first test set or combined
+    # Test backward compatibility - accessing .test property should raise error when no "test" set exists
+    with pytest.raises(AttributeError, match="No 'test' set found in test_sets"):
+        benchmark.split.test
 
     # Test test_items() generator
     test_items = list(benchmark.split.test_items())

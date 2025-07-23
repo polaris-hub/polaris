@@ -58,7 +58,7 @@ class IndexSet(BaseModel):
 
 class SplitV2(BaseModel):
     training: IndexSet
-    test_sets: dict[str, IndexSet] = Field(default_factory=dict)
+    test_sets: dict[str, IndexSet]
 
     @field_validator("training", mode="before")
     @classmethod
@@ -73,7 +73,7 @@ class SplitV2(BaseModel):
     def _parse_test_index_sets(cls, v: dict[str, bytes | IndexSet]) -> dict[str, IndexSet]:
         """Parse test sets from bytes or IndexSet objects"""
         if not isinstance(v, dict):
-            return {}
+            raise ValueError(f"test_sets must be a dictionary, got {type(v).__name__}")
 
         parsed_sets = {}
         for label, index_set in v.items():
@@ -155,13 +155,14 @@ class SplitV2(BaseModel):
     # Backward compatibility property
     @property
     def test(self) -> IndexSet:
-        """Backward compatibility: return the 'test' set if it exists, otherwise the first test set"""
+        """Backward compatibility: return the 'test' set if it exists"""
         if "test" in self.test_sets:
             return self.test_sets["test"]
-        elif self.test_sets:
-            return next(iter(self.test_sets.values()))
         else:
-            raise InvalidBenchmarkError("No test sets available")
+            raise AttributeError(
+                "No 'test' set found in test_sets. Available test sets: "
+                f"{list(self.test_sets.keys())}. Use split.test_sets['set_name'] to access specific test sets."
+            )
 
 
 class SplitSpecificationV2Mixin(BaseModel):

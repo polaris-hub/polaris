@@ -95,38 +95,7 @@ class DatasetV2Paths(ArtifactPaths):
 
 class BenchmarkV2Paths(ArtifactPaths):
     training: AnyUrlString = Field(json_schema_extra={"file": True})
-
-    # Use model_config to allow extra fields for dynamic test sets
-    model_config = ConfigDict(extra="allow")
-
-    def __init__(self, **data):
-        # Handle backward compatibility with single 'test' field
-        if "test" in data and not any(k.startswith("test") and k != "test" for k in data.keys()):
-            # Only single test field, keep it as is for backward compatibility
-            pass
-        super().__init__(**data)
-
-    @property
-    def test_sets(self) -> dict[str, AnyUrlString]:
-        """Return all test set URLs as a dictionary"""
-        test_sets = {}
-        for field_name, value in self.__dict__.items():
-            if field_name.startswith("test"):
-                test_sets[field_name] = value
-        return test_sets
-
-    # Backward compatibility
-    @property
-    def test(self) -> AnyUrlString:
-        """Backward compatibility: return the 'test' field if it exists"""
-        if hasattr(self, "test"):
-            return getattr(self, "test")
-        # If no 'test' field, return the first test set
-        test_sets = self.test_sets
-        if test_sets:
-            return next(iter(test_sets.values()))
-        raise AttributeError("No test sets available")
-
+    test_sets: dict[str, AnyUrlString] = Field(json_schema_extra={"file": True})
 
 class PredictionPaths(ArtifactPaths):
     # Discriminator field used to identify this as a prediction type when deserializing paths
