@@ -149,29 +149,9 @@ def test_benchmark_v2_n_classes_validation(test_dataset_v2):
         BenchmarkV2Specification(**config)
 
 
-def test_benchmark_v2_multiple_test_sets(test_dataset_v2, test_org_owner):
-    """Test BenchmarkV2 with multiple test sets functionality"""
-
-    # Create split with multiple test sets
-    split = SplitV2(
-        training=IndexSet(indices=BitMap([0, 1, 2, 3, 4])),
-        test_sets={
-            "test_set_1": IndexSet(indices=BitMap([5, 6, 7])),
-            "test_set_2": IndexSet(indices=BitMap([8, 9])),
-            "test_set_3": IndexSet(indices=BitMap([10, 11, 12, 13])),
-        },
-    )
-
-    benchmark = BenchmarkV2Specification(
-        name="test-benchmark-multiple-test-sets",
-        owner=test_org_owner,
-        dataset=test_dataset_v2,
-        split=split,
-        target_cols=["A"],
-        input_cols=["B"],
-        metrics=["mean_absolute_error"],
-        main_metric="mean_absolute_error",
-    )
+def test_benchmark_v2_with_multiple_test_sets(test_benchmark_v2_multiple_test_sets):
+    """Test BenchmarkV2 with multiple test sets functionality using fixture"""
+    benchmark = test_benchmark_v2_multiple_test_sets
 
     # Test split properties
     assert benchmark.n_train_datapoints == 5
@@ -190,10 +170,10 @@ def test_benchmark_v2_multiple_test_sets(test_dataset_v2, test_org_owner):
     assert len(test["test_set_3"]) == 4
 
     # Test backward compatibility - accessing .test property should work
-    assert split.test.datapoints > 0  # Should return first test set or combined
+    assert benchmark.split.test.datapoints > 0  # Should return first test set or combined
 
     # Test test_items() generator
-    test_items = list(split.test_items())
+    test_items = list(benchmark.split.test_items())
     assert len(test_items) == 3
     labels = [label for label, _ in test_items]
     assert set(labels) == {"test_set_1", "test_set_2", "test_set_3"}
