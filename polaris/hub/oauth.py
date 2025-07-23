@@ -5,7 +5,7 @@ from time import time
 from typing import Any, Literal
 
 from authlib.integrations.httpx_client import OAuth2Auth
-from pydantic import BaseModel, Field, PositiveInt, model_validator, ConfigDict
+from pydantic import BaseModel, Field, PositiveInt, model_validator
 from typing_extensions import Self
 
 from polaris.utils.constants import DEFAULT_CACHE_DIR
@@ -96,6 +96,7 @@ class DatasetV2Paths(ArtifactPaths):
 class BenchmarkV2Paths(ArtifactPaths):
     training: AnyUrlString = Field(json_schema_extra={"file": True})
     test_sets: dict[str, AnyUrlString] = Field(json_schema_extra={"file": True})
+
 
 class PredictionPaths(ArtifactPaths):
     # Discriminator field used to identify this as a prediction type when deserializing paths
