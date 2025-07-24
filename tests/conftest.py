@@ -396,9 +396,17 @@ def test_docking_benchmark(test_docking_dataset):
 
 @pytest.fixture(scope="function")
 def test_benchmark_v2(test_dataset_v2, test_org_owner):
+    from polaris.benchmark._split_v2 import TrainTestIndices
+
     train_indices = [0]
     test_indices = [1]
-    split = SplitV2(training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices))
+    split = SplitV2(
+        splits={
+            "default": TrainTestIndices(
+                training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices)
+            )
+        }
+    )
     benchmark = BenchmarkV2Specification(
         name="v2-benchmark-float-dtype",
         owner=test_org_owner,
@@ -412,20 +420,25 @@ def test_benchmark_v2(test_dataset_v2, test_org_owner):
 
 @pytest.fixture(scope="function")
 def test_benchmark_v2_multiple_test_sets(test_dataset_v2, test_org_owner):
-    """Fixture for BenchmarkV2 with multiple test sets"""
-    train_indices = [0, 1, 2, 3, 4]
-    test_sets = {
-        "test_set_1": IndexSet(indices=[5, 6, 7]),
-        "test_set_2": IndexSet(indices=[8, 9]),
-        "test_set_3": IndexSet(indices=[10, 11, 12, 13]),
+    """Fixture for BenchmarkV2 with multiple splits (cross-validation scenario)"""
+    from polaris.benchmark._split_v2 import TrainTestIndices
+
+    splits = {
+        "split_1": TrainTestIndices(
+            training=IndexSet(indices=[0, 1, 2, 3, 4]), test=IndexSet(indices=[5, 6, 7])
+        ),
+        "split_2": TrainTestIndices(
+            training=IndexSet(indices=[0, 1, 2, 5, 6, 7]), test=IndexSet(indices=[8, 9])
+        ),
+        "split_3": TrainTestIndices(
+            training=IndexSet(indices=[0, 1, 2, 8, 9]), test=IndexSet(indices=[10, 11, 12, 13])
+        ),
     }
-    split = SplitV2(training=IndexSet(indices=train_indices), test_sets=test_sets)
+    split = SplitV2(splits=splits)
     benchmark = BenchmarkV2Specification(
-        name="v2-benchmark-multiple-test-sets",
+        name="v2-benchmark-multiple-splits",
         owner=test_org_owner,
         dataset=test_dataset_v2,
-        metrics=["mean_absolute_error"],
-        main_metric="mean_absolute_error",
         split=split,
         target_cols=["A"],
         input_cols=["B"],
@@ -436,6 +449,7 @@ def test_benchmark_v2_multiple_test_sets(test_dataset_v2, test_org_owner):
 @pytest.fixture(scope="function")
 def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
     from polaris.utils.zarr.codecs import RDKitMolCodec
+    from polaris.benchmark._split_v2 import TrainTestIndices
 
     zarr_path = tmp_path / "test_rdkit_object_dtype.zarr"
     root = zarr.open(str(zarr_path), mode="w")
@@ -460,7 +474,13 @@ def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
     )
     train_indices = [0]
     test_indices = [1]
-    split = SplitV2(training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices))
+    split = SplitV2(
+        splits={
+            "default": TrainTestIndices(
+                training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices)
+            )
+        }
+    )
     benchmark = BenchmarkV2Specification(
         name="v2-benchmark-rdkit-object-dtype",
         owner=test_org_owner,
@@ -475,6 +495,7 @@ def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
 @pytest.fixture(scope="function")
 def v2_benchmark_with_atomarray_object_dtype(tmp_path, test_org_owner):
     from polaris.utils.zarr.codecs import AtomArrayCodec
+    from polaris.benchmark._split_v2 import TrainTestIndices
 
     zarr_path = tmp_path / "test_atomarray_object_dtype.zarr"
     root = zarr.open(str(zarr_path), mode="w")
@@ -499,7 +520,13 @@ def v2_benchmark_with_atomarray_object_dtype(tmp_path, test_org_owner):
     )
     train_indices = [0]
     test_indices = [1]
-    split = SplitV2(training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices))
+    split = SplitV2(
+        splits={
+            "default": TrainTestIndices(
+                training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices)
+            )
+        }
+    )
     benchmark = BenchmarkV2Specification(
         name="v2-benchmark-atomarray-object-dtype",
         owner=test_org_owner,

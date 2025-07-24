@@ -56,42 +56,32 @@ class IndexSet(BaseModel):
         return IndexSet(indices=BitMap.deserialize(index_set))
 
 
-class SplitV2(BaseModel):
+class TrainTestIndices(BaseModel):
+    """
+    A single train-test split pair containing training and test index sets.
+
+    This intermediate class represents one train-test split, which allows
+    SplitV2 to support multiple such pairs for cross-validation scenarios.
+    """
+
     training: IndexSet
-    test_sets: dict[str, IndexSet]
+    test: IndexSet
 
     @field_validator("training", mode="before")
     @classmethod
     def _parse_training_set(cls, v: bytes | IndexSet) -> IndexSet:
-        """Accepted a binary serialized IndexSet"""
+        """Accept a binary serialized IndexSet"""
         if isinstance(v, bytes):
             return IndexSet.deserialize(v)
         return v
 
-    @field_validator("test_sets", mode="before")
+    @field_validator("test", mode="before")
     @classmethod
-    def _parse_test_index_sets(cls, v: dict[str, bytes | IndexSet]) -> dict[str, IndexSet]:
-        """Parse test sets from bytes or IndexSet objects"""
-        if not isinstance(v, dict):
-            raise ValueError(f"test_sets must be a dictionary, got {type(v).__name__}")
-
-        parsed_sets = {}
-        for label, index_set in v.items():
-            if isinstance(index_set, bytes):
-                parsed_sets[label] = IndexSet.deserialize(index_set)
-            else:
-                parsed_sets[label] = index_set
-        return parsed_sets
-
-    @model_validator(mode="before")
-    @classmethod
-    def _handle_backward_compatibility(cls, data):
-        """Handle backward compatibility with single 'test' field"""
-        if isinstance(data, dict) and "test" in data and "test_sets" not in data:
-            # Convert single test field to test_sets format
-            test_value = data.pop("test")
-            data["test_sets"] = {"test": test_value}
-        return data
+    def _parse_test_set(cls, v: bytes | IndexSet) -> IndexSet:
+        """Accept a binary serialized IndexSet"""
+        if isinstance(v, bytes):
+            return IndexSet.deserialize(v)
+        return v
 
     @field_validator("training")
     @classmethod
@@ -99,30 +89,23 @@ class SplitV2(BaseModel):
         """Training index set can be empty (zero-shot)"""
         if v.datapoints == 0:
             logger.info(
-                "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
+                "This train-test split only specifies a test set. It will return an empty train set in `get_train_test_split()`"
             )
         return v
 
-    @field_validator("test_sets")
+    @field_validator("test")
     @classmethod
-    def _validate_test_sets(cls, v: dict[str, IndexSet]) -> dict[str, IndexSet]:
-        """Test index sets cannot be empty"""
-        if not v:
-            raise InvalidBenchmarkError("At least one test set must be specified")
-
-        for label, index_set in v.items():
-            if index_set.datapoints == 0:
-                raise InvalidBenchmarkError(f"Test set '{label}' contains empty test partitions")
+    def _validate_test_set(cls, v: IndexSet) -> IndexSet:
+        """Test index set cannot be empty"""
+        if v.datapoints == 0:
+            raise InvalidBenchmarkError("Test set cannot be empty")
         return v
 
     @model_validator(mode="after")
     def validate_set_overlap(self) -> Self:
         """The training and test index sets do not overlap"""
-        for label, test_set in self.test_sets.items():
-            if self.training.intersect(test_set):
-                raise InvalidBenchmarkError(
-                    f"The predefined split specifies overlapping train and test sets for test set '{label}'"
-                )
+        if self.training.intersect(self.test):
+            raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
         return self
 
     @property
@@ -131,38 +114,80 @@ class SplitV2(BaseModel):
         return self.training.datapoints
 
     @property
-    def n_test_sets(self) -> int:
-        """The number of test sets"""
-        return len(self.test_sets)
-
-    @property
-    def n_test_datapoints(self) -> dict[str, int]:
-        """The size of (each of) the test set(s)."""
-        return {label: index_set.datapoints for label, index_set in self.test_sets.items()}
+    def n_test_datapoints(self) -> int:
+        """The size of the test set."""
+        return self.test.datapoints
 
     @property
     def max_index(self) -> int:
-        """Maximum index across all sets"""
-        all_indices = [self.training.indices.max()]
-        all_indices.extend(test_set.indices.max() for test_set in self.test_sets.values())
-        return max(all_indices)
+        """Maximum index across train and test sets"""
+        max_indices = []
 
-    def test_items(self) -> Generator[tuple[str, IndexSet], None, None]:
-        """Yield all test sets with their labels"""
-        for label, index_set in self.test_sets.items():
-            yield label, index_set
+        # Only add max if the bitmap is not empty
+        if len(self.training.indices) > 0:
+            max_indices.append(self.training.indices.max())
+        if len(self.test.indices) > 0:
+            max_indices.append(self.test.indices.max())
 
-    # Backward compatibility property
+
+class SplitV2(BaseModel):
+    """
+    A collection of train-test splits for a benchmark.
+
+    This supports multiple train-test pairs, enabling cross-validation and other
+    multi-split evaluation scenarios. Each split is labeled and contains its own
+    training and test sets.
+    """
+
+    splits: dict[str, TrainTestIndices]
+
+    @field_validator("splits", mode="before")
+    @classmethod
+    def _parse_splits(cls, v: dict[str, dict | TrainTestIndices]) -> dict[str, TrainTestIndices]:
+        """Parse splits from dict or TrainTestIndices objects"""
+        if not isinstance(v, dict):
+            raise ValueError(f"splits must be a dictionary, got {type(v).__name__}")
+
+        if not v:
+            raise InvalidBenchmarkError("At least one split must be specified")
+
+        parsed_splits = {}
+        for label, split_data in v.items():
+            if isinstance(split_data, dict):
+                parsed_splits[label] = TrainTestIndices(**split_data)
+            else:
+                parsed_splits[label] = split_data
+        return parsed_splits
+
     @property
-    def test(self) -> IndexSet:
-        """Backward compatibility: return the 'test' set if it exists"""
-        if "test" in self.test_sets:
-            return self.test_sets["test"]
-        else:
-            raise AttributeError(
-                "No 'test' set found in test_sets. Available test sets: "
-                f"{list(self.test_sets.keys())}. Use split.test_sets['set_name'] to access specific test sets."
-            )
+    def n_splits(self) -> int:
+        """The number of splits"""
+        return len(self.splits)
+
+    @property
+    def split_labels(self) -> list[str]:
+        """Labels of all splits"""
+        return list(self.splits.keys())
+
+    @property
+    def n_train_datapoints(self) -> dict[str, int]:
+        """The size of the train set for each split."""
+        return {label: split.n_train_datapoints for label, split in self.splits.items()}
+
+    @property
+    def n_test_datapoints(self) -> dict[str, int]:
+        """The size of the test set for each split."""
+        return {label: split.n_test_datapoints for label, split in self.splits.items()}
+
+    @property
+    def max_index(self) -> int:
+        """Maximum index across all splits"""
+        return max(split.max_index for split in self.splits.values())
+
+    def split_items(self) -> Generator[tuple[str, TrainTestIndices], None, None]:
+        """Yield all splits with their labels"""
+        for label, split in self.splits.items():
+            yield label, split
 
 
 class SplitSpecificationV2Mixin(BaseModel):
@@ -173,35 +198,31 @@ class SplitSpecificationV2Mixin(BaseModel):
     which drastically improves scalability over the V1 implementation.
 
     Attributes:
-        split: The predefined train-test split to use for evaluation.
+        split: The predefined train-test splits to use for evaluation.
     """
 
     split: SplitV2
 
     @computed_field
     @property
-    def n_train_datapoints(self) -> int:
-        """The size of the train set."""
+    def n_splits(self) -> int:
+        """The number of splits"""
+        return self.split.n_splits
+
+    @computed_field
+    @property
+    def split_labels(self) -> list[str]:
+        """Labels of all splits"""
+        return self.split.split_labels
+
+    @computed_field
+    @property
+    def n_train_datapoints(self) -> dict[str, int]:
+        """The size of the train set for each split."""
         return self.split.n_train_datapoints
 
     @computed_field
     @property
-    def n_test_sets(self) -> int:
-        """The number of test sets"""
-        return self.split.n_test_sets
-
-    @computed_field
-    @property
     def n_test_datapoints(self) -> dict[str, int]:
-        """The size of (each of) the test set(s)."""
+        """The size of the test set for each split."""
         return self.split.n_test_datapoints
-
-    @computed_field
-    @property
-    def test_set_sizes(self) -> dict[str, int]:
-        return {label: index_set.datapoints for label, index_set in self.split.test_items()}
-
-    @computed_field
-    @property
-    def test_set_labels(self) -> list[str]:
-        return list(label for label, _ in self.split.test_items())
