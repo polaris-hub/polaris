@@ -122,14 +122,14 @@ class TrainTestIndices(BaseModel):
     def max_index(self) -> int:
         """Maximum index across train and test sets"""
         max_indices = []
-        
+
         # Only add max if the bitmap is not empty
         if len(self.training.indices) > 0:
             max_indices.append(self.training.indices.max())
         if len(self.test.indices) > 0:
             max_indices.append(self.test.indices.max())
-        
-        return max(max_indices) 
+
+        return max(max_indices)
 
 
 class SplitV2(BaseModel):
