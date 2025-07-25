@@ -67,17 +67,9 @@ class TrainTestIndices(BaseModel):
     training: IndexSet
     test: IndexSet
 
-    @field_validator("training", mode="before")
+    @field_validator("training", "test", mode="before")
     @classmethod
-    def _parse_training_set(cls, v: bytes | IndexSet) -> IndexSet:
-        """Accept a binary serialized IndexSet"""
-        if isinstance(v, bytes):
-            return IndexSet.deserialize(v)
-        return v
-
-    @field_validator("test", mode="before")
-    @classmethod
-    def _parse_test_set(cls, v: bytes | IndexSet) -> IndexSet:
+    def _parse_index_set(cls, v: bytes | IndexSet) -> IndexSet:
         """Accept a binary serialized IndexSet"""
         if isinstance(v, bytes):
             return IndexSet.deserialize(v)
@@ -126,8 +118,7 @@ class TrainTestIndices(BaseModel):
         # Only add max if the bitmap is not empty
         if len(self.training.indices) > 0:
             max_indices.append(self.training.indices.max())
-        if len(self.test.indices) > 0:
-            max_indices.append(self.test.indices.max())
+        max_indices.append(self.test.indices.max())
 
         return max(max_indices)
 
@@ -143,23 +134,12 @@ class SplitV2(BaseModel):
 
     splits: dict[str, TrainTestIndices]
 
-    @field_validator("splits", mode="before")
-    @classmethod
-    def _parse_splits(cls, v: dict[str, dict | TrainTestIndices]) -> dict[str, TrainTestIndices]:
-        """Parse splits from dict or TrainTestIndices objects"""
-        if not isinstance(v, dict):
-            raise ValueError(f"splits must be a dictionary, got {type(v).__name__}")
-
-        if not v:
+    @model_validator(mode="after")
+    def validate_splits_not_empty(self) -> Self:
+        """Ensure at least one split is provided"""
+        if not self.splits:
             raise InvalidBenchmarkError("At least one split must be specified")
-
-        parsed_splits = {}
-        for label, split_data in v.items():
-            if isinstance(split_data, dict):
-                parsed_splits[label] = TrainTestIndices(**split_data)
-            else:
-                parsed_splits[label] = split_data
-        return parsed_splits
+        return self
 
     @property
     def n_splits(self) -> int:
