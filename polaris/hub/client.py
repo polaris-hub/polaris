@@ -484,10 +484,20 @@ class PolarisHubClient(OAuth2Client):
 
         response_data["dataset"] = self.get_dataset(*response_data["dataset"]["artifactId"].split("/"))
 
-        split = {}
-        for label, url in response_data.get("split", {}).items():
-            with fsspec.open(url, mode="rb") as f:
-                split[label] = f.read()
+        # Handle split data - each split contains training and test data
+        split_data = response_data["split"]
+        splits = {}
+
+        for split_label, split_urls in split_data.items():
+            # Each split should have 'training' and 'test' URLs
+            split_indices = {}
+            for data_type, url in split_urls.items():
+                with fsspec.open(url, mode="rb") as f:
+                    split_indices[data_type] = f.read()
+            splits[split_label] = split_indices
+
+        # Structure the split data properly
+        split = {"splits": splits}
 
         return BenchmarkV2Specification(**{**response_data, "split": split})
 
