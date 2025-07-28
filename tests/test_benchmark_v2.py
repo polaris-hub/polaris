@@ -124,10 +124,10 @@ def test_benchmark_v2_specification(valid_split, test_dataset_v2, tmp_path):
 
     # Test valid configuration
     benchmark = BenchmarkV2Specification(**config)
-    assert benchmark.n_splits == 1
-    assert benchmark.split_labels == ["test"]
-    assert benchmark.n_train_datapoints == {"test": 3}
-    assert benchmark.n_test_datapoints == {"test": 3}
+    assert benchmark.split.n_splits == 1
+    assert benchmark.split.split_labels == ["test"]
+    assert benchmark.split.n_train_datapoints == {"test": 3}
+    assert benchmark.split.n_test_datapoints == {"test": 3}
 
     # Test dict as dataset input
     config = {
@@ -196,10 +196,10 @@ def test_benchmark_v2_with_multiple_test_sets(test_benchmark_v2_multiple_test_se
     benchmark = test_benchmark_v2_multiple_test_sets
 
     # Test split properties
-    assert benchmark.n_splits == 3
-    assert set(benchmark.split_labels) == {"split_1", "split_2", "split_3"}
-    assert benchmark.n_train_datapoints == {"split_1": 5, "split_2": 6, "split_3": 5}
-    assert benchmark.n_test_datapoints == {"split_1": 3, "split_2": 2, "split_3": 4}
+    assert benchmark.split.n_splits == 3
+    assert set(benchmark.split.split_labels) == {"split_1", "split_2", "split_3"}
+    assert benchmark.split.n_train_datapoints == {"split_1": 5, "split_2": 6, "split_3": 5}
+    assert benchmark.split.n_test_datapoints == {"split_1": 3, "split_2": 2, "split_3": 4}
 
     # Test train-test split
     splits_data = benchmark.get_train_test_split()

@@ -12,7 +12,7 @@ from polaris.utils.types import (
     HubUser,
 )
 
-from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
+from polaris.benchmark._split_v2 import SplitV2
 from polaris.dataset import DatasetV2, Subset
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName
@@ -20,9 +20,7 @@ from polaris.model import Model
 from polaris.hub.settings import PolarisHubSettings
 
 
-class BenchmarkV2Specification(
-    PredictiveTaskSpecificationMixin, BaseArtifactModel, SplitSpecificationV2Mixin
-):
+class BenchmarkV2Specification(PredictiveTaskSpecificationMixin, BaseArtifactModel):
     """This class wraps a dataset with additional data to specify the evaluation logic for V2 benchmarks.
 
     Unlike V1 benchmarks, V2 benchmarks do not require metrics to be specified client-side
@@ -30,6 +28,7 @@ class BenchmarkV2Specification(
 
     Attributes:
         dataset: The dataset the benchmark specification is based on.
+        split: The predefined train-test splits to use for evaluation.
         n_classes: The number of classes for each of the target columns.
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
         artifact_version: The version of the benchmark.
@@ -40,6 +39,7 @@ class BenchmarkV2Specification(
     _version: ClassVar[Literal[2]] = 2
 
     dataset: DatasetV2 = Field(exclude=True)
+    split: SplitV2
     n_classes: dict[ColumnName, int] = Field(default_factory=dict)
     readme: str = ""
     artifact_version: int = Field(default=1, frozen=True)
