@@ -12,7 +12,7 @@ from polaris.utils.types import (
     HubUser,
 )
 
-from polaris.benchmark._split_v2 import SplitV2
+from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
 from polaris.dataset import DatasetV2, Subset
 from polaris.utils.errors import InvalidBenchmarkError
 from polaris.utils.types import ColumnName
@@ -20,7 +20,9 @@ from polaris.model import Model
 from polaris.hub.settings import PolarisHubSettings
 
 
-class BenchmarkV2Specification(PredictiveTaskSpecificationMixin, BaseArtifactModel):
+class BenchmarkV2Specification(
+    PredictiveTaskSpecificationMixin, BaseArtifactModel, SplitSpecificationV2Mixin
+):
     """This class wraps a dataset with additional data to specify the evaluation logic for V2 benchmarks.
 
     Unlike V1 benchmarks, V2 benchmarks do not require metrics to be specified client-side
@@ -28,7 +30,7 @@ class BenchmarkV2Specification(PredictiveTaskSpecificationMixin, BaseArtifactMod
 
     Attributes:
         dataset: The dataset the benchmark specification is based on.
-        split: The predefined train-test splits to use for evaluation.
+        splits: The predefined train-test splits to use for evaluation.
         n_classes: The number of classes for each of the target columns.
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
         artifact_version: The version of the benchmark.
@@ -39,7 +41,6 @@ class BenchmarkV2Specification(PredictiveTaskSpecificationMixin, BaseArtifactMod
     _version: ClassVar[Literal[2]] = 2
 
     dataset: DatasetV2 = Field(exclude=True)
-    split: SplitV2
     n_classes: dict[ColumnName, int] = Field(default_factory=dict)
     readme: str = ""
     artifact_version: int = Field(default=1, frozen=True)
@@ -85,7 +86,7 @@ class BenchmarkV2Specification(PredictiveTaskSpecificationMixin, BaseArtifactMod
           - All indices are valid given the dataset
         """
         dataset_length = len(self.dataset)
-        if self.split.max_index >= dataset_length:
+        if self.max_index >= dataset_length:
             raise InvalidBenchmarkError("The predefined split contains invalid indices")
 
         return self
@@ -119,7 +120,7 @@ class BenchmarkV2Specification(PredictiveTaskSpecificationMixin, BaseArtifactMod
                     split.test.indices, hide_targets=hide_targets, featurization_fn=featurization_fn
                 ),
             )
-            for label, split in self.split.split_items()
+            for label, split in self.split_items()
         }
 
     def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
@@ -210,8 +211,8 @@ class BenchmarkV2Specification(PredictiveTaskSpecificationMixin, BaseArtifactMod
             benchmark_artifact_id=self.artifact_id,
             predictions=predictions,
             target_labels=list(self.target_cols),
-            test_set_labels=self.split.split_labels,
-            test_set_sizes=self.split.n_test_datapoints,
+            test_set_labels=self.split_labels,
+            test_set_sizes=self.n_test_datapoints,
             contributors=contributors or [],
             model=model,
             description=description,

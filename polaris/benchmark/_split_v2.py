@@ -56,12 +56,12 @@ class IndexSet(BaseModel):
         return IndexSet(indices=BitMap.deserialize(index_set))
 
 
-class TrainTestIndices(BaseModel):
+class SplitV2(BaseModel):
     """
     A single train-test split pair containing training and test index sets.
 
-    This intermediate class represents one train-test split, which allows
-    SplitV2 to support multiple such pairs for cross-validation scenarios.
+    This represents one train-test split with training and test sets.
+    Multiple SplitV2 instances can be used together for cross-validation scenarios.
     """
 
     training: IndexSet
@@ -123,16 +123,18 @@ class TrainTestIndices(BaseModel):
         return max(max_indices)
 
 
-class SplitV2(BaseModel):
+class SplitSpecificationV2Mixin(BaseModel):
     """
-    A collection of train-test splits for a benchmark.
+    Mixin class to add splits field to a benchmark. This is the V2 implementation.
 
-    This supports multiple train-test pairs, enabling cross-validation and other
-    multi-split evaluation scenarios. Each split is labeled and contains its own
-    training and test sets.
+    The internal representation for the splits uses roaring bitmaps,
+    which drastically improves scalability over the V1 implementation.
+
+    Attributes:
+        splits: The predefined train-test splits to use for evaluation.
     """
 
-    splits: dict[str, TrainTestIndices]
+    splits: dict[str, SplitV2]
 
     @model_validator(mode="after")
     def validate_splits_not_empty(self) -> Self:
@@ -141,32 +143,37 @@ class SplitV2(BaseModel):
             raise InvalidBenchmarkError("At least one split must be specified")
         return self
 
+    @computed_field
     @property
     def n_splits(self) -> int:
         """The number of splits"""
         return len(self.splits)
 
+    @computed_field
     @property
     def split_labels(self) -> list[str]:
         """Labels of all splits"""
         return list(self.splits.keys())
 
+    @computed_field
     @property
     def n_train_datapoints(self) -> dict[str, int]:
         """The size of the train set for each split."""
         return {label: split.n_train_datapoints for label, split in self.splits.items()}
 
+    @computed_field
     @property
     def n_test_datapoints(self) -> dict[str, int]:
         """The size of the test set for each split."""
         return {label: split.n_test_datapoints for label, split in self.splits.items()}
 
+    @computed_field
     @property
     def max_index(self) -> int:
         """Maximum index across all splits"""
         return max(split.max_index for split in self.splits.values())
 
-    def split_items(self) -> Generator[tuple[str, TrainTestIndices], None, None]:
+    def split_items(self) -> Generator[tuple[str, SplitV2], None, None]:
         """Yield all splits with their labels"""
         for label, split in self.splits.items():
             yield label, split

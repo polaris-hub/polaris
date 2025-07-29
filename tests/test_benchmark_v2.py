@@ -3,7 +3,7 @@ from pydantic import ValidationError
 from pyroaring import BitMap
 
 from polaris.benchmark._benchmark_v2 import BenchmarkV2Specification
-from polaris.benchmark._split_v2 import IndexSet, SplitV2, TrainTestIndices
+from polaris.benchmark._split_v2 import IndexSet, SplitV2
 
 
 @pytest.fixture
@@ -13,13 +13,7 @@ def index_set():
 
 @pytest.fixture
 def valid_split():
-    return SplitV2(
-        splits={
-            "test": TrainTestIndices(
-                training=IndexSet(indices=BitMap([0, 1, 2])), test=IndexSet(indices=BitMap([3, 4, 5]))
-            )
-        }
-    )
+    return SplitV2(training=IndexSet(indices=BitMap([0, 1, 2])), test=IndexSet(indices=BitMap([3, 4, 5])))
 
 
 def test_index_set_creation():
@@ -36,76 +30,93 @@ def test_index_set_creation():
     assert index_set.datapoints == 3
 
 
-def test_train_test_indices_creation():
-    """Test TrainTestIndices initialization and validation"""
+def test_split_v2_creation():
+    """Test SplitV2 initialization and validation"""
     train_set = IndexSet(indices=[0, 1, 2])
     test_set = IndexSet(indices=[3, 4, 5])
 
-    split = TrainTestIndices(training=train_set, test=test_set)
+    split = SplitV2(training=train_set, test=test_set)
     assert split.n_train_datapoints == 3
     assert split.n_test_datapoints == 3
     assert split.max_index == 5
 
 
-def test_train_test_indices_overlap_validation():
+def test_split_v2_overlap_validation():
     """Test that overlapping train/test sets raise an error"""
     train_set = IndexSet(indices=[0, 1, 2])
     test_set = IndexSet(indices=[2, 3, 4])  # Overlapping with train
 
     with pytest.raises(ValidationError):
-        TrainTestIndices(training=train_set, test=test_set)
+        SplitV2(training=train_set, test=test_set)
 
 
-def test_train_test_indices_empty_test_validation():
+def test_split_v2_empty_test_validation():
     """Test that empty test sets raise an error"""
     train_set = IndexSet(indices=[0, 1, 2])
     test_set = IndexSet(indices=[])
 
     with pytest.raises(ValidationError):
-        TrainTestIndices(training=train_set, test=test_set)
+        SplitV2(training=train_set, test=test_set)
 
 
-def test_train_test_indices_empty_train_allowed():
+def test_split_v2_empty_train_allowed():
     """Test that empty training sets are allowed (zero-shot scenarios)"""
     train_set = IndexSet(indices=[])  # Empty training set
     test_set = IndexSet(indices=[0, 1, 2])
 
     # This should not raise an error
-    split = TrainTestIndices(training=train_set, test=test_set)
+    split = SplitV2(training=train_set, test=test_set)
     assert split.n_train_datapoints == 0
     assert split.n_test_datapoints == 3
     assert split.max_index == 2
 
 
-def test_split_v2_creation():
-    """Test SplitV2 initialization and validation"""
+def test_split_specification_v2_mixin_creation():
+    """Test SplitSpecificationV2Mixin functionality with multiple splits"""
+    from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
+
     splits = {
-        "split1": TrainTestIndices(training=IndexSet(indices=[0, 1]), test=IndexSet(indices=[2, 3])),
-        "split2": TrainTestIndices(training=IndexSet(indices=[0, 2]), test=IndexSet(indices=[1, 3])),
+        "split1": SplitV2(training=IndexSet(indices=[0, 1]), test=IndexSet(indices=[2, 3])),
+        "split2": SplitV2(training=IndexSet(indices=[0, 2]), test=IndexSet(indices=[1, 3])),
     }
 
-    split_v2 = SplitV2(splits=splits)
-    assert split_v2.n_splits == 2
-    assert set(split_v2.split_labels) == {"split1", "split2"}
-    assert split_v2.n_train_datapoints == {"split1": 2, "split2": 2}
-    assert split_v2.n_test_datapoints == {"split1": 2, "split2": 2}
+    # Create a mock class that inherits from the mixin
+    class MockBenchmark(SplitSpecificationV2Mixin):
+        pass
+
+    mock_benchmark = MockBenchmark(splits=splits)
+    assert mock_benchmark.n_splits == 2
+    assert set(mock_benchmark.split_labels) == {"split1", "split2"}
+    assert mock_benchmark.n_train_datapoints == {"split1": 2, "split2": 2}
+    assert mock_benchmark.n_test_datapoints == {"split1": 2, "split2": 2}
 
 
-def test_split_v2_empty_splits_validation():
+def test_split_specification_v2_mixin_empty_splits_validation():
     """Test that empty splits dict raises an error"""
+    from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
+
+    class MockBenchmark(SplitSpecificationV2Mixin):
+        pass
+
     with pytest.raises(ValidationError):
-        SplitV2(splits={})
+        MockBenchmark(splits={})
 
 
-def test_split_v2_properties(valid_split):
+def test_split_specification_v2_mixin_properties(valid_split):
     """
-    Test the properties of SplitV2 reflect the underlying index sets
+    Test the properties of SplitSpecificationV2Mixin with a single split
     """
-    assert valid_split.n_splits == 1
-    assert valid_split.split_labels == ["test"]
-    assert valid_split.n_train_datapoints == {"test": 3}
-    assert valid_split.n_test_datapoints == {"test": 3}
-    assert valid_split.max_index == 5
+    from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
+
+    class MockBenchmark(SplitSpecificationV2Mixin):
+        pass
+
+    mock_benchmark = MockBenchmark(splits={"test": valid_split})
+    assert mock_benchmark.n_splits == 1
+    assert mock_benchmark.split_labels == ["test"]
+    assert mock_benchmark.n_train_datapoints == {"test": 3}
+    assert mock_benchmark.n_test_datapoints == {"test": 3}
+    assert mock_benchmark.max_index == 5
 
 
 def test_benchmark_v2_specification(valid_split, test_dataset_v2, tmp_path):
@@ -115,7 +126,7 @@ def test_benchmark_v2_specification(valid_split, test_dataset_v2, tmp_path):
     # Mock minimal valid configuration
     config = {
         "dataset": test_dataset_v2,
-        "split": valid_split,
+        "splits": {"test": valid_split},
         "target_cols": ["B"],
         "input_cols": ["A"],
         "n_classes": {"B": 2},
@@ -124,15 +135,15 @@ def test_benchmark_v2_specification(valid_split, test_dataset_v2, tmp_path):
 
     # Test valid configuration
     benchmark = BenchmarkV2Specification(**config)
-    assert benchmark.split.n_splits == 1
-    assert benchmark.split.split_labels == ["test"]
-    assert benchmark.split.n_train_datapoints == {"test": 3}
-    assert benchmark.split.n_test_datapoints == {"test": 3}
+    assert benchmark.n_splits == 1
+    assert benchmark.split_labels == ["test"]
+    assert benchmark.n_train_datapoints == {"test": 3}
+    assert benchmark.n_test_datapoints == {"test": 3}
 
     # Test dict as dataset input
     config = {
         "dataset": test_dataset_v2.model_dump(),
-        "split": valid_split,
+        "splits": {"test": valid_split},
         "target_cols": ["B"],
         "input_cols": ["A"],
         "n_classes": {"B": 2},
@@ -146,16 +157,14 @@ def test_benchmark_v2_invalid_indices(valid_split, test_dataset_v2):
     Test validation of indices against dataset length
     """
     max_index = len(test_dataset_v2)
+    invalid_split = SplitV2(
+        training=IndexSet(indices=BitMap([0, 1])),
+        test=IndexSet(indices=BitMap([max_index])),  # Invalid index
+    )
+
     config = {
         "dataset": test_dataset_v2,
-        "split": SplitV2(
-            splits={
-                "test": TrainTestIndices(
-                    training=IndexSet(indices=BitMap([0, 1])),
-                    test=IndexSet(indices=BitMap([max_index])),  # Invalid index
-                )
-            }
-        ),
+        "splits": {"test": invalid_split},
         "target_cols": ["B"],
         "input_cols": ["A"],
         "metrics": ["accuracy", "r2"],
@@ -170,15 +179,11 @@ def test_benchmark_v2_invalid_indices(valid_split, test_dataset_v2):
 
 def test_benchmark_v2_n_classes_validation(test_dataset_v2):
     """Test n_classes validation"""
+    valid_split = SplitV2(training=IndexSet(indices=BitMap([0, 1])), test=IndexSet(indices=BitMap([2, 3])))
+
     config = {
         "dataset": test_dataset_v2,
-        "split": SplitV2(
-            splits={
-                "test": TrainTestIndices(
-                    training=IndexSet(indices=BitMap([0, 1])), test=IndexSet(indices=BitMap([2, 3]))
-                )
-            }
-        ),
+        "splits": {"test": valid_split},
         "target_cols": ["B"],
         "input_cols": ["A"],
         "metrics": ["accuracy", "r2"],
@@ -196,10 +201,10 @@ def test_benchmark_v2_with_multiple_test_sets(test_benchmark_v2_multiple_test_se
     benchmark = test_benchmark_v2_multiple_test_sets
 
     # Test split properties
-    assert benchmark.split.n_splits == 3
-    assert set(benchmark.split.split_labels) == {"split_1", "split_2", "split_3"}
-    assert benchmark.split.n_train_datapoints == {"split_1": 5, "split_2": 6, "split_3": 5}
-    assert benchmark.split.n_test_datapoints == {"split_1": 3, "split_2": 2, "split_3": 4}
+    assert benchmark.n_splits == 3
+    assert set(benchmark.split_labels) == {"split_1", "split_2", "split_3"}
+    assert benchmark.n_train_datapoints == {"split_1": 5, "split_2": 6, "split_3": 5}
+    assert benchmark.n_test_datapoints == {"split_1": 3, "split_2": 2, "split_3": 4}
 
     # Test train-test split
     splits_data = benchmark.get_train_test_split()
@@ -213,74 +218,74 @@ def test_benchmark_v2_with_multiple_test_sets(test_benchmark_v2_multiple_test_se
         assert hasattr(test, "__len__")  # Test subset exists
 
     # Test split_items() generator
-    split_items = list(benchmark.split.split_items())
+    split_items = list(benchmark.split_items())
     assert len(split_items) == 3
     labels = [label for label, _ in split_items]
     assert set(labels) == {"split_1", "split_2", "split_3"}
 
 
-def test_split_v2_validation_multiple_splits():
+def test_split_specification_v2_mixin_validation_multiple_splits():
     """Test validation rules for multiple splits"""
+    from polaris.benchmark._split_v2 import SplitSpecificationV2Mixin
+
+    class MockBenchmark(SplitSpecificationV2Mixin):
+        pass
 
     # Test empty splits should fail
     with pytest.raises(ValidationError):
-        SplitV2(splits={})
+        MockBenchmark(splits={})
 
     # Test empty individual test set should fail
     with pytest.raises(ValidationError):
-        SplitV2(
+        MockBenchmark(
             splits={
-                "test1": TrainTestIndices(
-                    training=IndexSet(indices=BitMap([0, 1])), test=IndexSet(indices=BitMap([]))
-                )
+                "test1": SplitV2(training=IndexSet(indices=BitMap([0, 1])), test=IndexSet(indices=BitMap([])))
             }
         )
 
     # Test overlapping train and test sets should fail
     with pytest.raises(ValidationError):
-        SplitV2(
+        MockBenchmark(
             splits={
-                "test1": TrainTestIndices(
+                "test1": SplitV2(
                     training=IndexSet(indices=BitMap([0, 1, 2])), test=IndexSet(indices=BitMap([2, 3, 4]))
                 ),  # 2 overlaps
             }
         )
 
     # Test valid multiple splits should pass
-    split = SplitV2(
+    mock_benchmark = MockBenchmark(
         splits={
-            "split1": TrainTestIndices(
+            "split1": SplitV2(
                 training=IndexSet(indices=BitMap([0, 1, 2])), test=IndexSet(indices=BitMap([3, 4]))
             ),
-            "split2": TrainTestIndices(
+            "split2": SplitV2(
                 training=IndexSet(indices=BitMap([0, 2])), test=IndexSet(indices=BitMap([5, 6, 7]))
             ),
         }
     )
-    assert split.n_splits == 2
-    assert split.max_index == 7
+    assert mock_benchmark.n_splits == 2
+    assert mock_benchmark.max_index == 7
 
 
 def test_benchmark_v2_get_train_test_split_method(test_dataset_v2, test_org_owner):
     """Test the main get_train_test_split API with various scenarios"""
-    from polaris.benchmark._split_v2 import TrainTestIndices
 
     # Test with multiple splits
     splits = {
-        "fold_1": TrainTestIndices(training=IndexSet(indices=[0, 1, 2]), test=IndexSet(indices=[3, 4])),
-        "fold_2": TrainTestIndices(training=IndexSet(indices=[0, 3, 4]), test=IndexSet(indices=[1, 2])),
-        "zero_shot": TrainTestIndices(
+        "fold_1": SplitV2(training=IndexSet(indices=[0, 1, 2]), test=IndexSet(indices=[3, 4])),
+        "fold_2": SplitV2(training=IndexSet(indices=[0, 3, 4]), test=IndexSet(indices=[1, 2])),
+        "zero_shot": SplitV2(
             training=IndexSet(indices=[]),  # Empty training set
             test=IndexSet(indices=[5, 6]),
         ),
     }
 
-    split = SplitV2(splits=splits)
     benchmark = BenchmarkV2Specification(
         name="test-get-split-method",
         owner=test_org_owner,
         dataset=test_dataset_v2,
-        split=split,
+        splits=splits,
         target_cols=["A"],
         input_cols=["B"],
     )
