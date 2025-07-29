@@ -489,9 +489,11 @@ class PolarisHubClient(OAuth2Client):
         splits = {}
 
         for split_label, split_urls in split_data.items():
-            # Each split should have 'training' and 'test' URLs
+            # Each split should have 'training' and 'test' objects with filePath, datapoints, md5Checksum
             split_indices = {}
-            for data_type, url in split_urls.items():
+            for data_type, url_info in split_urls.items():
+                # Extract the actual URL from the filePath field
+                url = url_info["filePath"]
                 with fsspec.open(url, mode="rb") as f:
                     split_indices[data_type] = f.read()
             splits[split_label] = split_indices
