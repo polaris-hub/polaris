@@ -458,9 +458,7 @@ def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
     )
     train_indices = [0]
     test_indices = [1]
-    split = SplitV2(
-        training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices)
-    )
+    split = SplitV2(training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices))
     benchmark = BenchmarkV2Specification(
         name="v2-benchmark-rdkit-object-dtype",
         owner=test_org_owner,
@@ -500,9 +498,7 @@ def v2_benchmark_with_atomarray_object_dtype(tmp_path, test_org_owner):
     )
     train_indices = [0]
     test_indices = [1]
-    split = SplitV2(
-        training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices)
-    )
+    split = SplitV2(training=IndexSet(indices=train_indices), test=IndexSet(indices=test_indices))
     benchmark = BenchmarkV2Specification(
         name="v2-benchmark-atomarray-object-dtype",
         owner=test_org_owner,
