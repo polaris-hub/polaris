@@ -80,7 +80,7 @@ class SplitV2(BaseModel):
     def _validate_training_set(cls, v: IndexSet) -> IndexSet:
         """Training index set can be empty (zero-shot)"""
         if v.datapoints == 0:
-            logger.info(
+            logger.debug(
                 "This train-test split only specifies a test set. It will return an empty train set in `get_train_test_split()`"
             )
         return v
