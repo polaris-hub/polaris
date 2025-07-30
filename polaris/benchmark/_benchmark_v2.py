@@ -30,6 +30,7 @@ class BenchmarkV2Specification(
 
     Attributes:
         dataset: The dataset the benchmark specification is based on.
+        splits: The predefined train-test splits to use for evaluation.
         n_classes: The number of classes for each of the target columns.
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
         artifact_version: The version of the benchmark.
@@ -85,7 +86,7 @@ class BenchmarkV2Specification(
           - All indices are valid given the dataset
         """
         dataset_length = len(self.dataset)
-        if self.split.max_index >= dataset_length:
+        if self.max_index >= dataset_length:
             raise InvalidBenchmarkError("The predefined split contains invalid indices")
 
         return self
@@ -102,17 +103,24 @@ class BenchmarkV2Specification(
 
         return self
 
-    def _get_test_sets(
+    def _get_splits(
         self, hide_targets=True, featurization_fn: Callable | None = None
-    ) -> dict[str, Subset]:
+    ) -> dict[str, tuple[Subset, Subset]]:
         """
-        Construct the test set(s), given the split in the benchmark specification. Used
-        internally to construct the test set for client use and evaluation.
+        Construct all train-test split pairs, given the splits in the benchmark specification.
+        Used internally to construct the splits for client use and evaluation.
         """
         # TODO: We need a subset class that can handle very large index sets without copying or materializing all of them
         return {
-            label: self._get_subset(index_set.indices, hide_targets, featurization_fn)
-            for label, index_set in self.split.test_items()
+            label: (
+                self._get_subset(
+                    split.training.indices, hide_targets=False, featurization_fn=featurization_fn
+                ),
+                self._get_subset(
+                    split.test.indices, hide_targets=hide_targets, featurization_fn=featurization_fn
+                ),
+            )
+            for label, split in self.split_items()
         }
 
     def _get_subset(self, indices, hide_targets=True, featurization_fn=None) -> Subset:
@@ -129,8 +137,8 @@ class BenchmarkV2Specification(
 
     def get_train_test_split(
         self, featurization_fn: Callable | None = None
-    ) -> tuple[Subset, dict[str, Subset]]:
-        """Construct the train and test sets, given the split in the benchmark specification.
+    ) -> dict[str, tuple[Subset, Subset]]:
+        """Construct the train and test sets for all splits, given the splits in the benchmark specification.
 
         Returns [`Subset`][polaris.dataset.Subset] objects, which offer several ways of accessing the data
         and can thus easily serve as a basis to build framework-specific (e.g. PyTorch, Tensorflow)
@@ -141,15 +149,10 @@ class BenchmarkV2Specification(
                 expects an input in the format specified by the `input_format` parameter.
 
         Returns:
-            A tuple with the train `Subset` and test `Subset` objects.
-                If there are multiple test sets, these are returned in a dictionary and each test set has
-                an associated name. The targets of the test set can not be accessed.
+            A dictionary mapping split labels to (train, test) tuples of `Subset` objects.
+            The targets of the test sets cannot be accessed.
         """
-        train = self._get_subset(
-            self.split.training.indices, hide_targets=False, featurization_fn=featurization_fn
-        )
-        test = self._get_test_sets(hide_targets=True, featurization_fn=featurization_fn)
-        return train, test
+        return self._get_splits(hide_targets=True, featurization_fn=featurization_fn)
 
     def upload_to_hub(
         self,
@@ -208,8 +211,8 @@ class BenchmarkV2Specification(
             benchmark_artifact_id=self.artifact_id,
             predictions=predictions,
             target_labels=list(self.target_cols),
-            test_set_labels=self.test_set_labels,
-            test_set_sizes=self.test_set_sizes,
+            test_set_labels=self.split_labels,
+            test_set_sizes=self.n_test_datapoints,
             contributors=contributors or [],
             model=model,
             description=description,

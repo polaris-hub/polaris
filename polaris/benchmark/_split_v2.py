@@ -57,15 +57,20 @@ class IndexSet(BaseModel):
 
 
 class SplitV2(BaseModel):
+    """
+    A single train-test split pair containing training and test index sets.
+
+    This represents one train-test split with training and test sets.
+    Multiple SplitV2 instances can be used together for cross-validation scenarios.
+    """
+
     training: IndexSet
     test: IndexSet
 
     @field_validator("training", "test", mode="before")
     @classmethod
-    def _parse_index_sets(cls, v: bytes | IndexSet) -> bytes | IndexSet:
-        """
-        Accepted a binary serialized IndexSet
-        """
+    def _parse_index_set(cls, v: bytes | IndexSet) -> IndexSet:
+        """Accept a binary serialized IndexSet"""
         if isinstance(v, bytes):
             return IndexSet.deserialize(v)
         return v
@@ -73,104 +78,102 @@ class SplitV2(BaseModel):
     @field_validator("training")
     @classmethod
     def _validate_training_set(cls, v: IndexSet) -> IndexSet:
-        """
-        Training index set can be empty (zero-shot)
-        """
+        """Training index set can be empty (zero-shot)"""
         if v.datapoints == 0:
-            logger.info(
-                "This benchmark only specifies a test set. It will return an empty train set in `get_train_test_split()`"
+            logger.debug(
+                "This train-test split only specifies a test set. It will return an empty train set in `get_train_test_split()`"
             )
         return v
 
     @field_validator("test")
     @classmethod
     def _validate_test_set(cls, v: IndexSet) -> IndexSet:
-        """
-        Test index set cannot be empty
-        """
+        """Test index set cannot be empty"""
         if v.datapoints == 0:
-            raise InvalidBenchmarkError("The predefined split contains empty test partitions")
+            raise InvalidBenchmarkError("Test set cannot be empty")
         return v
 
     @model_validator(mode="after")
     def validate_set_overlap(self) -> Self:
-        """
-        The training and test index sets do not overlap
-        """
+        """The training and test index sets do not overlap"""
         if self.training.intersect(self.test):
             raise InvalidBenchmarkError("The predefined split specifies overlapping train and test sets")
         return self
 
     @property
     def n_train_datapoints(self) -> int:
-        """
-        The size of the train set.
-        """
+        """The size of the train set."""
         return self.training.datapoints
 
     @property
-    def n_test_sets(self) -> int:
-        """
-        The number of test sets
-        """
-        # TODO: Until we support multi-test benchmarks
-        return 1
-
-    @property
-    def n_test_datapoints(self) -> dict[str, int]:
-        """
-        The size of (each of) the test set(s).
-        """
-        # TODO: Until we support multi-test benchmarks
-        return {"test": self.test.datapoints}
+    def n_test_datapoints(self) -> int:
+        """The size of the test set."""
+        return self.test.datapoints
 
     @property
     def max_index(self) -> int:
-        # TODO: Until we support multi-test benchmarks (need)
-        return max(self.training.indices.max(), self.test.indices.max())
+        """Maximum index across train and test sets"""
+        max_indices = []
 
-    def test_items(self) -> Generator[tuple[str, IndexSet], None, None]:
-        # TODO: Until we support multi-test benchmarks
-        yield "test", self.test
+        # Only add max if the bitmap is not empty
+        if len(self.training.indices) > 0:
+            max_indices.append(self.training.indices.max())
+        max_indices.append(self.test.indices.max())
+
+        return max(max_indices)
 
 
 class SplitSpecificationV2Mixin(BaseModel):
     """
-    Mixin class to add a split field to a benchmark. This is the V2 implementation.
+    Mixin class to add splits field to a benchmark. This is the V2 implementation.
 
-    The internal representation for the split is a roaring bitmap,
+    The internal representation for the splits uses roaring bitmaps,
     which drastically improves scalability over the V1 implementation.
 
     Attributes:
-        split: The predefined train-test split to use for evaluation.
+        splits: The predefined train-test splits to use for evaluation.
     """
 
-    split: SplitV2
+    splits: dict[str, SplitV2]
+
+    @model_validator(mode="after")
+    def validate_splits_not_empty(self) -> Self:
+        """Ensure at least one split is provided"""
+        if not self.splits:
+            raise InvalidBenchmarkError("At least one split must be specified")
+        return self
 
     @computed_field
     @property
-    def n_train_datapoints(self) -> int:
-        """The size of the train set."""
-        return self.split.n_train_datapoints
+    def n_splits(self) -> int:
+        """The number of splits"""
+        return len(self.splits)
 
     @computed_field
     @property
-    def n_test_sets(self) -> int:
-        """The number of test sets"""
-        return self.split.n_test_sets
+    def split_labels(self) -> list[str]:
+        """Labels of all splits"""
+        return list(self.splits.keys())
+
+    @computed_field
+    @property
+    def n_train_datapoints(self) -> dict[str, int]:
+        """The size of the train set for each split."""
+        return {label: split.n_train_datapoints for label, split in self.splits.items()}
 
     @computed_field
     @property
     def n_test_datapoints(self) -> dict[str, int]:
-        """The size of (each of) the test set(s)."""
-        return self.split.n_test_datapoints
+        """The size of the test set for each split."""
+        return {label: split.n_test_datapoints for label, split in self.splits.items()}
 
     @computed_field
     @property
-    def test_set_sizes(self) -> dict[str, int]:
-        return {label: index_set.datapoints for label, index_set in self.split.test_items()}
+    def max_index(self) -> int:
+        """Maximum index across all splits"""
+        return max(split.max_index for split in self.splits.values())
 
-    @computed_field
-    @property
-    def test_set_labels(self) -> list[str]:
-        return list(label for label, _ in self.split.test_items())
+    def split_items(self) -> Generator[tuple[str, SplitV2], None, None]:
+        """Yield all splits with their labels"""
+        for label, split in self.splits.items():
+            yield label, split

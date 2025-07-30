@@ -95,8 +95,7 @@ class DatasetV2Paths(ArtifactPaths):
 
 class BenchmarkV2Paths(ArtifactPaths):
     training: AnyUrlString = Field(json_schema_extra={"file": True})
-    test: AnyUrlString = Field(json_schema_extra={"file": True})
-    test_2: int = 0
+    test_sets: dict[str, AnyUrlString] = Field(json_schema_extra={"file": True})
 
 
 class PredictionPaths(ArtifactPaths):

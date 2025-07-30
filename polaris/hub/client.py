@@ -484,12 +484,33 @@ class PolarisHubClient(OAuth2Client):
 
         response_data["dataset"] = self.get_dataset(*response_data["dataset"]["artifactId"].split("/"))
 
-        split = {}
-        for label, url in response_data.get("split", {}).items():
-            with fsspec.open(url, mode="rb") as f:
-                split[label] = f.read()
+        # Handle split data - each split contains training and test data
+        split_data = response_data["split"]
+        splits = {}
 
-        return BenchmarkV2Specification(**{**response_data, "split": split})
+        # Import SplitV2 and IndexSet for creating proper split objects
+        from polaris.benchmark._split_v2 import SplitV2, IndexSet
+
+        for split_label, split_urls in split_data.items():
+            # Each split should have 'training' and 'test' objects with filePath, datapoints, md5Checksum
+            split_indices = {}
+            for data_type, url_info in split_urls.items():
+                # Extract the actual URL from the filePath field
+                url = url_info["filePath"]
+                with fsspec.open(url, mode="rb") as f:
+                    # Deserialize the roaring bitmap data into an IndexSet
+                    roaring_data = f.read()
+                    index_set = IndexSet.deserialize(roaring_data)
+                    split_indices[data_type] = index_set
+
+            # Create a SplitV2 object from the training and test IndexSets
+            splits[split_label] = SplitV2(training=split_indices["training"], test=split_indices["test"])
+
+        # Remove the original 'split' field and add 'splits' field
+        response_data.pop("split", None)
+        response_data["splits"] = splits
+
+        return BenchmarkV2Specification(**response_data)
 
     def upload_results(
         self,

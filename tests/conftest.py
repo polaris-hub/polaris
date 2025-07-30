@@ -403,7 +403,7 @@ def test_benchmark_v2(test_dataset_v2, test_org_owner):
         name="v2-benchmark-float-dtype",
         owner=test_org_owner,
         dataset=test_dataset_v2,
-        split=split,
+        splits={"default": split},
         target_cols=["A"],
         input_cols=["B"],
     )
@@ -411,7 +411,28 @@ def test_benchmark_v2(test_dataset_v2, test_org_owner):
 
 
 @pytest.fixture(scope="function")
+def test_benchmark_v2_multiple_test_sets(test_dataset_v2, test_org_owner):
+    benchmark = BenchmarkV2Specification(
+        name="v2-benchmark-multiple-test-sets",
+        owner=test_org_owner,
+        dataset=test_dataset_v2,
+        splits={
+            "split_1": SplitV2(training=IndexSet(indices=[0, 1, 2, 3, 4]), test=IndexSet(indices=[5, 6, 7])),
+            "split_2": SplitV2(training=IndexSet(indices=[0, 1, 2, 3, 5, 6]), test=IndexSet(indices=[4, 7])),
+            "split_3": SplitV2(
+                training=IndexSet(indices=[0, 1, 2, 4, 7]), test=IndexSet(indices=[3, 5, 6, 8])
+            ),
+        },
+        target_cols=["A"],
+        input_cols=["B"],
+    )
+
+    return benchmark
+
+
+@pytest.fixture(scope="function")
 def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
+    """Fixture for a benchmark with RDKit object dtype"""
     from polaris.utils.zarr.codecs import RDKitMolCodec
 
     zarr_path = tmp_path / "test_rdkit_object_dtype.zarr"
@@ -442,7 +463,7 @@ def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
         name="v2-benchmark-rdkit-object-dtype",
         owner=test_org_owner,
         dataset=dataset,
-        split=split,
+        splits={"test": split},
         target_cols=["expt"],
         input_cols=["smiles"],
     )
@@ -451,6 +472,7 @@ def v2_benchmark_with_rdkit_object_dtype(tmp_path, test_org_owner):
 
 @pytest.fixture(scope="function")
 def v2_benchmark_with_atomarray_object_dtype(tmp_path, test_org_owner):
+    """Fixture for a benchmark with AtomArray object dtype"""
     from polaris.utils.zarr.codecs import AtomArrayCodec
 
     zarr_path = tmp_path / "test_atomarray_object_dtype.zarr"
@@ -481,7 +503,7 @@ def v2_benchmark_with_atomarray_object_dtype(tmp_path, test_org_owner):
         name="v2-benchmark-atomarray-object-dtype",
         owner=test_org_owner,
         dataset=dataset,
-        split=split,
+        splits={"test": split},
         target_cols=["expt"],
         input_cols=["smiles"],
     )
