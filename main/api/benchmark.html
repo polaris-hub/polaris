@@ -1488,6 +1488,17 @@ as evaluation happens server-side.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
+            <td><code><span title="polaris.benchmark.BenchmarkV2Specification.splits">splits</span></code></td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="polaris.benchmark._split_v2.SplitV2">SplitV2</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The predefined train-test splits to use for evaluation.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
             <td><code><span title="polaris.benchmark.BenchmarkV2Specification.n_classes">n_classes</span></code></td>
             <td>
                   <code><span title="dict">dict</span>[<a class="autorefs autorefs-internal" title="ColumnName
@@ -1568,12 +1579,12 @@ as evaluation happens server-side.</p>
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_train_test_split</span><span class="p">(</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">featurization_fn</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Subset</span><span class="p">]]</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Subset</span><span class="p">,</span> <span class="n">Subset</span><span class="p">]]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Construct the train and test sets, given the split in the benchmark specification.</p>
+        <p>Construct the train and test sets for all splits, given the splits in the benchmark specification.</p>
 <p>Returns <a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset"><code>Subset</code></a> objects, which offer several ways of accessing the data
 and can thus easily serve as a basis to build framework-specific (e.g. PyTorch, Tensorflow)
 data-loaders on top of.</p>
@@ -1622,13 +1633,21 @@ expects an input in the format specified by the <code>input_format</code> parame
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>, <span title="dict">dict</span>[<span title="str">str</span>, <a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>]]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>, <a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A tuple with the train <code>Subset</code> and test <code>Subset</code> objects.
-If there are multiple test sets, these are returned in a dictionary and each test set has
-an associated name. The targets of the test set can not be accessed.</p>
+                <p>A dictionary mapping split labels to (train, test) tuples of <code>Subset</code> objects.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>, <a class="autorefs autorefs-internal" title="polaris.dataset.Subset" href="subset.html#polaris.dataset.Subset">Subset</a>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The targets of the test sets cannot be accessed.</p>
               </div>
             </td>
           </tr>
