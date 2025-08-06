@@ -9,10 +9,12 @@ import numpy as np
 import zarr
 from pydantic import (
     PrivateAttr,
+    Field,
     model_validator,
 )
 
 from polaris.utils.zarr._manifest import generate_zarr_manifest, calculate_file_md5
+from polaris.utils.zarr.codecs import detect_object_codec_and_chunking
 from polaris.evaluate import ResultsMetadataV2
 from polaris.evaluate._predictions import BenchmarkPredictions
 
@@ -33,7 +35,7 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
     For additional metadata attributes, see the base classes.
     """
 
-    dataset_zarr_root: zarr.Group
+    dataset_zarr_root: zarr.Group = Field(exclude=True)  # Zarr Group cannot be JSON serialized
     benchmark_artifact_id: str
     _artifact_type = "prediction"
     _zarr_root_path: str | None = PrivateAttr(None)
@@ -70,13 +72,28 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
             for col in self.target_labels:
                 data = test_set_predictions[col]
                 template = dataset_root[col]
+                
+                # Use utility function to detect codec and chunking compatibility
+                chunks = template.chunks
+                if template.dtype == object:
+                    object_codec, filters, chunks_compatible = detect_object_codec_and_chunking(
+                        template.filters
+                    )
+                    # Disable chunking if codec doesn't support it
+                    if not chunks_compatible:
+                        chunks = None
+                else:
+                    object_codec = None
+                    filters = list(template.filters) if template.filters else []
+                
                 test_set_group.array(
                     name=col,
                     data=data,
                     dtype=template.dtype,
                     compressor=template.compressor,
-                    filters=template.filters,
-                    chunks=template.chunks,
+                    filters=filters,
+                    chunks=chunks,
+                    object_codec=object_codec,
                     overwrite=True,
                 )
 
@@ -142,7 +159,7 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
         return self._zarr_manifest_md5sum is not None
 
     def __repr__(self):
-        return self.model_dump_json(by_alias=True, indent=2)
+        return self.model_dump_json(by_alias=True, exclude={"predictions"}, indent=2)
 
     def __str__(self):
         return self.__repr__()

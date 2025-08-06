@@ -17,6 +17,7 @@ class RDKitMolCodec(VLenBytes):
     """
 
     codec_id = "rdkit_mol"
+    supports_chunking = True
 
     def encode(self, buf: np.ndarray):
         """
@@ -71,6 +72,7 @@ class AtomArrayCodec(MsgPack):
     """
 
     codec_id = "atom_array"
+    supports_chunking = False
 
     def encode(self, buf: np.ndarray):
         """
@@ -82,6 +84,7 @@ class AtomArrayCodec(MsgPack):
         for idx, atom_array in enumerate(buf):
             # A chunk can have missing values
             if atom_array is None:
+                to_pack[idx] = None  # Explicitly set None values
                 continue
 
             if not isinstance(atom_array, struc.AtomArray):
@@ -149,3 +152,33 @@ class AtomArrayCodec(MsgPack):
 
 register_codec(RDKitMolCodec)
 register_codec(AtomArrayCodec)
+
+
+def detect_object_codec_and_chunking(template_filters=None):
+    """
+    Detect the appropriate object codec and chunking settings from template filters.
+    
+    Returns:
+        tuple: (object_codec, filters, chunks_compatible)
+    """
+    from numcodecs import MsgPack
+    
+    filters = list(template_filters) if template_filters else []
+    object_codec = None
+    chunks_compatible = True
+    
+    # Check if codec exists in filters (Zarr stores object_codec as part of filters)
+    for filter_codec in filters:
+        if hasattr(filter_codec, 'supports_chunking'):  # Our custom codecs
+            object_codec = filter_codec
+            chunks_compatible = getattr(filter_codec, 'supports_chunking', True)
+            # Remove from filters since we'll pass it as object_codec
+            filters = [f for f in filters if f is not filter_codec]
+            
+            # Remove MsgPack filters for MsgPack-based codecs to avoid double encoding
+            if isinstance(filter_codec, MsgPack):
+                filters = [f for f in filters if not isinstance(f, MsgPack)]
+            
+            return object_codec, filters, chunks_compatible
+    
+    return object_codec, filters, chunks_compatible

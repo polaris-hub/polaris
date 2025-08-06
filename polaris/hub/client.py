@@ -766,7 +766,7 @@ class PolarisHubClient(OAuth2Client):
 
         # Set owner
         prediction.owner = HubOwner.normalize(owner or prediction.owner)
-        prediction_json = prediction.model_dump(by_alias=True, exclude_none=True)
+        prediction_json = prediction.model_dump(by_alias=True, exclude_none=True, exclude={"predictions"})
 
         # Step 1: Upload metadata to Hub
         with track_progress(description="Uploading prediction metadata", total=1) as (progress, task):

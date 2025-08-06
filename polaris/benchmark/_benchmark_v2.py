@@ -30,7 +30,6 @@ class BenchmarkV2Specification(
 
     Attributes:
         dataset: The dataset the benchmark specification is based on.
-        splits: The predefined train-test splits to use for evaluation.
         n_classes: The number of classes for each of the target columns.
         readme: Markdown text that can be used to provide a formatted description of the benchmark.
         artifact_version: The version of the benchmark.
