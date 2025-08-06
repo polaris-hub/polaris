@@ -17,7 +17,6 @@ class RDKitMolCodec(VLenBytes):
     """
 
     codec_id = "rdkit_mol"
-    supports_chunking = True
 
     def encode(self, buf: np.ndarray):
         """
@@ -72,7 +71,6 @@ class AtomArrayCodec(MsgPack):
     """
 
     codec_id = "atom_array"
-    supports_chunking = False
 
     def encode(self, buf: np.ndarray):
         """
