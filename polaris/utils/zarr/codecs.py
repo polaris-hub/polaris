@@ -154,31 +154,74 @@ register_codec(RDKitMolCodec)
 register_codec(AtomArrayCodec)
 
 
-def detect_object_codec_and_chunking(template_filters=None):
-    """
-    Detect the appropriate object codec and chunking settings from template filters.
+def convert_atomarray_to_dict(atom_array):
+    """Convert AtomArray to a dict that can be stored with standard MsgPack codec."""
+    if atom_array is None:
+        return None
 
-    Returns:
-        tuple: (object_codec, filters, chunks_compatible)
-    """
-    from numcodecs import MsgPack
+    if not isinstance(atom_array, struc.AtomArray):
+        raise ValueError(f"Expected an AtomArray, but got {type(atom_array)} instead")
 
-    filters = list(template_filters) if template_filters else []
-    object_codec = None
-    chunks_compatible = True
+    data = {
+        "coord": atom_array.coord,
+        "chain_id": atom_array.chain_id,
+        "res_id": atom_array.res_id,
+        "ins_code": atom_array.ins_code,
+        "res_name": atom_array.res_name,
+        "hetero": atom_array.hetero,
+        "atom_name": atom_array.atom_name,
+        "element": atom_array.element,
+        "atom_id": atom_array.atom_id,
+        "b_factor": atom_array.b_factor,
+        "occupancy": atom_array.occupancy,
+        "charge": atom_array.charge,
+    }
+    return {k: v.tolist() for k, v in data.items()}
 
-    # Check if codec exists in filters (Zarr stores object_codec as part of filters)
-    for filter_codec in filters:
-        if hasattr(filter_codec, "supports_chunking"):  # Our custom codecs
-            object_codec = filter_codec
-            chunks_compatible = getattr(filter_codec, "supports_chunking", True)
-            # Remove from filters since we'll pass it as object_codec
-            filters = [f for f in filters if f is not filter_codec]
 
-            # Remove MsgPack filters for MsgPack-based codecs to avoid double encoding
-            if isinstance(filter_codec, MsgPack):
-                filters = [f for f in filters if not isinstance(f, MsgPack)]
+def convert_dict_to_atomarray(data):
+    """Convert dict back to AtomArray."""
+    if data is None:
+        return None
 
-            return object_codec, filters, chunks_compatible
+    atom_array = []
+    array_length = len(data["coord"])
 
-    return object_codec, filters, chunks_compatible
+    for ind in range(array_length):
+        atom = struc.Atom(
+            coord=data["coord"][ind],
+            chain_id=data["chain_id"][ind],
+            res_id=data["res_id"][ind],
+            ins_code=data["ins_code"][ind],
+            res_name=data["res_name"][ind],
+            hetero=data["hetero"][ind],
+            atom_name=data["atom_name"][ind],
+            element=data["element"][ind],
+            b_factor=data["b_factor"][ind],
+            occupancy=data["occupancy"][ind],
+            charge=data["charge"][ind],
+            atom_id=data["atom_id"][ind],
+        )
+        atom_array.append(atom)
+
+    return struc.array(atom_array)
+
+
+def convert_mol_to_bytes(mol):
+    """Convert RDKit Mol to bytes that can be stored with standard VLenBytes codec."""
+    if mol is None or (isinstance(mol, bytes) and len(mol) == 0):
+        return b""
+
+    if not isinstance(mol, Chem.Mol):
+        raise ValueError(f"Expected an RDKitMol, but got {type(mol)} instead.")
+
+    props = Chem.PropertyPickleOptions.AllProps
+    return mol.ToBinary(props)
+
+
+def convert_bytes_to_mol(mol_bytes):
+    """Convert bytes back to RDKit Mol."""
+    if len(mol_bytes) == 0:
+        return None
+
+    return Chem.Mol(mol_bytes)

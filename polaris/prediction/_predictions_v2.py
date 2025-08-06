@@ -12,9 +12,17 @@ from pydantic import (
     Field,
     model_validator,
 )
+from numcodecs import MsgPack, VLenBytes
+from fastpdb import struc
+from rdkit import Chem
 
 from polaris.utils.zarr._manifest import generate_zarr_manifest, calculate_file_md5
-from polaris.utils.zarr.codecs import detect_object_codec_and_chunking
+from polaris.utils.zarr.codecs import (
+    convert_dict_to_atomarray,
+    convert_bytes_to_mol,
+    convert_atomarray_to_dict,
+    convert_mol_to_bytes,
+)
 from polaris.evaluate import ResultsMetadataV2
 from polaris.evaluate._predictions import BenchmarkPredictions
 
@@ -63,48 +71,122 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
 
         This method should be called explicitly when ready to write predictions to disk.
         """
-        root = self.zarr_root
+        # Get raw zarr root for writing (not the converting wrapper)
+        store = zarr.DirectoryStore(self.zarr_root_path)
+        raw_root = zarr.group(store=store)
         dataset_root = self.dataset_zarr_root
 
         for test_set_label, test_set_predictions in self.predictions.items():
             # Create a group for each test set
-            test_set_group = root.require_group(test_set_label)
+            test_set_group = raw_root.require_group(test_set_label)
             for col in self.target_labels:
                 data = test_set_predictions[col]
                 template = dataset_root[col]
 
-                # Use utility function to detect codec and chunking compatibility
-                chunks = template.chunks
+                # Handle object data conversion
                 if template.dtype == object:
-                    object_codec, filters, chunks_compatible = detect_object_codec_and_chunking(
-                        template.filters
-                    )
-                    # Disable chunking if codec doesn't support it
-                    if not chunks_compatible:
-                        chunks = None
-                else:
-                    object_codec = None
-                    filters = list(template.filters) if template.filters else []
+                    # Find first non-None item to determine conversion type
+                    sample_item = next((item for item in data if item is not None), None)
 
+                    # Define conversion mapping
+                    conversion_map = {
+                        struc.AtomArray: (convert_atomarray_to_dict, MsgPack()),
+                        Chem.Mol: (convert_mol_to_bytes, VLenBytes()),
+                    }
+
+                    if sample_item is not None:
+                        # Find matching conversion for sample item type
+                        converter_func, codec = None, MsgPack()  # Default fallback
+                        for obj_type, (conv_func, conv_codec) in conversion_map.items():
+                            if isinstance(sample_item, obj_type):
+                                converter_func, codec = conv_func, conv_codec
+                                break
+
+                        # Apply conversion if we found a matching converter
+                        if converter_func is not None:
+                            final_data = [converter_func(item) if item is not None else None for item in data]
+                        else:
+                            # No converter found - store as-is (shouldn't happen with current types)
+                            final_data = list(data)
+                    else:
+                        # All items are None
+                        codec = MsgPack()
+                        final_data = list(data)
+
+                    # Object data uses converted data and custom filters
+                    filters = [codec]
+                else:
+                    # Non-object data uses original data and template filters
+                    final_data = data
+                    filters = template.filters
+
+                # Single array creation for both cases
                 test_set_group.array(
                     name=col,
-                    data=data,
+                    data=final_data,
                     dtype=template.dtype,
                     compressor=template.compressor,
                     filters=filters,
-                    chunks=chunks,
-                    object_codec=object_codec,
+                    chunks=template.chunks,
                     overwrite=True,
                 )
 
         return Path(self.zarr_root_path)
+
+    def get_converted_predictions(self) -> dict:
+        """Get all predictions with automatic conversion back to original object types.
+
+        Returns:
+            Full predictions dictionary with same structure as self.predictions,
+            but with object data converted back to original types (AtomArray, RDKit Mol)
+        """
+        converted_predictions = {}
+
+        for test_set_label in self.test_set_labels:
+            if test_set_label not in self.zarr_root:
+                continue
+
+            test_set_group = self.zarr_root[test_set_label]
+            converted_predictions[test_set_label] = {}
+
+            for target in self.target_labels:
+                if target not in test_set_group:
+                    continue
+
+                zarr_array = test_set_group[target]
+                data = zarr_array[:]
+
+                # Check if this needs conversion (object data)
+                template = self.dataset_zarr_root[target]
+                if template.dtype == object:
+                    # Use filters to determine conversion (simple and reliable)
+                    filters = zarr_array.filters or []
+                    if any(isinstance(f, MsgPack) for f in filters):
+                        converter = convert_dict_to_atomarray
+                    elif any(isinstance(f, VLenBytes) for f in filters):
+                        converter = convert_bytes_to_mol
+                    else:
+                        converter = None
+
+                    # Apply conversion
+                    if converter:
+                        converted = [converter(item) if item is not None else None for item in data]
+                        converted_predictions[test_set_label][target] = np.array(converted, dtype=object)
+                    else:
+                        converted_predictions[test_set_label][target] = data
+                else:
+                    # Non-object data, use as-is
+                    converted_predictions[test_set_label][target] = data
+
+        return converted_predictions
 
     @property
     def zarr_root(self) -> zarr.Group:
         """Get the zarr Group object corresponding to the root, creating it if it doesn't exist."""
         if self._zarr_root is None:
             store = zarr.DirectoryStore(self.zarr_root_path)
-            self._zarr_root = zarr.group(store=store)
+            raw_root = zarr.group(store=store)
+            self._zarr_root = raw_root
         return self._zarr_root
 
     @property

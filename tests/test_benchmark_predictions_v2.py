@@ -1,5 +1,4 @@
 from polaris.prediction._predictions_v2 import BenchmarkPredictionsV2
-from polaris.utils.zarr.codecs import RDKitMolCodec, AtomArrayCodec
 from rdkit import Chem
 import numpy as np
 import pytest
@@ -35,20 +34,26 @@ def test_v2_rdkit_object_codec(v2_benchmark_with_rdkit_object_dtype):
     assert bp.predictions["test"]["expt"].dtype == object
     assert_deep_equal(bp.predictions, {"test": {"expt": np.array(mols, dtype=object)}})
 
-    # Check Zarr archive
+    # Check Zarr archive by reading through the BenchmarkPredictionsV2 object
     zarr_path = bp.to_zarr()
     assert zarr_path.exists()
-    root = zarr.open(str(zarr_path), mode="r")
-    arr = root["test"]["expt"][:]
+
+    # Use the get_converted_predictions method to get all converted data
+    converted_predictions = bp.get_converted_predictions()
+    arr = converted_predictions["test"]["expt"]
     arr_smiles = [Chem.MolToSmiles(m) for m in arr]
     mols_smiles = [Chem.MolToSmiles(m) for m in mols]
     assert arr_smiles == mols_smiles
 
-    # Check that object_codec is correctly set as a filter (Zarr stores object_codec as filters)
-    zarr_array = root["test"]["expt"]
+    # Check that standard codec is used (direct zarr access shows raw format)
+    raw_root = zarr.open(str(zarr_path), mode="r")
+    zarr_array = raw_root["test"]["expt"]
     assert zarr_array.filters is not None
     assert len(zarr_array.filters) > 0
-    assert any(isinstance(f, RDKitMolCodec) for f in zarr_array.filters)
+    # Now we expect VLenBytes instead of custom codec
+    from numcodecs import VLenBytes
+
+    assert any(isinstance(f, VLenBytes) for f in zarr_array.filters)
 
 
 def test_v2_atomarray_object_codec(v2_benchmark_with_atomarray_object_dtype, pdbs_structs):
@@ -66,20 +71,26 @@ def test_v2_atomarray_object_codec(v2_benchmark_with_atomarray_object_dtype, pdb
     assert bp.predictions["test"]["expt"].dtype == object
     assert_deep_equal(bp.predictions, {"test": {"expt": np.array(pdbs_structs[:2], dtype=object)}})
 
-    # Check Zarr archive (dtype and shape only)
+    # Check Zarr archive by reading through the BenchmarkPredictionsV2 object
     zarr_path = bp.to_zarr()
     assert zarr_path.exists()
-    root = zarr.open(str(zarr_path), mode="r")
-    arr = root["test"]["expt"][:]
+
+    # Use the get_converted_predictions method to get all converted data
+    converted_predictions = bp.get_converted_predictions()
+    arr = converted_predictions["test"]["expt"]
     assert arr.dtype == object
     assert arr.shape == (2,)
     assert all(isinstance(x, struc.AtomArray) for x in arr)
 
-    # Check that object_codec is correctly set as a filter (Zarr stores object_codec as filters)
-    zarr_array = root["test"]["expt"]
+    # Check that standard codec is used (direct zarr access shows raw format)
+    raw_root = zarr.open(str(zarr_path), mode="r")
+    zarr_array = raw_root["test"]["expt"]
     assert zarr_array.filters is not None
     assert len(zarr_array.filters) > 0
-    assert any(isinstance(f, AtomArrayCodec) for f in zarr_array.filters)
+    # Now we expect MsgPack instead of custom codec
+    from numcodecs import MsgPack
+
+    assert any(isinstance(f, MsgPack) for f in zarr_array.filters)
 
 
 def test_v2_dtype_mismatch_raises(test_benchmark_v2):
