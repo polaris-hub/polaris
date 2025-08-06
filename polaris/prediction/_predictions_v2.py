@@ -72,7 +72,7 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
             for col in self.target_labels:
                 data = test_set_predictions[col]
                 template = dataset_root[col]
-                
+
                 # Use utility function to detect codec and chunking compatibility
                 chunks = template.chunks
                 if template.dtype == object:
@@ -85,7 +85,7 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
                 else:
                     object_codec = None
                     filters = list(template.filters) if template.filters else []
-                
+
                 test_set_group.array(
                     name=col,
                     data=data,
