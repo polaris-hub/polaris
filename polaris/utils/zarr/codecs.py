@@ -217,7 +217,7 @@ def convert_mol_to_bytes(mol: rdkit.Chem.Mol | None) -> bytes:
     return mol.ToBinary(props)
 
 
-def convert_bytes_to_mol(mol_bytes):
+def convert_bytes_to_mol(mol_bytes: bytes) -> rdkit.Chem.Mol:
     """Convert bytes back to RDKit Mol."""
     if len(mol_bytes) == 0:
         return None
