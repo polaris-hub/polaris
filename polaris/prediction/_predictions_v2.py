@@ -32,8 +32,10 @@ logger = logging.getLogger(__name__)
 # Reserved metadata key for storing original Python type
 RESERVED_TYPE_KEY = "python_type"
 
+
 class ReservedTypes(str, Enum):
     """Reserved type identifiers for object data stored in Zarr arrays."""
+
     RDKIT_MOL = "rdkit.Chem.Mol"
     ATOM_ARRAY = "biotite.structure.AtomArray"
 
