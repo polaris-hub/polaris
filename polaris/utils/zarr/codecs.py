@@ -205,7 +205,7 @@ def convert_dict_to_atomarray(data: dict) -> AtomArray:
     return struc.array(atom_array)
 
 
-def convert_mol_to_bytes(mol):
+def convert_mol_to_bytes(mol: rdkit.Chem.Mol | None) -> bytes:
     """Convert RDKit Mol to bytes that can be stored with standard VLenBytes codec."""
     if mol is None or (isinstance(mol, bytes) and len(mol) == 0):
         return b""
