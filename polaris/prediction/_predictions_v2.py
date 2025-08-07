@@ -4,7 +4,7 @@ import re
 import shutil
 from pathlib import Path
 import tempfile
-from enum import StrEnum
+from enum import Enum
 
 import numpy as np
 import zarr
@@ -32,10 +32,8 @@ logger = logging.getLogger(__name__)
 # Reserved metadata key for storing original Python type
 RESERVED_TYPE_KEY = "python_type"
 
-
-class ReservedTypes(StrEnum):
+class ReservedTypes(str, Enum):
     """Reserved type identifiers for object data stored in Zarr arrays."""
-
     RDKIT_MOL = "rdkit.Chem.Mol"
     ATOM_ARRAY = "biotite.structure.AtomArray"
 
