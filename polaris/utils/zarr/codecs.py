@@ -177,7 +177,7 @@ def convert_atomarray_to_dict(atom_array: AtomArray | None) -> dict[str, list] |
     return {k: v.tolist() for k, v in data.items()}
 
 
-def convert_dict_to_atomarray(data):
+def convert_dict_to_atomarray(data: dict) -> AtomArray:
     """Convert dict back to AtomArray."""
     if data is None:
         return None
