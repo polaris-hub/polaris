@@ -4,6 +4,7 @@ import re
 import shutil
 from pathlib import Path
 import tempfile
+from enum import StrEnum
 
 import numpy as np
 import zarr
@@ -28,6 +29,16 @@ from polaris.evaluate._predictions import BenchmarkPredictions
 
 logger = logging.getLogger(__name__)
 
+# Reserved metadata key for storing original Python type
+RESERVED_TYPE_KEY = "python_type"
+
+
+class ReservedTypes(StrEnum):
+    """Reserved type identifiers for object data stored in Zarr arrays."""
+
+    RDKIT_MOL = "rdkit.Chem.Mol"
+    ATOM_ARRAY = "biotite.structure.AtomArray"
+
 
 class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
     """
@@ -43,6 +54,7 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
     For additional metadata attributes, see the base classes.
     """
 
+    predictions: dict = Field(exclude=True)  # NumPy arrays cannot be JSON serialized
     dataset_zarr_root: zarr.Group = Field(exclude=True)  # Zarr Group cannot be JSON serialized
     benchmark_artifact_id: str
     _artifact_type = "prediction"
@@ -71,57 +83,45 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
 
         This method should be called explicitly when ready to write predictions to disk.
         """
-        # Get raw zarr root for writing (not the converting wrapper)
+        # Get zarr root for writing
         store = zarr.DirectoryStore(self.zarr_root_path)
-        raw_root = zarr.group(store=store)
+        root = zarr.group(store=store)
         dataset_root = self.dataset_zarr_root
 
         for test_set_label, test_set_predictions in self.predictions.items():
             # Create a group for each test set
-            test_set_group = raw_root.require_group(test_set_label)
+            test_set_group = root.require_group(test_set_label)
             for col in self.target_labels:
                 data = test_set_predictions[col]
                 template = dataset_root[col]
 
                 # Handle object data conversion
                 if template.dtype == object:
-                    # Find first non-None item to determine conversion type
-                    sample_item = next((item for item in data if item is not None), None)
+                    sample = next((item for item in data if item is not None), None)
 
-                    # Define conversion mapping
-                    conversion_map = {
-                        struc.AtomArray: (convert_atomarray_to_dict, MsgPack()),
-                        Chem.Mol: (convert_mol_to_bytes, VLenBytes()),
-                    }
-
-                    if sample_item is not None:
-                        # Find matching conversion for sample item type
-                        converter_func, codec = None, MsgPack()  # Default fallback
-                        for obj_type, (conv_func, conv_codec) in conversion_map.items():
-                            if isinstance(sample_item, obj_type):
-                                converter_func, codec = conv_func, conv_codec
-                                break
-
-                        # Apply conversion if we found a matching converter
-                        if converter_func is not None:
-                            final_data = [converter_func(item) if item is not None else None for item in data]
-                        else:
-                            # No converter found - store as-is (shouldn't happen with current types)
-                            final_data = list(data)
-                    else:
-                        # All items are None
+                    if isinstance(sample, Chem.Mol):
+                        codec = VLenBytes()
+                        final_data = [convert_mol_to_bytes(item) for item in data]
+                        filters = [codec]
+                        attributes = {RESERVED_TYPE_KEY: ReservedTypes.RDKIT_MOL}
+                    elif isinstance(sample, struc.AtomArray):
                         codec = MsgPack()
+                        final_data = [convert_atomarray_to_dict(item) for item in data]
+                        filters = [codec]
+                        attributes = {RESERVED_TYPE_KEY: ReservedTypes.ATOM_ARRAY}
+                    else:
+                        # Fall back to dataset template for unknown types
                         final_data = list(data)
-
-                    # Object data uses converted data and custom filters
-                    filters = [codec]
+                        filters = template.filters
+                        attributes = {}
                 else:
                     # Non-object data uses original data and template filters
                     final_data = data
                     filters = template.filters
+                    attributes = {}
 
                 # Single array creation for both cases
-                test_set_group.array(
+                zarr_array = test_set_group.array(
                     name=col,
                     data=final_data,
                     dtype=template.dtype,
@@ -130,6 +130,10 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
                     chunks=template.chunks,
                     overwrite=True,
                 )
+
+                # Set attributes after creation if we have any
+                if attributes:
+                    zarr_array.attrs.update(attributes)
 
         return Path(self.zarr_root_path)
 
@@ -143,34 +147,28 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
         converted_predictions = {}
 
         for test_set_label in self.test_set_labels:
-            if test_set_label not in self.zarr_root:
-                continue
-
-            test_set_group = self.zarr_root[test_set_label]
+            test_set_group = self.zarr_root.require_group(test_set_label)
             converted_predictions[test_set_label] = {}
 
             for target in self.target_labels:
-                if target not in test_set_group:
-                    continue
-
                 zarr_array = test_set_group[target]
                 data = zarr_array[:]
 
                 # Check if this needs conversion (object data)
                 template = self.dataset_zarr_root[target]
                 if template.dtype == object:
-                    # Use filters to determine conversion (simple and reliable)
-                    filters = zarr_array.filters or []
-                    if any(isinstance(f, MsgPack) for f in filters):
-                        converter = convert_dict_to_atomarray
-                    elif any(isinstance(f, VLenBytes) for f in filters):
+                    # Use metadata to determine conversion type
+                    python_type = zarr_array.attrs.get(RESERVED_TYPE_KEY)
+                    if python_type == ReservedTypes.RDKIT_MOL:
                         converter = convert_bytes_to_mol
+                    elif python_type == ReservedTypes.ATOM_ARRAY:
+                        converter = convert_dict_to_atomarray
                     else:
                         converter = None
 
                     # Apply conversion
                     if converter:
-                        converted = [converter(item) if item is not None else None for item in data]
+                        converted = [converter(item) for item in data]
                         converted_predictions[test_set_label][target] = np.array(converted, dtype=object)
                     else:
                         converted_predictions[test_set_label][target] = data
@@ -185,8 +183,8 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
         """Get the zarr Group object corresponding to the root, creating it if it doesn't exist."""
         if self._zarr_root is None:
             store = zarr.DirectoryStore(self.zarr_root_path)
-            raw_root = zarr.group(store=store)
-            self._zarr_root = raw_root
+            root = zarr.group(store=store)
+            self._zarr_root = root
         return self._zarr_root
 
     @property
@@ -241,7 +239,7 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
         return self._zarr_manifest_md5sum is not None
 
     def __repr__(self):
-        return self.model_dump_json(by_alias=True, exclude={"predictions"}, indent=2)
+        return self.model_dump_json(by_alias=True, indent=2)
 
     def __str__(self):
         return self.__repr__()

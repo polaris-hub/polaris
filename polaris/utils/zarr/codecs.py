@@ -152,13 +152,10 @@ register_codec(RDKitMolCodec)
 register_codec(AtomArrayCodec)
 
 
-def convert_atomarray_to_dict(atom_array: AtomArray | None) -> dict[str, list] | None:
+def convert_atomarray_to_dict(atom_array: struc.AtomArray | None) -> dict[str, list] | None:
     """Convert AtomArray to a dict that can be stored with standard MsgPack codec."""
     if atom_array is None:
         return None
-
-    if not isinstance(atom_array, struc.AtomArray):
-        raise ValueError(f"Expected an AtomArray, but got {type(atom_array)} instead")
 
     data = {
         "coord": atom_array.coord,
@@ -177,7 +174,7 @@ def convert_atomarray_to_dict(atom_array: AtomArray | None) -> dict[str, list] |
     return {k: v.tolist() for k, v in data.items()}
 
 
-def convert_dict_to_atomarray(data: dict) -> AtomArray:
+def convert_dict_to_atomarray(data: dict | None) -> struc.AtomArray | None:
     """Convert dict back to AtomArray."""
     if data is None:
         return None
@@ -205,19 +202,16 @@ def convert_dict_to_atomarray(data: dict) -> AtomArray:
     return struc.array(atom_array)
 
 
-def convert_mol_to_bytes(mol: rdkit.Chem.Mol | None) -> bytes:
+def convert_mol_to_bytes(mol: Chem.Mol | None) -> bytes:
     """Convert RDKit Mol to bytes that can be stored with standard VLenBytes codec."""
     if mol is None:
         return b""
-
-    if not isinstance(mol, Chem.Mol):
-        raise ValueError(f"Expected an RDKitMol, but got {type(mol)} instead.")
 
     props = Chem.PropertyPickleOptions.AllProps
     return mol.ToBinary(props)
 
 
-def convert_bytes_to_mol(mol_bytes: bytes) -> rdkit.Chem.Mol:
+def convert_bytes_to_mol(mol_bytes: bytes) -> Chem.Mol | None:
     """Convert bytes back to RDKit Mol."""
     if len(mol_bytes) == 0:
         return None
