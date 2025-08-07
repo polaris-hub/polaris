@@ -207,7 +207,7 @@ def convert_dict_to_atomarray(data: dict) -> AtomArray:
 
 def convert_mol_to_bytes(mol: rdkit.Chem.Mol | None) -> bytes:
     """Convert RDKit Mol to bytes that can be stored with standard VLenBytes codec."""
-    if mol is None or (isinstance(mol, bytes) and len(mol) == 0):
+    if mol is None:
         return b""
 
     if not isinstance(mol, Chem.Mol):
