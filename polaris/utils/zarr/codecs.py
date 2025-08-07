@@ -152,7 +152,7 @@ register_codec(RDKitMolCodec)
 register_codec(AtomArrayCodec)
 
 
-def convert_atomarray_to_dict(atom_array):
+def convert_atomarray_to_dict(atom_array: AtomArray | None) -> dict[str, list] | None:
     """Convert AtomArray to a dict that can be stored with standard MsgPack codec."""
     if atom_array is None:
         return None
