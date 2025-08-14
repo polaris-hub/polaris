@@ -4,7 +4,6 @@ import re
 import shutil
 from pathlib import Path
 import tempfile
-from enum import Enum
 
 import numpy as np
 import zarr
@@ -19,8 +18,6 @@ from rdkit import Chem
 
 from polaris.utils.zarr._manifest import generate_zarr_manifest, calculate_file_md5
 from polaris.utils.zarr.codecs import (
-    convert_dict_to_atomarray,
-    convert_bytes_to_mol,
     convert_atomarray_to_dict,
     convert_mol_to_bytes,
 )
@@ -28,16 +25,6 @@ from polaris.evaluate import ResultsMetadataV2
 from polaris.evaluate._predictions import BenchmarkPredictions
 
 logger = logging.getLogger(__name__)
-
-# Reserved metadata key for storing original Python type
-RESERVED_TYPE_KEY = "python_type"
-
-
-class ReservedTypes(str, Enum):
-    """Reserved type identifiers for object data stored in Zarr arrays."""
-
-    RDKIT_MOL = "rdkit.Chem.Mol"
-    ATOM_ARRAY = "biotite.structure.AtomArray"
 
 
 class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
@@ -103,25 +90,21 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
                         codec = VLenBytes()
                         final_data = [convert_mol_to_bytes(item) for item in data]
                         filters = [codec]
-                        attributes = {RESERVED_TYPE_KEY: ReservedTypes.RDKIT_MOL}
                     elif isinstance(sample, struc.AtomArray):
                         codec = MsgPack()
                         final_data = [convert_atomarray_to_dict(item) for item in data]
                         filters = [codec]
-                        attributes = {RESERVED_TYPE_KEY: ReservedTypes.ATOM_ARRAY}
                     else:
                         # Fall back to dataset template for unknown types
                         final_data = list(data)
                         filters = template.filters
-                        attributes = {}
                 else:
                     # Non-object data uses original data and template filters
                     final_data = data
                     filters = template.filters
-                    attributes = {}
 
                 # Single array creation for both cases
-                zarr_array = test_set_group.array(
+                test_set_group.array(
                     name=col,
                     data=final_data,
                     dtype=template.dtype,
@@ -131,52 +114,7 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
                     overwrite=True,
                 )
 
-                # Set attributes after creation if we have any
-                if attributes:
-                    zarr_array.attrs.update(attributes)
-
         return Path(self.zarr_root_path)
-
-    def get_converted_predictions(self) -> dict:
-        """Get all predictions with automatic conversion back to original object types.
-
-        Returns:
-            Full predictions dictionary with same structure as self.predictions,
-            but with object data converted back to original types (AtomArray, RDKit Mol)
-        """
-        converted_predictions = {}
-
-        for test_set_label in self.test_set_labels:
-            test_set_group = self.zarr_root.require_group(test_set_label)
-            converted_predictions[test_set_label] = {}
-
-            for target in self.target_labels:
-                zarr_array = test_set_group[target]
-                data = zarr_array[:]
-
-                # Check if this needs conversion (object data)
-                template = self.dataset_zarr_root[target]
-                if template.dtype == object:
-                    # Use metadata to determine conversion type
-                    python_type = zarr_array.attrs.get(RESERVED_TYPE_KEY)
-                    if python_type == ReservedTypes.RDKIT_MOL:
-                        converter = convert_bytes_to_mol
-                    elif python_type == ReservedTypes.ATOM_ARRAY:
-                        converter = convert_dict_to_atomarray
-                    else:
-                        converter = None
-
-                    # Apply conversion
-                    if converter:
-                        converted = [converter(item) for item in data]
-                        converted_predictions[test_set_label][target] = np.array(converted, dtype=object)
-                    else:
-                        converted_predictions[test_set_label][target] = data
-                else:
-                    # Non-object data, use as-is
-                    converted_predictions[test_set_label][target] = data
-
-        return converted_predictions
 
     @property
     def zarr_root(self) -> zarr.Group:

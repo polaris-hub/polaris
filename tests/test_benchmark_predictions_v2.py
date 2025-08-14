@@ -1,4 +1,6 @@
 from polaris.prediction._predictions_v2 import BenchmarkPredictionsV2
+from polaris.utils.zarr.codecs import convert_bytes_to_mol, convert_dict_to_atomarray
+
 from rdkit import Chem
 import numpy as np
 import pytest
@@ -38,9 +40,12 @@ def test_v2_rdkit_object_codec(v2_benchmark_with_rdkit_object_dtype):
     zarr_path = bp.to_zarr()
     assert zarr_path.exists()
 
-    # Use the get_converted_predictions method to get all converted data
-    converted_predictions = bp.get_converted_predictions()
-    arr = converted_predictions["test"]["expt"]
+    # Read raw zarr content and decode via standard codec
+    raw_root = zarr.open(str(zarr_path), mode="r")
+    zarr_array = raw_root["test"]["expt"]
+    data = zarr_array[:]
+    # Decode using our helper to bytes->Mol
+    arr = [convert_bytes_to_mol(x) for x in data]
     arr_smiles = [Chem.MolToSmiles(m) for m in arr]
     mols_smiles = [Chem.MolToSmiles(m) for m in mols]
     assert arr_smiles == mols_smiles
@@ -75,9 +80,11 @@ def test_v2_atomarray_object_codec(v2_benchmark_with_atomarray_object_dtype, pdb
     zarr_path = bp.to_zarr()
     assert zarr_path.exists()
 
-    # Use the get_converted_predictions method to get all converted data
-    converted_predictions = bp.get_converted_predictions()
-    arr = converted_predictions["test"]["expt"]
+    # Read raw zarr content and decode via standard codec
+    raw_root = zarr.open(str(zarr_path), mode="r")
+    zarr_array = raw_root["test"]["expt"]
+    data = zarr_array[:]
+    arr = np.array([convert_dict_to_atomarray(x) for x in data], dtype=object)
     assert arr.dtype == object
     assert arr.shape == (2,)
     assert all(isinstance(x, struc.AtomArray) for x in arr)
