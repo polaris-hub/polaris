@@ -85,34 +85,40 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
                 # Handle object data conversion
                 if template.dtype == object:
                     sample = next((item for item in data if item is not None), None)
-
+                    
+                    # Define object type handlers
                     if isinstance(sample, Chem.Mol):
-                        codec = VLenBytes()
-                        final_data = [convert_mol_to_bytes(item) for item in data]
-                        filters = [codec]
+                        object_codec, final_data, filters = VLenBytes(), [convert_mol_to_bytes(item) for item in data], None
                     elif isinstance(sample, struc.AtomArray):
-                        codec = MsgPack()
-                        final_data = [convert_atomarray_to_dict(item) for item in data]
-                        filters = [codec]
+                        object_codec, final_data, filters = MsgPack(), [convert_atomarray_to_dict(item) for item in data], None
                     else:
-                        # Fall back to dataset template for unknown types
-                        final_data = list(data)
-                        filters = template.filters
+                        object_codec, final_data, filters = None, list(data), template.filters
+
+                    # Create array with object_codec for object types (Zarr v3 compatibility)
+                    test_set_group.array(
+                        name=col,
+                        data=final_data,
+                        dtype=template.dtype,
+                        compressor=template.compressor,
+                        filters=filters,
+                        object_codec=object_codec,
+                        chunks=template.chunks,
+                        overwrite=True,
+                    )
                 else:
                     # Non-object data uses original data and template filters
                     final_data = data
                     filters = template.filters
-
-                # Single array creation for both cases
-                test_set_group.array(
-                    name=col,
-                    data=final_data,
-                    dtype=template.dtype,
-                    compressor=template.compressor,
-                    filters=filters,
-                    chunks=template.chunks,
-                    overwrite=True,
-                )
+                    
+                    test_set_group.array(
+                        name=col,
+                        data=final_data,
+                        dtype=template.dtype,
+                        compressor=template.compressor,
+                        filters=filters,
+                        chunks=template.chunks,
+                        overwrite=True,
+                    )
 
         return Path(self.zarr_root_path)
 
