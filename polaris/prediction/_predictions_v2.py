@@ -85,12 +85,20 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
                 # Handle object data conversion
                 if template.dtype == object:
                     sample = next((item for item in data if item is not None), None)
-                    
+
                     # Define object type handlers
                     if isinstance(sample, Chem.Mol):
-                        object_codec, final_data, filters = VLenBytes(), [convert_mol_to_bytes(item) for item in data], None
+                        object_codec, final_data, filters = (
+                            VLenBytes(),
+                            [convert_mol_to_bytes(item) for item in data],
+                            None,
+                        )
                     elif isinstance(sample, struc.AtomArray):
-                        object_codec, final_data, filters = MsgPack(), [convert_atomarray_to_dict(item) for item in data], None
+                        object_codec, final_data, filters = (
+                            MsgPack(),
+                            [convert_atomarray_to_dict(item) for item in data],
+                            None,
+                        )
                     else:
                         object_codec, final_data, filters = None, list(data), template.filters
 
@@ -109,7 +117,7 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
                     # Non-object data uses original data and template filters
                     final_data = data
                     filters = template.filters
-                    
+
                     test_set_group.array(
                         name=col,
                         data=final_data,
