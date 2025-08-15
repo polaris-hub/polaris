@@ -82,6 +82,7 @@ class AtomArrayCodec(MsgPack):
         for idx, atom_array in enumerate(buf):
             # A chunk can have missing values
             if atom_array is None:
+                to_pack[idx] = None  # Explicitly set None values
                 continue
 
             if not isinstance(atom_array, struc.AtomArray):
@@ -149,3 +150,70 @@ class AtomArrayCodec(MsgPack):
 
 register_codec(RDKitMolCodec)
 register_codec(AtomArrayCodec)
+
+
+def convert_atomarray_to_dict(atom_array: struc.AtomArray | None) -> dict[str, list] | None:
+    """Convert AtomArray to a dict that can be stored with standard MsgPack codec."""
+    if atom_array is None:
+        return None
+
+    data = {
+        "coord": atom_array.coord,
+        "chain_id": atom_array.chain_id,
+        "res_id": atom_array.res_id,
+        "ins_code": atom_array.ins_code,
+        "res_name": atom_array.res_name,
+        "hetero": atom_array.hetero,
+        "atom_name": atom_array.atom_name,
+        "element": atom_array.element,
+        "atom_id": atom_array.atom_id,
+        "b_factor": atom_array.b_factor,
+        "occupancy": atom_array.occupancy,
+        "charge": atom_array.charge,
+    }
+    return {k: v.tolist() for k, v in data.items()}
+
+
+def convert_dict_to_atomarray(data: dict | None) -> struc.AtomArray | None:
+    """Convert dict back to AtomArray."""
+    if data is None:
+        return None
+
+    atom_array = []
+    array_length = len(data["coord"])
+
+    for ind in range(array_length):
+        atom = struc.Atom(
+            coord=data["coord"][ind],
+            chain_id=data["chain_id"][ind],
+            res_id=data["res_id"][ind],
+            ins_code=data["ins_code"][ind],
+            res_name=data["res_name"][ind],
+            hetero=data["hetero"][ind],
+            atom_name=data["atom_name"][ind],
+            element=data["element"][ind],
+            b_factor=data["b_factor"][ind],
+            occupancy=data["occupancy"][ind],
+            charge=data["charge"][ind],
+            atom_id=data["atom_id"][ind],
+        )
+        atom_array.append(atom)
+
+    return struc.array(atom_array)
+
+
+def convert_mol_to_bytes(mol: Chem.Mol | None) -> bytes:
+    """Convert RDKit Mol to bytes that can be stored with standard VLenBytes codec."""
+    if mol is None:
+        return b""
+
+    props = Chem.PropertyPickleOptions.AllProps
+    return mol.ToBinary(props)
+
+
+def convert_bytes_to_mol(mol_bytes: bytes) -> Chem.Mol | None:
+    """Convert bytes back to RDKit Mol."""
+    if len(mol_bytes) == 0:
+        return None
+
+    return Chem.Mol(mol_bytes)

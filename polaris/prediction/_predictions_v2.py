@@ -9,10 +9,18 @@ import numpy as np
 import zarr
 from pydantic import (
     PrivateAttr,
+    Field,
     model_validator,
 )
+from numcodecs import MsgPack, VLenBytes
+from fastpdb import struc
+from rdkit import Chem
 
 from polaris.utils.zarr._manifest import generate_zarr_manifest, calculate_file_md5
+from polaris.utils.zarr.codecs import (
+    convert_atomarray_to_dict,
+    convert_mol_to_bytes,
+)
 from polaris.evaluate import ResultsMetadataV2
 from polaris.evaluate._predictions import BenchmarkPredictions
 
@@ -33,7 +41,8 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
     For additional metadata attributes, see the base classes.
     """
 
-    dataset_zarr_root: zarr.Group
+    predictions: dict = Field(exclude=True)  # NumPy arrays cannot be JSON serialized
+    dataset_zarr_root: zarr.Group = Field(exclude=True)  # Zarr Group cannot be JSON serialized
     benchmark_artifact_id: str
     _artifact_type = "prediction"
     _zarr_root_path: str | None = PrivateAttr(None)
@@ -61,7 +70,9 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
 
         This method should be called explicitly when ready to write predictions to disk.
         """
-        root = self.zarr_root
+        # Get zarr root for writing
+        store = zarr.DirectoryStore(self.zarr_root_path)
+        root = zarr.group(store=store)
         dataset_root = self.dataset_zarr_root
 
         for test_set_label, test_set_predictions in self.predictions.items():
@@ -70,15 +81,52 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
             for col in self.target_labels:
                 data = test_set_predictions[col]
                 template = dataset_root[col]
-                test_set_group.array(
-                    name=col,
-                    data=data,
-                    dtype=template.dtype,
-                    compressor=template.compressor,
-                    filters=template.filters,
-                    chunks=template.chunks,
-                    overwrite=True,
-                )
+
+                # Handle object data conversion
+                if template.dtype == object:
+                    sample = next((item for item in data if item is not None), None)
+
+                    # Define object type handlers
+                    if isinstance(sample, Chem.Mol):
+                        object_codec, final_data, filters = (
+                            VLenBytes(),
+                            [convert_mol_to_bytes(item) for item in data],
+                            None,
+                        )
+                    elif isinstance(sample, struc.AtomArray):
+                        object_codec, final_data, filters = (
+                            MsgPack(),
+                            [convert_atomarray_to_dict(item) for item in data],
+                            None,
+                        )
+                    else:
+                        object_codec, final_data, filters = None, list(data), template.filters
+
+                    # Create array with object_codec for object types (Zarr v3 compatibility)
+                    test_set_group.array(
+                        name=col,
+                        data=final_data,
+                        dtype=template.dtype,
+                        compressor=template.compressor,
+                        filters=filters,
+                        object_codec=object_codec,
+                        chunks=template.chunks,
+                        overwrite=True,
+                    )
+                else:
+                    # Non-object data uses original data and template filters
+                    final_data = data
+                    filters = template.filters
+
+                    test_set_group.array(
+                        name=col,
+                        data=final_data,
+                        dtype=template.dtype,
+                        compressor=template.compressor,
+                        filters=filters,
+                        chunks=template.chunks,
+                        overwrite=True,
+                    )
 
         return Path(self.zarr_root_path)
 
@@ -87,7 +135,8 @@ class BenchmarkPredictionsV2(BenchmarkPredictions, ResultsMetadataV2):
         """Get the zarr Group object corresponding to the root, creating it if it doesn't exist."""
         if self._zarr_root is None:
             store = zarr.DirectoryStore(self.zarr_root_path)
-            self._zarr_root = zarr.group(store=store)
+            root = zarr.group(store=store)
+            self._zarr_root = root
         return self._zarr_root
 
     @property
