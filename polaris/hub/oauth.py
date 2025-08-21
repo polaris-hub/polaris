@@ -42,22 +42,6 @@ class CachedTokenAuth(OAuth2Auth):
         self.token_cache_path.write_text(json.dumps(token))
 
 
-class ExternalCachedTokenAuth(CachedTokenAuth):
-    """
-    Cached token for external authentication.
-    """
-
-    def __init__(
-        self,
-        token: dict | None = None,
-        token_placement="header",
-        client=None,
-        cache_dir=DEFAULT_CACHE_DIR,
-        filename="external_auth_token.json",
-    ):
-        super().__init__(token, token_placement, client, cache_dir, filename)
-
-
 class ArtifactPaths(BaseModel):
     """
     Base model class for artifact paths.

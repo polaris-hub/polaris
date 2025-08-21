@@ -32,7 +32,6 @@ nav:
           - Evaluation: api/evaluation.md
       - Hub:
           - Client: api/hub.client.md
-          - External Auth Client: api/hub.external_client.md
       - Additional:
           - Base classes: api/base.md
           - Types: api/utils.types.md
