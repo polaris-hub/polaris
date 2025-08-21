@@ -23,7 +23,6 @@ from polaris.model import Model
 from polaris.dataset import DatasetV1, DatasetV2
 from polaris.evaluate import BenchmarkResultsV1, BenchmarkResultsV2, CompetitionPredictions
 from polaris.prediction._predictions_v2 import BenchmarkPredictionsV2
-from polaris.hub.external_client import ExternalAuthClient
 from polaris.hub.oauth import CachedTokenAuth
 from polaris.hub.settings import PolarisHubSettings
 from polaris.hub.storage import StorageSession
@@ -114,66 +113,49 @@ class PolarisHubClient(OAuth2Client):
             **kwargs,
         )
 
-        # We use an external client to get an auth token that can be exchanged for a Polaris Hub token
-        self.external_client = ExternalAuthClient(
-            settings=self.settings, cache_auth_token=cache_auth_token, **kwargs
-        )
-
     def __enter__(self: Self) -> Self:
         super().__enter__()
         return self
-
-    @property
-    def has_user_password(self) -> bool:
-        return bool(self.settings.username and self.settings.password)
 
     def _prepare_token_endpoint_body(self, body, grant_type, **kwargs):
         """
         Override to support required fields for the token exchange grant type.
         See https://datatracker.ietf.org/doc/html/rfc8693#name-request
         """
-        if grant_type == "urn:ietf:params:oauth:grant-type:token-exchange":
-            kwargs.update(
-                {
-                    "subject_token": self.external_client.token["access_token"],
-                    "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-                    "requested_token_type": "urn:ietf:params:oauth:token-type:jwt",
-                }
-            )
         return super()._prepare_token_endpoint_body(body, grant_type, **kwargs)
 
     def ensure_active_token(self, token: OAuth2Token | None = None) -> bool:
         """
         Override the active check to trigger a refetch of the token if it is not active.
         """
-        # This won't be needed with if we set a lower bound for authlib: >=1.3.2
-        # See https://github.com/lepture/authlib/pull/625
-        # As of now, this latest version is not available on Conda though.
         token = token or self.token
         is_active = super().ensure_active_token(token) if token else False
         if is_active:
             return True
 
-        # Check if external token is still valid, or we're using password auth
-        if not (self.has_user_password or self.external_client.ensure_active_token()):
-            return False
+        # If we have an API key, use it to get a new Hub JWT
+        if self.settings.api_key:
+            self.token = self.fetch_token()
+            return True
 
-        # If so, use it to get a new Hub token
-        self.token = self.fetch_token()
-        return True
+        return False
 
     def fetch_token(self, **kwargs):
         """
-        Handles the optional support for password grant type, and provide better error messages.
+        Fetch a Hub JWT using the API key grant.
         """
         try:
-            return super().fetch_token(
-                username=self.settings.username,
-                password=self.settings.password,
-                grant_type="password"
-                if self.has_user_password
-                else "urn:ietf:params:oauth:grant-type:token-exchange",
-                **kwargs,
+            if self.settings.api_key:
+                return super().fetch_token(
+                    grant_type="api_key",
+                    api_key=self.settings.api_key,
+                    **kwargs,
+                )
+            # No API key set: raise a clear error
+            raise PolarisHubError(
+                message=(
+                    "No API key configured. Please set POLARIS_API_KEY or pass settings.api_key to PolarisHubClient."
+                )
             )
         except (OAuthError, OAuth2Error) as error:
             raise PolarisHubError(
@@ -190,6 +172,13 @@ class PolarisHubClient(OAuth2Client):
             response.raise_for_status()
             return response
         except HTTPStatusError as error:
+            # 401: try one transparent retry if we can refresh via API key
+            if error.response.status_code == 401 and not withhold_token and bool(self.settings.api_key):
+                self.token = self.fetch_token()
+                response = self.request(url=url, method=method, withhold_token=withhold_token, **kwargs)
+                response.raise_for_status()
+                return response
+
             # If JSON is included in the response body, we retrieve it and format it for output. If not, we fall back to
             # retrieving plain text from the body. 500 errors will not have a JSON response.
             try:
@@ -229,20 +218,20 @@ class PolarisHubClient(OAuth2Client):
         except (MissingTokenError, InvalidTokenError, OAuthError) as error:
             raise PolarisUnauthorizedError() from error
 
-    def login(self, overwrite: bool = False, auto_open_browser: bool = True):
-        """Login to the Polaris Hub using the OAuth2 protocol.
+    def login(self, overwrite: bool = False):
+        """Login to the Polaris Hub.
 
-        Warning: Headless authentication
-            It is currently not possible to login to the Polaris Hub without a browser.
-            See [this Github issue](https://github.com/polaris-hub/polaris/issues/30) for more info.
-
-        Args:
-            overwrite: Whether to overwrite the current token if the user is already logged in.
-            auto_open_browser: Whether to automatically open the browser to visit the authorization URL.
+        If an API key is configured, a Hub JWT will be fetched and cached; otherwise an error is raised.
         """
-        if overwrite or self.token is None or not self.ensure_active_token():
-            self.external_client.interactive_login(overwrite=overwrite, auto_open_browser=auto_open_browser)
+        if self.settings.api_key:
+            # Force-fetch and cache a Hub JWT
             self.token = self.fetch_token()
+        elif overwrite or self.token is None or not self.ensure_active_token():
+            raise PolarisHubError(
+                message=(
+                    "No API key configured. Please set POLARIS_API_KEY in your environment variables file."
+                )
+            )
 
         logger.info("You are successfully logged in to the Polaris Hub.")
 

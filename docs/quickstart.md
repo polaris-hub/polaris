@@ -25,21 +25,25 @@ Polaris explicitly distinguished **datasets** and **benchmarks**.
 One dataset can therefore be associated with multiple benchmarks. 
 
 ## Login
-To submit or upload artifacts to the [Polaris Hub](https://polarishub.io/) from the client, you must first authenticate yourself. If you don't have an account yet, you can create one [here](https://polarishub.io/sign-up).
+To submit or upload artifacts to the [Polaris Hub](https://polarishub.io/) from the client, you must first authenticate yourself. If you don't have an account yet, you can create one [here](https://polarishub.io/auth/sign-up).
 
-You can do this via the following command in your terminal:
+Use an API key for programmatic access. Create one from your Hub settings page under the "Security" tab and set it as an environment variable in your .env:
 
 ```bash
-polaris login
+POLARIS_API_KEY="<your_api_key>"
 ```
+- and run the following command in your terminal:
+    ```bash
+    polaris login
+    ```
 
-or in Python: 
-```py
-from polaris.hub.client import PolarisHubClient
+- or in Python: 
+    ```py
+    from polaris.hub.client import PolarisHubClient
 
-with PolarisHubClient() as client:
-    client.login()
-```
+    with PolarisHubClient() as client:
+        client.login()
+    ```
 
 ## Benchmark API
 To get started, we will submit a result to the [`polaris/hello-world-benchmark`](https://polarishub.io/benchmarks/polaris/hello-world-benchmark).
