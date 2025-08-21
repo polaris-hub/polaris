@@ -84,6 +84,14 @@ You can also use pip:
 pip install polaris-lib
 ```
 
+## Authentication
+
+Set an API key in your environment variables file for programmatic access to the Polaris Hub.
+
+```bash
+POLARIS_API_KEY="<your_api_key>"
+```
+
 ## Development lifecycle
 
 ### Setup dev environment
