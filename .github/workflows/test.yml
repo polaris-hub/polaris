@@ -45,8 +45,7 @@ jobs:
       - name: Run tests
         run: uv run pytest
         env:
-          POLARIS_USERNAME: ${{ secrets.POLARIS_USERNAME }}
-          POLARIS_PASSWORD: ${{ secrets.POLARIS_PASSWORD }}
+          POLARIS_API_KEY: ${{ secrets.POLARIS_API_KEY }}
 
       - name: Test CLI
         run: uv run polaris --help
@@ -90,8 +89,7 @@ jobs:
       - name: Run pytest
         run: pytest
         env:
-          POLARIS_USERNAME: ${{ secrets.POLARIS_USERNAME }}
-          POLARIS_PASSWORD: ${{ secrets.POLARIS_PASSWORD }}
+          POLARIS_API_KEY: ${{ secrets.POLARIS_API_KEY }}
 
       - name: Test CLI
         run: polaris --help
