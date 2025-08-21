@@ -16,19 +16,16 @@ def login(
     client_env_file: Annotated[
         str, typer.Option(help="Environment file to overwrite the default environment variables")
     ] = ".env",
-    auto_open_browser: Annotated[
-        bool, typer.Option(help="Whether to automatically open the link in a browser to retrieve the token")
-    ] = True,
     overwrite: Annotated[
         bool, typer.Option(help="Whether to overwrite the access token if you are already logged in")
     ] = False,
 ):
     """Authenticate to the Polaris Hub.
 
-    This CLI will use the OAuth2 protocol to gain token-based access to the Polaris Hub API.
+    Set POLARIS_API_KEY in your environment and run this command to cache a Hub token.
     """
     client = PolarisHubClient(settings=PolarisHubSettings(_env_file=client_env_file))
-    client.login(auto_open_browser=auto_open_browser, overwrite=overwrite)
+    client.login(overwrite=overwrite)
 
 
 @app.command(hidden=True)
