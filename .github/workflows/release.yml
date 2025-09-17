@@ -74,7 +74,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Install the project
-        run: uv sync --frozen --all-groups --python 3.12
+        run: uv sync --frozen --all-groups --python 3.13
 
       - name: Build Changelog
         id: github_release
