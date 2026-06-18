@@ -404,3 +404,9 @@ class BaseDataset(BaseArtifactModel, abc.ABC):
             self.zarr_root_path = str(destination_zarr_root)
             self._zarr_root = None
             self._zarr_data = None
+
+        # Consolidate the metadata of the cached copy so that
+        # subsequent calls to load_zarr_root_from_local() (which
+        # uses zarr.open_consolidated) work without raising
+        # InvalidDatasetError.  See: polaris-hub/polaris#303
+        zarr.consolidate_metadata(str(destination_zarr_root))
