@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: Checkout the code
         uses: actions/checkout@v4
+        with:
+          # Full history so vcs_versioning can derive the version from tags
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
